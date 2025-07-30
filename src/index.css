@@ -120,6 +120,28 @@ All colors MUST be HSL.
     background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
   }
 
+  /* Layout adjustments for sidebar positioning */
+  [data-sidebar="sidebar"] {
+    z-index: 50;
+    position: fixed;
+    right: 0;
+    top: 0;
+    height: 100vh;
+  }
+
+  /* Main content padding adjustment based on sidebar state */
+  .sidebar-content-wrapper {
+    transition: padding-right 0.3s ease;
+  }
+
+  .sidebar-content-wrapper[data-sidebar-open="true"] {
+    padding-right: 320px; /* Width of expanded sidebar */
+  }
+
+  .sidebar-content-wrapper[data-sidebar-open="false"] {
+    padding-right: 64px; /* Width of collapsed sidebar */
+  }
+
   /* Enhanced card styling with consistent spacing */
   .card {
     @apply border-border/50 shadow-[var(--shadow-card)] bg-white/80 dark:bg-card/80 backdrop-blur-sm;

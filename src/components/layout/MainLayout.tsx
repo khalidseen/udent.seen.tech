@@ -11,10 +11,10 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex w-full min-h-screen bg-background">
-        {/* Main Content Area - comes first, takes full space */}
+        {/* Main Content Area - positioned first */}
         <div className="flex-1 flex flex-col min-w-0 bg-background">
-          {/* Top Header with enhanced styling */}
-          <header className="h-16 border-b border-border/60 bg-white/80 dark:bg-card/50 backdrop-blur-sm sticky top-0 z-40 shrink-0 shadow-sm">
+          {/* Top Header - spans full width with trigger */}
+          <header className="h-16 border-b border-border/60 bg-white/80 dark:bg-card/50 backdrop-blur-sm sticky top-0 z-30 shrink-0 shadow-sm">
             <div className="h-full px-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground p-2 rounded-lg transition-all duration-200 shadow-sm border border-border/40" />
@@ -41,7 +41,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           </main>
         </div>
         
-        {/* Sidebar - positioned on the right, no gap */}
+        {/* Sidebar - positioned on the right */}
         <AppSidebar />
       </div>
     </SidebarProvider>
