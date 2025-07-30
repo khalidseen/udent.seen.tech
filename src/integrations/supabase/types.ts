@@ -14,214 +14,16 @@ export type Database = {
   }
   public: {
     Tables: {
-      appointments: {
-        Row: {
-          appointment_date: string
-          cost: number | null
-          created_at: string | null
-          doctor_id: string
-          duration_minutes: number | null
-          id: string
-          notes: string | null
-          patient_id: string
-          status: string | null
-          treatment_plan: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          appointment_date: string
-          cost?: number | null
-          created_at?: string | null
-          doctor_id: string
-          duration_minutes?: number | null
-          id?: string
-          notes?: string | null
-          patient_id: string
-          status?: string | null
-          treatment_plan?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          appointment_date?: string
-          cost?: number | null
-          created_at?: string | null
-          doctor_id?: string
-          duration_minutes?: number | null
-          id?: string
-          notes?: string | null
-          patient_id?: string
-          status?: string | null
-          treatment_plan?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "appointments_doctor_id_fkey"
-            columns: ["doctor_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "appointments_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "patients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      dental_treatments: {
-        Row: {
-          created_at: string
-          diagnosis: string | null
-          id: string
-          notes: string | null
-          numbering_system: string
-          patient_id: string
-          status: string | null
-          tooth_number: string
-          tooth_surface: string | null
-          treatment_date: string | null
-          treatment_plan: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          diagnosis?: string | null
-          id?: string
-          notes?: string | null
-          numbering_system: string
-          patient_id: string
-          status?: string | null
-          tooth_number: string
-          tooth_surface?: string | null
-          treatment_date?: string | null
-          treatment_plan?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          diagnosis?: string | null
-          id?: string
-          notes?: string | null
-          numbering_system?: string
-          patient_id?: string
-          status?: string | null
-          tooth_number?: string
-          tooth_surface?: string | null
-          treatment_date?: string | null
-          treatment_plan?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "dental_treatments_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "patients"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      patients: {
-        Row: {
-          address: string | null
-          clinic_id: string
-          created_at: string | null
-          date_of_birth: string | null
-          email: string | null
-          full_name: string
-          gender: string | null
-          id: string
-          medical_history: string | null
-          notes: string | null
-          phone: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          address?: string | null
-          clinic_id: string
-          created_at?: string | null
-          date_of_birth?: string | null
-          email?: string | null
-          full_name: string
-          gender?: string | null
-          id?: string
-          medical_history?: string | null
-          notes?: string | null
-          phone?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          address?: string | null
-          clinic_id?: string
-          created_at?: string | null
-          date_of_birth?: string | null
-          email?: string | null
-          full_name?: string
-          gender?: string | null
-          id?: string
-          medical_history?: string | null
-          notes?: string | null
-          phone?: string | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "patients_clinic_id_fkey"
-            columns: ["clinic_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          created_at: string | null
-          full_name: string
-          id: string
-          phone: string | null
-          role: Database["public"]["Enums"]["user_role"]
-          specialization: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          full_name: string
-          id?: string
-          phone?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
-          specialization?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          full_name?: string
-          id?: string
-          phone?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
-          specialization?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: Database["public"]["Enums"]["user_role"]
-      }
+      [_ in never]: never
     }
     Enums: {
-      user_role: "admin" | "doctor" | "secretary"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -348,8 +150,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      user_role: ["admin", "doctor", "secretary"],
-    },
+    Enums: {},
   },
 } as const
