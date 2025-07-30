@@ -9,7 +9,7 @@ export function PageHeader({
   description,
   action
 }: PageHeaderProps) {
-  return <div className="flex justify-between items-start mb-8 p-6 mx-4 sm:mx-6 lg:mx-8 bg-white/60 dark:bg-card/40 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm">
+  return <div className="flex justify-between items-start mb-8 p-6 mx-4 sm:mx-6 bg-white/60 dark:bg-card/40 rounded-xl border border-border/50 shadow-sm backdrop-blur-sm px-[25px] my-0 lg:mx-0">
       <div className="space-y-2">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">{title}</h1>
         
