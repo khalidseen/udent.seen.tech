@@ -1,6 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Bell, Menu } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MainLayoutProps {
@@ -10,42 +10,41 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex w-full min-h-screen bg-background">
-        {/* Main Content Area - takes all space and adjusts margins */}
-        <div className="w-full flex flex-col min-h-screen">
-          {/* Top Header - fixed height, spans available width */}
-          <header className="h-16 border-b border-border/60 bg-white/80 dark:bg-card/50 backdrop-blur-sm sticky top-0 z-40 shrink-0 shadow-sm">
-            <div className="h-full px-6 flex items-center justify-between">
+      <div className="min-h-screen flex w-full">
+        {/* Main Content - takes available space */}
+        <div className="flex-1 flex flex-col">
+          {/* Header Bar */}
+          <header className="sticky top-0 z-40 h-16 bg-white/95 dark:bg-gray-950/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-950/60 border-b border-gray-200 dark:border-gray-800">
+            <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground p-2 rounded-lg transition-all duration-200 shadow-sm border border-border/40" />
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground tracking-tight">نظام فوردنتست</h2>
+                <SidebarTrigger className="h-9 w-9" />
+                <div className="flex flex-col">
+                  <h1 className="text-lg font-semibold">نظام فوردنتست</h1>
                   <p className="text-sm text-muted-foreground">نظام إدارة العيادة المتطور</p>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="sm" className="relative hover:bg-accent/60 transition-all duration-200">
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full text-xs text-destructive-foreground flex items-center justify-center animate-pulse">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="relative">
+                  <Bell className="h-4 w-4" />
+                  <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-red-600 text-[10px] font-medium text-white flex items-center justify-center">
                     3
                   </span>
                 </Button>
               </div>
             </div>
           </header>
-          
-          {/* Content Area - adjusts based on sidebar state */}
-          <div className="flex-1 flex">
-            {/* Main Content */}
-            <main className="flex-1 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 min-h-0">
+
+          {/* Main Content Area */}
+          <main className="flex-1 bg-gray-50/50 dark:bg-gray-950/50">
+            <div className="container max-w-screen-2xl p-4 pb-8">
               {children}
-            </main>
-            
-            {/* Sidebar - positioned in layout flow */}
-            <AppSidebar />
-          </div>
+            </div>
+          </main>
         </div>
+
+        {/* Sidebar */}
+        <AppSidebar />
       </div>
     </SidebarProvider>
   );
