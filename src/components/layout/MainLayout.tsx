@@ -10,12 +10,9 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="sidebar-layout bg-background min-h-screen">
-        {/* Sidebar - Fixed position on the right */}
-        <AppSidebar />
-        
-        {/* Main Content Area with proper border and shadows */}
-        <div className="flex-1 flex flex-col min-w-0 border-r border-border/60 bg-background">
+      <div className="flex w-full min-h-screen bg-background">
+        {/* Main Content Area - comes first, takes full space */}
+        <div className="flex-1 flex flex-col min-w-0 bg-background">
           {/* Top Header with enhanced styling */}
           <header className="h-16 border-b border-border/60 bg-white/80 dark:bg-card/50 backdrop-blur-sm sticky top-0 z-40 shrink-0 shadow-sm">
             <div className="h-full px-6 flex items-center justify-between">
@@ -38,13 +35,14 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
           </header>
           
-          {/* Page Content with enhanced background and equal spacing */}
-          <main className="flex-1 px-6 py-6 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 min-h-0">
-            <div className="max-w-full mx-auto px-2">
-              {children}
-            </div>
+          {/* Page Content */}
+          <main className="flex-1 overflow-auto bg-gradient-to-br from-background via-background to-muted/30">
+            {children}
           </main>
         </div>
+        
+        {/* Sidebar - positioned on the right, no gap */}
+        <AppSidebar />
       </div>
     </SidebarProvider>
   );
