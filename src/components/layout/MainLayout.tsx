@@ -10,11 +10,14 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full bg-background">
-        {/* Main Content */}
-        <main className="flex-1 flex flex-col">
+      <div className="sidebar-layout bg-background">
+        {/* Sidebar - Fixed position on the right */}
+        <AppSidebar />
+        
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Top Header */}
-          <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+          <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-40 shrink-0">
             <div className="h-full px-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground p-2 rounded-lg transition-colors" />
@@ -35,14 +38,13 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
           </header>
           
-          {/* Page Content */}
-          <div className="flex-1 p-6 overflow-auto">
-            {children}
-          </div>
-        </main>
-
-        {/* Sidebar - Positioned on the right */}
-        <AppSidebar />
+          {/* Page Content - with proper padding and overflow handling */}
+          <main className="flex-1 p-6 overflow-auto bg-background">
+            <div className="max-w-7xl mx-auto w-full">
+              {children}
+            </div>
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );

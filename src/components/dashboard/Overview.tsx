@@ -108,13 +108,13 @@ const Overview = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-6 w-full">
+      <div className="w-full">
         <h1 className="text-3xl font-bold text-foreground">لوحة التحكم</h1>
         <p className="text-muted-foreground mt-2">مرحباً بك في نظام إدارة العيادة</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         {statCards.map((card, index) => {
           const Icon = card.icon;
           return (
@@ -133,7 +133,7 @@ const Overview = () => {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
         <Card>
           <CardHeader>
             <CardTitle>مرحباً بك في نظام فوردنتست</CardTitle>

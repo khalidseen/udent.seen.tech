@@ -73,8 +73,9 @@ export function AppSidebar() {
   return (
     <Sidebar
       side="right"
-      className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 shadow-sidebar border-l border-sidebar-border`}
+      className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 shadow-sidebar border-l border-sidebar-border shrink-0`}
       style={{ background: 'var(--gradient-sidebar)' }}
+      collapsible="icon"
     >
       {/* Sidebar Header */}
       <SidebarHeader className="p-4 border-b border-sidebar-border/50">
