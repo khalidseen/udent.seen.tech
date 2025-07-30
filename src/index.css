@@ -120,10 +120,11 @@ All colors MUST be HSL.
     background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
   }
 
-  /* Enhanced card styling */
+  /* Enhanced card styling with consistent spacing */
   .card {
     @apply border-border/50 shadow-[var(--shadow-card)] bg-white/80 dark:bg-card/80 backdrop-blur-sm;
     transition: all 0.2s ease-in-out;
+    margin: 0 1rem;
   }
 
   .card:hover {
@@ -142,10 +143,25 @@ All colors MUST be HSL.
     transform: translateY(-1px);
   }
 
+  /* Consistent page spacing */
+  .page-content {
+    @apply px-4 sm:px-6 lg:px-8 py-6;
+  }
+
   /* Responsive adjustments */
   @media (max-width: 1024px) {
     .sidebar-layout {
       flex-direction: column;
+    }
+    
+    .card {
+      margin: 0 0.5rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .card {
+      margin: 0 0.25rem;
     }
   }
 

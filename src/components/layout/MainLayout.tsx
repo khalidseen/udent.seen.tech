@@ -38,9 +38,9 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
           </header>
           
-          {/* Page Content with enhanced background and spacing */}
-          <main className="flex-1 p-6 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 min-h-0">
-            <div className="max-w-full mx-auto">
+          {/* Page Content with enhanced background and equal spacing */}
+          <main className="flex-1 px-6 py-6 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 min-h-0">
+            <div className="max-w-full mx-auto px-2">
               {children}
             </div>
           </main>
