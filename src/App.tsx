@@ -9,7 +9,7 @@ import NotFound from "./pages/NotFound";
 import NewAppointment from "./pages/NewAppointment";
 import AddPatientForm from "./components/patients/AddPatientForm";
 import PatientList from "./components/patients/PatientList";
-import AppointmentList from "./components/appointments/AppointmentListFixed";
+import AppointmentList from "./components/appointments/AppointmentList";
 
 const queryClient = new QueryClient();
 
