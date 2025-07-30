@@ -5,79 +5,71 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Activity, Save, Edit3, Trash2, Plus } from "lucide-react";
+import { Activity, Save, Stethoscope } from "lucide-react";
 import ToothChart from "./ToothChart";
+import SmartTreatmentRecommendations from "../treatments/SmartTreatmentRecommendations";
 
-interface DentalTreatment {
+interface Patient {
   id: string;
-  tooth_number: string;
-  numbering_system: string;
-  tooth_surface?: string;
-  diagnosis?: string;
-  treatment_plan?: string;
-  notes?: string;
-  status: string;
-  treatment_date?: string;
+  full_name: string;
 }
 
 interface DentalTreatmentFormProps {
-  patientId: string;
-  patientName: string;
+  patientId?: string;
 }
 
-const DentalTreatmentForm = ({ patientId, patientName }: DentalTreatmentFormProps) => {
-  const [treatments, setTreatments] = useState<DentalTreatment[]>([]);
-  const [selectedTooth, setSelectedTooth] = useState<string>('');
+const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState(patientId || '');
+  const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
   const [numberingSystem, setNumberingSystem] = useState<'universal' | 'palmer' | 'fdi'>('universal');
   const [formData, setFormData] = useState({
-    tooth_surface: '',
+    toothSurface: '',
     diagnosis: '',
-    treatment_plan: '',
-    notes: '',
+    treatmentPlan: '',
+    treatmentDate: new Date().toISOString().split('T')[0],
     status: 'planned',
-    treatment_date: ''
+    notes: ''
   });
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTreatments();
-  }, [patientId]);
+    fetchPatients();
+  }, []);
 
-  const fetchTreatments = async () => {
+  const fetchPatients = async () => {
     try {
       const { data, error } = await supabase
-        .from('dental_treatments')
-        .select('*')
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false });
+        .from('patients')
+        .select('id, full_name')
+        .order('full_name');
 
       if (error) throw error;
-      setTreatments(data || []);
-    } catch (error: any) {
-      toast({
-        title: 'خطأ',
-        description: 'فشل في تحميل العلاجات',
-        variant: 'destructive'
-      });
+      setPatients(data || []);
+    } catch (error) {
+      console.error('Error fetching patients:', error);
     }
   };
 
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
   const handleToothSelect = (toothNumber: string, system: string) => {
-    setSelectedTooth(toothNumber);
+    setSelectedTooth(parseInt(toothNumber));
     setNumberingSystem(system as 'universal' | 'palmer' | 'fdi');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedTooth) {
+    if (!selectedTooth || !selectedPatient) {
       toast({
         title: 'خطأ',
-        description: 'يجب اختيار سن من المخطط',
+        description: 'يجب اختيار المريض والسن من المخطط',
         variant: 'destructive'
       });
       return;
@@ -86,11 +78,29 @@ const DentalTreatmentForm = ({ patientId, patientName }: DentalTreatmentFormProp
     setLoading(true);
     
     try {
+      // Get current user profile
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('يجب تسجيل الدخول أولاً');
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
+
       const treatmentData = {
-        patient_id: patientId,
-        tooth_number: selectedTooth,
+        clinic_id: profile.id,
+        patient_id: selectedPatient,
+        tooth_number: selectedTooth.toString(),
+        tooth_surface: formData.toothSurface,
         numbering_system: numberingSystem,
-        ...formData
+        diagnosis: formData.diagnosis,
+        treatment_plan: formData.treatmentPlan,
+        treatment_date: formData.treatmentDate,
+        status: formData.status,
+        notes: formData.notes
       };
 
       if (editingId) {
@@ -120,16 +130,14 @@ const DentalTreatmentForm = ({ patientId, patientName }: DentalTreatmentFormProp
 
       // Reset form
       setFormData({
-        tooth_surface: '',
+        toothSurface: '',
         diagnosis: '',
-        treatment_plan: '',
-        notes: '',
+        treatmentPlan: '',
+        treatmentDate: new Date().toISOString().split('T')[0],
         status: 'planned',
-        treatment_date: ''
+        notes: ''
       });
-      setSelectedTooth('');
-      setEditingId(null);
-      await fetchTreatments();
+      setSelectedTooth(null);
 
     } catch (error: any) {
       toast({
@@ -142,116 +150,175 @@ const DentalTreatmentForm = ({ patientId, patientName }: DentalTreatmentFormProp
     }
   };
 
-  const handleEdit = (treatment: DentalTreatment) => {
-    setEditingId(treatment.id);
-    setSelectedTooth(treatment.tooth_number);
-    setNumberingSystem(treatment.numbering_system as 'universal' | 'palmer' | 'fdi');
-    setFormData({
-      tooth_surface: treatment.tooth_surface || '',
-      diagnosis: treatment.diagnosis || '',
-      treatment_plan: treatment.treatment_plan || '',
-      notes: treatment.notes || '',
-      status: treatment.status,
-      treatment_date: treatment.treatment_date || ''
-    });
-  };
+  const toothSurfaces = [
+    'Mesial (أمامي)',
+    'Distal (خلفي)',
+    'Buccal/Facial (خدي)',
+    'Lingual/Palatal (لساني)',
+    'Occlusal (إطباقي)',
+    'Incisal (قاطع)',
+    'Cervical (عنقي)'
+  ];
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('هل تريد حذف هذا العلاج؟')) return;
+  const commonDiagnoses = [
+    'تسوس',
+    'التهاب اللثة',
+    'التهاب دواعم السن',
+    'كسر في السن',
+    'حساسية الأسنان',
+    'خراج',
+    'تآكل المينا',
+    'انطمار السن',
+    'سوء الإطباق'
+  ];
 
-    try {
-      const { error } = await supabase
-        .from('dental_treatments')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-      
-      toast({
-        title: 'تم الحذف',
-        description: 'تم حذف العلاج بنجاح'
-      });
-      
-      await fetchTreatments();
-    } catch (error: any) {
-      toast({
-        title: 'خطأ',
-        description: error.message,
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const getStatusBadge = (status: string) => {
-    const variants: { [key: string]: any } = {
-      planned: 'secondary',
-      in_progress: 'default',
-      completed: 'secondary',
-      cancelled: 'destructive'
-    };
-
-    const labels: { [key: string]: string } = {
-      planned: 'مخطط',
-      in_progress: 'قيد التنفيذ',
-      completed: 'مكتمل',
-      cancelled: 'ملغي'
-    };
-
-    return (
-      <Badge variant={variants[status] || 'secondary'}>
-        {labels[status] || status}
-      </Badge>
-    );
-  };
+  const treatmentOptions = [
+    'حشو',
+    'تنظيف',
+    'خلع',
+    'علاج عصب',
+    'تاج',
+    'جسر',
+    'زراعة',
+    'تقويم',
+    'تبييض',
+    'علاج اللثة'
+  ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">علاجات الأسنان</h1>
-        <p className="text-muted-foreground mt-2">المريض: {patientName}</p>
+        <h1 className="text-3xl font-bold text-foreground">العلاجات السنية</h1>
+        <p className="text-muted-foreground mt-2">إدارة وتسجيل العلاجات السنية</p>
       </div>
 
-      {/* Tooth Chart */}
-      <ToothChart
-        onToothSelect={handleToothSelect}
-        selectedTooth={selectedTooth}
-        numberingSystem={numberingSystem}
-      />
+      {/* Patient Selection */}
+      {!patientId && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Stethoscope className="w-5 h-5 ml-2" />
+              اختيار المريض
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={selectedPatient} onValueChange={setSelectedPatient}>
+              <SelectTrigger>
+                <SelectValue placeholder="اختر المريض" />
+              </SelectTrigger>
+              <SelectContent>
+                {patients.map((patient) => (
+                  <SelectItem key={patient.id} value={patient.id}>
+                    {patient.full_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Treatment Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <Activity className="w-5 h-5 ml-2" />
-            {editingId ? 'تعديل العلاج' : 'إضافة علاج جديد'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Smart Treatment Recommendations */}
+      {selectedPatient && formData.treatmentPlan && (
+        <SmartTreatmentRecommendations
+          patientId={selectedPatient}
+          proposedTreatment={formData.treatmentPlan}
+        />
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Tooth Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>مخطط الأسنان</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ToothChart onToothSelect={handleToothSelect} />
+            {selectedTooth && (
+              <div className="mt-4 p-3 bg-accent rounded-lg">
+                <p className="text-sm">
+                  <strong>السن المختار:</strong> {selectedTooth} ({numberingSystem})
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Treatment Form */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Activity className="w-5 h-5 ml-2" />
+              بيانات العلاج
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Tooth Surface */}
               <div className="space-y-2">
-                <Label htmlFor="tooth_surface">سطح السن</Label>
-                <Select onValueChange={(value) => setFormData(prev => ({ ...prev, tooth_surface: value }))}>
+                <Label>سطح السن</Label>
+                <Select onValueChange={(value) => handleChange('toothSurface', value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="اختر سطح السن" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="mesial">أنسي (Mesial)</SelectItem>
-                    <SelectItem value="distal">وحشي (Distal)</SelectItem>
-                    <SelectItem value="buccal">خدي (Buccal)</SelectItem>
-                    <SelectItem value="lingual">لساني (Lingual)</SelectItem>
-                    <SelectItem value="occlusal">إطباقي (Occlusal)</SelectItem>
-                    <SelectItem value="incisal">قاطع (Incisal)</SelectItem>
+                    {toothSurfaces.map((surface) => (
+                      <SelectItem key={surface} value={surface}>
+                        {surface}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
+              {/* Diagnosis */}
               <div className="space-y-2">
-                <Label htmlFor="status">حالة العلاج</Label>
-                <Select 
-                  value={formData.status}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
-                >
+                <Label>التشخيص *</Label>
+                <Select onValueChange={(value) => handleChange('diagnosis', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر التشخيص" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {commonDiagnoses.map((diagnosis) => (
+                      <SelectItem key={diagnosis} value={diagnosis}>
+                        {diagnosis}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Treatment Plan */}
+              <div className="space-y-2">
+                <Label>خطة العلاج *</Label>
+                <Select onValueChange={(value) => handleChange('treatmentPlan', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر العلاج" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {treatmentOptions.map((treatment) => (
+                      <SelectItem key={treatment} value={treatment}>
+                        {treatment}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Treatment Date */}
+              <div className="space-y-2">
+                <Label>تاريخ العلاج</Label>
+                <Input
+                  type="date"
+                  value={formData.treatmentDate}
+                  onChange={(e) => handleChange('treatmentDate', e.target.value)}
+                />
+              </div>
+
+              {/* Status */}
+              <div className="space-y-2">
+                <Label>حالة العلاج</Label>
+                <Select onValueChange={(value) => handleChange('status', value)} value={formData.status}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -259,167 +326,29 @@ const DentalTreatmentForm = ({ patientId, patientName }: DentalTreatmentFormProp
                     <SelectItem value="planned">مخطط</SelectItem>
                     <SelectItem value="in_progress">قيد التنفيذ</SelectItem>
                     <SelectItem value="completed">مكتمل</SelectItem>
-                    <SelectItem value="cancelled">ملغي</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="diagnosis">التشخيص</Label>
-              <Textarea
-                id="diagnosis"
-                value={formData.diagnosis}
-                onChange={(e) => setFormData(prev => ({ ...prev, diagnosis: e.target.value }))}
-                placeholder="تشخيص الحالة..."
-                rows={2}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="treatment_plan">خطة العلاج</Label>
-              <Textarea
-                id="treatment_plan"
-                value={formData.treatment_plan}
-                onChange={(e) => setFormData(prev => ({ ...prev, treatment_plan: e.target.value }))}
-                placeholder="خطة العلاج المقترحة..."
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Notes */}
               <div className="space-y-2">
-                <Label htmlFor="treatment_date">تاريخ العلاج</Label>
-                <Input
-                  id="treatment_date"
-                  type="date"
-                  value={formData.treatment_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, treatment_date: e.target.value }))}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">ملاحظات</Label>
+                <Label>ملاحظات</Label>
                 <Textarea
-                  id="notes"
                   value={formData.notes}
-                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  onChange={(e) => handleChange('notes', e.target.value)}
                   placeholder="ملاحظات إضافية..."
-                  rows={2}
+                  rows={3}
                 />
               </div>
-            </div>
 
-            <div className="flex justify-end space-x-4 space-x-reverse">
-              {editingId && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => {
-                    setEditingId(null);
-                    setSelectedTooth('');
-                    setFormData({
-                      tooth_surface: '',
-                      diagnosis: '',
-                      treatment_plan: '',
-                      notes: '',
-                      status: 'planned',
-                      treatment_date: ''
-                    });
-                  }}
-                >
-                  إلغاء
-                </Button>
-              )}
-              <Button type="submit" disabled={loading || !selectedTooth}>
-                {editingId ? (
-                  <>
-                    <Edit3 className="w-4 h-4 ml-2" />
-                    تحديث العلاج
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4 ml-2" />
-                    إضافة العلاج
-                  </>
-                )}
+              <Button type="submit" disabled={loading} className="w-full">
+                <Save className="w-4 h-4 ml-2" />
+                {loading ? 'جاري الحفظ...' : editingId ? 'تحديث العلاج' : 'حفظ العلاج'}
               </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Treatments List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>العلاجات المحفوظة</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {treatments.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              لا توجد علاجات مسجلة لهذا المريض
-            </p>
-          ) : (
-            <div className="space-y-4">
-              {treatments.map((treatment) => (
-                <div key={treatment.id} className="border rounded-lg p-4">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline">
-                        السن {treatment.tooth_number} ({treatment.numbering_system.toUpperCase()})
-                      </Badge>
-                      {treatment.tooth_surface && (
-                        <Badge variant="secondary">{treatment.tooth_surface}</Badge>
-                      )}
-                      {getStatusBadge(treatment.status)}
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleEdit(treatment)}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDelete(treatment.id)}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {treatment.diagnosis && (
-                    <div className="mb-2">
-                      <strong>التشخيص:</strong> {treatment.diagnosis}
-                    </div>
-                  )}
-                  
-                  {treatment.treatment_plan && (
-                    <div className="mb-2">
-                      <strong>خطة العلاج:</strong> {treatment.treatment_plan}
-                    </div>
-                  )}
-                  
-                  {treatment.treatment_date && (
-                    <div className="mb-2">
-                      <strong>تاريخ العلاج:</strong> {new Date(treatment.treatment_date).toLocaleDateString('ar-EG')}
-                    </div>
-                  )}
-                  
-                  {treatment.notes && (
-                    <div className="text-muted-foreground">
-                      <strong>ملاحظات:</strong> {treatment.notes}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

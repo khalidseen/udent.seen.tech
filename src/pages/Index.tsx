@@ -5,8 +5,8 @@ import DashboardLayout from "@/components/dashboard/DashboardLayout";
 import Overview from "@/components/dashboard/Overview";
 import PatientList from "@/components/patients/PatientList";
 import AddPatientForm from "@/components/patients/AddPatientForm";
-import AppointmentList from "@/components/appointments/AppointmentList";
-import DentalTreatmentForm from "@/components/dental/DentalTreatmentForm";
+import AppointmentList from "@/components/appointments/AppointmentListFixed";
+import DentalTreatmentForm from "@/components/dental/DentalTreatmentFormFixed";
 
 const Index = () => {
   const { user, loading } = useAuth();

@@ -11,16 +11,20 @@ import { ar } from "date-fns/locale";
 
 interface Appointment {
   id: string;
+  patient_id: string;
+  clinic_id: string;
   appointment_date: string;
-  duration_minutes: number;
+  duration: number;
   status: string;
-  notes: string;
-  cost: number;
-  patients: {
+  notes?: string;
+  treatment_type?: string;
+  created_at: string;
+  updated_at: string;
+  patients?: {
     full_name: string;
-    phone: string;
+    phone?: string;
   };
-  profiles: {
+  profiles?: {
     full_name: string;
   };
 }
@@ -29,7 +33,7 @@ const AppointmentList = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
 
   useEffect(() => {
     fetchAppointments();
@@ -68,39 +72,40 @@ const AppointmentList = () => {
   };
 
   const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = 
-      appointment.patients.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.patients.phone?.includes(searchTerm) ||
-      appointment.profiles.full_name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = statusFilter === "" || statusFilter === "all" || appointment.status === statusFilter;
+    const matchesSearch = appointment.patients?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         appointment.treatment_type?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === "all" || appointment.status === filterStatus;
     
     return matchesSearch && matchesStatus;
   });
 
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), "dd MMMM yyyy - HH:mm", { locale: ar });
+    } catch {
+      return dateString;
+    }
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">إدارة المواعيد</h1>
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-20 bg-muted rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <h1 className="text-3xl font-bold">المواعيد</h1>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">جاري التحميل...</div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">إدارة المواعيد</h1>
-          <p className="text-muted-foreground mt-2">عرض وإدارة جميع المواعيد</p>
+          <h1 className="text-3xl font-bold text-foreground">المواعيد</h1>
+          <p className="text-muted-foreground mt-2">إدارة مواعيد العيادة</p>
         </div>
         <Button>
           <Plus className="w-4 h-4 ml-2" />
@@ -109,138 +114,111 @@ const AppointmentList = () => {
       </div>
 
       {/* Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="relative">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-          <Input
-            placeholder="البحث باسم المريض أو الطبيب..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pr-10"
-          />
-        </div>
-        
-        <Select onValueChange={setStatusFilter} value={statusFilter}>
-          <SelectTrigger>
-            <SelectValue placeholder="تصفية حسب الحالة" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">جميع الحالات</SelectItem>
-            <SelectItem value="scheduled">مجدول</SelectItem>
-            <SelectItem value="completed">مكتمل</SelectItem>
-            <SelectItem value="cancelled">ملغي</SelectItem>
-            <SelectItem value="no_show">لم يحضر</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-primary">{appointments.length}</div>
-            <p className="text-sm text-muted-foreground">إجمالي المواعيد</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">
-              {appointments.filter(a => a.status === 'scheduled').length}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="البحث في المواعيد..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pr-10"
+                />
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">مجدولة</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">
-              {appointments.filter(a => a.status === 'completed').length}
-            </div>
-            <p className="text-sm text-muted-foreground">مكتملة</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-2xl font-bold text-orange-600">
-              {appointments.filter(a => a.status === 'cancelled').length}
-            </div>
-            <p className="text-sm text-muted-foreground">ملغية</p>
-          </CardContent>
-        </Card>
-      </div>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع المواعيد</SelectItem>
+                <SelectItem value="scheduled">مجدول</SelectItem>
+                <SelectItem value="completed">مكتمل</SelectItem>
+                <SelectItem value="cancelled">ملغي</SelectItem>
+                <SelectItem value="no_show">لم يحضر</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Appointments List */}
-      <div className="space-y-4">
+      <div className="grid gap-4">
         {filteredAppointments.length === 0 ? (
           <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">لا توجد مواعيد حالياً</p>
+            <CardContent className="p-6">
+              <div className="text-center text-muted-foreground">
+                لا توجد مواعيد تطابق البحث
+              </div>
             </CardContent>
           </Card>
         ) : (
           filteredAppointments.map((appointment) => (
-            <Card key={appointment.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 space-x-reverse">
-                    <div>
-                      <CardTitle className="text-lg flex items-center">
-                        <User className="w-4 h-4 ml-2" />
-                        {appointment.patients.full_name}
-                      </CardTitle>
-                      <div className="flex items-center space-x-2 space-x-reverse mt-1">
-                        {getStatusBadge(appointment.status)}
-                        <span className="text-sm text-muted-foreground">
-                          مع {appointment.profiles.full_name}
+            <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-2">
+                      <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-primary" />
+                        <span className="font-medium text-lg">
+                          {appointment.patients?.full_name}
                         </span>
                       </div>
+                      {getStatusBadge(appointment.status)}
                     </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4" />
+                        {formatDate(appointment.appointment_date)}
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        {appointment.duration} دقيقة
+                      </div>
+                      
+                      {appointment.patients?.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4" />
+                          {appointment.patients.phone}
+                        </div>
+                      )}
+                    </div>
+                    
+                    {appointment.treatment_type && (
+                      <div className="mt-2">
+                        <span className="text-sm font-medium">نوع العلاج: </span>
+                        <span className="text-sm text-muted-foreground">
+                          {appointment.treatment_type}
+                        </span>
+                      </div>
+                    )}
+                    
+                    {appointment.notes && (
+                      <div className="mt-2">
+                        <span className="text-sm font-medium">ملاحظات: </span>
+                        <span className="text-sm text-muted-foreground">
+                          {appointment.notes}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex space-x-2 space-x-reverse">
+                  
+                  <div className="flex gap-2">
                     <Button variant="outline" size="sm">
                       تعديل
                     </Button>
-                    <Button variant="outline" size="sm">
-                      عرض
-                    </Button>
+                    {appointment.status === 'scheduled' && (
+                      <Button size="sm">
+                        إكمال
+                      </Button>
+                    )}
                   </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {format(new Date(appointment.appointment_date), 'EEEE dd/MM/yyyy', { locale: ar })}
-                    </span>
-                  </div>
-                  
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      {format(new Date(appointment.appointment_date), 'HH:mm')} 
-                      ({appointment.duration_minutes} دقيقة)
-                    </span>
-                  </div>
-                  
-                  {appointment.patients.phone && (
-                    <div className="flex items-center space-x-2 space-x-reverse">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{appointment.patients.phone}</span>
-                    </div>
-                  )}
-                  
-                  {appointment.cost && (
-                    <div className="text-sm font-medium">
-                      التكلفة: {appointment.cost} جنيه
-                    </div>
-                  )}
-                </div>
-                
-                {appointment.notes && (
-                  <div className="mt-3">
-                    <p className="text-sm text-muted-foreground">ملاحظات: {appointment.notes}</p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           ))
