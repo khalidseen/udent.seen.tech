@@ -67,7 +67,7 @@ export function AppSidebar() {
   return (
     <Sidebar 
       side="right" 
-      className={`${collapsed ? "w-16" : "w-80"} transition-all duration-300 border-l border-border/40 bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-xl`}
+      className={`${collapsed ? "w-16" : "w-80"} transition-all duration-300 border-l border-border/40 bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-xl shrink-0`}
       collapsible="icon"
     >
       {/* Sidebar Header */}

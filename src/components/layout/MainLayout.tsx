@@ -11,10 +11,10 @@ export function MainLayout({ children }: MainLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="flex w-full min-h-screen bg-background">
-        {/* Main Content Area - positioned first */}
-        <div className="flex-1 flex flex-col min-w-0 bg-background">
-          {/* Top Header - spans full width with trigger */}
-          <header className="h-16 border-b border-border/60 bg-white/80 dark:bg-card/50 backdrop-blur-sm sticky top-0 z-30 shrink-0 shadow-sm">
+        {/* Main Content Area - takes all space and adjusts margins */}
+        <div className="w-full flex flex-col min-h-screen">
+          {/* Top Header - fixed height, spans available width */}
+          <header className="h-16 border-b border-border/60 bg-white/80 dark:bg-card/50 backdrop-blur-sm sticky top-0 z-40 shrink-0 shadow-sm">
             <div className="h-full px-6 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground p-2 rounded-lg transition-all duration-200 shadow-sm border border-border/40" />
@@ -35,14 +35,17 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
           </header>
           
-          {/* Page Content */}
-          <main className="flex-1 overflow-auto bg-gradient-to-br from-background via-background to-muted/30">
-            {children}
-          </main>
+          {/* Content Area - adjusts based on sidebar state */}
+          <div className="flex-1 flex">
+            {/* Main Content */}
+            <main className="flex-1 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 min-h-0">
+              {children}
+            </main>
+            
+            {/* Sidebar - positioned in layout flow */}
+            <AppSidebar />
+          </div>
         </div>
-        
-        {/* Sidebar - positioned on the right */}
-        <AppSidebar />
       </div>
     </SidebarProvider>
   );
