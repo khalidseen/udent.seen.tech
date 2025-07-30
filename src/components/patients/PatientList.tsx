@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Search, Phone, Mail, Calendar, Edit, Eye, Activity } from "lucide-react";
+import { Search, Phone, Mail, Calendar, Edit, Eye, Activity, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { Link } from "react-router-dom";
 
 interface Patient {
   id: string;
@@ -20,11 +21,7 @@ interface Patient {
   created_at: string;
 }
 
-interface PatientListProps {
-  onViewDentalTreatments?: (patientId: string, patientName: string) => void;
-}
-
-const PatientList = ({ onViewDentalTreatments }: PatientListProps = {}) => {
+const PatientList = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,106 +52,120 @@ const PatientList = ({ onViewDentalTreatments }: PatientListProps = {}) => {
     patient.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const getGenderBadge = (gender: string) => {
+    return gender === 'male' ? (
+      <Badge variant="outline">ذكر</Badge>
+    ) : gender === 'female' ? (
+      <Badge variant="outline">أنثى</Badge>
+    ) : null;
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold">إدارة المرضى</h1>
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardContent className="p-6">
-                <div className="h-20 bg-muted rounded"></div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <h1 className="text-3xl font-bold">المرضى</h1>
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center">جاري التحميل...</div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">إدارة المرضى</h1>
-        <p className="text-muted-foreground mt-2">عرض وإدارة بيانات جميع المرضى</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">إدارة المرضى</h1>
+          <p className="text-muted-foreground mt-2">إدارة بيانات المرضى والسجلات الطبية</p>
+        </div>
+        <Link to="/add-patient">
+          <Button>
+            <Plus className="w-4 h-4 ml-2" />
+            إضافة مريض جديد
+          </Button>
+        </Link>
       </div>
 
       {/* Search */}
-      <div className="relative">
-        <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-        <Input
-          placeholder="البحث باسم المريض، الهاتف، أو البريد الإلكتروني..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="pr-10"
-        />
-      </div>
+      <Card>
+        <CardContent className="p-4">
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="البحث في المرضى..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pr-10"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Stats */}
+      {/* Patient Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-primary">{patients.length}</div>
-            <p className="text-sm text-muted-foreground">إجمالي المرضى</p>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary">{patients.length}</div>
+              <div className="text-sm text-muted-foreground">إجمالي المرضى</div>
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-green-600">
-              {patients.filter(p => p.gender === 'female').length}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">
+                {patients.filter(p => p.gender === 'female').length}
+              </div>
+              <div className="text-sm text-muted-foreground">المريضات</div>
             </div>
-            <p className="text-sm text-muted-foreground">مريضات</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <div className="text-2xl font-bold text-blue-600">
-              {patients.filter(p => p.gender === 'male').length}
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">
+                {patients.filter(p => p.gender === 'male').length}
+              </div>
+              <div className="text-sm text-muted-foreground">المرضى الذكور</div>
             </div>
-            <p className="text-sm text-muted-foreground">مرضى ذكور</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Patient Cards */}
-      <div className="space-y-4">
+      {/* Patients List */}
+      <div className="grid gap-4">
         {filteredPatients.length === 0 ? (
           <Card>
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">لا توجد مرضى مسجلين حالياً</p>
+            <CardContent className="p-6">
+              <div className="text-center text-muted-foreground">
+                {searchTerm ? 'لا توجد نتائج للبحث' : 'لا توجد مرضى مسجلين'}
+              </div>
             </CardContent>
           </Card>
         ) : (
           filteredPatients.map((patient) => (
-            <Card key={patient.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="pb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 space-x-reverse">
-                    <div>
-                      <CardTitle className="text-lg">{patient.full_name}</CardTitle>
-                      <div className="flex items-center space-x-2 space-x-reverse mt-1">
-                        <Badge variant={patient.gender === 'male' ? 'default' : 'secondary'}>
-                          {patient.gender === 'male' ? 'ذكر' : 'أنثى'}
-                        </Badge>
-                        {patient.date_of_birth && (
-                          <span className="text-sm text-muted-foreground">
-                            مواليد {format(new Date(patient.date_of_birth), 'yyyy/MM/dd', { locale: ar })}
-                          </span>
-                        )}
-                      </div>
-                    </div>
+            <Card key={patient.id} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div className="flex items-center space-x-3 space-x-reverse">
+                    <CardTitle className="text-xl">{patient.full_name}</CardTitle>
+                    {getGenderBadge(patient.gender)}
+                    {patient.date_of_birth && (
+                      <Badge variant="secondary">
+                        {new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} سنة
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex space-x-2 space-x-reverse">
-                    {onViewDentalTreatments && (
-                      <Button 
-                        variant="default" 
-                        size="sm"
-                        onClick={() => onViewDentalTreatments(patient.id, patient.full_name)}
-                      >
+                    <Link to="/treatments" state={{ patientId: patient.id }}>
+                      <Button variant="default" size="sm">
                         <Activity className="w-4 h-4 ml-1" />
                         علاجات الأسنان
                       </Button>
-                    )}
+                    </Link>
                     <Button variant="outline" size="sm">
                       <Eye className="w-4 h-4 ml-1" />
                       عرض

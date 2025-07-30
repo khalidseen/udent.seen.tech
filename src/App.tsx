@@ -7,8 +7,9 @@ import { MainLayout } from "./components/layout/MainLayout";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NewAppointment from "./pages/NewAppointment";
+import Patients from "./pages/Patients";
+import Treatments from "./pages/Treatments";
 import AddPatientForm from "./components/patients/AddPatientForm";
-import PatientList from "./components/patients/PatientList";
 import AppointmentList from "./components/appointments/AppointmentList";
 
 const queryClient = new QueryClient();
@@ -22,10 +23,11 @@ const App = () => (
         <MainLayout>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/patients" element={<PatientList />} />
+            <Route path="/patients" element={<Patients />} />
             <Route path="/add-patient" element={<AddPatientForm />} />
             <Route path="/appointments" element={<AppointmentList />} />
             <Route path="/new-appointment" element={<NewAppointment />} />
+            <Route path="/treatments" element={<Treatments />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

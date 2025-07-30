@@ -219,10 +219,11 @@ const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
       )}
 
       {/* Smart Treatment Recommendations */}
-      {selectedPatient && formData.treatmentPlan && (
+      {selectedPatient && (formData.diagnosis || formData.treatmentPlan) && (
         <SmartTreatmentRecommendations
           patientId={selectedPatient}
           proposedTreatment={formData.treatmentPlan}
+          proposedMedication={formData.diagnosis}
         />
       )}
 
