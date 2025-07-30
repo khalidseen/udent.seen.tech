@@ -244,30 +244,30 @@ const SmartTreatmentRecommendations = ({
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Brain className="w-5 h-5 ml-2" />
+    <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
+      <CardHeader className="pb-4">
+        <CardTitle className="flex items-center text-xl font-semibold">
+          <Brain className="w-6 h-6 ml-2 text-primary" />
           النظام الذكي للعلاجات
         </CardTitle>
         {patient && (
-          <p className="text-sm text-muted-foreground">
-            تحليل ذكي للمريض: {patient.full_name} (العمر: {calculateAge(patient.date_of_birth)} سنة)
+          <p className="text-base text-muted-foreground">
+            تحليل ذكي للمريض: <span className="font-medium text-foreground">{patient.full_name}</span> (العمر: {calculateAge(patient.date_of_birth)} سنة)
           </p>
         )}
       </CardHeader>
       <CardContent className="space-y-4">
         {recommendations.map((rec) => (
-          <Alert key={rec.id} variant={getVariantForType(rec.type)}>
+          <Alert key={rec.id} variant={getVariantForType(rec.type)} className="border border-border/60 bg-white/70 dark:bg-card/70">
             {getIconForType(rec.type)}
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">{rec.title}</h4>
-                <Badge variant={rec.severity === 'high' ? 'destructive' : 'secondary'}>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-base">{rec.title}</h4>
+                <Badge variant={rec.severity === 'high' ? 'destructive' : 'secondary'} className="text-xs px-2 py-1">
                   {rec.severity === 'high' ? 'عالي' : rec.severity === 'medium' ? 'متوسط' : 'منخفض'}
                 </Badge>
               </div>
-              <AlertDescription>{rec.description}</AlertDescription>
+              <AlertDescription className="text-sm leading-relaxed">{rec.description}</AlertDescription>
             </div>
           </Alert>
         ))}

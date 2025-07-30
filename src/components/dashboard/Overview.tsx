@@ -120,15 +120,17 @@ const Overview = () => {
         {statCards.map((card, index) => {
           const Icon = card.icon;
           return (
-            <Card key={index} className="hover:shadow-lg transition-shadow">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <Card key={index} className="hover:shadow-xl transition-all duration-300 border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   {card.title}
                 </CardTitle>
-                <Icon className={`h-4 w-4 ${card.color}`} />
+                <div className="p-2 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg">
+                  <Icon className={`h-5 w-5 ${card.color}`} />
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-foreground">{card.value}</div>
+                <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
               </CardContent>
             </Card>
           );
@@ -136,55 +138,55 @@ const Overview = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-        <Card>
-          <CardHeader>
-            <CardTitle>مرحباً بك في نظام فوردنتست</CardTitle>
+        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold">مرحباً بك في نظام فوردنتست</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-muted-foreground">
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground text-base">
               نظام إدارة العيادة المتطور الذي يساعدك في:
             </p>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-600 ml-2" />
-                إدارة بيانات المرضى
+            <ul className="space-y-3">
+              <li className="flex items-center p-2 rounded-lg bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800">
+                <CheckCircle className="w-5 h-5 text-green-600 ml-3" />
+                <span className="font-medium">إدارة بيانات المرضى</span>
               </li>
-              <li className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-600 ml-2" />
-                جدولة المواعيد
+              <li className="flex items-center p-2 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800">
+                <CheckCircle className="w-5 h-5 text-blue-600 ml-3" />
+                <span className="font-medium">جدولة المواعيد</span>
               </li>
-              <li className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-600 ml-2" />
-                متابعة العلاجات
+              <li className="flex items-center p-2 rounded-lg bg-purple-50 dark:bg-purple-900/10 border border-purple-200 dark:border-purple-800">
+                <CheckCircle className="w-5 h-5 text-purple-600 ml-3" />
+                <span className="font-medium">متابعة العلاجات</span>
               </li>
-              <li className="flex items-center">
-                <CheckCircle className="w-4 h-4 text-green-600 ml-2" />
-                إدارة الحسابات
+              <li className="flex items-center p-2 rounded-lg bg-orange-50 dark:bg-orange-900/10 border border-orange-200 dark:border-orange-800">
+                <CheckCircle className="w-5 h-5 text-orange-600 ml-3" />
+                <span className="font-medium">إدارة الحسابات</span>
               </li>
             </ul>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>بدء سريع</CardTitle>
+        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl font-semibold">بدء سريع</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-muted-foreground text-sm">
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
               ابدأ باستخدام النظام:
             </p>
-            <div className="space-y-2">
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium text-sm">1. أضف مريض جديد</h4>
-                <p className="text-xs text-muted-foreground">انقر على "إضافة مريض" من القائمة الجانبية</p>
+            <div className="space-y-3">
+              <div className="p-4 bg-gradient-to-r from-primary/5 to-primary/10 rounded-xl border border-primary/20">
+                <h4 className="font-semibold text-base text-foreground">1. أضف مريض جديد</h4>
+                <p className="text-sm text-muted-foreground mt-1">انقر على "إضافة مريض" من القائمة الجانبية</p>
               </div>
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium text-sm">2. احجز موعد</h4>
-                <p className="text-xs text-muted-foreground">اذهب إلى قسم الحجوزات لإضافة موعد جديد</p>
+              <div className="p-4 bg-gradient-to-r from-green-500/5 to-green-500/10 rounded-xl border border-green-500/20">
+                <h4 className="font-semibold text-base text-foreground">2. احجز موعد</h4>
+                <p className="text-sm text-muted-foreground mt-1">اذهب إلى قسم الحجوزات لإضافة موعد جديد</p>
               </div>
-              <div className="p-3 bg-muted rounded-lg">
-                <h4 className="font-medium text-sm">3. تابع العلاجات</h4>
-                <p className="text-xs text-muted-foreground">راجع وحدث بيانات المرضى والعلاجات</p>
+              <div className="p-4 bg-gradient-to-r from-blue-500/5 to-blue-500/10 rounded-xl border border-blue-500/20">
+                <h4 className="font-semibold text-base text-foreground">3. تابع العلاجات</h4>
+                <p className="text-sm text-muted-foreground mt-1">راجع وحدث بيانات المرضى والعلاجات</p>
               </div>
             </div>
           </CardContent>

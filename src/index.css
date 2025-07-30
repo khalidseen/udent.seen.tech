@@ -38,23 +38,26 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
-    /* Enhanced Sidebar Colors */
-    --sidebar-background: 215 100% 95%;
+  /* Enhanced Sidebar Colors */
+    --sidebar-background: 215 100% 97%;
     --sidebar-foreground: 215 25% 25%;
     --sidebar-primary: 215 100% 55%;
     --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 215 50% 92%;
+    --sidebar-accent: 215 50% 94%;
     --sidebar-accent-foreground: 215 25% 20%;
-    --sidebar-border: 215 20% 85%;
+    --sidebar-border: 215 20% 88%;
     --sidebar-ring: 215 100% 60%;
 
-    /* Gradients */
+    /* Enhanced Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(215 100% 60%), hsl(215 100% 50%));
-    --gradient-sidebar: linear-gradient(180deg, hsl(215 100% 97%), hsl(215 50% 95%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(215 100% 98%), hsl(215 30% 96%));
+    --gradient-content: linear-gradient(145deg, hsl(0 0% 100%), hsl(215 20% 98%));
     
-    /* Shadows */
+    /* Enhanced Shadows */
     --shadow-elegant: 0 10px 30px -10px hsl(215 100% 55% / 0.15);
-    --shadow-sidebar: 0 4px 20px -8px hsl(215 50% 30% / 0.12);
+    --shadow-sidebar: 0 8px 32px -12px hsl(215 50% 30% / 0.18);
+    --shadow-card: 0 4px 20px -8px hsl(215 25% 40% / 0.1);
+    --shadow-header: 0 2px 10px -4px hsl(215 25% 40% / 0.08);
   }
 
   .dark {
@@ -105,13 +108,38 @@ All colors MUST be HSL.
     @apply bg-background text-foreground font-tajawal;
     direction: rtl;
     overflow-x: hidden;
+    font-feature-settings: "kern" 1;
+    text-rendering: optimizeLegibility;
   }
 
-  /* Ensure proper layout flow */
+  /* Enhanced layout with proper borders and shadows */
   .sidebar-layout {
     display: flex;
     min-height: 100vh;
     width: 100%;
+    background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--muted)));
+  }
+
+  /* Enhanced card styling */
+  .card {
+    @apply border-border/50 shadow-[var(--shadow-card)] bg-white/80 dark:bg-card/80 backdrop-blur-sm;
+    transition: all 0.2s ease-in-out;
+  }
+
+  .card:hover {
+    @apply shadow-[var(--shadow-elegant)] border-border/70;
+    transform: translateY(-1px);
+  }
+
+  /* Enhanced button styling */
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-primary/90 shadow-[var(--shadow-card)];
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-primary:hover {
+    @apply shadow-[var(--shadow-elegant)];
+    transform: translateY(-1px);
   }
 
   /* Responsive adjustments */
@@ -119,5 +147,22 @@ All colors MUST be HSL.
     .sidebar-layout {
       flex-direction: column;
     }
+  }
+
+  /* Enhanced scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/30;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-border/70;
   }
 }

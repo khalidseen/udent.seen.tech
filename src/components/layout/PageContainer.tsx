@@ -17,8 +17,10 @@ export function PageContainer({ children, maxWidth = "default" }: PageContainerP
   };
 
   return (
-    <div className={`w-full ${maxWidthClasses[maxWidth]} mx-auto space-y-6`}>
-      {children}
+    <div className={`w-full ${maxWidthClasses[maxWidth]} mx-auto space-y-8 px-2`}>
+      <div className="w-full space-y-6">
+        {children}
+      </div>
     </div>
   );
 }

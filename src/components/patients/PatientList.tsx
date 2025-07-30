@@ -91,47 +91,47 @@ const PatientList = () => {
       />
 
       {/* Search */}
-      <Card>
-        <CardContent className="p-4">
+      <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
+        <CardContent className="p-6">
           <div className="relative">
-            <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
               placeholder="البحث في المرضى..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pr-10"
+              className="pr-12 h-12 text-base border-border/60 bg-white/50 dark:bg-card/50"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Patient Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-primary">{patients.length}</div>
-              <div className="text-sm text-muted-foreground">إجمالي المرضى</div>
+              <div className="text-3xl font-bold text-primary mb-2">{patients.length}</div>
+              <div className="text-base text-muted-foreground font-medium">إجمالي المرضى</div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
+        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-3xl font-bold text-green-600 mb-2">
                 {patients.filter(p => p.gender === 'female').length}
               </div>
-              <div className="text-sm text-muted-foreground">المريضات</div>
+              <div className="text-base text-muted-foreground font-medium">المريضات</div>
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="p-4">
+        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
+              <div className="text-3xl font-bold text-blue-600 mb-2">
                 {patients.filter(p => p.gender === 'male').length}
               </div>
-              <div className="text-sm text-muted-foreground">المرضى الذكور</div>
+              <div className="text-base text-muted-foreground font-medium">المرضى الذكور</div>
             </div>
           </CardContent>
         </Card>
@@ -149,30 +149,30 @@ const PatientList = () => {
           </Card>
         ) : (
           filteredPatients.map((patient) => (
-            <Card key={patient.id} className="hover:shadow-md transition-shadow">
-              <CardHeader>
+            <Card key={patient.id} className="hover:shadow-xl transition-all duration-300 border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
+              <CardHeader className="pb-4">
                 <div className="flex justify-between items-start">
                   <div className="flex items-center space-x-3 space-x-reverse">
-                    <CardTitle className="text-xl">{patient.full_name}</CardTitle>
+                    <CardTitle className="text-xl font-semibold">{patient.full_name}</CardTitle>
                     {getGenderBadge(patient.gender)}
                     {patient.date_of_birth && (
-                      <Badge variant="secondary">
+                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
                         {new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} سنة
                       </Badge>
                     )}
                   </div>
                   <div className="flex space-x-2 space-x-reverse">
                     <Link to="/treatments" state={{ patientId: patient.id }}>
-                      <Button variant="default" size="sm">
+                      <Button variant="default" size="sm" className="bg-gradient-to-r from-primary to-primary/90 hover:shadow-md transition-all duration-200">
                         <Activity className="w-4 h-4 ml-1" />
                         علاجات الأسنان
                       </Button>
                     </Link>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
                       <Eye className="w-4 h-4 ml-1" />
                       عرض
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
                       <Edit className="w-4 h-4 ml-1" />
                       تعديل
                     </Button>
