@@ -40,9 +40,7 @@ export function MainLayout({ children }: MainLayoutProps) {
           
           {/* Page Content - with proper padding and overflow handling */}
           <main className="flex-1 p-6 overflow-auto bg-background">
-            <div className="max-w-7xl mx-auto w-full">
-              {children}
-            </div>
+            {children}
           </main>
         </div>
       </div>

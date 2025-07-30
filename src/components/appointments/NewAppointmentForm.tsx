@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { CalendarPlus, Clock, User, Stethoscope } from "lucide-react";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface Patient {
   id: string;
@@ -133,13 +135,13 @@ const NewAppointmentForm = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">حجز موعد جديد</h1>
-        <p className="text-muted-foreground mt-2">احجز موعد جديد للمريض</p>
-      </div>
+    <PageContainer maxWidth="2xl">
+      <PageHeader 
+        title="حجز موعد جديد" 
+        description="احجز موعد جديد للمريض" 
+      />
 
-      <Card className="max-w-2xl">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <CalendarPlus className="w-5 h-5 ml-2" />
@@ -259,7 +261,7 @@ const NewAppointmentForm = () => {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 };
 

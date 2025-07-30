@@ -10,6 +10,8 @@ import { toast } from "@/hooks/use-toast";
 import { Activity, Save, Stethoscope } from "lucide-react";
 import ToothChart from "./ToothChart";
 import SmartTreatmentRecommendations from "../treatments/SmartTreatmentRecommendations";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface Patient {
   id: string;
@@ -186,11 +188,11 @@ const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">العلاجات السنية</h1>
-        <p className="text-muted-foreground mt-2">إدارة وتسجيل العلاجات السنية</p>
-      </div>
+    <PageContainer>
+      <PageHeader 
+        title="العلاجات السنية" 
+        description="إدارة وتسجيل العلاجات السنية" 
+      />
 
       {/* Patient Selection */}
       {!patientId && (
@@ -350,7 +352,7 @@ const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

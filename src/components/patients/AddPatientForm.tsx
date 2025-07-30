@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus, Save } from "lucide-react";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 const AddPatientForm = () => {
   const [formData, setFormData] = useState({
@@ -125,13 +127,13 @@ const AddPatientForm = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">إضافة مريض جديد</h1>
-        <p className="text-muted-foreground mt-2">أدخل بيانات المريض الجديد</p>
-      </div>
+    <PageContainer maxWidth="2xl">
+      <PageHeader 
+        title="إضافة مريض جديد" 
+        description="أدخل بيانات المريض الجديد" 
+      />
 
-      <Card className="max-w-2xl">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center">
             <UserPlus className="w-5 h-5 ml-2" />
@@ -247,7 +249,7 @@ const AddPatientForm = () => {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </PageContainer>
   );
 };
 

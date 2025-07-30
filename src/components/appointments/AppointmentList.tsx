@@ -8,6 +8,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, User, Search, Plus, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { Link } from "react-router-dom";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface Appointment {
   id: string;
@@ -89,29 +92,31 @@ const AppointmentList = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">المواعيد</h1>
+      <PageContainer>
+        <PageHeader title="المواعيد" description="جاري تحميل البيانات..." />
         <Card>
           <CardContent className="p-6">
             <div className="text-center">جاري التحميل...</div>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">المواعيد</h1>
-          <p className="text-muted-foreground mt-2">إدارة مواعيد العيادة</p>
-        </div>
-        <Button>
-          <Plus className="w-4 h-4 ml-2" />
-          موعد جديد
-        </Button>
-      </div>
+    <PageContainer>
+      <PageHeader 
+        title="المواعيد" 
+        description="إدارة مواعيد العيادة"
+        action={
+          <Link to="/new-appointment">
+            <Button>
+              <Plus className="w-4 h-4 ml-2" />
+              موعد جديد
+            </Button>
+          </Link>
+        }
+      />
 
       {/* Filters */}
       <Card>
@@ -224,7 +229,7 @@ const AppointmentList = () => {
           ))
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

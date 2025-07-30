@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Calendar, CheckCircle, Clock } from "lucide-react";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface Stats {
   totalPatients: number;
@@ -108,11 +110,11 @@ const Overview = () => {
   }
 
   return (
-    <div className="space-y-6 w-full">
-      <div className="w-full">
-        <h1 className="text-3xl font-bold text-foreground">لوحة التحكم</h1>
-        <p className="text-muted-foreground mt-2">مرحباً بك في نظام إدارة العيادة</p>
-      </div>
+    <PageContainer>
+      <PageHeader 
+        title="لوحة التحكم" 
+        description="مرحباً بك في نظام إدارة العيادة" 
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         {statCards.map((card, index) => {
@@ -188,7 +190,7 @@ const Overview = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </PageContainer>
   );
 };
 

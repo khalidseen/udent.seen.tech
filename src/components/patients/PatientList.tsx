@@ -8,6 +8,8 @@ import { Search, Phone, Mail, Calendar, Edit, Eye, Activity, Plus } from "lucide
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 interface Patient {
   id: string;
@@ -62,31 +64,31 @@ const PatientList = () => {
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <h1 className="text-3xl font-bold">المرضى</h1>
+      <PageContainer>
+        <PageHeader title="المرضى" description="جاري تحميل البيانات..." />
         <Card>
           <CardContent className="p-6">
             <div className="text-center">جاري التحميل...</div>
           </CardContent>
         </Card>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">إدارة المرضى</h1>
-          <p className="text-muted-foreground mt-2">إدارة بيانات المرضى والسجلات الطبية</p>
-        </div>
-        <Link to="/add-patient">
-          <Button>
-            <Plus className="w-4 h-4 ml-2" />
-            إضافة مريض جديد
-          </Button>
-        </Link>
-      </div>
+    <PageContainer>
+      <PageHeader 
+        title="إدارة المرضى" 
+        description="إدارة بيانات المرضى والسجلات الطبية"
+        action={
+          <Link to="/add-patient">
+            <Button>
+              <Plus className="w-4 h-4 ml-2" />
+              إضافة مريض جديد
+            </Button>
+          </Link>
+        }
+      />
 
       {/* Search */}
       <Card>
@@ -213,7 +215,7 @@ const PatientList = () => {
           ))
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
