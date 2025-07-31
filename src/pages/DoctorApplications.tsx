@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { CheckCircle, XCircle, Clock, Mail, Phone, User, GraduationCap, Building, MapPin, Calendar, MessageSquare } from "lucide-react";
+import { CheckCircle, XCircle, Clock, Mail, Phone, User, GraduationCap, Building, MapPin, Calendar, MessageSquare, Trash2, Send } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { format } from "date-fns";
@@ -40,7 +40,9 @@ export default function DoctorApplications() {
   const [showProfileDialog, setShowProfileDialog] = useState(false);
   const [showActionDialog, setShowActionDialog] = useState(false);
   const [adminMessage, setAdminMessage] = useState("");
-  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | 'delete' | 'message' | null>(null);
+  const [showMessageDialog, setShowMessageDialog] = useState(false);
+  const [messageToSend, setMessageToSend] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -150,11 +152,91 @@ export default function DoctorApplications() {
     setShowProfileDialog(true);
   };
 
-  const openActionDialog = (application: DoctorApplication, action: 'approve' | 'reject') => {
+  const openActionDialog = (application: DoctorApplication, action: 'approve' | 'reject' | 'delete') => {
     setSelectedApplication(application);
     setActionType(action);
     setAdminMessage("");
     setShowActionDialog(true);
+  };
+
+  const openMessageDialog = (application: DoctorApplication) => {
+    setSelectedApplication(application);
+    setMessageToSend("");
+    setShowMessageDialog(true);
+  };
+
+  const handleDeleteApplication = async (applicationId: string) => {
+    setProcessingId(applicationId);
+    
+    try {
+      const { error } = await supabase
+        .from('doctor_applications')
+        .delete()
+        .eq('id', applicationId);
+
+      if (error) {
+        toast({
+          title: "خطأ في حذف الطلب",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "تم حذف الطلب",
+          description: "تم حذف طلب الطبيب بنجاح"
+        });
+        
+        await fetchApplications();
+        setShowActionDialog(false);
+      }
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حذف الطلب",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleSendMessage = async (applicationId: string, message: string) => {
+    setProcessingId(applicationId);
+    
+    try {
+      const { error } = await supabase
+        .from('doctor_applications')
+        .update({
+          admin_message: message,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', applicationId);
+
+      if (error) {
+        toast({
+          title: "خطأ في إرسال الرسالة",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "تم إرسال الرسالة",
+          description: "تم إرسال الرسالة للطبيب بنجاح"
+        });
+        
+        await fetchApplications();
+        setShowMessageDialog(false);
+        setMessageToSend("");
+      }
+    } catch (error) {
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إرسال الرسالة",
+        variant: "destructive"
+      });
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -214,17 +296,19 @@ export default function DoctorApplications() {
         description="إدارة طلبات انضمام الأطباء الجدد للنظام"
       />
 
-      <div className="grid gap-6">
+      <div className="grid gap-6 lg:grid-cols-2">
         {applications.length === 0 ? (
-          <Card>
-            <CardContent className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">لا توجد طلبات</h3>
-                <p className="text-muted-foreground">لم يتم تقديم أي طلبات انضمام حتى الآن</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="lg:col-span-2">
+            <Card>
+              <CardContent className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">لا توجد طلبات</h3>
+                  <p className="text-muted-foreground">لم يتم تقديم أي طلبات انضمام حتى الآن</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         ) : (
           applications.map((application) => (
             <Card key={application.id} className="hover:shadow-md transition-shadow">
@@ -256,7 +340,7 @@ export default function DoctorApplications() {
               </CardHeader>
               
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="grid grid-cols-1 gap-2 mb-4">
                   <div className="flex items-center gap-2 text-sm">
                     <Mail className="w-4 h-4 text-muted-foreground" />
                     <span>{application.email}</span>
@@ -287,7 +371,7 @@ export default function DoctorApplications() {
                 {application.clinic_address && (
                   <div className="flex items-start gap-2 text-sm mb-4">
                     <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
-                    <span>{application.clinic_address}</span>
+                    <span className="line-clamp-2">{application.clinic_address}</span>
                   </div>
                 )}
 
@@ -297,7 +381,7 @@ export default function DoctorApplications() {
                       <MessageSquare className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm font-medium">رسالة إضافية</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{application.message}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-3">{application.message}</p>
                   </div>
                 )}
 
@@ -311,33 +395,56 @@ export default function DoctorApplications() {
                         </span>
                       )}
                     </div>
-                    <p className="text-sm">{application.admin_message}</p>
+                    <p className="text-sm line-clamp-3">{application.admin_message}</p>
                   </div>
                 )}
 
-                {application.status === 'pending' && (
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="default" 
-                      size="sm"
-                      onClick={() => openActionDialog(application, 'approve')}
-                      disabled={processingId === application.id}
-                    >
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      قبول
-                    </Button>
+                <div className="flex flex-wrap gap-2">
+                  {application.status === 'pending' && (
+                    <>
+                      <Button 
+                        variant="default" 
+                        size="sm"
+                        onClick={() => openActionDialog(application, 'approve')}
+                        disabled={processingId === application.id}
+                      >
+                        <CheckCircle className="w-4 h-4 mr-2" />
+                        قبول
+                      </Button>
 
-                    <Button 
-                      variant="destructive" 
-                      size="sm"
-                      onClick={() => openActionDialog(application, 'reject')}
-                      disabled={processingId === application.id}
-                    >
-                      <XCircle className="w-4 h-4 mr-2" />
-                      رفض
-                    </Button>
-                  </div>
-                )}
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => openActionDialog(application, 'reject')}
+                        disabled={processingId === application.id}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" />
+                        رفض
+                      </Button>
+                    </>
+                  )}
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => openMessageDialog(application)}
+                    disabled={processingId === application.id}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    إرسال رسالة
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => openActionDialog(application, 'delete')}
+                    disabled={processingId === application.id}
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    حذف
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))
@@ -500,58 +607,112 @@ export default function DoctorApplications() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {actionType === 'approve' ? 'قبول طلب الانضمام' : 'رفض طلب الانضمام'}
+              {actionType === 'approve' && 'قبول طلب الطبيب'}
+              {actionType === 'reject' && 'رفض طلب الطبيب'}
+              {actionType === 'delete' && 'حذف طلب الطبيب'}
             </DialogTitle>
             <DialogDescription>
-              {actionType === 'approve' 
-                ? `هل أنت متأكد من قبول طلب انضمام د. ${selectedApplication?.full_name}؟`
-                : `هل أنت متأكد من رفض طلب انضمام د. ${selectedApplication?.full_name}؟`
-              }
+              {actionType === 'approve' && 'هل أنت متأكد من قبول هذا الطلب؟ سيتم إنشاء حساب للطبيب وإرسال بيانات الدخول إليه.'}
+              {actionType === 'reject' && 'هل أنت متأكد من رفض هذا الطلب؟ يرجى إدخال سبب الرفض ليتم إرساله للطبيب.'}
+              {actionType === 'delete' && 'هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.'}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="actionMessage">
-                {actionType === 'approve' ? 'رسالة القبول (اختيارية)' : 'سبب الرفض *'}
-              </Label>
-              <Textarea
-                id="actionMessage"
-                placeholder={actionType === 'approve' 
-                  ? "مرحباً بك في النظام..." 
-                  : "يرجى توضيح سبب الرفض..."
-                }
-                value={adminMessage}
-                onChange={(e) => setAdminMessage(e.target.value)}
-                rows={3}
-                required={actionType === 'reject'}
-              />
+          
+          {actionType !== 'delete' && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="adminMessage">
+                  {actionType === 'approve' ? 'رسالة ترحيبية (اختيارية)' : 'سبب الرفض *'}
+                </Label>
+                <Textarea
+                  id="adminMessage"
+                  placeholder={actionType === 'approve' 
+                    ? "مرحباً بك في نظامنا..."
+                    : "يرجى توضيح سبب الرفض..."
+                  }
+                  value={adminMessage}
+                  onChange={(e) => setAdminMessage(e.target.value)}
+                  rows={3}
+                />
+              </div>
             </div>
-          </div>
+          )}
+
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowActionDialog(false);
-                setSelectedApplication(null);
-                setAdminMessage("");
-                setActionType(null);
-              }}
+            <Button 
+              variant="outline" 
+              onClick={() => setShowActionDialog(false)}
+              disabled={processingId === selectedApplication?.id}
             >
               إلغاء
             </Button>
-            <Button
-              variant={actionType === 'approve' ? 'default' : 'destructive'}
-              onClick={() => selectedApplication && handleApplicationAction(
-                selectedApplication.id, 
-                actionType === 'approve' ? 'approved' : 'rejected', 
-                adminMessage
-              )}
-              disabled={processingId === selectedApplication?.id || (actionType === 'reject' && !adminMessage.trim())}
-            >
-              {processingId === selectedApplication?.id 
-                ? "جاري المعالجة..." 
-                : actionType === 'approve' ? "تأكيد القبول" : "تأكيد الرفض"
+            <Button 
+              variant={actionType === 'delete' ? 'destructive' : actionType === 'approve' ? 'default' : 'destructive'}
+              onClick={() => {
+                if (selectedApplication) {
+                  if (actionType === 'delete') {
+                    handleDeleteApplication(selectedApplication.id);
+                  } else {
+                    handleApplicationAction(
+                      selectedApplication.id, 
+                      actionType as 'approved' | 'rejected', 
+                      adminMessage
+                    );
+                  }
+                }
+              }}
+              disabled={
+                processingId === selectedApplication?.id ||
+                (actionType === 'reject' && !adminMessage.trim())
               }
+            >
+              {processingId === selectedApplication?.id ? 'جاري المعالجة...' : 
+               actionType === 'approve' ? 'قبول الطلب' : 
+               actionType === 'reject' ? 'رفض الطلب' : 'حذف الطلب'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Message Dialog */}
+      <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>إرسال رسالة للطبيب</DialogTitle>
+            <DialogDescription>
+              أرسل رسالة إضافية للطبيب {selectedApplication?.full_name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="messageToSend">الرسالة *</Label>
+              <Textarea
+                id="messageToSend"
+                placeholder="اكتب رسالتك هنا..."
+                value={messageToSend}
+                onChange={(e) => setMessageToSend(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowMessageDialog(false)}
+              disabled={processingId === selectedApplication?.id}
+            >
+              إلغاء
+            </Button>
+            <Button 
+              onClick={() => selectedApplication && handleSendMessage(selectedApplication.id, messageToSend)}
+              disabled={
+                processingId === selectedApplication?.id ||
+                !messageToSend.trim()
+              }
+            >
+              {processingId === selectedApplication?.id ? 'جاري الإرسال...' : 'إرسال الرسالة'}
             </Button>
           </DialogFooter>
         </DialogContent>
