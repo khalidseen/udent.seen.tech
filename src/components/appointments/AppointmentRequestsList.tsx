@@ -86,7 +86,7 @@ const AppointmentRequestsList = () => {
         .insert({
           clinic_id: profile.id,
           patient_id: null, // Will need to create patient first or link later
-          appointment_date: `${request.preferred_date}T${request.preferred_time}:00+00:00`,
+          appointment_date: `${request.preferred_date}T${request.preferred_time}+00:00`,
           duration: 30,
           treatment_type: "استشارة",
           status: "scheduled",
