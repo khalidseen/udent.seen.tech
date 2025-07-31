@@ -5,8 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle } from "lucide-react";
+import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle, CalendarDays, List } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -14,6 +15,7 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import EditAppointmentDialog from "./EditAppointmentDialog";
 import PostAppointmentActions from "./PostAppointmentActions";
+import CalendarView from "./CalendarView";
 import { toast } from "@/hooks/use-toast";
 
 interface Appointment {
@@ -162,231 +164,253 @@ const AppointmentList = () => {
         }
       />
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="p-4">
-          <div className="space-y-4">
-            {/* Basic Filters */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="البحث بالاسم أو نوع العلاج..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pr-10"
-                  />
-                </div>
-              </div>
-              <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">جميع المواعيد</SelectItem>
-                  <SelectItem value="scheduled">مجدول</SelectItem>
-                  <SelectItem value="completed">مكتمل</SelectItem>
-                  <SelectItem value="cancelled">ملغي</SelectItem>
-                  <SelectItem value="no_show">لم يحضر</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                className="flex items-center gap-2"
-              >
-                <Filter className="w-4 h-4" />
-                فلتر متقدم
-              </Button>
-            </div>
+      {/* Tabs for Calendar and List View */}
+      <Tabs defaultValue="calendar" className="space-y-6">
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="calendar" className="flex items-center gap-2">
+            <CalendarDays className="w-4 h-4" />
+            عرض التقويم
+          </TabsTrigger>
+          <TabsTrigger value="list" className="flex items-center gap-2">
+            <List className="w-4 h-4" />
+            عرض القائمة
+          </TabsTrigger>
+        </TabsList>
 
-            {/* Advanced Filters */}
-            {showAdvancedFilters && (
-              <div className="border-t pt-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label>البحث بتاريخ الإضافة للسجل</Label>
-                    <Input
-                      type="date"
-                      value={dateFilter}
-                      onChange={(e) => setDateFilter(e.target.value)}
-                      placeholder="اختر التاريخ"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>البحث باسم المريض</Label>
-                    <Input
-                      value={patientNameFilter}
-                      onChange={(e) => setPatientNameFilter(e.target.value)}
-                      placeholder="أدخل اسم المريض"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label>مسح الفلاتر</Label>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                         setSearchTerm("");
-                        setFilterStatus("all");
-                        setDateFilter("");
-                        setPatientNameFilter("");
-                      }}
-                      className="w-full flex items-center gap-2"
-                    >
-                      <X className="w-4 h-4" />
-                      مسح الكل
-                    </Button>
-                  </div>
-                </div>
+        {/* Calendar View */}
+        <TabsContent value="calendar">
+          <CalendarView />
+        </TabsContent>
 
-                {/* Active Filters Display */}
-                {(searchTerm || filterStatus !== "all" || dateFilter || patientNameFilter) && (
-                  <div className="mt-4 p-3 bg-muted rounded-lg">
-                    <div className="text-sm font-medium mb-2">الفلاتر النشطة:</div>
-                    <div className="flex flex-wrap gap-2">
-                      {searchTerm && (
-                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                          البحث: {searchTerm}
-                        </span>
-                      )}
-                      {filterStatus !== "all" && (
-                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                          الحالة: {filterStatus === "scheduled" ? "مجدول" : 
-                                   filterStatus === "completed" ? "مكتمل" : 
-                                   filterStatus === "cancelled" ? "ملغي" : "لم يحضر"}
-                        </span>
-                      )}
-                      {dateFilter && (
-                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                          تاريخ الإضافة: {dateFilter}
-                        </span>
-                      )}
-                      {patientNameFilter && (
-                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                          اسم المريض: {patientNameFilter}
-                        </span>
-                      )}
+        {/* List View */}
+        <TabsContent value="list" className="space-y-6">
+          {/* Filters */}
+          <Card>
+            <CardContent className="p-4">
+              <div className="space-y-4">
+                {/* Basic Filters */}
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <div className="relative">
+                      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <Input
+                        placeholder="البحث بالاسم أو نوع العلاج..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pr-10"
+                      />
                     </div>
+                  </div>
+                  <Select value={filterStatus} onValueChange={setFilterStatus}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">جميع المواعيد</SelectItem>
+                      <SelectItem value="scheduled">مجدول</SelectItem>
+                      <SelectItem value="completed">مكتمل</SelectItem>
+                      <SelectItem value="cancelled">ملغي</SelectItem>
+                      <SelectItem value="no_show">لم يحضر</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                    className="flex items-center gap-2"
+                  >
+                    <Filter className="w-4 h-4" />
+                    فلتر متقدم
+                  </Button>
+                </div>
+
+                {/* Advanced Filters */}
+                {showAdvancedFilters && (
+                  <div className="border-t pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>البحث بتاريخ الإضافة للسجل</Label>
+                        <Input
+                          type="date"
+                          value={dateFilter}
+                          onChange={(e) => setDateFilter(e.target.value)}
+                          placeholder="اختر التاريخ"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>البحث باسم المريض</Label>
+                        <Input
+                          value={patientNameFilter}
+                          onChange={(e) => setPatientNameFilter(e.target.value)}
+                          placeholder="أدخل اسم المريض"
+                        />
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label>مسح الفلاتر</Label>
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                             setSearchTerm("");
+                            setFilterStatus("all");
+                            setDateFilter("");
+                            setPatientNameFilter("");
+                          }}
+                          className="w-full flex items-center gap-2"
+                        >
+                          <X className="w-4 h-4" />
+                          مسح الكل
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Active Filters Display */}
+                    {(searchTerm || filterStatus !== "all" || dateFilter || patientNameFilter) && (
+                      <div className="mt-4 p-3 bg-muted rounded-lg">
+                        <div className="text-sm font-medium mb-2">الفلاتر النشطة:</div>
+                        <div className="flex flex-wrap gap-2">
+                          {searchTerm && (
+                            <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                              البحث: {searchTerm}
+                            </span>
+                          )}
+                          {filterStatus !== "all" && (
+                            <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                              الحالة: {filterStatus === "scheduled" ? "مجدول" : 
+                                       filterStatus === "completed" ? "مكتمل" : 
+                                       filterStatus === "cancelled" ? "ملغي" : "لم يحضر"}
+                            </span>
+                          )}
+                          {dateFilter && (
+                            <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                              تاريخ الإضافة: {dateFilter}
+                            </span>
+                          )}
+                          {patientNameFilter && (
+                            <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                              اسم المريض: {patientNameFilter}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Appointments List */}
-      <div className="grid gap-4">
-        {filteredAppointments.length === 0 ? (
-          <Card>
-            <CardContent className="p-6">
-              <div className="text-center text-muted-foreground">
-                لا توجد مواعيد تطابق البحث
-              </div>
             </CardContent>
           </Card>
-        ) : (
-          filteredAppointments.map((appointment) => (
-            <Card key={appointment.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-6">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-2">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-primary" />
-                        <span className="font-medium text-lg">
-                          {appointment.patients?.full_name}
-                        </span>
-                      </div>
-                      {getStatusBadge(appointment.status)}
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {formatDate(appointment.appointment_date)}
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-4 h-4" />
-                        {appointment.duration} دقيقة
-                      </div>
-                      
-                      {appointment.patients?.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4" />
-                          {appointment.patients.phone}
-                        </div>
-                      )}
-                    </div>
-                    
-                    {appointment.treatment_type && (
-                      <div className="mt-2">
-                        <span className="text-sm font-medium">نوع العلاج: </span>
-                        <span className="text-sm text-muted-foreground">
-                          {appointment.treatment_type}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {appointment.notes && (
-                      <div className="mt-2">
-                        <span className="text-sm font-medium">ملاحظات: </span>
-                        <span className="text-sm text-muted-foreground">
-                          {appointment.notes}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2">
-                    <Button 
-                      size="sm" 
-                      variant="outline"
-                      onClick={() => {
-                        setEditingAppointment(appointment);
-                        setEditDialogOpen(true);
-                      }}
-                      className="border-border/60 hover:bg-accent/60 transition-all duration-200"
-                    >
-                      <Edit className="w-4 h-4 ml-1" />
-                      تعديل
-                    </Button>
-                    
-                    {appointment.status !== 'completed' && (
-                      <PostAppointmentActions 
-                        appointment={appointment} 
-                        onActionsCompleted={fetchAppointments}
-                      />
-                    )}
-                    
-                    <Button 
-                      size="sm"
-                      onClick={() => handleCompleteAppointment(appointment.id)}
-                      className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
-                    >
-                      <CheckCircle className="w-4 h-4 ml-1" />
-                      إكمال
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-          )}
-        </div>
 
-        <EditAppointmentDialog
-          appointment={editingAppointment}
-          open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
-          onAppointmentUpdated={fetchAppointments}
-        />
-      </PageContainer>
-    );
+          {/* Appointments List */}
+          <div className="grid gap-4">
+            {filteredAppointments.length === 0 ? (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="text-center text-muted-foreground">
+                    لا توجد مواعيد تطابق البحث
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              filteredAppointments.map((appointment) => (
+                <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-4 mb-2">
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-primary" />
+                            <span className="font-medium text-lg">
+                              {appointment.patients?.full_name}
+                            </span>
+                          </div>
+                          {getStatusBadge(appointment.status)}
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            {formatDate(appointment.appointment_date)}
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            {appointment.duration} دقيقة
+                          </div>
+                          
+                          {appointment.patients?.phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="w-4 h-4" />
+                              {appointment.patients.phone}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {appointment.treatment_type && (
+                          <div className="mt-2">
+                            <span className="text-sm font-medium">نوع العلاج: </span>
+                            <span className="text-sm text-muted-foreground">
+                              {appointment.treatment_type}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {appointment.notes && (
+                          <div className="mt-2">
+                            <span className="text-sm font-medium">ملاحظات: </span>
+                            <span className="text-sm text-muted-foreground">
+                              {appointment.notes}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => {
+                            setEditingAppointment(appointment);
+                            setEditDialogOpen(true);
+                          }}
+                          className="border-border/60 hover:bg-accent/60 transition-all duration-200"
+                        >
+                          <Edit className="w-4 h-4 ml-1" />
+                          تعديل
+                        </Button>
+                        
+                        {appointment.status !== 'completed' && (
+                          <PostAppointmentActions 
+                            appointment={appointment} 
+                            onActionsCompleted={fetchAppointments}
+                          />
+                        )}
+                        
+                        <Button 
+                          size="sm"
+                          onClick={() => handleCompleteAppointment(appointment.id)}
+                          className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
+                        >
+                          <CheckCircle className="w-4 h-4 ml-1" />
+                          إكمال
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+              )}
+            </div>
+        </TabsContent>
+      </Tabs>
+
+      <EditAppointmentDialog
+        appointment={editingAppointment}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onAppointmentUpdated={fetchAppointments}
+      />
+    </PageContainer>
+  );
   };
 
 export default AppointmentList;
