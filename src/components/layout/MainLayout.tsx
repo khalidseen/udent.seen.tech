@@ -38,7 +38,7 @@ export function MainLayout({
           </header>
           
           {/* Page Content with enhanced background and equal spacing */}
-          <main className="flex-1 px-6 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 min-h-0 py-[24px]">
+          <main className="flex-1 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 min-h-0 py-[10px] mx-0 px-0">
             <div className="max-w-full mx-auto px-2">
               {children}
             </div>

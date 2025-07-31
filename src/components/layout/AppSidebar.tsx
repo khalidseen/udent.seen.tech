@@ -84,7 +84,7 @@ export function AppSidebar() {
           </div>}
       </SidebarHeader>
 
-      <SidebarContent className="px-3 py-4">
+      <SidebarContent className="px-[11px] py-0 my-0 mx-0">
         {/* Search */}
         {!collapsed && <div className="mb-4">
             <div className="relative">
