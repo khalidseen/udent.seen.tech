@@ -57,6 +57,19 @@ const AppointmentList = () => {
 
   const fetchAppointments = async () => {
     try {
+      // Get current user's clinic_id
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
+
+      if (!userProfile) {
+        console.error('No clinic profile found for user');
+        setAppointments([]);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('appointments')
         .select(`
@@ -64,12 +77,18 @@ const AppointmentList = () => {
           patients (id, full_name, phone, email),
           profiles (full_name)
         `)
+        .eq('clinic_id', userProfile.id)
         .order('appointment_date', { ascending: true });
 
       if (error) throw error;
       setAppointments((data as any) || []);
     } catch (error) {
       console.error('Error fetching appointments:', error);
+      toast({
+        title: 'خطأ في تحميل البيانات',
+        description: 'حدث خطأ أثناء تحميل المواعيد',
+        variant: 'destructive'
+      });
     } finally {
       setLoading(false);
     }
