@@ -9,6 +9,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { PageContainer } from "@/components/layout/PageContainer";
+import AddTreatmentDialog from "./AddTreatmentDialog";
 import { PageHeader } from "@/components/layout/PageHeader";
 
 interface Patient {
@@ -27,6 +28,8 @@ const PatientList = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
+  const [selectedPatient, setSelectedPatient] = useState<{ id: string; name: string } | null>(null);
 
   useEffect(() => {
     fetchPatients();
@@ -60,6 +63,15 @@ const PatientList = () => {
     ) : gender === 'female' ? (
       <Badge variant="outline">أنثى</Badge>
     ) : null;
+  };
+
+  const handleAddTreatment = (patientId: string, patientName: string) => {
+    setSelectedPatient({ id: patientId, name: patientName });
+    setTreatmentDialogOpen(true);
+  };
+
+  const handleTreatmentAdded = () => {
+    // Optionally refresh data or show success message
   };
 
   if (loading) {
@@ -162,12 +174,15 @@ const PatientList = () => {
                     )}
                   </div>
                   <div className="flex space-x-2 space-x-reverse">
-                    <Link to="/treatments" state={{ patientId: patient.id }}>
-                      <Button variant="default" size="sm" className="bg-gradient-to-r from-primary to-primary/90 hover:shadow-md transition-all duration-200">
-                        <Activity className="w-4 h-4 ml-1" />
-                        إضافة علاج
-                      </Button>
-                    </Link>
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      className="bg-gradient-to-r from-primary to-primary/90 hover:shadow-md transition-all duration-200"
+                      onClick={() => handleAddTreatment(patient.id, patient.full_name)}
+                    >
+                      <Activity className="w-4 h-4 ml-1" />
+                      إضافة علاج
+                    </Button>
                     <Link to={`/patients/${patient.id}`}>
                       <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
                         <Eye className="w-4 h-4 ml-1" />
@@ -217,6 +232,17 @@ const PatientList = () => {
           ))
         )}
       </div>
+
+      {/* Add Treatment Dialog */}
+      {selectedPatient && (
+        <AddTreatmentDialog
+          open={treatmentDialogOpen}
+          onOpenChange={setTreatmentDialogOpen}
+          patientId={selectedPatient.id}
+          patientName={selectedPatient.name}
+          onTreatmentAdded={handleTreatmentAdded}
+        />
+      )}
     </PageContainer>
   );
 };
