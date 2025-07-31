@@ -165,7 +165,7 @@ const PatientList = () => {
                     <Link to="/treatments" state={{ patientId: patient.id }}>
                       <Button variant="default" size="sm" className="bg-gradient-to-r from-primary to-primary/90 hover:shadow-md transition-all duration-200">
                         <Activity className="w-4 h-4 ml-1" />
-                        علاجات الأسنان
+                        إضافة علاج
                       </Button>
                     </Link>
                     <Link to={`/patients/${patient.id}`}>
