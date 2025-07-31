@@ -73,7 +73,7 @@ export type Database = {
           duration: number
           id: string
           notes: string | null
-          patient_id: string
+          patient_id: string | null
           status: string
           treatment_type: string | null
           updated_at: string
@@ -85,7 +85,7 @@ export type Database = {
           duration?: number
           id?: string
           notes?: string | null
-          patient_id: string
+          patient_id?: string | null
           status?: string
           treatment_type?: string | null
           updated_at?: string
@@ -97,7 +97,7 @@ export type Database = {
           duration?: number
           id?: string
           notes?: string | null
-          patient_id?: string
+          patient_id?: string | null
           status?: string
           treatment_type?: string | null
           updated_at?: string
