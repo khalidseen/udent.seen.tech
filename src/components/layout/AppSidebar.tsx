@@ -34,7 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const mainMenuItems = [
-  { title: "لوحة التحكم", url: "/", icon: BarChart3 },
+  { title: "تقارير العيادة", url: "/", icon: BarChart3 },
   { title: "المرضى", url: "/patients", icon: Users },
   { title: "إضافة مريض", url: "/add-patient", icon: UserPlus },
   { title: "المواعيد", url: "/appointments", icon: Calendar },

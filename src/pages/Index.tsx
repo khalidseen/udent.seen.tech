@@ -1,7 +1,7 @@
-import Overview from "@/components/dashboard/Overview";
+import ClinicReports from "@/components/reports/ClinicReports";
 
 const Index = () => {
-  return <Overview />;
+  return <ClinicReports />;
 };
 
 export default Index;
