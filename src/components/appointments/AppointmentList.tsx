@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, User, Search, Plus, Phone } from "lucide-react";
+import { Calendar, Clock, User, Search, Plus, Phone, Filter, X } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -37,6 +38,8 @@ const AppointmentList = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("");
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   useEffect(() => {
     fetchAppointments();
@@ -79,7 +82,13 @@ const AppointmentList = () => {
                          appointment.treatment_type?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || appointment.status === filterStatus;
     
-    return matchesSearch && matchesStatus;
+    let matchesDate = true;
+    if (dateFilter) {
+      const appointmentDate = new Date(appointment.created_at).toISOString().split('T')[0];
+      matchesDate = appointmentDate === dateFilter;
+    }
+    
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   const formatDate = (dateString: string) => {
@@ -121,30 +130,100 @@ const AppointmentList = () => {
       {/* Filters */}
       <Card>
         <CardContent className="p-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="البحث في المواعيد..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pr-10"
-                />
+          <div className="space-y-4">
+            {/* Basic Filters */}
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="البحث بالاسم أو نوع العلاج..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pr-10"
+                  />
+                </div>
               </div>
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-48">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">جميع المواعيد</SelectItem>
+                  <SelectItem value="scheduled">مجدول</SelectItem>
+                  <SelectItem value="completed">مكتمل</SelectItem>
+                  <SelectItem value="cancelled">ملغي</SelectItem>
+                  <SelectItem value="no_show">لم يحضر</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="outline"
+                onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="w-4 h-4" />
+                فلتر متقدم
+              </Button>
             </div>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">جميع المواعيد</SelectItem>
-                <SelectItem value="scheduled">مجدول</SelectItem>
-                <SelectItem value="completed">مكتمل</SelectItem>
-                <SelectItem value="cancelled">ملغي</SelectItem>
-                <SelectItem value="no_show">لم يحضر</SelectItem>
-              </SelectContent>
-            </Select>
+
+            {/* Advanced Filters */}
+            {showAdvancedFilters && (
+              <div className="border-t pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label>البحث بتاريخ الإضافة للسجل</Label>
+                    <Input
+                      type="date"
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      placeholder="اختر التاريخ"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>مسح الفلاتر</Label>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setSearchTerm("");
+                        setFilterStatus("all");
+                        setDateFilter("");
+                      }}
+                      className="w-full flex items-center gap-2"
+                    >
+                      <X className="w-4 h-4" />
+                      مسح الكل
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Active Filters Display */}
+                {(searchTerm || filterStatus !== "all" || dateFilter) && (
+                  <div className="mt-4 p-3 bg-muted rounded-lg">
+                    <div className="text-sm font-medium mb-2">الفلاتر النشطة:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {searchTerm && (
+                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                          البحث: {searchTerm}
+                        </span>
+                      )}
+                      {filterStatus !== "all" && (
+                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                          الحالة: {filterStatus === "scheduled" ? "مجدول" : 
+                                   filterStatus === "completed" ? "مكتمل" : 
+                                   filterStatus === "cancelled" ? "ملغي" : "لم يحضر"}
+                        </span>
+                      )}
+                      {dateFilter && (
+                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                          تاريخ الإضافة: {dateFilter}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
