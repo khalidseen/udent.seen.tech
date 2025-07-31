@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NewAppointment from "./pages/NewAppointment";
 import Patients from "./pages/Patients";
+import PatientProfile from "./pages/PatientProfile";
 import Treatments from "./pages/Treatments";
 import AddPatientForm from "./components/patients/AddPatientForm";
 import AppointmentList from "./components/appointments/AppointmentList";
@@ -24,6 +25,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/patients" element={<Patients />} />
+            <Route path="/patients/:patientId" element={<PatientProfile />} />
             <Route path="/add-patient" element={<AddPatientForm />} />
             <Route path="/appointments" element={<AppointmentList />} />
             <Route path="/new-appointment" element={<NewAppointment />} />

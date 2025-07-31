@@ -6,12 +6,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, User, Search, Plus, Phone, Filter, X } from "lucide-react";
+import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
+import EditAppointmentDialog from "./EditAppointmentDialog";
+import PostAppointmentActions from "./PostAppointmentActions";
+import { toast } from "@/hooks/use-toast";
 
 interface Appointment {
   id: string;
@@ -25,8 +28,10 @@ interface Appointment {
   created_at: string;
   updated_at: string;
   patients?: {
+    id: string;
     full_name: string;
     phone?: string;
+    email?: string;
   };
   profiles?: {
     full_name: string;
@@ -40,6 +45,9 @@ const AppointmentList = () => {
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("");
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [patientNameFilter, setPatientNameFilter] = useState("");
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchAppointments();
@@ -51,13 +59,13 @@ const AppointmentList = () => {
         .from('appointments')
         .select(`
           *,
-          patients (full_name, phone),
+          patients (id, full_name, phone, email),
           profiles (full_name)
         `)
         .order('appointment_date', { ascending: true });
 
       if (error) throw error;
-      setAppointments(data || []);
+      setAppointments((data as any) || []);
     } catch (error) {
       console.error('Error fetching appointments:', error);
     } finally {
@@ -88,8 +96,35 @@ const AppointmentList = () => {
       matchesDate = appointmentDate === dateFilter;
     }
     
-    return matchesSearch && matchesStatus && matchesDate;
+    const matchesPatientName = !patientNameFilter || 
+      appointment.patients?.full_name.toLowerCase().includes(patientNameFilter.toLowerCase());
+    
+    return matchesSearch && matchesStatus && matchesDate && matchesPatientName;
   });
+
+  const handleCompleteAppointment = async (appointmentId: string) => {
+    try {
+      const { error } = await supabase
+        .from('appointments')
+        .update({ status: 'completed' })
+        .eq('id', appointmentId);
+
+      if (error) throw error;
+
+      toast({
+        title: 'تم الإكمال',
+        description: 'تم إكمال الموعد بنجاح'
+      });
+
+      fetchAppointments();
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message,
+        variant: 'destructive'
+      });
+    }
+  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -181,13 +216,23 @@ const AppointmentList = () => {
                   </div>
                   
                   <div className="space-y-2">
+                    <Label>البحث باسم المريض</Label>
+                    <Input
+                      value={patientNameFilter}
+                      onChange={(e) => setPatientNameFilter(e.target.value)}
+                      placeholder="أدخل اسم المريض"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
                     <Label>مسح الفلاتر</Label>
                     <Button
                       variant="outline"
                       onClick={() => {
-                        setSearchTerm("");
+                         setSearchTerm("");
                         setFilterStatus("all");
                         setDateFilter("");
+                        setPatientNameFilter("");
                       }}
                       className="w-full flex items-center gap-2"
                     >
@@ -198,7 +243,7 @@ const AppointmentList = () => {
                 </div>
 
                 {/* Active Filters Display */}
-                {(searchTerm || filterStatus !== "all" || dateFilter) && (
+                {(searchTerm || filterStatus !== "all" || dateFilter || patientNameFilter) && (
                   <div className="mt-4 p-3 bg-muted rounded-lg">
                     <div className="text-sm font-medium mb-2">الفلاتر النشطة:</div>
                     <div className="flex flex-wrap gap-2">
@@ -217,6 +262,11 @@ const AppointmentList = () => {
                       {dateFilter && (
                         <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
                           تاريخ الإضافة: {dateFilter}
+                        </span>
+                      )}
+                      {patientNameFilter && (
+                        <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
+                          اسم المريض: {patientNameFilter}
                         </span>
                       )}
                     </div>
@@ -292,24 +342,51 @@ const AppointmentList = () => {
                     )}
                   </div>
                   
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                  <div className="flex flex-wrap gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => {
+                        setEditingAppointment(appointment);
+                        setEditDialogOpen(true);
+                      }}
+                      className="border-border/60 hover:bg-accent/60 transition-all duration-200"
+                    >
+                      <Edit className="w-4 h-4 ml-1" />
                       تعديل
                     </Button>
-                    {appointment.status === 'scheduled' && (
-                      <Button size="sm">
-                        إكمال
-                      </Button>
+                    
+                    {appointment.status !== 'completed' && (
+                      <PostAppointmentActions 
+                        appointment={appointment} 
+                        onActionsCompleted={fetchAppointments}
+                      />
                     )}
+                    
+                    <Button 
+                      size="sm"
+                      onClick={() => handleCompleteAppointment(appointment.id)}
+                      className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
+                    >
+                      <CheckCircle className="w-4 h-4 ml-1" />
+                      إكمال
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
           ))
-        )}
-      </div>
-    </PageContainer>
-  );
-};
+          )}
+        </div>
+
+        <EditAppointmentDialog
+          appointment={editingAppointment}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          onAppointmentUpdated={fetchAppointments}
+        />
+      </PageContainer>
+    );
+  };
 
 export default AppointmentList;

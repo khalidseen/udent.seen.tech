@@ -168,10 +168,12 @@ const PatientList = () => {
                         علاجات الأسنان
                       </Button>
                     </Link>
-                    <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
-                      <Eye className="w-4 h-4 ml-1" />
-                      عرض
-                    </Button>
+                    <Link to={`/patients/${patient.id}`}>
+                      <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
+                        <Eye className="w-4 h-4 ml-1" />
+                        عرض
+                      </Button>
+                    </Link>
                     <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
                       <Edit className="w-4 h-4 ml-1" />
                       تعديل
