@@ -37,9 +37,36 @@ const PatientList = () => {
 
   const fetchPatients = async () => {
     try {
+      // Get current user's clinic ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found');
+        setLoading(false);
+        return;
+      }
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        setLoading(false);
+        return;
+      }
+      
+      if (!profile) {
+        console.log('No profile found');
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('patients')
         .select('*')
+        .eq('clinic_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;

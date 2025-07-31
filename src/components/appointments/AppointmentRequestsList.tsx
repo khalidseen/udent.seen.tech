@@ -99,12 +99,50 @@ const AppointmentRequestsList = () => {
 
       if (!profile) return;
 
+      // First, check if a patient with the same name and phone already exists
+      let patientId = null;
+      if (request.patient_phone) {
+        const { data: existingPatient } = await supabase
+          .from('patients')
+          .select('id')
+          .eq('clinic_id', profile.id)
+          .eq('phone', request.patient_phone)
+          .single();
+        
+        if (existingPatient) {
+          patientId = existingPatient.id;
+        }
+      }
+
+      // If no existing patient found, create a new one
+      if (!patientId) {
+        const { data: newPatient, error: patientError } = await supabase
+          .from('patients')
+          .insert({
+            clinic_id: profile.id,
+            full_name: request.patient_name,
+            phone: request.patient_phone,
+            email: request.patient_email,
+            address: request.patient_address,
+            medical_history: `طلب موعد: ${request.condition_description}`
+          })
+          .select('id')
+          .single();
+
+        if (patientError) {
+          console.error('Error creating patient:', patientError);
+          throw new Error('فشل في إنشاء بيانات المريض');
+        }
+        
+        patientId = newPatient.id;
+      }
+
       // Create the actual appointment
       const { data: appointment, error: appointmentError } = await supabase
         .from('appointments')
         .insert({
           clinic_id: profile.id,
-          patient_id: null, // Will need to create patient first or link later
+          patient_id: patientId,
           appointment_date: `${request.preferred_date}T${request.preferred_time}+00:00`,
           duration: 30,
           treatment_type: "استشارة",
@@ -127,7 +165,7 @@ const AppointmentRequestsList = () => {
 
       if (updateError) throw updateError;
 
-      toast.success("تم قبول طلب الموعد بنجاح");
+      toast.success("تم قبول طلب الموعد وإنشاء بيانات المريض بنجاح");
       fetchRequests();
     } catch (error) {
       console.error('Error approving request:', error);
