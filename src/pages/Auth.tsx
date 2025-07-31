@@ -276,7 +276,7 @@ export default function Auth() {
                         <Input
                           id="applicationPassword"
                           type={showPassword ? "text" : "password"}
-                          placeholder="••••••••"
+                          placeholder="أدخل كلمة المرور للحساب"
                           value={applicationForm.password}
                           onChange={(e) => setApplicationForm(prev => ({ ...prev, password: e.target.value }))}
                           className="pl-10"
@@ -298,6 +298,9 @@ export default function Auth() {
                           )}
                         </Button>
                       </div>
+                      <p className="text-xs text-muted-foreground">
+                        ستستخدم هذه كلمة المرور لتسجيل الدخول بعد الموافقة على الطلب
+                      </p>
                     </div>
 
                     <div className="space-y-2">
