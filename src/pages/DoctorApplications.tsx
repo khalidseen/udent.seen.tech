@@ -159,6 +159,19 @@ export default function DoctorApplications() {
     setShowActionDialog(true);
   };
 
+  const handleActionConfirm = async () => {
+    if (!selectedApplication || !actionType) return;
+    
+    if (actionType === 'delete') {
+      await handleDeleteApplication(selectedApplication.id);
+      return;
+    }
+    
+    // Convert 'approve'/'reject' to 'approved'/'rejected' for database
+    const dbStatus = actionType === 'approve' ? 'approved' : 'rejected';
+    await handleApplicationAction(selectedApplication.id, dbStatus, adminMessage);
+  };
+
   const openMessageDialog = (application: DoctorApplication) => {
     setSelectedApplication(application);
     setMessageToSend("");
@@ -634,19 +647,7 @@ export default function DoctorApplications() {
             </Button>
             <Button 
               variant={actionType === 'delete' ? 'destructive' : actionType === 'approve' ? 'default' : 'destructive'}
-              onClick={() => {
-                if (selectedApplication) {
-                  if (actionType === 'delete') {
-                    handleDeleteApplication(selectedApplication.id);
-                  } else {
-                    handleApplicationAction(
-                      selectedApplication.id, 
-                      actionType as 'approved' | 'rejected', 
-                      adminMessage
-                    );
-                  }
-                }
-              }}
+              onClick={handleActionConfirm}
               disabled={
                 processingId === selectedApplication?.id ||
                 (actionType === 'reject' && !adminMessage.trim())
