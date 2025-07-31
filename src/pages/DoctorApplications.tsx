@@ -400,44 +400,30 @@ export default function DoctorApplications() {
                 )}
 
                 <div className="flex flex-wrap gap-2">
-                  {application.status === 'pending' && (
-                    <>
-                      <Button 
-                        variant="default" 
-                        size="sm"
-                        onClick={() => openActionDialog(application, 'approve')}
-                        disabled={processingId === application.id}
-                      >
-                        <CheckCircle className="w-4 h-4 mr-2" />
-                        قبول
-                      </Button>
-
-                      <Button 
-                        variant="destructive" 
-                        size="sm"
-                        onClick={() => openActionDialog(application, 'reject')}
-                        disabled={processingId === application.id}
-                      >
-                        <XCircle className="w-4 h-4 mr-2" />
-                        رفض
-                      </Button>
-                    </>
-                  )}
-                  
                   <Button 
-                    variant="outline" 
+                    variant="default" 
                     size="sm"
-                    onClick={() => openMessageDialog(application)}
+                    onClick={() => openActionDialog(application, 'approve')}
                     disabled={processingId === application.id}
                   >
-                    <Send className="w-4 h-4 mr-2" />
-                    إرسال رسالة
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    قبول
+                  </Button>
+
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    onClick={() => openActionDialog(application, 'reject')}
+                    disabled={processingId === application.id}
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    رفض
                   </Button>
 
                   <Button 
                     variant="outline" 
                     size="sm"
-                    onClick={() => openActionDialog(application, 'delete')}
+                    onClick={() => handleDeleteApplication(application.id)}
                     disabled={processingId === application.id}
                     className="text-destructive hover:text-destructive"
                   >
