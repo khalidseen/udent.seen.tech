@@ -327,7 +327,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          created_at: string
+          full_name: string
+          id: string
+          role: string
+          status: string | null
+          updated_at: string
+          user_id: string
+        }
+      }
     }
     Enums: {
       [_ in never]: never
