@@ -3,14 +3,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-
 interface ToothChartProps {
   onToothSelect: (toothNumber: string, numberingSystem: string) => void;
   selectedTooth?: string;
   numberingSystem?: 'universal' | 'palmer' | 'fdi';
 }
-
-const ToothChart = ({ onToothSelect, selectedTooth, numberingSystem = 'universal' }: ToothChartProps) => {
+const ToothChart = ({
+  onToothSelect,
+  selectedTooth,
+  numberingSystem = 'universal'
+}: ToothChartProps) => {
   const [activeSystem, setActiveSystem] = useState<'universal' | 'palmer' | 'fdi'>(numberingSystem);
 
   // Define tooth mappings for different numbering systems
@@ -18,94 +20,60 @@ const ToothChart = ({ onToothSelect, selectedTooth, numberingSystem = 'universal
     upper: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'],
     lower: ['32', '31', '30', '29', '28', '27', '26', '25', '24', '23', '22', '21', '20', '19', '18', '17']
   };
-
   const palmerNumbers = {
     upper: ['8', '7', '6', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '6', '7', '8'],
     lower: ['8', '7', '6', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '6', '7', '8']
   };
-
   const fdiNumbers = {
     upper: ['18', '17', '16', '15', '14', '13', '12', '11', '21', '22', '23', '24', '25', '26', '27', '28'],
     lower: ['48', '47', '46', '45', '44', '43', '42', '41', '31', '32', '33', '34', '35', '36', '37', '38']
   };
-
   const getToothNumbers = () => {
     switch (activeSystem) {
-      case 'palmer': return palmerNumbers;
-      case 'fdi': return fdiNumbers;
-      default: return universalNumbers;
+      case 'palmer':
+        return palmerNumbers;
+      case 'fdi':
+        return fdiNumbers;
+      default:
+        return universalNumbers;
     }
   };
-
   const toothNumbers = getToothNumbers();
-
   const handleToothClick = (toothNumber: string) => {
     onToothSelect(toothNumber, activeSystem);
   };
-
   const renderTooth = (toothNumber: string, isUpper: boolean, index: number) => {
     const isSelected = selectedTooth === toothNumber;
     const isMolar = index < 3 || index > 12; // Molars are typically at the ends
-    const isPremolar = (index >= 3 && index <= 5) || (index >= 10 && index <= 12);
+    const isPremolar = index >= 3 && index <= 5 || index >= 10 && index <= 12;
     const isCanine = index === 6 || index === 9;
     const isIncisor = index === 7 || index === 8;
-
     let toothShape = "rounded-md h-8 w-6";
     if (isMolar) toothShape = "rounded-lg h-10 w-8";
     if (isPremolar) toothShape = "rounded-md h-9 w-7";
     if (isCanine) toothShape = "rounded-full h-10 w-6";
     if (isIncisor) toothShape = "rounded-sm h-8 w-5";
-
-    return (
-      <button
-        key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`}
-        onClick={() => handleToothClick(toothNumber)}
-        className={cn(
-          toothShape,
-          "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold",
-          isSelected 
-            ? "bg-primary text-primary-foreground border-primary shadow-lg" 
-            : "bg-background border-border hover:bg-accent hover:text-accent-foreground"
-        )}
-        title={`السن رقم ${toothNumber} (${activeSystem.toUpperCase()})`}
-      >
+    return <button key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} onClick={() => handleToothClick(toothNumber)} className={cn(toothShape, "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold", isSelected ? "bg-primary text-primary-foreground border-primary shadow-lg" : "bg-background border-border hover:bg-accent hover:text-accent-foreground")} title={`السن رقم ${toothNumber} (${activeSystem.toUpperCase()})`}>
         {toothNumber}
-      </button>
-    );
+      </button>;
   };
-
-  return (
-    <Card className="w-full max-w-4xl mx-auto">
+  return <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-center">مخطط الأسنان</CardTitle>
+        
         <div className="flex justify-center gap-2">
-          <Button
-            variant={activeSystem === 'universal' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveSystem('universal')}
-          >
+          <Button variant={activeSystem === 'universal' ? 'default' : 'outline'} size="sm" onClick={() => setActiveSystem('universal')}>
             Universal
           </Button>
-          <Button
-            variant={activeSystem === 'palmer' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveSystem('palmer')}
-          >
+          <Button variant={activeSystem === 'palmer' ? 'default' : 'outline'} size="sm" onClick={() => setActiveSystem('palmer')}>
             Palmer
           </Button>
-          <Button
-            variant={activeSystem === 'fdi' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setActiveSystem('fdi')}
-          >
+          <Button variant={activeSystem === 'fdi' ? 'default' : 'outline'} size="sm" onClick={() => setActiveSystem('fdi')}>
             FDI
           </Button>
         </div>
-        {selectedTooth && (
-          <div className="text-center">
+        {selectedTooth && <div className="text-center">
             <Badge variant="secondary">السن المحدد: {selectedTooth}</Badge>
-          </div>
-        )}
+          </div>}
       </CardHeader>
       <CardContent className="space-y-8">
         {/* Upper Teeth */}
@@ -150,8 +118,6 @@ const ToothChart = ({ onToothSelect, selectedTooth, numberingSystem = 'universal
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ToothChart;
