@@ -174,6 +174,12 @@ const PatientList = () => {
                     )}
                   </div>
                   <div className="flex space-x-2 space-x-reverse">
+                    <Link to={`/patients/${patient.id}`}>
+                      <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
+                        <Eye className="w-4 h-4 ml-1" />
+                        عرض
+                      </Button>
+                    </Link>
                     <Button 
                       variant="default" 
                       size="sm" 
@@ -181,14 +187,8 @@ const PatientList = () => {
                       onClick={() => handleAddTreatment(patient.id, patient.full_name)}
                     >
                       <Activity className="w-4 h-4 ml-1" />
-                      إضافة علاج
+                      العلاج
                     </Button>
-                    <Link to={`/patients/${patient.id}`}>
-                      <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
-                        <Eye className="w-4 h-4 ml-1" />
-                        عرض
-                      </Button>
-                    </Link>
                     <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
                       <Edit className="w-4 h-4 ml-1" />
                       تعديل
