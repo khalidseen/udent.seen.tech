@@ -33,17 +33,31 @@ const AppointmentRequestsList = () => {
 
   const fetchRequests = async () => {
     try {
+      setIsLoading(true);
       // Get current user's clinic ID
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('No user found');
+        return;
+      }
 
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
         .eq('user_id', user.id)
         .single();
 
-      if (!profile) return;
+      if (profileError) {
+        console.error('Profile error:', profileError);
+        return;
+      }
+      
+      if (!profile) {
+        console.log('No profile found');
+        return;
+      }
+
+      console.log('Profile ID:', profile.id);
 
       const { data, error } = await supabase
         .from('appointment_requests')
@@ -51,7 +65,12 @@ const AppointmentRequestsList = () => {
         .eq('clinic_id', profile.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Appointment requests error:', error);
+        throw error;
+      }
+      
+      console.log('Fetched requests:', data);
       setRequests(data || []);
     } catch (error) {
       console.error('Error fetching appointment requests:', error);
