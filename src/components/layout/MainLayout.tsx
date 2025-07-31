@@ -9,21 +9,14 @@ export function MainLayout({
   children
 }: MainLayoutProps) {
   return <SidebarProvider defaultOpen={true}>
-      <div className="sidebar-layout bg-background min-h-screen">
-        {/* Sidebar - Fixed position on the right */}
-        <AppSidebar />
-        
-        {/* Main Content Area with proper border and shadows */}
-        <div className="flex-1 flex flex-col min-w-0 border-r border-border/60 bg-background">
-          {/* Top Header with enhanced styling */}
-          <header className="h-16 border-b border-border/60 bg-white/80 dark:bg-card/50 backdrop-blur-sm sticky top-0 z-40 shrink-0 shadow-sm mx-[34px]">
-            <div className="h-full flex items-center justify-between px-[10px] my-0 mx-[32px]">
+      <div className="flex min-h-screen w-full bg-background">
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Top Header */}
+          <header className="h-16 border-b border-border/60 bg-white/80 dark:bg-card/50 backdrop-blur-sm sticky top-0 z-40 shrink-0 shadow-sm">
+            <div className="h-full flex items-center justify-between px-6">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground p-2 rounded-lg transition-all duration-200 shadow-sm border border-border/40" />
-                <div>
-                  
-                  
-                </div>
               </div>
               
               <div className="flex items-center gap-3">
@@ -37,13 +30,14 @@ export function MainLayout({
             </div>
           </header>
           
-          {/* Page Content with enhanced background and equal spacing */}
-          <main className="flex-1 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 min-h-0 py-[10px] mx-0 px-0">
-            <div className="max-w-full mx-auto px-2">
-              {children}
-            </div>
+          {/* Page Content */}
+          <main className="flex-1 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 p-6">
+            {children}
           </main>
         </div>
+        
+        {/* Sidebar - على اليمين */}
+        <AppSidebar />
       </div>
     </SidebarProvider>;
 }
