@@ -12,7 +12,8 @@ import {
   CalendarPlus,
   FileText,
   Bell,
-  Search
+  Search,
+  ClipboardList
 } from "lucide-react";
 
 import {
@@ -37,6 +38,7 @@ const mainMenuItems = [
   { title: "المرضى", url: "/patients", icon: Users },
   { title: "إضافة مريض", url: "/add-patient", icon: UserPlus },
   { title: "المواعيد", url: "/appointments", icon: Calendar },
+  { title: "طلبات المواعيد", url: "/appointment-requests", icon: ClipboardList },
   { title: "موعد جديد", url: "/new-appointment", icon: CalendarPlus },
   { title: "العلاجات", url: "/treatments", icon: Activity },
 ];

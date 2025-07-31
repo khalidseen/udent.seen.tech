@@ -14,6 +14,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      appointment_requests: {
+        Row: {
+          approved_appointment_id: string | null
+          clinic_id: string
+          condition_description: string
+          created_at: string
+          id: string
+          patient_address: string | null
+          patient_email: string | null
+          patient_name: string
+          patient_phone: string | null
+          preferred_date: string
+          preferred_time: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          approved_appointment_id?: string | null
+          clinic_id: string
+          condition_description: string
+          created_at?: string
+          id?: string
+          patient_address?: string | null
+          patient_email?: string | null
+          patient_name: string
+          patient_phone?: string | null
+          preferred_date: string
+          preferred_time: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          approved_appointment_id?: string | null
+          clinic_id?: string
+          condition_description?: string
+          created_at?: string
+          id?: string
+          patient_address?: string | null
+          patient_email?: string | null
+          patient_name?: string
+          patient_phone?: string | null
+          preferred_date?: string
+          preferred_time?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_date: string
