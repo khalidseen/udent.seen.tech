@@ -2,14 +2,13 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { Bell, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
 interface MainLayoutProps {
   children: React.ReactNode;
 }
-
-export function MainLayout({ children }: MainLayoutProps) {
-  return (
-    <SidebarProvider defaultOpen={true}>
+export function MainLayout({
+  children
+}: MainLayoutProps) {
+  return <SidebarProvider defaultOpen={true}>
       <div className="sidebar-layout bg-background min-h-screen">
         {/* Sidebar - Fixed position on the right */}
         <AppSidebar />
@@ -22,8 +21,8 @@ export function MainLayout({ children }: MainLayoutProps) {
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground p-2 rounded-lg transition-all duration-200 shadow-sm border border-border/40" />
                 <div>
-                  <h2 className="text-lg font-semibold text-foreground tracking-tight">نظام فوردنتست</h2>
-                  <p className="text-sm text-muted-foreground">نظام إدارة العيادة المتطور</p>
+                  
+                  
                 </div>
               </div>
               
@@ -46,6 +45,5 @@ export function MainLayout({ children }: MainLayoutProps) {
           </main>
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 }
