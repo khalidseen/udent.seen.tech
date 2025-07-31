@@ -30,6 +30,7 @@ export default function Auth() {
   const [applicationForm, setApplicationForm] = useState({
     email: "",
     fullName: "",
+    password: "",
     phone: "",
     specialization: "",
     experienceYears: "",
@@ -63,10 +64,10 @@ export default function Auth() {
   const handleApplicationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!applicationForm.email || !applicationForm.fullName || !applicationForm.specialization) {
+    if (!applicationForm.email || !applicationForm.fullName || !applicationForm.password || !applicationForm.specialization) {
       toast({
         title: "خطأ في البيانات",
-        description: "يرجى ملء جميع الحقول المطلوبة",
+        description: "يرجى ملء جميع الحقول المطلوبة (الاسم، البريد، كلمة المرور، التخصص)",
         variant: "destructive"
       });
       return;
@@ -80,6 +81,7 @@ export default function Auth() {
         .insert({
           email: applicationForm.email,
           full_name: applicationForm.fullName,
+          password: applicationForm.password,
           phone: applicationForm.phone,
           specialization: applicationForm.specialization,
           experience_years: applicationForm.experienceYears ? parseInt(applicationForm.experienceYears) : null,
@@ -103,6 +105,7 @@ export default function Auth() {
         setApplicationForm({
           email: "",
           fullName: "",
+          password: "",
           phone: "",
           specialization: "",
           experienceYears: "",
@@ -264,6 +267,36 @@ export default function Auth() {
                           required
                           disabled={isSubmitting}
                         />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="applicationPassword">كلمة المرور *</Label>
+                      <div className="relative">
+                        <Input
+                          id="applicationPassword"
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={applicationForm.password}
+                          onChange={(e) => setApplicationForm(prev => ({ ...prev, password: e.target.value }))}
+                          className="pl-10"
+                          required
+                          disabled={isSubmitting}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => setShowPassword(!showPassword)}
+                          disabled={isSubmitting}
+                        >
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
+                        </Button>
                       </div>
                     </div>
 

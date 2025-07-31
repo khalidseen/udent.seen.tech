@@ -17,6 +17,7 @@ interface DoctorApplication {
   id: string;
   email: string;
   full_name: string;
+  password?: string;
   phone?: string;
   specialization: string;
   experience_years?: number;
@@ -36,6 +37,8 @@ export default function DoctorApplications() {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [selectedApplication, setSelectedApplication] = useState<DoctorApplication | null>(null);
+  const [showProfileDialog, setShowProfileDialog] = useState(false);
+  const [showActionDialog, setShowActionDialog] = useState(false);
   const [adminMessage, setAdminMessage] = useState("");
   const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
   const { toast } = useToast();
@@ -75,6 +78,32 @@ export default function DoctorApplications() {
     setProcessingId(applicationId);
     
     try {
+      // If approving, create user account first
+      if (status === 'approved') {
+        const application = applications.find(app => app.id === applicationId);
+        if (application && application.password) {
+          // Create user account in Supabase Auth
+          const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+            email: application.email,
+            password: application.password,
+            email_confirm: true,
+            user_metadata: {
+              full_name: application.full_name
+            }
+          });
+
+          if (authError) {
+            toast({
+              title: "خطأ في إنشاء الحساب",
+              description: authError.message,
+              variant: "destructive"
+            });
+            return;
+          }
+        }
+      }
+
+      // Update application status
       const { error } = await supabase
         .from('doctor_applications')
         .update({
@@ -94,7 +123,7 @@ export default function DoctorApplications() {
         toast({
           title: status === 'approved' ? "تم قبول الطلب" : "تم رفض الطلب",
           description: status === 'approved' 
-            ? "تم قبول طلب الطبيب بنجاح. يمكنه الآن تسجيل الدخول للنظام."
+            ? "تم قبول طلب الطبيب بنجاح وإنشاء حساب له. يمكنه الآن تسجيل الدخول للنظام."
             : "تم رفض طلب الطبيب مع إرسال رسالة توضيحية."
         });
         
@@ -103,6 +132,7 @@ export default function DoctorApplications() {
         setSelectedApplication(null);
         setAdminMessage("");
         setActionType(null);
+        setShowActionDialog(false);
       }
     } catch (error) {
       toast({
@@ -113,6 +143,18 @@ export default function DoctorApplications() {
     } finally {
       setProcessingId(null);
     }
+  };
+
+  const openProfileDialog = (application: DoctorApplication) => {
+    setSelectedApplication(application);
+    setShowProfileDialog(true);
+  };
+
+  const openActionDialog = (application: DoctorApplication, action: 'approve' | 'reject') => {
+    setSelectedApplication(application);
+    setActionType(action);
+    setAdminMessage("");
+    setShowActionDialog(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -190,8 +232,14 @@ export default function DoctorApplications() {
                 <div className="flex items-start justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      <User className="w-5 h-5" />
-                      {application.full_name}
+                      <Button
+                        variant="ghost"
+                        className="p-0 h-auto font-semibold text-lg hover:text-primary"
+                        onClick={() => openProfileDialog(application)}
+                      >
+                        <User className="w-5 h-5 mr-2" />
+                        {application.full_name}
+                      </Button>
                     </CardTitle>
                     <CardDescription className="mt-1">
                       {getSpecializationName(application.specialization)}
@@ -269,119 +317,25 @@ export default function DoctorApplications() {
 
                 {application.status === 'pending' && (
                   <div className="flex gap-2">
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          onClick={() => {
-                            setSelectedApplication(application);
-                            setActionType('approve');
-                            setAdminMessage("");
-                          }}
-                          disabled={processingId === application.id}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          قبول
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>قبول طلب الانضمام</DialogTitle>
-                          <DialogDescription>
-                            هل أنت متأكد من قبول طلب انضمام د. {selectedApplication?.full_name}؟
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="approveMessage">رسالة القبول (اختيارية)</Label>
-                            <Textarea
-                              id="approveMessage"
-                              placeholder="مرحباً بك في النظام..."
-                              value={adminMessage}
-                              onChange={(e) => setAdminMessage(e.target.value)}
-                              rows={3}
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedApplication(null);
-                              setAdminMessage("");
-                              setActionType(null);
-                            }}
-                          >
-                            إلغاء
-                          </Button>
-                          <Button
-                            onClick={() => selectedApplication && handleApplicationAction(selectedApplication.id, 'approved', adminMessage)}
-                            disabled={processingId === selectedApplication?.id}
-                          >
-                            {processingId === selectedApplication?.id ? "جاري المعالجة..." : "تأكيد القبول"}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      onClick={() => openActionDialog(application, 'approve')}
+                      disabled={processingId === application.id}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      قبول
+                    </Button>
 
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button 
-                          variant="destructive" 
-                          size="sm"
-                          onClick={() => {
-                            setSelectedApplication(application);
-                            setActionType('reject');
-                            setAdminMessage("");
-                          }}
-                          disabled={processingId === application.id}
-                        >
-                          <XCircle className="w-4 h-4 mr-2" />
-                          رفض
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>رفض طلب الانضمام</DialogTitle>
-                          <DialogDescription>
-                            هل أنت متأكد من رفض طلب انضمام د. {selectedApplication?.full_name}؟
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div>
-                            <Label htmlFor="rejectMessage">سبب الرفض *</Label>
-                            <Textarea
-                              id="rejectMessage"
-                              placeholder="يرجى توضيح سبب الرفض..."
-                              value={adminMessage}
-                              onChange={(e) => setAdminMessage(e.target.value)}
-                              rows={3}
-                              required
-                            />
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            variant="outline"
-                            onClick={() => {
-                              setSelectedApplication(null);
-                              setAdminMessage("");
-                              setActionType(null);
-                            }}
-                          >
-                            إلغاء
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => selectedApplication && handleApplicationAction(selectedApplication.id, 'rejected', adminMessage)}
-                            disabled={processingId === selectedApplication?.id || !adminMessage.trim()}
-                          >
-                            {processingId === selectedApplication?.id ? "جاري المعالجة..." : "تأكيد الرفض"}
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => openActionDialog(application, 'reject')}
+                      disabled={processingId === application.id}
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      رفض
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -389,6 +343,219 @@ export default function DoctorApplications() {
           ))
         )}
       </div>
+
+      {/* Profile Dialog */}
+      <Dialog open={showProfileDialog} onOpenChange={setShowProfileDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="w-5 h-5" />
+              ملف الطبيب: {selectedApplication?.full_name}
+            </DialogTitle>
+            <DialogDescription>
+              معلومات تفصيلية عن طلب الانضمام
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedApplication && (
+            <div className="space-y-6">
+              {/* Personal Information */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-primary">المعلومات الشخصية</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">الاسم:</span>
+                    <span>{selectedApplication.full_name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">البريد:</span>
+                    <span>{selectedApplication.email}</span>
+                  </div>
+                  {selectedApplication.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">الهاتف:</span>
+                      <span>{selectedApplication.phone}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">التخصص:</span>
+                    <span>{getSpecializationName(selectedApplication.specialization)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Professional Information */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-primary">المعلومات المهنية</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {selectedApplication.experience_years && (
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">سنوات الخبرة:</span>
+                      <span>{selectedApplication.experience_years} سنة</span>
+                    </div>
+                  )}
+                  {selectedApplication.license_number && (
+                    <div className="flex items-center gap-2">
+                      <GraduationCap className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">رقم الترخيص:</span>
+                      <span>{selectedApplication.license_number}</span>
+                    </div>
+                  )}
+                  {selectedApplication.clinic_name && (
+                    <div className="flex items-center gap-2">
+                      <Building className="w-4 h-4 text-muted-foreground" />
+                      <span className="font-medium">اسم العيادة:</span>
+                      <span>{selectedApplication.clinic_name}</span>
+                    </div>
+                  )}
+                </div>
+                {selectedApplication.clinic_address && (
+                  <div className="mt-4 flex items-start gap-2">
+                    <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+                    <span className="font-medium">عنوان العيادة:</span>
+                    <span>{selectedApplication.clinic_address}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Application Details */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 text-primary">تفاصيل الطلب</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">حالة الطلب:</span>
+                    {getStatusBadge(selectedApplication.status)}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">تاريخ التقديم:</span>
+                    <span>{format(new Date(selectedApplication.created_at), 'dd MMM yyyy', { locale: ar })}</span>
+                  </div>
+                  {selectedApplication.reviewed_at && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">تاريخ المراجعة:</span>
+                      <span>{format(new Date(selectedApplication.reviewed_at), 'dd MMM yyyy', { locale: ar })}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Messages */}
+              {selectedApplication.message && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-primary">رسالة الطبيب</h3>
+                  <div className="p-3 bg-muted/50 rounded-lg">
+                    <p className="text-sm">{selectedApplication.message}</p>
+                  </div>
+                </div>
+              )}
+
+              {selectedApplication.admin_message && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3 text-primary">رد الإدارة</h3>
+                  <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                    <p className="text-sm">{selectedApplication.admin_message}</p>
+                  </div>
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              {selectedApplication.status === 'pending' && (
+                <div className="flex gap-2 pt-4 border-t">
+                  <Button 
+                    variant="default" 
+                    onClick={() => {
+                      setShowProfileDialog(false);
+                      openActionDialog(selectedApplication, 'approve');
+                    }}
+                    disabled={processingId === selectedApplication.id}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    قبول الطلب
+                  </Button>
+                  <Button 
+                    variant="destructive" 
+                    onClick={() => {
+                      setShowProfileDialog(false);
+                      openActionDialog(selectedApplication, 'reject');
+                    }}
+                    disabled={processingId === selectedApplication.id}
+                  >
+                    <XCircle className="w-4 h-4 mr-2" />
+                    رفض الطلب
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Action Dialog */}
+      <Dialog open={showActionDialog} onOpenChange={setShowActionDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {actionType === 'approve' ? 'قبول طلب الانضمام' : 'رفض طلب الانضمام'}
+            </DialogTitle>
+            <DialogDescription>
+              {actionType === 'approve' 
+                ? `هل أنت متأكد من قبول طلب انضمام د. ${selectedApplication?.full_name}؟`
+                : `هل أنت متأكد من رفض طلب انضمام د. ${selectedApplication?.full_name}؟`
+              }
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="actionMessage">
+                {actionType === 'approve' ? 'رسالة القبول (اختيارية)' : 'سبب الرفض *'}
+              </Label>
+              <Textarea
+                id="actionMessage"
+                placeholder={actionType === 'approve' 
+                  ? "مرحباً بك في النظام..." 
+                  : "يرجى توضيح سبب الرفض..."
+                }
+                value={adminMessage}
+                onChange={(e) => setAdminMessage(e.target.value)}
+                rows={3}
+                required={actionType === 'reject'}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowActionDialog(false);
+                setSelectedApplication(null);
+                setAdminMessage("");
+                setActionType(null);
+              }}
+            >
+              إلغاء
+            </Button>
+            <Button
+              variant={actionType === 'approve' ? 'default' : 'destructive'}
+              onClick={() => selectedApplication && handleApplicationAction(
+                selectedApplication.id, 
+                actionType === 'approve' ? 'approved' : 'rejected', 
+                adminMessage
+              )}
+              disabled={processingId === selectedApplication?.id || (actionType === 'reject' && !adminMessage.trim())}
+            >
+              {processingId === selectedApplication?.id 
+                ? "جاري المعالجة..." 
+                : actionType === 'approve' ? "تأكيد القبول" : "تأكيد الرفض"
+              }
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageContainer>
   );
 }

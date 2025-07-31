@@ -195,6 +195,7 @@ export type Database = {
           id: string
           license_number: string | null
           message: string | null
+          password: string | null
           phone: string | null
           reviewed_at: string | null
           specialization: string | null
@@ -213,6 +214,7 @@ export type Database = {
           id?: string
           license_number?: string | null
           message?: string | null
+          password?: string | null
           phone?: string | null
           reviewed_at?: string | null
           specialization?: string | null
@@ -231,6 +233,7 @@ export type Database = {
           id?: string
           license_number?: string | null
           message?: string | null
+          password?: string | null
           phone?: string | null
           reviewed_at?: string | null
           specialization?: string | null
