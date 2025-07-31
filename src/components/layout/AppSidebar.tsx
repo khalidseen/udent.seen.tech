@@ -65,9 +65,14 @@ export function AppSidebar() {
     return `${baseClasses} hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground`;
   };
   const filteredMainMenu = mainMenuItems.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()));
-  return <Sidebar side="right" className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 shadow-sidebar border-l border-sidebar-border shrink-0`} style={{
-    background: 'var(--gradient-sidebar)'
-  }} collapsible="icon">
+  return <Sidebar 
+    side="right" 
+    variant="sidebar"
+    className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 shadow-sidebar border-l border-sidebar-border shrink-0`} 
+    style={{
+      background: 'var(--gradient-sidebar)'
+    }} 
+    collapsible="icon">
       {/* Sidebar Header */}
       <SidebarHeader className="p-4 border-b border-sidebar-border/50">
         {!collapsed && <div className="flex items-center space-x-3 space-x-reverse">
