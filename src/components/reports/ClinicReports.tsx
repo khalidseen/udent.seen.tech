@@ -379,7 +379,7 @@ const ClinicReports = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px] w-full">
+                <ChartContainer config={{}} className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <RechartsPieChart>
                       <ChartTooltip content={<ChartTooltipContent />} />
@@ -400,7 +400,7 @@ const ClinicReports = () => {
                       </Pie>
                     </RechartsPieChart>
                   </ResponsiveContainer>
-                </div>
+                </ChartContainer>
                 <div className="grid grid-cols-2 gap-2 mt-4">
                   {stats.appointmentsByStatus.map((item, index) => (
                     <div key={item.status} className="flex items-center gap-2 text-sm">
@@ -424,7 +424,7 @@ const ClinicReports = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-[300px] w-full">
+                <ChartContainer config={{}} className="h-[300px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={stats.dailyAppointments}>
                       <CartesianGrid strokeDasharray="3 3" />
@@ -440,7 +440,7 @@ const ClinicReports = () => {
                       />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
+                </ChartContainer>
               </CardContent>
             </Card>
           </div>
@@ -454,7 +454,7 @@ const ClinicReports = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px] w-full">
+              <ChartContainer config={{}} className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.appointmentsByMonth}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -464,7 +464,7 @@ const ClinicReports = () => {
                     <Bar dataKey="count" fill={COLORS.primary} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </ChartContainer>
             </CardContent>
           </Card>
         </TabsContent>
@@ -478,7 +478,7 @@ const ClinicReports = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] w-full">
+              <ChartContainer config={{}} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsPieChart>
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -499,7 +499,7 @@ const ClinicReports = () => {
                     </Pie>
                   </RechartsPieChart>
                 </ResponsiveContainer>
-              </div>
+              </ChartContainer>
               <div className="grid grid-cols-2 gap-2 mt-4">
                 {stats.patientsByGender.map((item, index) => (
                   <div key={item.gender} className="flex items-center gap-2 text-sm">
@@ -524,7 +524,7 @@ const ClinicReports = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[400px] w-full">
+              <ChartContainer config={{}} className="h-[400px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={stats.treatmentsByStatus} layout="horizontal">
                     <CartesianGrid strokeDasharray="3 3" />
@@ -534,7 +534,7 @@ const ClinicReports = () => {
                     <Bar dataKey="count" fill={COLORS.success} radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
-              </div>
+              </ChartContainer>
             </CardContent>
           </Card>
         </TabsContent>
@@ -548,7 +548,7 @@ const ClinicReports = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-[300px] w-full">
+              <ChartContainer config={{}} className="h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <RechartsPieChart>
                     <ChartTooltip content={<ChartTooltipContent />} />
@@ -569,7 +569,7 @@ const ClinicReports = () => {
                     </Pie>
                   </RechartsPieChart>
                 </ResponsiveContainer>
-              </div>
+              </ChartContainer>
               <div className="grid grid-cols-2 gap-2 mt-4">
                 {stats.requestsByStatus.map((item, index) => (
                   <div key={item.status} className="flex items-center gap-2 text-sm">
