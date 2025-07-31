@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Calendar, Users, UserPlus, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList } from "lucide-react";
+import { Calendar, Users, UserPlus, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
 const mainMenuItems = [{
   title: "تقارير العيادة",
   url: "/",
@@ -35,6 +36,10 @@ const mainMenuItems = [{
   icon: Activity
 }];
 const clinicMenuItems = [{
+  title: "طلبات الأطباء",
+  url: "/doctor-applications",
+  icon: UserCheck
+}, {
   title: "الإعدادات",
   url: "/settings",
   icon: Settings
@@ -55,6 +60,7 @@ export function AppSidebar() {
   const location = useLocation();
   const currentPath = location.pathname;
   const [searchQuery, setSearchQuery] = useState("");
+  const { signOut, user } = useAuth();
   const isActive = (path: string) => currentPath === path;
   const hasActiveInGroup = (items: typeof mainMenuItems) => items.some(item => isActive(item.url));
   const getNavClasses = (path: string) => {
@@ -156,12 +162,22 @@ export function AppSidebar() {
                 </p>
               </div>
             </div>
-            <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-background/50">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-background/50"
+              onClick={signOut}
+            >
               <LogOut className="w-4 h-4 ml-2" />
               تسجيل الخروج
             </Button>
           </div>}
-        {collapsed && <Button variant="ghost" size="sm" className="w-full p-2 hover:bg-sidebar-background/50">
+        {collapsed && <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-full p-2 hover:bg-sidebar-background/50"
+            onClick={signOut}
+          >
             <LogOut className="w-4 h-4 text-sidebar-foreground" />
           </Button>}
       </SidebarFooter>

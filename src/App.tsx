@@ -14,6 +14,9 @@ import AddPatientForm from "./components/patients/AddPatientForm";
 import Appointments from "./pages/Appointments";
 import PublicBooking from "./pages/PublicBooking";
 import AppointmentRequests from "./pages/AppointmentRequests";
+import Auth from "./pages/Auth";
+import DoctorApplications from "./pages/DoctorApplications";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,23 +29,27 @@ const App = () => (
         <Routes>
           {/* Public routes without MainLayout */}
           <Route path="/book" element={<PublicBooking />} />
+          <Route path="/auth" element={<Auth />} />
           
           {/* Protected routes with MainLayout */}
           <Route path="/*" element={
-            <MainLayout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/patients" element={<Patients />} />
-                <Route path="/patients/:patientId" element={<PatientProfile />} />
-                <Route path="/add-patient" element={<AddPatientForm />} />
-                <Route path="/appointments" element={<Appointments />} />
-                <Route path="/appointment-requests" element={<AppointmentRequests />} />
-                <Route path="/new-appointment" element={<NewAppointment />} />
-                <Route path="/treatments" element={<Treatments />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </MainLayout>
+            <ProtectedRoute>
+              <MainLayout>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/patients" element={<Patients />} />
+                  <Route path="/patients/:patientId" element={<PatientProfile />} />
+                  <Route path="/add-patient" element={<AddPatientForm />} />
+                  <Route path="/appointments" element={<Appointments />} />
+                  <Route path="/appointment-requests" element={<AppointmentRequests />} />
+                  <Route path="/new-appointment" element={<NewAppointment />} />
+                  <Route path="/treatments" element={<Treatments />} />
+                  <Route path="/doctor-applications" element={<DoctorApplications />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </MainLayout>
+            </ProtectedRoute>
           } />
         </Routes>
       </BrowserRouter>

@@ -182,6 +182,63 @@ export type Database = {
           },
         ]
       }
+      doctor_applications: {
+        Row: {
+          admin_id: string | null
+          admin_message: string | null
+          clinic_address: string | null
+          clinic_name: string | null
+          created_at: string
+          email: string
+          experience_years: number | null
+          full_name: string
+          id: string
+          license_number: string | null
+          message: string | null
+          phone: string | null
+          reviewed_at: string | null
+          specialization: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_id?: string | null
+          admin_message?: string | null
+          clinic_address?: string | null
+          clinic_name?: string | null
+          created_at?: string
+          email: string
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          license_number?: string | null
+          message?: string | null
+          phone?: string | null
+          reviewed_at?: string | null
+          specialization?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_id?: string | null
+          admin_message?: string | null
+          clinic_address?: string | null
+          clinic_name?: string | null
+          created_at?: string
+          email?: string
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          license_number?: string | null
+          message?: string | null
+          phone?: string | null
+          reviewed_at?: string | null
+          specialization?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           address: string | null
@@ -241,6 +298,7 @@ export type Database = {
           full_name: string
           id: string
           role: string
+          status: string | null
           updated_at: string
           user_id: string
         }
@@ -249,6 +307,7 @@ export type Database = {
           full_name: string
           id?: string
           role?: string
+          status?: string | null
           updated_at?: string
           user_id: string
         }
@@ -257,6 +316,7 @@ export type Database = {
           full_name?: string
           id?: string
           role?: string
+          status?: string | null
           updated_at?: string
           user_id?: string
         }
