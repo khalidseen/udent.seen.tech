@@ -10,7 +10,6 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Clock, User, Phone, Mail, MapPin, FileText, Check, X } from "lucide-react";
-
 interface AppointmentRequest {
   id: string;
   patient_name: string;
@@ -24,52 +23,47 @@ interface AppointmentRequest {
   created_at: string;
   rejection_reason: string;
 }
-
 const AppointmentRequestsList = () => {
   const [requests, setRequests] = useState<AppointmentRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [rejectionReason, setRejectionReason] = useState("");
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
-
   const fetchRequests = async () => {
     try {
       setIsLoading(true);
       // Get current user's clinic ID
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) {
         console.log('No user found');
         return;
       }
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
+      const {
+        data: profile,
+        error: profileError
+      } = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
       if (profileError) {
         console.error('Profile error:', profileError);
         return;
       }
-      
       if (!profile) {
         console.log('No profile found');
         return;
       }
-
       console.log('Profile ID:', profile.id);
-
-      const { data, error } = await supabase
-        .from('appointment_requests')
-        .select('*')
-        .eq('clinic_id', profile.id)
-        .order('created_at', { ascending: false });
-
+      const {
+        data,
+        error
+      } = await supabase.from('appointment_requests').select('*').eq('clinic_id', profile.id).order('created_at', {
+        ascending: false
+      });
       if (error) {
         console.error('Appointment requests error:', error);
         throw error;
       }
-      
       console.log('Fetched requests:', data);
       setRequests(data || []);
     } catch (error) {
@@ -79,36 +73,30 @@ const AppointmentRequestsList = () => {
       setIsLoading(false);
     }
   };
-
   useEffect(() => {
     fetchRequests();
   }, []);
-
   const handleApprove = async (request: AppointmentRequest) => {
     setProcessingRequest(request.id);
     try {
       // Get current user's clinic ID
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
+      const {
+        data: profile
+      } = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
       if (!profile) return;
 
       // First, check if a patient with the same name and phone already exists
       let patientId = null;
       if (request.patient_phone) {
-        const { data: existingPatient } = await supabase
-          .from('patients')
-          .select('id')
-          .eq('clinic_id', profile.id)
-          .eq('phone', request.patient_phone)
-          .single();
-        
+        const {
+          data: existingPatient
+        } = await supabase.from('patients').select('id').eq('clinic_id', profile.id).eq('phone', request.patient_phone).single();
         if (existingPatient) {
           patientId = existingPatient.id;
         }
@@ -116,55 +104,47 @@ const AppointmentRequestsList = () => {
 
       // If no existing patient found, create a new one
       if (!patientId) {
-        const { data: newPatient, error: patientError } = await supabase
-          .from('patients')
-          .insert({
-            clinic_id: profile.id,
-            full_name: request.patient_name,
-            phone: request.patient_phone,
-            email: request.patient_email,
-            address: request.patient_address,
-            medical_history: `طلب موعد: ${request.condition_description}`
-          })
-          .select('id')
-          .single();
-
+        const {
+          data: newPatient,
+          error: patientError
+        } = await supabase.from('patients').insert({
+          clinic_id: profile.id,
+          full_name: request.patient_name,
+          phone: request.patient_phone,
+          email: request.patient_email,
+          address: request.patient_address,
+          medical_history: `طلب موعد: ${request.condition_description}`
+        }).select('id').single();
         if (patientError) {
           console.error('Error creating patient:', patientError);
           throw new Error('فشل في إنشاء بيانات المريض');
         }
-        
         patientId = newPatient.id;
       }
 
       // Create the actual appointment
-      const { data: appointment, error: appointmentError } = await supabase
-        .from('appointments')
-        .insert({
-          clinic_id: profile.id,
-          patient_id: patientId,
-          appointment_date: `${request.preferred_date}T${request.preferred_time}+00:00`,
-          duration: 30,
-          treatment_type: "استشارة",
-          status: "scheduled",
-          notes: `طلب من الموقع - ${request.condition_description}`
-        })
-        .select()
-        .single();
-
+      const {
+        data: appointment,
+        error: appointmentError
+      } = await supabase.from('appointments').insert({
+        clinic_id: profile.id,
+        patient_id: patientId,
+        appointment_date: `${request.preferred_date}T${request.preferred_time}+00:00`,
+        duration: 30,
+        treatment_type: "استشارة",
+        status: "scheduled",
+        notes: `طلب من الموقع - ${request.condition_description}`
+      }).select().single();
       if (appointmentError) throw appointmentError;
 
       // Update the request status
-      const { error: updateError } = await supabase
-        .from('appointment_requests')
-        .update({ 
-          status: 'approved',
-          approved_appointment_id: appointment.id 
-        })
-        .eq('id', request.id);
-
+      const {
+        error: updateError
+      } = await supabase.from('appointment_requests').update({
+        status: 'approved',
+        approved_appointment_id: appointment.id
+      }).eq('id', request.id);
       if (updateError) throw updateError;
-
       toast.success("تم قبول طلب الموعد وإنشاء بيانات المريض بنجاح");
       fetchRequests();
     } catch (error) {
@@ -174,25 +154,20 @@ const AppointmentRequestsList = () => {
       setProcessingRequest(null);
     }
   };
-
   const handleReject = async (requestId: string) => {
     if (!rejectionReason.trim()) {
       toast.error("يرجى إدخال سبب الرفض");
       return;
     }
-
     setProcessingRequest(requestId);
     try {
-      const { error } = await supabase
-        .from('appointment_requests')
-        .update({ 
-          status: 'rejected',
-          rejection_reason: rejectionReason
-        })
-        .eq('id', requestId);
-
+      const {
+        error
+      } = await supabase.from('appointment_requests').update({
+        status: 'rejected',
+        rejection_reason: rejectionReason
+      }).eq('id', requestId);
       if (error) throw error;
-
       toast.success("تم رفض طلب الموعد");
       setRejectionReason("");
       fetchRequests();
@@ -203,7 +178,6 @@ const AppointmentRequestsList = () => {
       setProcessingRequest(null);
     }
   };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
@@ -216,28 +190,21 @@ const AppointmentRequestsList = () => {
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
-
   if (isLoading) {
     return <div className="p-6">جاري التحميل...</div>;
   }
-
-  return (
-    <div className="p-6 space-y-6">
+  return <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">طلبات المواعيد</h2>
+        
         <Badge variant="outline">{requests.length} طلب</Badge>
       </div>
 
-      {requests.length === 0 ? (
-        <Card>
+      {requests.length === 0 ? <Card>
           <CardContent className="p-6 text-center">
             <p className="text-muted-foreground">لا توجد طلبات مواعيد حالياً</p>
           </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {requests.map((request) => (
-            <Card key={request.id}>
+        </Card> : <div className="grid gap-4">
+          {requests.map(request => <Card key={request.id}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -246,7 +213,9 @@ const AppointmentRequestsList = () => {
                       {request.patient_name}
                     </CardTitle>
                     <CardDescription>
-                      تم الإرسال في {format(new Date(request.created_at), 'dd/MM/yyyy HH:mm', { locale: ar })}
+                      تم الإرسال في {format(new Date(request.created_at), 'dd/MM/yyyy HH:mm', {
+                  locale: ar
+                })}
                     </CardDescription>
                   </div>
                   {getStatusBadge(request.status)}
@@ -258,27 +227,23 @@ const AppointmentRequestsList = () => {
                     <div className="flex items-center gap-2 text-sm">
                       <Clock className="w-4 h-4" />
                       <span>
-                        {format(new Date(request.preferred_date), 'dd/MM/yyyy', { locale: ar })} - {request.preferred_time}
+                        {format(new Date(request.preferred_date), 'dd/MM/yyyy', {
+                    locale: ar
+                  })} - {request.preferred_time}
                       </span>
                     </div>
-                    {request.patient_phone && (
-                      <div className="flex items-center gap-2 text-sm">
+                    {request.patient_phone && <div className="flex items-center gap-2 text-sm">
                         <Phone className="w-4 h-4" />
                         <span>{request.patient_phone}</span>
-                      </div>
-                    )}
-                    {request.patient_email && (
-                      <div className="flex items-center gap-2 text-sm">
+                      </div>}
+                    {request.patient_email && <div className="flex items-center gap-2 text-sm">
                         <Mail className="w-4 h-4" />
                         <span>{request.patient_email}</span>
-                      </div>
-                    )}
-                    {request.patient_address && (
-                      <div className="flex items-center gap-2 text-sm">
+                      </div>}
+                    {request.patient_address && <div className="flex items-center gap-2 text-sm">
                         <MapPin className="w-4 h-4" />
                         <span>{request.patient_address}</span>
-                      </div>
-                    )}
+                      </div>}
                   </div>
                   <div>
                     <div className="flex items-start gap-2 text-sm">
@@ -291,13 +256,8 @@ const AppointmentRequestsList = () => {
                   </div>
                 </div>
 
-                {request.status === 'pending' && (
-                  <div className="flex gap-2 pt-4 border-t">
-                    <Button
-                      onClick={() => handleApprove(request)}
-                      disabled={processingRequest === request.id}
-                      className="flex items-center gap-1"
-                    >
+                {request.status === 'pending' && <div className="flex gap-2 pt-4 border-t">
+                    <Button onClick={() => handleApprove(request)} disabled={processingRequest === request.id} className="flex items-center gap-1">
                       <Check className="w-4 h-4" />
                       قبول الطلب
                     </Button>
@@ -319,43 +279,26 @@ const AppointmentRequestsList = () => {
                         <div className="space-y-4">
                           <div>
                             <Label htmlFor="rejection_reason">سبب الرفض</Label>
-                            <Textarea
-                              id="rejection_reason"
-                              value={rejectionReason}
-                              onChange={(e) => setRejectionReason(e.target.value)}
-                              placeholder="أدخل سبب رفض الطلب..."
-                              rows={3}
-                            />
+                            <Textarea id="rejection_reason" value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} placeholder="أدخل سبب رفض الطلب..." rows={3} />
                           </div>
                           <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleReject(request.id)}
-                              disabled={processingRequest === request.id}
-                              variant="destructive"
-                            >
+                            <Button onClick={() => handleReject(request.id)} disabled={processingRequest === request.id} variant="destructive">
                               تأكيد الرفض
                             </Button>
                           </div>
                         </div>
                       </DialogContent>
                     </Dialog>
-                  </div>
-                )}
+                  </div>}
 
-                {request.status === 'rejected' && request.rejection_reason && (
-                  <div className="p-3 bg-destructive/10 rounded-md">
+                {request.status === 'rejected' && request.rejection_reason && <div className="p-3 bg-destructive/10 rounded-md">
                     <p className="text-sm text-destructive">
                       <strong>سبب الرفض:</strong> {request.rejection_reason}
                     </p>
-                  </div>
-                )}
+                  </div>}
               </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+            </Card>)}
+        </div>}
+    </div>;
 };
-
 export default AppointmentRequestsList;
