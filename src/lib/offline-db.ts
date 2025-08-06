@@ -28,9 +28,31 @@ interface OfflineDB extends DBSchema {
       timestamp: number;
     };
   };
+  offline_users: {
+    key: string;
+    value: {
+      id: string;
+      email: string;
+      password_hash: string;
+      full_name: string;
+      role: string;
+      created_at: string;
+    };
+  };
+  offline_sessions: {
+    key: string;
+    value: {
+      id: string;
+      user_id: string;
+      access_token: string;
+      refresh_token: string;
+      expires_at: string;
+      created_at: string;
+    };
+  };
 }
 
-type TableName = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'offline_queue';
+type TableName = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'offline_queue' | 'offline_users' | 'offline_sessions';
 
 class OfflineDatabase {
   private db: IDBPDatabase<OfflineDB> | null = null;
@@ -53,6 +75,12 @@ class OfflineDatabase {
         }
         if (!db.objectStoreNames.contains('offline_queue')) {
           db.createObjectStore('offline_queue', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('offline_users')) {
+          db.createObjectStore('offline_users', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('offline_sessions')) {
+          db.createObjectStore('offline_sessions', { keyPath: 'id' });
         }
       },
     });
