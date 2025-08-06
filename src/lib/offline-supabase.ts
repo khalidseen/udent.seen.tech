@@ -35,15 +35,15 @@ class OfflineSupabaseClient {
     const id = data.id || crypto.randomUUID();
     const now = new Date().toISOString();
     
-    const insertData = Object.assign({}, data, {
-      id,
-      created_at: now,
-      updated_at: now,
-    });
+    const insertData = Object.assign({}, data);
+    insertData.id = id;
+    insertData.created_at = now;
+    insertData.updated_at = now;
 
     if (this.isOnline()) {
       try {
-        const result = await supabase.from(table).insert(insertData);
+        // Type assertion to bypass complex type checking
+        const result = await (supabase.from(table) as any).insert(insertData);
         await offlineDB.put(table, insertData);
         return result;
       } catch (error) {
@@ -52,29 +52,28 @@ class OfflineSupabaseClient {
       }
     }
 
-    const offlineData = Object.assign({}, insertData, {
-      _offline_action: 'create',
-      _pending_sync: true,
-    });
+    insertData._offline_action = 'create';
+    insertData._pending_sync = true;
 
-    await offlineDB.put(table, offlineData);
+    await offlineDB.put(table, insertData);
     await offlineDB.addToQueue(table, 'create', insertData);
     
     return { data: [insertData], error: null };
   }
 
   async update(table: DatabaseTable, data: any, condition: { column: string; value: string }) {
-    const updateData = Object.assign({}, data, {
-      updated_at: new Date().toISOString(),
-    });
+    const updateData = Object.assign({}, data);
+    updateData.updated_at = new Date().toISOString();
 
     if (this.isOnline()) {
       try {
-        const result = await supabase.from(table).update(updateData).eq(condition.column, condition.value);
+        // Type assertion to bypass complex type checking
+        const result = await (supabase.from(table) as any).update(updateData).eq(condition.column, condition.value);
         
         const existingItem = await offlineDB.get(table, condition.value);
         if (existingItem) {
-          await offlineDB.put(table, Object.assign({}, existingItem, updateData));
+          const mergedItem = Object.assign({}, existingItem, updateData);
+          await offlineDB.put(table, mergedItem);
         }
         
         return result;
@@ -86,10 +85,9 @@ class OfflineSupabaseClient {
 
     const existingItem = await offlineDB.get(table, condition.value);
     if (existingItem) {
-      const updatedItem = Object.assign({}, existingItem, updateData, {
-        _offline_action: 'update',
-        _pending_sync: true,
-      });
+      const updatedItem = Object.assign({}, existingItem, updateData);
+      updatedItem._offline_action = 'update';
+      updatedItem._pending_sync = true;
       
       await offlineDB.put(table, updatedItem);
       await offlineDB.addToQueue(table, 'update', updatedItem);
@@ -101,7 +99,7 @@ class OfflineSupabaseClient {
   async delete(table: DatabaseTable, condition: { column: string; value: string }) {
     if (this.isOnline()) {
       try {
-        const result = await supabase.from(table).delete().eq(condition.column, condition.value);
+        const result = await (supabase.from(table) as any).delete().eq(condition.column, condition.value);
         await offlineDB.delete(table, condition.value);
         return result;
       } catch (error) {
@@ -112,12 +110,10 @@ class OfflineSupabaseClient {
 
     const existingItem = await offlineDB.get(table, condition.value);
     if (existingItem) {
-      const deleteItem = Object.assign({}, existingItem, {
-        _offline_action: 'delete',
-        _pending_sync: true,
-      });
+      existingItem._offline_action = 'delete';
+      existingItem._pending_sync = true;
       
-      await offlineDB.put(table, deleteItem);
+      await offlineDB.put(table, existingItem);
       await offlineDB.addToQueue(table, 'delete', existingItem);
     }
     
