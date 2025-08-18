@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,11 +33,7 @@ const CalendarView = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [dayModalOpen, setDayModalOpen] = useState(false);
 
-  useEffect(() => {
-    fetchMonthAppointments();
-  }, [currentDate]);
-
-  const fetchMonthAppointments = async () => {
+  const fetchMonthAppointments = useCallback(async () => {
     try {
       setLoading(true);
       const monthStart = startOfMonth(currentDate);
@@ -60,20 +56,24 @@ const CalendarView = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentDate]);
 
-  const getAppointmentsForDate = (date: Date) => {
+  useEffect(() => {
+    fetchMonthAppointments();
+  }, [fetchMonthAppointments]);
+
+  const getAppointmentsForDate = useCallback((date: Date) => {
     return appointments.filter(appointment =>
       isSameDay(new Date(appointment.appointment_date), date)
     );
-  };
+  }, [appointments]);
 
-  const handleDateClick = (date: Date) => {
+  const handleDateClick = useCallback((date: Date) => {
     setSelectedDate(date);
     setDayModalOpen(true);
-  };
+  }, []);
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
+  const navigateMonth = useCallback((direction: 'prev' | 'next') => {
     const newDate = new Date(currentDate);
     if (direction === 'prev') {
       newDate.setMonth(newDate.getMonth() - 1);
@@ -81,18 +81,18 @@ const CalendarView = () => {
       newDate.setMonth(newDate.getMonth() + 1);
     }
     setCurrentDate(newDate);
-  };
+  }, [currentDate]);
 
-  const getDayAppointmentStats = (date: Date) => {
+  const getDayAppointmentStats = useCallback((date: Date) => {
     const dayAppointments = getAppointmentsForDate(date);
     const completed = dayAppointments.filter(a => a.status === 'completed').length;
     const scheduled = dayAppointments.filter(a => a.status === 'scheduled').length;
     const cancelled = dayAppointments.filter(a => a.status === 'cancelled').length;
     
     return { total: dayAppointments.length, completed, scheduled, cancelled };
-  };
+  }, [getAppointmentsForDate]);
 
-  const renderCalendarDay = (date: Date) => {
+  const renderCalendarDay = useCallback((date: Date) => {
     const stats = getDayAppointmentStats(date);
     const isToday = isSameDay(date, new Date());
     
@@ -138,20 +138,22 @@ const CalendarView = () => {
         </div>
       </div>
     );
-  };
+  }, [getDayAppointmentStats, handleDateClick]);
 
-  const monthDays = eachDayOfInterval({
-    start: startOfMonth(currentDate),
-    end: endOfMonth(currentDate)
-  });
+  const monthDays = useMemo(() => 
+    eachDayOfInterval({
+      start: startOfMonth(currentDate),
+      end: endOfMonth(currentDate)
+    }), [currentDate]);
 
   // Get month statistics
-  const monthStats = {
+  const monthStats = useMemo(() => ({
     total: appointments.length,
     completed: appointments.filter(a => a.status === 'completed').length,
     scheduled: appointments.filter(a => a.status === 'scheduled').length,
     cancelled: appointments.filter(a => a.status === 'cancelled').length,
-  };
+  }), [appointments]);
+
 
   if (loading) {
     return (

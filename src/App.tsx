@@ -16,7 +16,16 @@ import Auth from "./pages/Auth";
 import DoctorApplications from "./pages/DoctorApplications";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: false,
+      retry: 2
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
