@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.4"
@@ -242,6 +242,110 @@ export type Database = {
         }
         Relationships: []
       }
+      invoice_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          invoice_id: string
+          line_total: number
+          quantity: number
+          service_name: string
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          invoice_id: string
+          line_total: number
+          quantity?: number
+          service_name: string
+          unit_price: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          invoice_id?: string
+          line_total?: number
+          quantity?: number
+          service_name?: string
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          balance_due: number
+          clinic_id: string
+          created_at: string
+          discount_amount: number | null
+          discount_percentage: number | null
+          due_date: string
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          paid_amount: number
+          patient_id: string
+          status: string
+          subtotal: number
+          tax_amount: number | null
+          tax_percentage: number | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          balance_due?: number
+          clinic_id: string
+          created_at?: string
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          due_date: string
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          notes?: string | null
+          paid_amount?: number
+          patient_id: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          tax_percentage?: number | null
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          balance_due?: number
+          clinic_id?: string
+          created_at?: string
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          paid_amount?: number
+          patient_id?: string
+          status?: string
+          subtotal?: number
+          tax_amount?: number | null
+          tax_percentage?: number | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           address: string | null
@@ -295,6 +399,59 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount: number
+          clinic_id: string
+          created_at: string
+          id: string
+          invoice_id: string
+          notes: string | null
+          patient_id: string
+          payment_date: string
+          payment_method: string
+          reference_number: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          clinic_id: string
+          created_at?: string
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          patient_id: string
+          payment_date?: string
+          payment_method?: string
+          reference_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          clinic_id?: string
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          patient_id?: string
+          payment_date?: string
+          payment_method?: string
+          reference_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -325,11 +482,54 @@ export type Database = {
         }
         Relationships: []
       }
+      service_prices: {
+        Row: {
+          base_price: number
+          clinic_id: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          is_active: boolean
+          service_category: string
+          service_name: string
+          updated_at: string
+        }
+        Insert: {
+          base_price: number
+          clinic_id: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          service_category?: string
+          service_name: string
+          updated_at?: string
+        }
+        Update: {
+          base_price?: number
+          clinic_id?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          service_category?: string
+          service_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      generate_invoice_number: {
+        Args: { clinic_id_param: string }
+        Returns: string
+      }
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
         Returns: {
