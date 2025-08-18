@@ -2,6 +2,7 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { Toaster } from "@/components/ui/toaster"
 
 // Enable concurrent features for better performance
 const container = document.getElementById("root")!;
@@ -20,4 +21,9 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-root.render(<App />);
+root.render(
+  <React.StrictMode>
+    <App />
+    <Toaster />
+  </React.StrictMode>
+);
