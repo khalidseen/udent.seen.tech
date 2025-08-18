@@ -127,23 +127,23 @@ const AddPatientForm = () => {
   };
 
   return (
-    <PageContainer maxWidth="2xl">
+    <PageContainer>
       <PageHeader 
         title="إضافة مريض جديد" 
         description="أدخل بيانات المريض الجديد" 
       />
 
-      <Card>
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center">
             <UserPlus className="w-5 h-5 ml-2" />
             بيانات المريض
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Basic Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="p-8">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* First Row: Name, Phone, Email */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="full_name">اسم المريض *</Label>
                 <Input
@@ -152,6 +152,7 @@ const AddPatientForm = () => {
                   onChange={(e) => handleChange('full_name', e.target.value)}
                   placeholder="الاسم الكامل"
                   required
+                  className="h-12"
                 />
               </div>
               
@@ -163,11 +164,10 @@ const AddPatientForm = () => {
                   onChange={(e) => handleChange('phone', e.target.value)}
                   placeholder="+201234567890"
                   type="tel"
+                  className="h-12"
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="email">البريد الإلكتروني</Label>
                 <Input
@@ -176,9 +176,13 @@ const AddPatientForm = () => {
                   onChange={(e) => handleChange('email', e.target.value)}
                   placeholder="patient@example.com"
                   type="email"
+                  className="h-12"
                 />
               </div>
-              
+            </div>
+
+            {/* Second Row: Date of Birth, Gender, Address */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="date_of_birth">تاريخ الميلاد</Label>
                 <Input
@@ -186,15 +190,14 @@ const AddPatientForm = () => {
                   value={formData.date_of_birth}
                   onChange={(e) => handleChange('date_of_birth', e.target.value)}
                   type="date"
+                  className="h-12"
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="gender">الجنس</Label>
                 <Select onValueChange={(value) => handleChange('gender', value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-12">
                     <SelectValue placeholder="اختر الجنس" />
                   </SelectTrigger>
                   <SelectContent>
@@ -211,12 +214,13 @@ const AddPatientForm = () => {
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                   placeholder="عنوان المريض"
+                  className="h-12"
                 />
               </div>
             </div>
 
-            {/* Medical Info */}
-            <div className="space-y-4">
+            {/* Medical Info Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="medical_history">التاريخ المرضي</Label>
                 <Textarea
@@ -224,7 +228,8 @@ const AddPatientForm = () => {
                   value={formData.medical_history}
                   onChange={(e) => handleChange('medical_history', e.target.value)}
                   placeholder="التاريخ المرضي والحساسيات..."
-                  rows={3}
+                  rows={4}
+                  className="resize-none"
                 />
               </div>
               
@@ -235,14 +240,15 @@ const AddPatientForm = () => {
                   value={formData.notes}
                   onChange={(e) => handleChange('notes', e.target.value)}
                   placeholder="أي ملاحظات أو معلومات إضافية..."
-                  rows={3}
+                  rows={4}
+                  className="resize-none"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end space-x-4 space-x-reverse">
-              <Button type="submit" disabled={loading} className="px-8">
-                <Save className="w-4 h-4 ml-2" />
+            <div className="flex justify-end pt-4">
+              <Button type="submit" disabled={loading} size="lg" className="px-12 h-12">
+                <Save className="w-5 h-5 ml-2" />
                 {loading ? 'جاري الحفظ...' : 'حفظ المريض'}
               </Button>
             </div>
