@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
 const PublicBooking = () => {
+  console.log("PublicBooking component rendering");
   const [searchParams] = useSearchParams();
   const clinicId = searchParams.get('clinic');
   
