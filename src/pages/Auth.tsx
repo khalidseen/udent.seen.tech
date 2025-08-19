@@ -30,7 +30,6 @@ export default function Auth() {
   const [applicationForm, setApplicationForm] = useState({
     email: "",
     fullName: "",
-    password: "",
     phone: "",
     specialization: "",
     experienceYears: "",
@@ -45,12 +44,38 @@ export default function Auth() {
     return <Navigate to="/" replace />;
   }
 
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 8) {
+      return "كلمة المرور يجب أن تكون على الأقل 8 أحرف";
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return "كلمة المرور يجب أن تحتوي على حرف صغير على الأقل";
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return "كلمة المرور يجب أن تحتوي على حرف كبير على الأقل";
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return "كلمة المرور يجب أن تحتوي على رقم على الأقل";
+    }
+    return null;
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!loginForm.email || !loginForm.password) {
       toast({
         title: "خطأ في البيانات",
         description: "يرجى ملء جميع الحقول المطلوبة",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const passwordError = validatePassword(loginForm.password);
+    if (passwordError) {
+      toast({
+        title: "كلمة مرور ضعيفة",
+        description: passwordError,
         variant: "destructive"
       });
       return;
@@ -64,10 +89,10 @@ export default function Auth() {
   const handleApplicationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!applicationForm.email || !applicationForm.fullName || !applicationForm.password || !applicationForm.specialization) {
+    if (!applicationForm.email || !applicationForm.fullName || !applicationForm.specialization) {
       toast({
         title: "خطأ في البيانات",
-        description: "يرجى ملء جميع الحقول المطلوبة (الاسم، البريد، كلمة المرور، التخصص)",
+        description: "يرجى ملء جميع الحقول المطلوبة (الاسم، البريد، التخصص)",
         variant: "destructive"
       });
       return;
@@ -133,7 +158,6 @@ export default function Auth() {
         .insert({
           email: applicationForm.email.trim(),
           full_name: applicationForm.fullName.trim(),
-          password: applicationForm.password,
           phone: applicationForm.phone?.trim() || null,
           specialization: applicationForm.specialization,
           experience_years: applicationForm.experienceYears ? parseInt(applicationForm.experienceYears) : null,
@@ -204,7 +228,6 @@ export default function Auth() {
         setApplicationForm({
           email: "",
           fullName: "",
-          password: "",
           phone: "",
           specialization: "",
           experienceYears: "",
@@ -370,38 +393,6 @@ export default function Auth() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="applicationPassword">كلمة المرور *</Label>
-                      <div className="relative">
-                        <Input
-                          id="applicationPassword"
-                          type={showPassword ? "text" : "password"}
-                          placeholder="أدخل كلمة المرور للحساب"
-                          value={applicationForm.password}
-                          onChange={(e) => setApplicationForm(prev => ({ ...prev, password: e.target.value }))}
-                          className="pl-10"
-                          required
-                          disabled={isSubmitting}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute left-0 top-0 h-full px-3 hover:bg-transparent"
-                          onClick={() => setShowPassword(!showPassword)}
-                          disabled={isSubmitting}
-                        >
-                          {showPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        ستستخدم هذه كلمة المرور لتسجيل الدخول بعد الموافقة على الطلب
-                      </p>
-                    </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="phone">رقم الهاتف</Label>

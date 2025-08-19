@@ -205,7 +205,6 @@ export type Database = {
           id: string
           license_number: string | null
           message: string | null
-          password: string | null
           phone: string | null
           request_ip: unknown | null
           request_user_agent: string | null
@@ -227,7 +226,6 @@ export type Database = {
           id?: string
           license_number?: string | null
           message?: string | null
-          password?: string | null
           phone?: string | null
           request_ip?: unknown | null
           request_user_agent?: string | null
@@ -249,7 +247,6 @@ export type Database = {
           id?: string
           license_number?: string | null
           message?: string | null
-          password?: string | null
           phone?: string | null
           request_ip?: unknown | null
           request_user_agent?: string | null
@@ -760,6 +757,36 @@ export type Database = {
           supplier_contact?: string | null
           total_amount?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      security_events: {
+        Row: {
+          created_at: string
+          details: Json | null
+          event_type: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json | null
+          event_type: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json | null
+          event_type?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }

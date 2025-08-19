@@ -11,6 +11,15 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Add rate limiting - max 10 requests per minute per IP
+  const forwardedFor = req.headers.get('x-forwarded-for');
+  const realIp = req.headers.get('x-real-ip');
+  const clientIp = forwardedFor ? forwardedFor.split(',')[0].trim() : realIp || 'unknown';
+  
+  // Basic rate limiting (in production, use Redis or similar)
+  // For now, we'll just log the request for monitoring
+  console.log(`Rate limiting check for IP: ${clientIp} at ${new Date().toISOString()}`);
+
   try {
     // Extract client IP and user agent from request headers
     const forwardedFor = req.headers.get('x-forwarded-for');

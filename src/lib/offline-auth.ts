@@ -217,16 +217,10 @@ class OfflineAuth {
   }
 
   async signInDemo() {
-    // Create/login with demo user
-    const demoEmail = 'demo@clinic.com';
-    const demoPassword = 'demo123456';
-    const demoName = 'د. أحمد محمد - تجريبي';
-    
-    // Try to create demo user first (will fail if exists, which is fine)
-    await this.signUpOffline(demoEmail, demoPassword, demoName);
-    
-    // Then sign in
-    return this.signIn(demoEmail, demoPassword);
+    return {
+      data: { user: null, session: null },
+      error: { message: 'Demo login has been disabled for security reasons. Please contact admin for account access.' }
+    };
   }
 
   async signOut() {
