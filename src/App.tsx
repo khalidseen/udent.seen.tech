@@ -31,42 +31,103 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <BrowserRouter>
-        <Toaster />
-      <Routes>
-          {/* Public routes without MainLayout */}
-          <Route path="/book" element={<PublicBooking />} />
-          <Route path="/auth" element={<Auth />} />
-          
-          {/* Protected routes with MainLayout */}
-          <Route path="/*" element={
-            <ProtectedRoute>
-              <MainLayout>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/patients" element={<Patients />} />
-                  <Route path="/patients/:patientId" element={<PatientProfile />} />
-                  <Route path="/add-patient" element={<AddPatientForm />} />
-                  <Route path="/appointments" element={<Appointments />} />
-                  <Route path="/appointment-requests" element={<AppointmentRequests />} />
-                  <Route path="/new-appointment" element={<NewAppointment />} />
-                  <Route path="/treatments" element={<Treatments />} />
-                  <Route path="/invoices" element={<Invoices />} />
-                  <Route path="/service-prices" element={<ServicePrices />} />
-                  <Route path="/doctor-applications" element={<DoctorApplications />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </MainLayout>
-            </ProtectedRoute>
-          } />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider delayDuration={300}>
+          <BrowserRouter>
+            <Routes>
+              {/* Public routes without MainLayout */}
+              <Route path="/book" element={<PublicBooking />} />
+              <Route path="/auth" element={<Auth />} />
+              
+              {/* Protected routes with MainLayout */}
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Index />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/patients" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Patients />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/patients/:patientId" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <PatientProfile />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/add-patient" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <AddPatientForm />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/appointments" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Appointments />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/appointment-requests" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <AppointmentRequests />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/new-appointment" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <NewAppointment />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/treatments" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Treatments />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/invoices" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Invoices />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/service-prices" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <ServicePrices />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/doctor-applications" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <DoctorApplications />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Toaster />
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </React.StrictMode>
+  );
+};
 
 export default App;
