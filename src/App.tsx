@@ -20,6 +20,9 @@ import Invoices from "./pages/Invoices";
 import ServicePrices from "./pages/ServicePrices";
 import Inventory from "./pages/Inventory";
 import MedicalRecords from "./pages/MedicalRecords";
+import Settings from "./pages/Settings";
+import Reports from "./pages/Reports";
+import Notifications from "./pages/Notifications";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -139,30 +142,21 @@ const App = () => {
               <Route path="/settings" element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <div className="p-6">
-                      <h1 className="text-3xl font-bold">الإعدادات</h1>
-                      <p className="text-muted-foreground mt-2">إعدادات النظام والعيادة</p>
-                    </div>
+                    <Settings />
                   </MainLayout>
                 </ProtectedRoute>
               } />
               <Route path="/reports" element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <div className="p-6">
-                      <h1 className="text-3xl font-bold">التقارير</h1>
-                      <p className="text-muted-foreground mt-2">تقارير شاملة عن العيادة</p>
-                    </div>
+                    <Reports />
                   </MainLayout>
                 </ProtectedRoute>
               } />
               <Route path="/notifications" element={
                 <ProtectedRoute>
                   <MainLayout>
-                    <div className="p-6">
-                      <h1 className="text-3xl font-bold">الإشعارات</h1>
-                      <p className="text-muted-foreground mt-2">إدارة الإشعارات والتنبيهات</p>
-                    </div>
+                    <Notifications />
                   </MainLayout>
                 </ProtectedRoute>
               } />
