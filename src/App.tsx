@@ -10,7 +10,7 @@ import NewAppointment from "./pages/NewAppointment";
 import Patients from "./pages/Patients";
 import PatientProfile from "./pages/PatientProfile";
 import Treatments from "./pages/Treatments";
-import AddPatientForm from "./components/patients/AddPatientForm";
+
 import Appointments from "./pages/Appointments";
 import PublicBooking from "./pages/PublicBooking";
 import AppointmentRequests from "./pages/AppointmentRequests";
@@ -66,13 +66,6 @@ const App = () => {
                 <ProtectedRoute>
                   <MainLayout>
                     <PatientProfile />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/add-patient" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <AddPatientForm />
                   </MainLayout>
                 </ProtectedRoute>
               } />
