@@ -83,11 +83,14 @@ export default function DoctorApplications() {
       // If approving, create user account first
       if (status === 'approved') {
         const application = applications.find(app => app.id === applicationId);
-        if (application && application.password) {
+        if (application) {
+          // Generate a secure temporary password
+          const temporaryPassword = Math.random().toString(36).slice(-12) + 'Temp1!';
+          
           // Create user account in Supabase Auth
           const { data: authData, error: authError } = await supabase.auth.admin.createUser({
             email: application.email,
-            password: application.password,
+            password: temporaryPassword,
             email_confirm: true,
             user_metadata: {
               full_name: application.full_name
@@ -102,6 +105,11 @@ export default function DoctorApplications() {
             });
             return;
           }
+
+          // Send password reset email so user can set their own password
+          await supabase.auth.resetPasswordForEmail(application.email, {
+            redirectTo: `${window.location.origin}/auth`
+          });
         }
       }
 
@@ -125,7 +133,7 @@ export default function DoctorApplications() {
         toast({
           title: status === 'approved' ? "تم قبول الطلب" : "تم رفض الطلب",
           description: status === 'approved' 
-            ? "تم قبول طلب الطبيب بنجاح وإنشاء حساب له. يمكنه الآن تسجيل الدخول للنظام."
+            ? "تم قبول طلب الطبيب بنجاح وإنشاء حساب له. تم إرسال رابط إعادة تعيين كلمة المرور عبر البريد الإلكتروني."
             : "تم رفض طلب الطبيب مع إرسال رسالة توضيحية."
         });
         
@@ -611,7 +619,7 @@ export default function DoctorApplications() {
               {actionType === 'delete' && 'حذف طلب الطبيب'}
             </DialogTitle>
             <DialogDescription>
-              {actionType === 'approve' && 'هل أنت متأكد من قبول هذا الطلب؟ سيتم إنشاء حساب للطبيب وإرسال بيانات الدخول إليه.'}
+              {actionType === 'approve' && 'هل أنت متأكد من قبول هذا الطلب؟ سيتم إنشاء حساب للطبيب وإرسال رابط إعادة تعيين كلمة المرور إليه.'}
               {actionType === 'reject' && 'هل أنت متأكد من رفض هذا الطلب؟ يرجى إدخال سبب الرفض ليتم إرساله للطبيب.'}
               {actionType === 'delete' && 'هل أنت متأكد من حذف هذا الطلب؟ لا يمكن التراجع عن هذا الإجراء.'}
             </DialogDescription>
