@@ -15,6 +15,8 @@ import PublicBooking from "./pages/PublicBooking";
 import AppointmentRequests from "./pages/AppointmentRequests";
 import Auth from "./pages/Auth";
 import DoctorApplications from "./pages/DoctorApplications";
+import Invoices from "./pages/Invoices";
+import ServicePrices from "./pages/ServicePrices";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -50,6 +52,8 @@ const App = () => (
                   <Route path="/appointment-requests" element={<AppointmentRequests />} />
                   <Route path="/new-appointment" element={<NewAppointment />} />
                   <Route path="/treatments" element={<Treatments />} />
+                  <Route path="/invoices" element={<Invoices />} />
+                  <Route path="/service-prices" element={<ServicePrices />} />
                   <Route path="/doctor-applications" element={<DoctorApplications />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />

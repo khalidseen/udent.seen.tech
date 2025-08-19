@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Calendar, Users, UserPlus, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck } from "lucide-react";
+import { Calendar, Users, UserPlus, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck, Receipt, DollarSign } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -34,11 +34,19 @@ const mainMenuItems = [{
   title: "العلاجات",
   url: "/treatments",
   icon: Activity
+}, {
+  title: "الفواتير",
+  url: "/invoices",
+  icon: Receipt
 }];
 const clinicMenuItems = [{
   title: "طلبات الأطباء",
   url: "/doctor-applications",
   icon: UserCheck
+}, {
+  title: "أسعار الخدمات",
+  url: "/service-prices",
+  icon: DollarSign
 }, {
   title: "الإعدادات",
   url: "/settings",
