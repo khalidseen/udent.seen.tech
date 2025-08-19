@@ -12,9 +12,11 @@ import { CreateSupplyDialog } from "@/components/inventory/CreateSupplyDialog";
 import { CreatePurchaseOrderDialog } from "@/components/inventory/CreatePurchaseOrderDialog";
 import { StockMovementDialog } from "@/components/inventory/StockMovementDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Package, AlertTriangle, Truck, Search } from "lucide-react";
+import { Plus, Package, AlertTriangle, Truck, Search, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { AdvancedInventoryReports } from "@/components/inventory/AdvancedInventoryReports";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Supply {
   id: string;
@@ -140,6 +142,17 @@ export default function Inventory() {
           </div>
         }
       />
+
+      <Tabs defaultValue="inventory" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="inventory">المخزون</TabsTrigger>
+          <TabsTrigger value="reports">
+            <BarChart3 className="w-4 h-4 ml-2" />
+            التقارير المتقدمة
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="inventory" className="space-y-6">
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -308,6 +321,12 @@ export default function Inventory() {
           onMovementRecorded={handleMovementRecorded}
         />
       )}
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <AdvancedInventoryReports />
+        </TabsContent>
+      </Tabs>
     </PageContainer>
   );
 }

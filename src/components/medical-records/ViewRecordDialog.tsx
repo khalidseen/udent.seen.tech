@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { EnhancedImageViewer } from "./EnhancedImageViewer";
+import { Eye } from "lucide-react";
 
 interface MedicalRecord {
   id: string;
@@ -30,6 +32,8 @@ interface ViewRecordDialogProps {
 }
 
 export function ViewRecordDialog({ record, isOpen, onClose }: ViewRecordDialogProps) {
+  const [selectedImage, setSelectedImage] = useState<any>(null);
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const { data: images } = useQuery({
     queryKey: ['medical-images', record.id],
     queryFn: async () => {
@@ -164,7 +168,7 @@ export function ViewRecordDialog({ record, isOpen, onClose }: ViewRecordDialogPr
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {images.map((image) => (
-                    <div key={image.id} className="border rounded-lg p-4">
+                    <div key={image.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
                       <div className="space-y-2">
                         <h4 className="font-medium">{image.title}</h4>
                         <p className="text-sm text-muted-foreground">{image.description}</p>
@@ -180,6 +184,18 @@ export function ViewRecordDialog({ record, isOpen, onClose }: ViewRecordDialogPr
                         <p className="text-xs text-muted-foreground">
                           {format(new Date(image.image_date), 'yyyy/MM/dd')}
                         </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full"
+                          onClick={() => {
+                            setSelectedImage(image);
+                            setIsImageViewerOpen(true);
+                          }}
+                        >
+                          <Eye className="w-4 h-4 ml-2" />
+                          عرض الصورة
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -207,6 +223,17 @@ export function ViewRecordDialog({ record, isOpen, onClose }: ViewRecordDialogPr
           </Button>
         </div>
       </DialogContent>
+
+      {selectedImage && (
+        <EnhancedImageViewer
+          image={selectedImage}
+          isOpen={isImageViewerOpen}
+          onClose={() => {
+            setIsImageViewerOpen(false);
+            setSelectedImage(null);
+          }}
+        />
+      )}
     </Dialog>
   );
 }
