@@ -28,8 +28,11 @@ export type Database = {
           preferred_date: string
           preferred_time: string
           rejection_reason: string | null
+          request_ip: unknown | null
+          request_user_agent: string | null
           status: string
           updated_at: string
+          verified: boolean | null
         }
         Insert: {
           approved_appointment_id?: string | null
@@ -44,8 +47,11 @@ export type Database = {
           preferred_date: string
           preferred_time: string
           rejection_reason?: string | null
+          request_ip?: unknown | null
+          request_user_agent?: string | null
           status?: string
           updated_at?: string
+          verified?: boolean | null
         }
         Update: {
           approved_appointment_id?: string | null
@@ -60,8 +66,11 @@ export type Database = {
           preferred_date?: string
           preferred_time?: string
           rejection_reason?: string | null
+          request_ip?: unknown | null
+          request_user_agent?: string | null
           status?: string
           updated_at?: string
+          verified?: boolean | null
         }
         Relationships: []
       }
@@ -836,6 +845,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_appointment_request_rate_limit: {
+        Args: { ip_address: unknown }
+        Returns: boolean
+      }
       generate_invoice_number: {
         Args: { clinic_id_param: string }
         Returns: string
