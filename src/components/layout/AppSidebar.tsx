@@ -69,12 +69,17 @@ const clinicMenuItems = [{
   icon: Bell
 }];
 export function AppSidebar() {
-  const {
-    state
-  } = useSidebar();
+  const { state } = useSidebar();
   const collapsed = state === "collapsed";
-  const location = useLocation();
-  const currentPath = location.pathname;
+  
+  let currentPath = "/";
+  try {
+    const location = useLocation();
+    currentPath = location.pathname;
+  } catch (error) {
+    console.warn("Router context not available, using default path");
+  }
+  
   const [searchQuery, setSearchQuery] = useState("");
   const { signOut, user } = useAuth();
   const isActive = (path: string) => currentPath === path;
