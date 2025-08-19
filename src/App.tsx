@@ -18,6 +18,8 @@ import Auth from "./pages/Auth";
 import DoctorApplications from "./pages/DoctorApplications";
 import Invoices from "./pages/Invoices";
 import ServicePrices from "./pages/ServicePrices";
+import Inventory from "./pages/Inventory";
+import MedicalRecords from "./pages/MedicalRecords";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -110,6 +112,20 @@ const App = () => {
                 <ProtectedRoute>
                   <MainLayout>
                     <ServicePrices />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/inventory" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Inventory />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/medical-records" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <MedicalRecords />
                   </MainLayout>
                 </ProtectedRoute>
               } />
