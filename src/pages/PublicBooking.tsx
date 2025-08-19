@@ -48,29 +48,75 @@ const PublicBooking = () => {
       return;
     }
 
+    // Validate form data before submission
+    if (formData.patient_name.length < 2 || formData.patient_name.length > 100) {
+      toast.error("يجب أن يكون الاسم بين 2 و 100 حرف");
+      return;
+    }
+
+    if (formData.condition_description.length < 10 || formData.condition_description.length > 1000) {
+      toast.error("يجب أن يكون وصف الحالة بين 10 و 1000 حرف");
+      return;
+    }
+
+    if (formData.patient_phone && formData.patient_phone.length < 8) {
+      toast.error("رقم الهاتف يجب أن يكون على الأقل 8 أرقام");
+      return;
+    }
+
+    if (formData.patient_email && !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(formData.patient_email)) {
+      toast.error("صيغة البريد الإلكتروني غير صحيحة");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      // Get client IP and user agent for security tracking
+      const { data: clientInfo } = await supabase.functions.invoke('get-client-info');
+      
       const { error } = await supabase
         .from('appointment_requests')
         .insert({
           clinic_id: clinicId,
-          patient_name: formData.patient_name,
-          patient_phone: formData.patient_phone,
-          patient_email: formData.patient_email,
-          patient_address: formData.patient_address,
-          condition_description: formData.condition_description,
+          patient_name: formData.patient_name.trim(),
+          patient_phone: formData.patient_phone?.trim() || null,
+          patient_email: formData.patient_email?.trim() || null,
+          patient_address: formData.patient_address?.trim() || null,
+          condition_description: formData.condition_description.trim(),
           preferred_date: format(selectedDate, 'yyyy-MM-dd'),
-          preferred_time: selectedTime
+          preferred_time: selectedTime,
+          request_ip: clientInfo?.ip || null,
+          request_user_agent: clientInfo?.userAgent || null
         });
 
-      if (error) throw error;
+      if (error) {
+        // Handle specific rate limiting errors
+        if (error.message.includes('rate_limit')) {
+          toast.error("تم تجاوز الحد الأقصى للطلبات. يرجى المحاولة مرة أخرى لاحقاً");
+        } else if (error.message.includes('Patient name')) {
+          toast.error("الاسم يجب أن يكون بين 2 و 100 حرف");
+        } else if (error.message.includes('Phone number')) {
+          toast.error("رقم الهاتف يجب أن يكون على الأقل 8 أرقام");
+        } else if (error.message.includes('Invalid email')) {
+          toast.error("صيغة البريد الإلكتروني غير صحيحة");
+        } else if (error.message.includes('Condition description')) {
+          toast.error("وصف الحالة يجب أن يكون بين 10 و 1000 حرف");
+        } else if (error.message.includes('past')) {
+          toast.error("لا يمكن اختيار تاريخ في الماضي");
+        } else if (error.message.includes('90 days')) {
+          toast.error("لا يمكن اختيار تاريخ أكثر من 90 يوم من الآن");
+        } else {
+          toast.error("حدث خطأ في إرسال الطلب");
+        }
+        throw error;
+      }
 
       setIsSubmitted(true);
       toast.success("تم إرسال طلب الموعد بنجاح!");
     } catch (error: any) {
       console.error('Error submitting appointment request:', error);
-      toast.error("حدث خطأ في إرسال الطلب");
+      // Error message already handled above
     } finally {
       setIsSubmitting(false);
     }

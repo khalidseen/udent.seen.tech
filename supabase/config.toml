@@ -1,1 +1,4 @@
 project_id = "lxusbjpvcyjcfrnyselc"
+
+[functions.get-client-info]
+verify_jwt = false
