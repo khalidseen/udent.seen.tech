@@ -24,6 +24,5 @@ if ('serviceWorker' in navigator) {
 root.render(
   <React.StrictMode>
     <App />
-    <Toaster />
   </React.StrictMode>
 );
