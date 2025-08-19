@@ -136,6 +136,36 @@ const App = () => {
                   </MainLayout>
                 </ProtectedRoute>
               } />
+              <Route path="/settings" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">الإعدادات</h1>
+                      <p className="text-muted-foreground mt-2">إعدادات النظام والعيادة</p>
+                    </div>
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/reports" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">التقارير</h1>
+                      <p className="text-muted-foreground mt-2">تقارير شاملة عن العيادة</p>
+                    </div>
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/notifications" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <div className="p-6">
+                      <h1 className="text-3xl font-bold">الإشعارات</h1>
+                      <p className="text-muted-foreground mt-2">إدارة الإشعارات والتنبيهات</p>
+                    </div>
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Toaster />

@@ -124,8 +124,13 @@ export function AppSidebar() {
         {/* Search */}
         {!collapsed && <div className="mb-4">
             <div className="relative">
-              
-              
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-sidebar-foreground/50" />
+              <Input 
+                placeholder="البحث في القائمة..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pr-10 bg-sidebar-background/50 border-sidebar-border/50 text-sidebar-foreground placeholder:text-sidebar-foreground/50"
+              />
             </div>
           </div>}
 
