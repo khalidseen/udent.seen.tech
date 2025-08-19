@@ -33,10 +33,10 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
   const clearAllFilters = () => {
     onFiltersChange({
       searchTerm: '',
-      gender: '',
-      ageRange: '',
-      hasEmail: '',
-      hasPhone: '',
+      gender: 'all',
+      ageRange: 'all',
+      hasEmail: 'all',
+      hasPhone: 'all',
       dateFrom: '',
       dateTo: ''
     });
@@ -44,16 +44,16 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
 
   const getActiveFiltersCount = () => {
     return Object.entries(filters).filter(([key, value]) => 
-      key !== 'searchTerm' && value !== ''
+      key !== 'searchTerm' && value !== '' && value !== 'all'
     ).length;
   };
 
   const getActiveFiltersList = () => {
     const activeFilters = [];
-    if (filters.gender) activeFilters.push(`الجنس: ${filters.gender === 'male' ? 'ذكر' : 'أنثى'}`);
-    if (filters.ageRange) activeFilters.push(`العمر: ${filters.ageRange}`);
-    if (filters.hasEmail) activeFilters.push(`البريد: ${filters.hasEmail === 'yes' ? 'متوفر' : 'غير متوفر'}`);
-    if (filters.hasPhone) activeFilters.push(`الهاتف: ${filters.hasPhone === 'yes' ? 'متوفر' : 'غير متوفر'}`);
+    if (filters.gender && filters.gender !== 'all') activeFilters.push(`الجنس: ${filters.gender === 'male' ? 'ذكر' : 'أنثى'}`);
+    if (filters.ageRange && filters.ageRange !== 'all') activeFilters.push(`العمر: ${filters.ageRange}`);
+    if (filters.hasEmail && filters.hasEmail !== 'all') activeFilters.push(`البريد: ${filters.hasEmail === 'yes' ? 'متوفر' : 'غير متوفر'}`);
+    if (filters.hasPhone && filters.hasPhone !== 'all') activeFilters.push(`الهاتف: ${filters.hasPhone === 'yes' ? 'متوفر' : 'غير متوفر'}`);
     if (filters.dateFrom || filters.dateTo) activeFilters.push('تاريخ التسجيل محدد');
     return activeFilters;
   };
@@ -110,7 +110,7 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
                       <SelectValue placeholder="الكل" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">الكل</SelectItem>
+                      <SelectItem value="all">الكل</SelectItem>
                       <SelectItem value="male">ذكر</SelectItem>
                       <SelectItem value="female">أنثى</SelectItem>
                     </SelectContent>
@@ -128,7 +128,7 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
                       <SelectValue placeholder="الكل" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">الكل</SelectItem>
+                      <SelectItem value="all">الكل</SelectItem>
                       <SelectItem value="0-18">أقل من 18</SelectItem>
                       <SelectItem value="18-30">18-30</SelectItem>
                       <SelectItem value="30-50">30-50</SelectItem>
@@ -146,7 +146,7 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
                       <SelectValue placeholder="الكل" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">الكل</SelectItem>
+                      <SelectItem value="all">الكل</SelectItem>
                       <SelectItem value="yes">متوفر</SelectItem>
                       <SelectItem value="no">غير متوفر</SelectItem>
                     </SelectContent>
@@ -161,7 +161,7 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
                       <SelectValue placeholder="الكل" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">الكل</SelectItem>
+                      <SelectItem value="all">الكل</SelectItem>
                       <SelectItem value="yes">متوفر</SelectItem>
                       <SelectItem value="no">غير متوفر</SelectItem>
                     </SelectContent>

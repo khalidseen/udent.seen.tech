@@ -32,10 +32,10 @@ const PatientList = () => {
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [filters, setFilters] = useState<PatientFilter>({
     searchTerm: '',
-    gender: '',
-    ageRange: '',
-    hasEmail: '',
-    hasPhone: '',
+    gender: 'all',
+    ageRange: 'all',
+    hasEmail: 'all',
+    hasPhone: 'all',
     dateFrom: '',
     dateTo: ''
   });
@@ -97,11 +97,11 @@ const PatientList = () => {
       patient.email?.toLowerCase().includes(filters.searchTerm.toLowerCase());
 
     // Gender filter
-    const matchesGender = !filters.gender || patient.gender === filters.gender;
+    const matchesGender = !filters.gender || filters.gender === 'all' || patient.gender === filters.gender;
 
     // Age range filter
     let matchesAge = true;
-    if (filters.ageRange && patient.date_of_birth) {
+    if (filters.ageRange && filters.ageRange !== 'all' && patient.date_of_birth) {
       const age = new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear();
       switch (filters.ageRange) {
         case '0-18':
@@ -123,11 +123,11 @@ const PatientList = () => {
     }
 
     // Email filter
-    const matchesEmail = !filters.hasEmail || 
+    const matchesEmail = !filters.hasEmail || filters.hasEmail === 'all' || 
       (filters.hasEmail === 'yes' ? !!patient.email : !patient.email);
 
     // Phone filter
-    const matchesPhone = !filters.hasPhone || 
+    const matchesPhone = !filters.hasPhone || filters.hasPhone === 'all' || 
       (filters.hasPhone === 'yes' ? !!patient.phone : !patient.phone);
 
     // Date range filter
