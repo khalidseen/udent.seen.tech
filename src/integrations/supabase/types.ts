@@ -195,6 +195,7 @@ export type Database = {
         Row: {
           admin_id: string | null
           admin_message: string | null
+          application_hash: string | null
           clinic_address: string | null
           clinic_name: string | null
           created_at: string
@@ -206,6 +207,8 @@ export type Database = {
           message: string | null
           password: string | null
           phone: string | null
+          request_ip: unknown | null
+          request_user_agent: string | null
           reviewed_at: string | null
           specialization: string | null
           status: string
@@ -214,6 +217,7 @@ export type Database = {
         Insert: {
           admin_id?: string | null
           admin_message?: string | null
+          application_hash?: string | null
           clinic_address?: string | null
           clinic_name?: string | null
           created_at?: string
@@ -225,6 +229,8 @@ export type Database = {
           message?: string | null
           password?: string | null
           phone?: string | null
+          request_ip?: unknown | null
+          request_user_agent?: string | null
           reviewed_at?: string | null
           specialization?: string | null
           status?: string
@@ -233,6 +239,7 @@ export type Database = {
         Update: {
           admin_id?: string | null
           admin_message?: string | null
+          application_hash?: string | null
           clinic_address?: string | null
           clinic_name?: string | null
           created_at?: string
@@ -244,6 +251,8 @@ export type Database = {
           message?: string | null
           password?: string | null
           phone?: string | null
+          request_ip?: unknown | null
+          request_user_agent?: string | null
           reviewed_at?: string | null
           specialization?: string | null
           status?: string
@@ -846,6 +855,10 @@ export type Database = {
     }
     Functions: {
       check_appointment_request_rate_limit: {
+        Args: { ip_address: unknown }
+        Returns: boolean
+      }
+      check_doctor_application_rate_limit: {
         Args: { ip_address: unknown }
         Returns: boolean
       }

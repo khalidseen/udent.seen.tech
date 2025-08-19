@@ -73,34 +73,133 @@ export default function Auth() {
       return;
     }
 
+    // Client-side validation before submission
+    if (applicationForm.fullName.length < 2 || applicationForm.fullName.length > 100) {
+      toast({
+        title: "خطأ في البيانات",
+        description: "يجب أن يكون الاسم الكامل بين 2 و 100 حرف",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(applicationForm.email)) {
+      toast({
+        title: "خطأ في البيانات",
+        description: "صيغة البريد الإلكتروني غير صحيحة",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (applicationForm.phone && applicationForm.phone.length < 8) {
+      toast({
+        title: "خطأ في البيانات",
+        description: "رقم الهاتف يجب أن يكون على الأقل 8 أرقام",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (applicationForm.licenseNumber && applicationForm.licenseNumber.length < 3) {
+      toast({
+        title: "خطأ في البيانات",
+        description: "رقم الترخيص يجب أن يكون على الأقل 3 أحرف",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (applicationForm.experienceYears) {
+      const years = parseInt(applicationForm.experienceYears);
+      if (years < 0 || years > 70) {
+        toast({
+          title: "خطأ في البيانات",
+          description: "سنوات الخبرة يجب أن تكون بين 0 و 70 سنة",
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
     setIsSubmitting(true);
     
     try {
+      // Get client IP and user agent for security tracking
+      const { data: clientInfo } = await supabase.functions.invoke('get-client-info');
+      
       const { error } = await supabase
         .from('doctor_applications')
         .insert({
-          email: applicationForm.email,
-          full_name: applicationForm.fullName,
+          email: applicationForm.email.trim(),
+          full_name: applicationForm.fullName.trim(),
           password: applicationForm.password,
-          phone: applicationForm.phone,
+          phone: applicationForm.phone?.trim() || null,
           specialization: applicationForm.specialization,
           experience_years: applicationForm.experienceYears ? parseInt(applicationForm.experienceYears) : null,
-          license_number: applicationForm.licenseNumber,
-          clinic_name: applicationForm.clinicName,
-          clinic_address: applicationForm.clinicAddress,
-          message: applicationForm.message
+          license_number: applicationForm.licenseNumber?.trim() || null,
+          clinic_name: applicationForm.clinicName?.trim() || null,
+          clinic_address: applicationForm.clinicAddress?.trim() || null,
+          message: applicationForm.message?.trim() || null,
+          request_ip: clientInfo?.ip || null,
+          request_user_agent: clientInfo?.userAgent || null
         });
 
       if (error) {
-        toast({
-          title: "خطأ في إرسال الطلب",
-          description: error.message,
-          variant: "destructive"
-        });
+        // Handle specific validation errors from the database
+        if (error.message.includes('Full name must be')) {
+          toast({
+            title: "خطأ في البيانات",
+            description: "الاسم الكامل يجب أن يكون بين 2 و 100 حرف",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Valid email address')) {
+          toast({
+            title: "خطأ في البيانات",
+            description: "يرجى إدخال بريد إلكتروني صحيح",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Phone number must be')) {
+          toast({
+            title: "خطأ في البيانات",
+            description: "رقم الهاتف يجب أن يكون على الأقل 8 أرقام",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('License number must be')) {
+          toast({
+            title: "خطأ في البيانات",
+            description: "رقم الترخيص يجب أن يكون على الأقل 3 أحرف",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('Experience years must be')) {
+          toast({
+            title: "خطأ في البيانات",
+            description: "سنوات الخبرة يجب أن تكون بين 0 و 70 سنة",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('similar application')) {
+          toast({
+            title: "طلب مكرر",
+            description: "تم تقديم طلب مشابه مؤخراً. يرجى المحاولة مرة أخرى لاحقاً",
+            variant: "destructive"
+          });
+        } else if (error.message.includes('rate_limit')) {
+          toast({
+            title: "تجاوز الحد الأقصى",
+            description: "تم تجاوز الحد الأقصى للطلبات. يرجى المحاولة مرة أخرى غداً",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "خطأ في إرسال الطلب",
+            description: "حدث خطأ غير متوقع. يرجى المحاولة مرة أخرى",
+            variant: "destructive"
+          });
+        }
       } else {
         toast({
           title: "تم إرسال الطلب بنجاح",
-          description: "سيتم مراجعة طلبك والرد عليك قريباً"
+          description: "سيتم مراجعة طلبك والرد عليك خلال 24-48 ساعة"
         });
         setApplicationForm({
           email: "",
@@ -117,9 +216,10 @@ export default function Auth() {
         setActiveTab("login");
       }
     } catch (error: any) {
+      console.error('Error submitting doctor application:', error);
       toast({
-        title: "خطأ",
-        description: error.message,
+        title: "خطأ في الشبكة",
+        description: "تحقق من اتصالك بالإنترنت وحاول مرة أخرى",
         variant: "destructive"
       });
     } finally {
