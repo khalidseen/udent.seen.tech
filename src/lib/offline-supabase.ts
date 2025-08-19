@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { offlineDB } from '@/lib/offline-db';
 import { toast } from 'sonner';
 
-type DatabaseTable = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests';
+type DatabaseTable = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles';
 
 class OfflineSupabaseClient {
   private isOnline(): boolean {
@@ -12,22 +12,70 @@ class OfflineSupabaseClient {
   async select(table: DatabaseTable, query?: any) {
     if (this.isOnline()) {
       try {
-        const result = await supabase.from(table).select(query?.select || '*');
+        let supabaseQuery = supabase.from(table).select(query?.select || '*');
+        
+        // Apply filters if provided
+        if (query?.filter) {
+          Object.entries(query.filter).forEach(([key, value]) => {
+            supabaseQuery = supabaseQuery.eq(key, value);
+          });
+        }
+        
+        // Apply ordering if provided
+        if (query?.order) {
+          supabaseQuery = supabaseQuery.order(query.order.column, { ascending: query.order.ascending });
+        }
+        
+        const result = await supabaseQuery;
         
         if (result.data && Array.isArray(result.data)) {
-          await offlineDB.clear(table);
-          for (const item of result.data) {
-            await offlineDB.put(table, item);
+          // Store fresh data locally
+          const existingData = await offlineDB.getAll(table);
+          
+          // If we're filtering, don't clear all data, just update/add relevant items
+          if (query?.filter) {
+            for (const item of result.data) {
+              await offlineDB.put(table, item);
+            }
+          } else {
+            // If no filter, replace all data
+            await offlineDB.clear(table);
+            for (const item of result.data) {
+              await offlineDB.put(table, item);
+            }
           }
         }
         
         return result;
       } catch (error) {
         console.error('Online query failed, falling back to offline:', error);
+        toast.info('استخدام البيانات المحلية - لا يوجد اتصال بالإنترنت');
       }
     }
 
-    const data = await offlineDB.getAll(table);
+    // Offline fallback
+    let data = await offlineDB.getAll(table);
+    
+    // Apply filters locally
+    if (query?.filter) {
+      data = data.filter(item => {
+        return Object.entries(query.filter).every(([key, value]) => item[key] === value);
+      });
+    }
+    
+    // Apply ordering locally
+    if (query?.order) {
+      data = data.sort((a, b) => {
+        const aVal = a[query.order.column];
+        const bVal = b[query.order.column];
+        if (query.order.ascending) {
+          return aVal > bVal ? 1 : -1;
+        } else {
+          return aVal < bVal ? 1 : -1;
+        }
+      });
+    }
+    
     return { data, error: null };
   }
 

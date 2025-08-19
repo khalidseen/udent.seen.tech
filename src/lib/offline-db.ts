@@ -18,6 +18,50 @@ interface OfflineDB extends DBSchema {
     key: string;
     value: any;
   };
+  medical_records: {
+    key: string;
+    value: any;
+  };
+  medical_images: {
+    key: string;
+    value: any;
+  };
+  invoices: {
+    key: string;
+    value: any;
+  };
+  invoice_items: {
+    key: string;
+    value: any;
+  };
+  payments: {
+    key: string;
+    value: any;
+  };
+  medical_supplies: {
+    key: string;
+    value: any;
+  };
+  service_prices: {
+    key: string;
+    value: any;
+  };
+  purchase_orders: {
+    key: string;
+    value: any;
+  };
+  purchase_order_items: {
+    key: string;
+    value: any;
+  };
+  stock_movements: {
+    key: string;
+    value: any;
+  };
+  profiles: {
+    key: string;
+    value: any;
+  };
   offline_queue: {
     key: string;
     value: {
@@ -52,14 +96,14 @@ interface OfflineDB extends DBSchema {
   };
 }
 
-type TableName = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'offline_queue' | 'offline_users' | 'offline_sessions';
+type TableName = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles' | 'offline_queue' | 'offline_users' | 'offline_sessions';
 
 class OfflineDatabase {
   private db: IDBPDatabase<OfflineDB> | null = null;
 
   async init(): Promise<void> {
-    this.db = await openDB<OfflineDB>('ClinicOfflineDB', 1, {
-      upgrade(db) {
+    this.db = await openDB<OfflineDB>('ClinicOfflineDB', 2, {
+      upgrade(db, oldVersion) {
         // Create object stores
         if (!db.objectStoreNames.contains('patients')) {
           db.createObjectStore('patients', { keyPath: 'id' });
@@ -72,6 +116,39 @@ class OfflineDatabase {
         }
         if (!db.objectStoreNames.contains('appointment_requests')) {
           db.createObjectStore('appointment_requests', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('medical_records')) {
+          db.createObjectStore('medical_records', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('medical_images')) {
+          db.createObjectStore('medical_images', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('invoices')) {
+          db.createObjectStore('invoices', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('invoice_items')) {
+          db.createObjectStore('invoice_items', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('payments')) {
+          db.createObjectStore('payments', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('medical_supplies')) {
+          db.createObjectStore('medical_supplies', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('service_prices')) {
+          db.createObjectStore('service_prices', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('purchase_orders')) {
+          db.createObjectStore('purchase_orders', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('purchase_order_items')) {
+          db.createObjectStore('purchase_order_items', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('stock_movements')) {
+          db.createObjectStore('stock_movements', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('profiles')) {
+          db.createObjectStore('profiles', { keyPath: 'id' });
         }
         if (!db.objectStoreNames.contains('offline_queue')) {
           db.createObjectStore('offline_queue', { keyPath: 'id' });

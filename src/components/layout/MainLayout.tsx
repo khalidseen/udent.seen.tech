@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/s
 import { AppSidebar } from "./AppSidebar";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NetworkStatusIndicator } from "@/components/ui/network-status";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -21,6 +22,7 @@ export function MainLayout({ children }: MainLayoutProps) {
               </div>
               
               <div className="flex items-center gap-3">
+                <NetworkStatusIndicator />
                 <Button variant="ghost" size="sm" className="relative hover:bg-accent/60 transition-all duration-200">
                   <Bell className="w-4 h-4" />
                   <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full text-xs text-destructive-foreground flex items-center justify-center animate-pulse">

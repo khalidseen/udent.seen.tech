@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase } from "@/integrations/supabase/client";
-import { Phone, Mail, Calendar, Edit, Eye, Activity, Grid3X3, List, BarChart3 } from "lucide-react";
+import { offlineSupabase } from "@/lib/offline-supabase";
+import { useOfflineData } from "@/hooks/useOfflineData";
+import { Phone, Mail, Calendar, Edit, Eye, Activity, Grid3X3, List, BarChart3, Wifi, WifiOff } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -27,8 +28,6 @@ interface Patient {
 }
 
 const PatientList = () => {
-  const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [filters, setFilters] = useState<PatientFilter>({
     searchTerm: '',
@@ -41,53 +40,42 @@ const PatientList = () => {
   });
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<{ id: string; name: string } | null>(null);
+  const [clinicId, setClinicId] = useState<string | null>(null);
 
+  // Get clinic ID first
   useEffect(() => {
-    fetchPatients();
+    const getClinicId = async () => {
+      try {
+        const { data: { user } } = await offlineSupabase.auth.getUser();
+        if (!user) return;
+
+        const profileResult = await offlineSupabase.select('profiles', { 
+          filter: { user_id: user.id } 
+        });
+
+        if (profileResult.data && profileResult.data.length > 0) {
+          setClinicId(profileResult.data[0].id);
+        }
+      } catch (error) {
+        console.error('Error getting clinic ID:', error);
+      }
+    };
+
+    getClinicId();
   }, []);
 
-  const fetchPatients = async () => {
-    try {
-      // Get current user's clinic ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found');
-        setLoading(false);
-        return;
-      }
-
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileError) {
-        console.error('Profile error:', profileError);
-        setLoading(false);
-        return;
-      }
-      
-      if (!profile) {
-        console.log('No profile found');
-        setLoading(false);
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from('patients')
-        .select('*')
-        .eq('clinic_id', profile.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setPatients(data || []);
-    } catch (error) {
-      console.error('Error fetching patients:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Use offline data hook for patients
+  const { 
+    data: patients, 
+    loading, 
+    isOffline, 
+    refresh,
+    add: addPatient 
+  } = useOfflineData<Patient>({
+    table: 'patients',
+    filter: clinicId ? { clinic_id: clinicId } : undefined,
+    order: { column: 'created_at', ascending: false }
+  });
 
   const filteredPatients = patients.filter(patient => {
     // Text search
@@ -165,7 +153,7 @@ const PatientList = () => {
   };
 
   const handlePatientAdded = () => {
-    fetchPatients();
+    refresh();
   };
 
   if (loading) {
@@ -174,7 +162,11 @@ const PatientList = () => {
         <PageHeader title="المرضى" description="جاري تحميل البيانات..." />
         <Card>
           <CardContent className="p-6">
-            <div className="text-center">جاري التحميل...</div>
+            <div className="flex items-center justify-center gap-2">
+              {isOffline ? <WifiOff className="w-5 h-5 text-orange-500" /> : <Wifi className="w-5 h-5 text-blue-500" />}
+              <span>جاري التحميل...</span>
+              {isOffline && <span className="text-sm text-orange-600">(وضع offline)</span>}
+            </div>
           </CardContent>
         </Card>
       </PageContainer>

@@ -22,6 +22,17 @@ class OfflineSyncService {
       await this.syncTable('appointments');
       await this.syncTable('dental_treatments');
       await this.syncTable('appointment_requests');
+      await this.syncTable('medical_records');
+      await this.syncTable('medical_images');
+      await this.syncTable('invoices');
+      await this.syncTable('invoice_items');
+      await this.syncTable('payments');
+      await this.syncTable('medical_supplies');
+      await this.syncTable('service_prices');
+      await this.syncTable('purchase_orders');
+      await this.syncTable('purchase_order_items');
+      await this.syncTable('stock_movements');
+      await this.syncTable('profiles');
 
       // Process offline queue
       await this.processOfflineQueue();
@@ -35,7 +46,7 @@ class OfflineSyncService {
     }
   }
 
-  private async syncTable(tableName: 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests'): Promise<void> {
+  private async syncTable(tableName: 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles'): Promise<void> {
     try {
       // Get fresh data from server
       const { data: remoteData } = await supabase
@@ -64,7 +75,7 @@ class OfflineSyncService {
     }
   }
 
-  private async syncItemToRemote(tableName: 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests', item: any): Promise<void> {
+  private async syncItemToRemote(tableName: 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles', item: any): Promise<void> {
     try {
       const { _offline_action, _pending_sync, ...cleanItem } = item;
       
@@ -95,7 +106,7 @@ class OfflineSyncService {
     
     for (const queueItem of queue) {
       try {
-        const tableName = queueItem.table as 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests';
+        const tableName = queueItem.table as 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles';
         await this.syncItemToRemote(tableName, queueItem.data);
         await offlineDB.removeFromQueue(queueItem.id);
       } catch (error) {
