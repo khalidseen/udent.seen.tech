@@ -274,69 +274,138 @@ export default function MedicalRecords() {
         </CardContent>
       </Card>
 
-      {/* Records Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>قائمة السجلات الطبية</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="text-center py-8">جاري التحميل...</div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>العنوان</TableHead>
-                  <TableHead>المريض</TableHead>
-                  <TableHead>النوع</TableHead>
-                  <TableHead>تاريخ العلاج</TableHead>
-                  <TableHead>التشخيص</TableHead>
-                  <TableHead>الصور</TableHead>
-                  <TableHead>الإجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredRecords?.map((record) => (
-                  <TableRow key={record.id}>
-                    <TableCell className="font-medium">{record.title}</TableCell>
-                    <TableCell>{record.patients?.full_name}</TableCell>
-                    <TableCell>
-                      <Badge className={getRecordTypeColor(record.record_type)}>
-                        {getRecordTypeText(record.record_type)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{format(new Date(record.treatment_date), 'yyyy/MM/dd')}</TableCell>
-                    <TableCell>{record.diagnosis || '-'}</TableCell>
-                    <TableCell>
+      {/* Records Grid */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">السجلات الطبية</h3>
+          <span className="text-sm text-muted-foreground">
+            {filteredRecords?.length || 0} سجل
+          </span>
+        </div>
+
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardContent className="p-6">
+                  <div className="space-y-3">
+                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-3 bg-muted rounded w-1/2"></div>
+                    <div className="h-3 bg-muted rounded w-full"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : filteredRecords && filteredRecords.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredRecords.map((record) => (
+              <Card key={record.id} className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-primary/20 hover:border-l-primary">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <CardTitle className="text-base leading-tight">
+                        {record.title}
+                      </CardTitle>
                       <div className="flex items-center gap-2">
-                        <span>{record.medical_images?.length || 0}</span>
-                        {record.medical_images && record.medical_images.length > 1 && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleCompareImages(record)}
-                          >
-                            <RotateCcw className="w-4 h-4" />
-                          </Button>
+                        <Badge className={getRecordTypeColor(record.record_type)} variant="secondary">
+                          {getRecordTypeText(record.record_type)}
+                        </Badge>
+                        {record.medical_images && record.medical_images.length > 0 && (
+                          <Badge variant="outline" className="text-xs">
+                            <Camera className="w-3 h-3 ml-1" />
+                            {record.medical_images.length}
+                          </Badge>
                         )}
                       </div>
-                    </TableCell>
-                    <TableCell>
+                    </div>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="pt-0">
+                  <div className="space-y-3">
+                    {/* Patient Info */}
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-xs font-medium text-primary">
+                          {record.patients?.full_name.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{record.patients?.full_name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(record.treatment_date), 'yyyy/MM/dd')}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Diagnosis */}
+                    {record.diagnosis && (
+                      <div className="bg-muted/50 rounded-lg p-3">
+                        <p className="text-xs font-medium text-muted-foreground mb-1">التشخيص</p>
+                        <p className="text-sm">{record.diagnosis}</p>
+                      </div>
+                    )}
+
+                    {/* Description */}
+                    {record.description && (
+                      <div>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">الوصف</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {record.description}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="flex gap-2 pt-2 border-t">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewRecord(record)}
+                        className="flex-1"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4 h-4 ml-2" />
+                        عرض
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                      
+                      {record.medical_images && record.medical_images.length > 1 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleCompareImages(record)}
+                          className="px-3"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card className="text-center py-12">
+            <CardContent>
+              <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">لا توجد سجلات طبية</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm || patientFilter !== "all" || recordTypeFilter !== "all" 
+                  ? "لم يتم العثور على سجلات تطابق معايير البحث"
+                  : "ابدأ بإنشاء أول سجل طبي"
+                }
+              </p>
+              {(!searchTerm && patientFilter === "all" && recordTypeFilter === "all") && (
+                <Button onClick={() => setIsCreateRecordOpen(true)}>
+                  <Plus className="w-4 h-4 ml-2" />
+                  إنشاء سجل جديد
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       <CreateRecordDialog
         isOpen={isCreateRecordOpen}
