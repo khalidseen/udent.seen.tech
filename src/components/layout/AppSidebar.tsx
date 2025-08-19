@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Calendar, Users, UserPlus, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck, Receipt, DollarSign, Package, FolderOpen } from "lucide-react";
+import { Calendar, Users, UserPlus, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck, Receipt, DollarSign, Package, FolderOpen, ExternalLink } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
+
 const mainMenuItems = [{
   title: "تقارير العيادة",
   url: "/",
@@ -47,10 +48,16 @@ const mainMenuItems = [{
   url: "/medical-records",
   icon: FolderOpen
 }];
+
 const clinicMenuItems = [{
   title: "طلبات الأطباء",
   url: "/doctor-applications",
   icon: UserCheck
+}, {
+  title: "رابط حجز المرضى",
+  url: "/book?clinic=default",
+  icon: ExternalLink,
+  external: true
 }, {
   title: "أسعار الخدمات",
   url: "/service-prices",
@@ -68,6 +75,7 @@ const clinicMenuItems = [{
   url: "/notifications",
   icon: Bell
 }];
+
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
@@ -92,6 +100,7 @@ export function AppSidebar() {
     return `${baseClasses} hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground`;
   };
   const filteredMainMenu = mainMenuItems.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()));
+
   return <Sidebar side="right" className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 shadow-sidebar border-l border-sidebar-border shrink-0`} style={{
     background: 'var(--gradient-sidebar)'
   }} collapsible="icon">
@@ -153,10 +162,22 @@ export function AppSidebar() {
               const Icon = item.icon;
               return <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
-                      <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <Icon className={`${collapsed ? "w-5 h-5" : "w-4 h-4 ml-3"}`} />
-                        {!collapsed && <span>{item.title}</span>}
-                      </NavLink>
+                      {item.external ? (
+                        <a 
+                          href={item.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className={`${getNavClasses(item.url)} text-blue-600 hover:text-blue-700`}
+                        >
+                          <Icon className={`${collapsed ? "w-5 h-5" : "w-4 h-4 ml-3"}`} />
+                          {!collapsed && <span className="flex items-center gap-1">{item.title} <ExternalLink className="w-3 h-3" /></span>}
+                        </a>
+                      ) : (
+                        <NavLink to={item.url} className={getNavClasses(item.url)}>
+                          <Icon className={`${collapsed ? "w-5 h-5" : "w-4 h-4 ml-3"}`} />
+                          {!collapsed && <span>{item.title}</span>}
+                        </NavLink>
+                      )}
                     </SidebarMenuButton>
                   </SidebarMenuItem>;
             })}
