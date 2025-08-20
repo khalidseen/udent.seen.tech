@@ -12,7 +12,8 @@ class OfflineSupabaseClient {
   async select(table: DatabaseTable, query?: any) {
     if (this.isOnline()) {
       try {
-        let supabaseQuery = supabase.from(table).select(query?.select || '*');
+        // Use type assertion to avoid complex type inference
+        let supabaseQuery = (supabase.from(table) as any).select(query?.select || '*');
         
         // Apply filters if provided
         if (query?.filter) {
@@ -179,4 +180,3 @@ class OfflineSupabaseClient {
 }
 
 export const offlineSupabase = new OfflineSupabaseClient();
-offlineDB.init();
