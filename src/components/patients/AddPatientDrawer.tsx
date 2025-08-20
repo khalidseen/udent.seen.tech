@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
+import { offlineSupabase } from "@/lib/offline-supabase";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus, Save, Plus } from "lucide-react";
 
@@ -60,57 +60,52 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
     
     try {
       // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { user } } = await offlineSupabase.auth.getUser();
       
       if (!user) {
         throw new Error('يجب تسجيل الدخول أولاً');
       }
 
       // Get or create user's profile
-      let { data: profile, error: profileFetchError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
+      const profileResult = await offlineSupabase.select('profiles', { 
+        filter: { user_id: user.id } 
+      });
 
-      // If no profile exists, create one
-      if (!profile && !profileFetchError) {
-        const { data: newProfile, error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            user_id: user.id,
-            full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'مستخدم جديد',
-            role: 'doctor'
-          })
-          .select('id')
-          .single();
+      let profile = null;
+      if (profileResult.data && profileResult.data.length > 0) {
+        profile = profileResult.data[0];
+      } else {
+        // Create new profile if it doesn't exist
+        const newProfile = await offlineSupabase.insert('profiles', {
+          user_id: user.id,
+          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'مستخدم جديد',
+          role: 'doctor'
+        });
 
-        if (profileError) {
-          console.error('Profile creation error:', profileError);
-          throw new Error('فشل في إنشاء ملف المستخدم: ' + profileError.message);
+        if (newProfile.error) {
+          console.error('Profile creation error:', newProfile.error);
+          throw new Error('فشل في إنشاء ملف المستخدم: ' + newProfile.error.message);
         }
-        profile = newProfile;
+        profile = newProfile.data;
       }
 
       if (!profile) {
         throw new Error('لم يتم العثور على ملف المستخدم أو فشل في إنشاؤه');
       }
 
-      const { error } = await supabase
-        .from('patients')
-        .insert({
-          clinic_id: profile.id,
-          full_name: formData.full_name,
-          phone: formData.phone || null,
-          email: formData.email || null,
-          date_of_birth: formData.date_of_birth || null,
-          gender: formData.gender || null,
-          address: formData.address || null,
-          medical_history: formData.medical_history || null,
-          notes: formData.notes || null
-        });
+      const result = await offlineSupabase.insert('patients', {
+        clinic_id: profile.id,
+        full_name: formData.full_name,
+        phone: formData.phone || null,
+        email: formData.email || null,
+        date_of_birth: formData.date_of_birth || null,
+        gender: formData.gender || null,
+        address: formData.address || null,
+        medical_history: formData.medical_history || null,
+        notes: formData.notes || null
+      });
 
-      if (error) throw error;
+      if (result.error) throw result.error;
 
       toast({
         title: 'تم بنجاح',
