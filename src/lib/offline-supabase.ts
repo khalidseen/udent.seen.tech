@@ -2,7 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { offlineDB } from '@/lib/offline-db';
 import { toast } from 'sonner';
 
-type DatabaseTable = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles';
+type DatabaseTable = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles' | 'notifications' | 'notification_templates';
 
 class OfflineSupabaseClient {
   private isOnline(): boolean {

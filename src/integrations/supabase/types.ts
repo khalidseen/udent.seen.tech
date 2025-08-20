@@ -531,6 +531,108 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_templates: {
+        Row: {
+          advance_days: number
+          clinic_id: string
+          created_at: string
+          default_priority: string
+          id: string
+          is_active: boolean
+          message_template: string
+          name: string
+          title_template: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          advance_days?: number
+          clinic_id: string
+          created_at?: string
+          default_priority?: string
+          id?: string
+          is_active?: boolean
+          message_template: string
+          name: string
+          title_template: string
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          advance_days?: number
+          clinic_id?: string
+          created_at?: string
+          default_priority?: string
+          id?: string
+          is_active?: boolean
+          message_template?: string
+          name?: string
+          title_template?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          auto_generated: boolean
+          clinic_id: string
+          created_at: string
+          dismissed_at: string | null
+          id: string
+          max_reminders: number
+          message: string
+          patient_id: string | null
+          priority: string
+          related_id: string | null
+          related_type: string | null
+          reminded_count: number
+          scheduled_for: string
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          auto_generated?: boolean
+          clinic_id: string
+          created_at?: string
+          dismissed_at?: string | null
+          id?: string
+          max_reminders?: number
+          message: string
+          patient_id?: string | null
+          priority?: string
+          related_id?: string | null
+          related_type?: string | null
+          reminded_count?: number
+          scheduled_for: string
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_generated?: boolean
+          clinic_id?: string
+          created_at?: string
+          dismissed_at?: string | null
+          id?: string
+          max_reminders?: number
+          message?: string
+          patient_id?: string | null
+          priority?: string
+          related_id?: string | null
+          related_type?: string | null
+          reminded_count?: number
+          scheduled_for?: string
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       patients: {
         Row: {
           address: string | null
@@ -888,6 +990,10 @@ export type Database = {
       check_doctor_application_rate_limit: {
         Args: { ip_address: unknown }
         Returns: boolean
+      }
+      generate_automatic_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       generate_invoice_number: {
         Args: { clinic_id_param: string }

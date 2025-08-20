@@ -62,6 +62,14 @@ interface OfflineDB extends DBSchema {
     key: string;
     value: any;
   };
+  notifications: {
+    key: string;
+    value: any;
+  };
+  notification_templates: {
+    key: string;
+    value: any;
+  };
   offline_queue: {
     key: string;
     value: {
@@ -96,7 +104,7 @@ interface OfflineDB extends DBSchema {
   };
 }
 
-type TableName = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles' | 'offline_queue' | 'offline_users' | 'offline_sessions';
+type TableName = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles' | 'notifications' | 'notification_templates' | 'offline_queue' | 'offline_users' | 'offline_sessions';
 
 class OfflineDatabase {
   private db: IDBPDatabase<OfflineDB> | null = null;
@@ -149,6 +157,12 @@ class OfflineDatabase {
         }
         if (!db.objectStoreNames.contains('profiles')) {
           db.createObjectStore('profiles', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('notifications')) {
+          db.createObjectStore('notifications', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('notification_templates')) {
+          db.createObjectStore('notification_templates', { keyPath: 'id' });
         }
         if (!db.objectStoreNames.contains('offline_queue')) {
           db.createObjectStore('offline_queue', { keyPath: 'id' });

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { offlineDB } from '@/lib/offline-db';
 import { offlineSupabase } from '@/lib/offline-supabase';
 
-type TableName = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles';
+type TableName = 'patients' | 'appointments' | 'dental_treatments' | 'appointment_requests' | 'medical_records' | 'medical_images' | 'invoices' | 'invoice_items' | 'payments' | 'medical_supplies' | 'service_prices' | 'purchase_orders' | 'purchase_order_items' | 'stock_movements' | 'profiles' | 'notifications' | 'notification_templates';
 
 interface UseOfflineDataOptions {
   table: TableName;

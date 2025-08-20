@@ -1,8 +1,8 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { NetworkStatusIndicator } from "@/components/ui/network-status";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
+import { SmartNotificationSystem } from "@/components/notifications/SmartNotificationSystem";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -23,15 +23,12 @@ export function MainLayout({ children }: MainLayoutProps) {
               
               <div className="flex items-center gap-3">
                 <NetworkStatusIndicator />
-                <Button variant="ghost" size="sm" className="relative hover:bg-accent/60 transition-all duration-200">
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full text-xs text-destructive-foreground flex items-center justify-center animate-pulse">
-                    3
-                  </span>
-                </Button>
+                <NotificationCenter />
               </div>
             </div>
           </header>
+          
+          <SmartNotificationSystem />
           
           {/* Page Content */}
           <main className="flex-1 px-6 py-6 overflow-auto bg-gradient-to-br from-background via-background to-muted/30">
