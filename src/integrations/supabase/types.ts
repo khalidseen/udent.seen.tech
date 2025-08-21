@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_analysis_results: {
+        Row: {
+          ai_model: string
+          analysis_data: Json | null
+          analysis_type: string
+          clinic_id: string
+          confidence_score: number | null
+          created_at: string | null
+          detected_conditions: Json | null
+          id: string
+          image_id: string
+          recommendations: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          ai_model: string
+          analysis_data?: Json | null
+          analysis_type: string
+          clinic_id: string
+          confidence_score?: number | null
+          created_at?: string | null
+          detected_conditions?: Json | null
+          id?: string
+          image_id: string
+          recommendations?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          ai_model?: string
+          analysis_data?: Json | null
+          analysis_type?: string
+          clinic_id?: string
+          confidence_score?: number | null
+          created_at?: string | null
+          detected_conditions?: Json | null
+          id?: string
+          image_id?: string
+          recommendations?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_analysis_results_image_id_fkey"
+            columns: ["image_id"]
+            isOneToOne: false
+            referencedRelation: "medical_images"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_requests: {
         Row: {
           approved_appointment_id: string | null
@@ -257,6 +307,75 @@ export type Database = {
         }
         Relationships: []
       }
+      doctors: {
+        Row: {
+          address: string | null
+          bio: string | null
+          clinic_id: string
+          consultation_fee: number | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          experience_years: number | null
+          full_name: string
+          gender: string | null
+          hired_date: string | null
+          id: string
+          license_number: string | null
+          notes: string | null
+          phone: string | null
+          qualifications: string | null
+          specialization: string | null
+          status: string
+          updated_at: string
+          working_hours: string | null
+        }
+        Insert: {
+          address?: string | null
+          bio?: string | null
+          clinic_id: string
+          consultation_fee?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          experience_years?: number | null
+          full_name: string
+          gender?: string | null
+          hired_date?: string | null
+          id?: string
+          license_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          qualifications?: string | null
+          specialization?: string | null
+          status?: string
+          updated_at?: string
+          working_hours?: string | null
+        }
+        Update: {
+          address?: string | null
+          bio?: string | null
+          clinic_id?: string
+          consultation_fee?: number | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          experience_years?: number | null
+          full_name?: string
+          gender?: string | null
+          hired_date?: string | null
+          id?: string
+          license_number?: string | null
+          notes?: string | null
+          phone?: string | null
+          qualifications?: string | null
+          specialization?: string | null
+          status?: string
+          updated_at?: string
+          working_hours?: string | null
+        }
+        Relationships: []
+      }
       invoice_items: {
         Row: {
           created_at: string
@@ -363,6 +482,11 @@ export type Database = {
       }
       medical_images: {
         Row: {
+          ai_analysis_date: string | null
+          ai_analysis_result: Json | null
+          ai_analysis_status: string | null
+          ai_confidence_score: number | null
+          ai_detected_conditions: string[] | null
           clinic_id: string
           created_at: string
           description: string | null
@@ -381,6 +505,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          ai_analysis_date?: string | null
+          ai_analysis_result?: Json | null
+          ai_analysis_status?: string | null
+          ai_confidence_score?: number | null
+          ai_detected_conditions?: string[] | null
           clinic_id: string
           created_at?: string
           description?: string | null
@@ -399,6 +528,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          ai_analysis_date?: string | null
+          ai_analysis_result?: Json | null
+          ai_analysis_status?: string | null
+          ai_confidence_score?: number | null
+          ai_detected_conditions?: string[] | null
           clinic_id?: string
           created_at?: string
           description?: string | null

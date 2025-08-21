@@ -13,7 +13,9 @@ import { UploadImageDialog } from "@/components/medical-records/UploadImageDialo
 import { ViewRecordDialog } from "@/components/medical-records/ViewRecordDialog";
 import { CompareImagesDialog } from "@/components/medical-records/CompareImagesDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, FileText, Camera, Search, Eye, RotateCcw } from "lucide-react";
+import { Plus, FileText, Camera, Search, Eye, RotateCcw, Brain } from "lucide-react";
+import { AISmartDiagnosisButton } from "@/components/medical-records/AISmartDiagnosisButton";
+import { AIInsightsDashboard } from "@/components/ai-analysis/AIInsightsDashboard";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -176,6 +178,15 @@ export default function MedicalRecords() {
         description="إدارة السجلات الطبية والأشعة"
         action={
           <div className="flex gap-2">
+            <AISmartDiagnosisButton
+              onDiagnosisComplete={(diagnosis) => {
+                refetch();
+                toast({
+                  title: "تم حفظ التشخيص الذكي",
+                  description: "تم إضافة التشخيص إلى السجلات الطبية",
+                });
+              }}
+            />
             <Button onClick={() => setIsUploadImageOpen(true)} variant="outline">
               <Camera className="w-4 h-4 ml-2" />
               رفع صورة
@@ -187,6 +198,11 @@ export default function MedicalRecords() {
           </div>
         }
       />
+
+      {/* AI Insights Dashboard */}
+      <div className="mb-6">
+        <AIInsightsDashboard />
+      </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

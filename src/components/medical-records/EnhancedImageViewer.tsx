@@ -5,9 +5,10 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { ZoomIn, ZoomOut, RotateCw, Sun, Moon, Move, Download, Maximize, Home } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCw, Sun, Moon, Move, Download, Maximize, Home, Brain, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { AIAnalysisPanel } from "@/components/ai-analysis/AIAnalysisPanel";
 
 interface MedicalImage {
   id: string;
@@ -36,6 +37,8 @@ export function EnhancedImageViewer({ image, isOpen, onClose }: EnhancedImageVie
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showAIAnalysis, setShowAIAnalysis] = useState(false);
+  const [loadedImageElement, setLoadedImageElement] = useState<HTMLImageElement | null>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -54,6 +57,12 @@ export function EnhancedImageViewer({ image, isOpen, onClose }: EnhancedImageVie
       
       if (data?.signedUrl) {
         setImageUrl(data.signedUrl);
+        
+        // Create image element for AI analysis
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => setLoadedImageElement(img);
+        img.src = data.signedUrl;
       }
     } catch (error) {
       console.error('Error loading image:', error);
@@ -295,7 +304,30 @@ export function EnhancedImageViewer({ image, isOpen, onClose }: EnhancedImageVie
                 <Download className="w-4 h-4 ml-2" />
                 تنزيل الصورة
               </Button>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowAIAnalysis(!showAIAnalysis)} 
+                className="w-full"
+              >
+                <Brain className="w-4 h-4 ml-2" />
+                {showAIAnalysis ? 'إخفاء التحليل الذكي' : 'تحليل ذكي'}
+              </Button>
             </div>
+            
+            {/* AI Analysis Panel */}
+            {showAIAnalysis && (
+              <div className="mt-4">
+                <AIAnalysisPanel
+                  imageElement={loadedImageElement}
+                  imageType={image.image_type as any}
+                  onAnalysisComplete={(result) => {
+                    console.log('AI Analysis completed:', result);
+                  }}
+                />
+              </div>
+            )}
 
             {zoom > 100 && (
               <div className="text-xs text-muted-foreground flex items-center gap-1">
