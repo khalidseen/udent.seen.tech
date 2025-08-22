@@ -23,7 +23,7 @@ const useThrottledTooltip = () => {
   return throttledUpdate;
 };
 
-export const OptimizedChart: React.FC<OptimizedChartProps> = ({
+const OptimizedChartComponent: React.FC<OptimizedChartProps> = ({
   data,
   type,
   height = 300,
@@ -104,5 +104,8 @@ export const OptimizedChart: React.FC<OptimizedChartProps> = ({
     </ResponsiveContainer>
   );
 };
+
+// Memoized component for better performance
+export const OptimizedChart = React.memo(OptimizedChartComponent);
 
 export default OptimizedChart;

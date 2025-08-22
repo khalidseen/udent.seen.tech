@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, memo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { OptimizedChart } from "@/components/ui/optimized-chart";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   TrendingUp, 
@@ -21,7 +22,104 @@ import {
 } from "lucide-react";
 import { format, subDays, subMonths, startOfMonth, endOfMonth, isToday, isThisWeek, isThisMonth } from "date-fns";
 
-export function AnalyticalDashboard() {
+// Optimized combined analytics query
+const fetchAllAnalytics = async (dateRange: { start: Date; end: Date }) => {
+  const startDate = dateRange.start.toISOString().split('T')[0];
+  const endDate = dateRange.end.toISOString().split('T')[0];
+  const startDateTime = dateRange.start.toISOString();
+  const endDateTime = dateRange.end.toISOString();
+
+  try {
+    // Combined query to reduce database calls
+    const [paymentsResult, appointmentsResult, patientsResult, inventoryResult, totalPatientsResult] = await Promise.all([
+      supabase
+        .from('payments')
+        .select('amount, payment_date, status')
+        .gte('payment_date', startDate)
+        .lte('payment_date', endDate)
+        .eq('status', 'completed'),
+      
+      supabase
+        .from('appointments')
+        .select('id, appointment_date, status, treatment_type')
+        .gte('appointment_date', startDateTime)
+        .lte('appointment_date', endDateTime),
+      
+      supabase
+        .from('patients')
+        .select('id, created_at')
+        .gte('created_at', startDateTime)
+        .lte('created_at', endDateTime),
+      
+      supabase
+        .from('medical_supplies')
+        .select('current_stock, minimum_stock, unit_cost')
+        .eq('is_active', true),
+      
+      supabase
+        .from('patients')
+        .select('*', { count: 'exact', head: true })
+    ]);
+
+    // Check for errors
+    if (paymentsResult.error) throw paymentsResult.error;
+    if (appointmentsResult.error) throw appointmentsResult.error;
+    if (patientsResult.error) throw patientsResult.error;
+    if (inventoryResult.error) throw inventoryResult.error;
+    if (totalPatientsResult.error) throw totalPatientsResult.error;
+
+    const payments = paymentsResult.data || [];
+    const appointments = appointmentsResult.data || [];
+    const patients = patientsResult.data || [];
+    const supplies = inventoryResult.data || [];
+
+    // Process revenue data
+    const totalRevenue = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+    const todayRevenue = payments
+      .filter(p => isToday(new Date(p.payment_date)))
+      .reduce((sum, payment) => sum + Number(payment.amount), 0);
+
+    const dailyRevenue = payments.reduce((acc, payment) => {
+      const date = payment.payment_date;
+      acc[date] = (acc[date] || 0) + Number(payment.amount);
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Process appointments data
+    const totalAppointments = appointments.length;
+    const completedAppointments = appointments.filter(a => a.status === 'completed').length;
+    const todayAppointments = appointments.filter(a => isToday(new Date(a.appointment_date))).length;
+    const completionRate = totalAppointments > 0 ? (completedAppointments / totalAppointments) * 100 : 0;
+
+    const dailyAppointments = appointments.reduce((acc, appointment) => {
+      const date = appointment.appointment_date.split('T')[0];
+      acc[date] = (acc[date] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Process patients data
+    const newPatients = patients.length;
+    const todayNewPatients = patients.filter(p => isToday(new Date(p.created_at))).length;
+    const totalPatients = totalPatientsResult.count || 0;
+
+    // Process inventory data
+    const totalItems = supplies.length;
+    const lowStockItems = supplies.filter(s => s.current_stock <= s.minimum_stock).length;
+    const outOfStockItems = supplies.filter(s => s.current_stock === 0).length;
+    const totalValue = supplies.reduce((sum, s) => sum + (s.current_stock * Number(s.unit_cost)), 0);
+
+    return {
+      revenue: { totalRevenue, todayRevenue, dailyRevenue, payments },
+      appointments: { totalAppointments, completedAppointments, todayAppointments, completionRate, dailyAppointments },
+      patients: { newPatients, todayNewPatients, totalPatients },
+      inventory: { totalItems, lowStockItems, outOfStockItems, totalValue }
+    };
+  } catch (error) {
+    throw error;
+  }
+};
+
+function AnalyticalDashboardComponent() {
   const [timeRange, setTimeRange] = useState("30days");
   const [chartType, setChartType] = useState<"revenue" | "appointments" | "patients">("revenue");
 
@@ -44,115 +142,24 @@ export function AnalyticalDashboard() {
 
   const dateRange = getDateRange();
 
-  // Revenue Analytics
-  const { data: revenueData } = useQuery({
-    queryKey: ['revenue-analytics', timeRange],
-    queryFn: async () => {
-      const { data: payments, error } = await supabase
-        .from('payments')
-        .select('amount, payment_date, status')
-        .gte('payment_date', dateRange.start.toISOString().split('T')[0])
-        .lte('payment_date', dateRange.end.toISOString().split('T')[0])
-        .eq('status', 'completed');
-
-      if (error) throw error;
-
-      const totalRevenue = payments.reduce((sum, payment) => sum + Number(payment.amount), 0);
-      const todayRevenue = payments
-        .filter(p => isToday(new Date(p.payment_date)))
-        .reduce((sum, payment) => sum + Number(payment.amount), 0);
-
-      // Group by date for chart
-      const dailyRevenue = payments.reduce((acc, payment) => {
-        const date = payment.payment_date;
-        acc[date] = (acc[date] || 0) + Number(payment.amount);
-        return acc;
-      }, {} as Record<string, number>);
-
-      return { totalRevenue, todayRevenue, dailyRevenue, payments };
-    }
+  // Optimized single query for all analytics
+  const { data: analyticsData, isLoading, error } = useQuery({
+    queryKey: ['combined-analytics', timeRange],
+    queryFn: () => fetchAllAnalytics(dateRange),
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    gcTime: 5 * 60 * 1000, // 5 minutes
+    refetchInterval: 5 * 60 * 1000, // 5 minutes instead of 30 seconds
+    retry: 1
   });
 
-  // Appointments Analytics
-  const { data: appointmentsData } = useQuery({
-    queryKey: ['appointments-analytics', timeRange],
-    queryFn: async () => {
-      const { data: appointments, error } = await supabase
-        .from('appointments')
-        .select('id, appointment_date, status, treatment_type')
-        .gte('appointment_date', dateRange.start.toISOString())
-        .lte('appointment_date', dateRange.end.toISOString());
-
-      if (error) throw error;
-
-      const totalAppointments = appointments.length;
-      const completedAppointments = appointments.filter(a => a.status === 'completed').length;
-      const todayAppointments = appointments.filter(a => isToday(new Date(a.appointment_date))).length;
-      const completionRate = totalAppointments > 0 ? (completedAppointments / totalAppointments) * 100 : 0;
-
-      // Group by date for chart
-      const dailyAppointments = appointments.reduce((acc, appointment) => {
-        const date = appointment.appointment_date.split('T')[0];
-        acc[date] = (acc[date] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-
-      return { 
-        totalAppointments, 
-        completedAppointments, 
-        todayAppointments, 
-        completionRate,
-        dailyAppointments 
-      };
-    }
-  });
-
-  // Patients Analytics
-  const { data: patientsData } = useQuery({
-    queryKey: ['patients-analytics', timeRange],
-    queryFn: async () => {
-      const { data: patients, error } = await supabase
-        .from('patients')
-        .select('id, created_at')
-        .gte('created_at', dateRange.start.toISOString())
-        .lte('created_at', dateRange.end.toISOString());
-
-      if (error) throw error;
-
-      const newPatients = patients.length;
-      const todayNewPatients = patients.filter(p => isToday(new Date(p.created_at))).length;
-
-      // Get total patients count
-      const { count: totalPatients } = await supabase
-        .from('patients')
-        .select('*', { count: 'exact', head: true });
-
-      return { newPatients, todayNewPatients, totalPatients: totalPatients || 0 };
-    }
-  });
-
-  // Inventory Analytics
-  const { data: inventoryData } = useQuery({
-    queryKey: ['inventory-analytics'],
-    queryFn: async () => {
-      const { data: supplies, error } = await supabase
-        .from('medical_supplies')
-        .select('current_stock, minimum_stock, unit_cost')
-        .eq('is_active', true);
-
-      if (error) throw error;
-
-      const totalItems = supplies.length;
-      const lowStockItems = supplies.filter(s => s.current_stock <= s.minimum_stock).length;
-      const outOfStockItems = supplies.filter(s => s.current_stock === 0).length;
-      const totalValue = supplies.reduce((sum, s) => sum + (s.current_stock * Number(s.unit_cost)), 0);
-
-      return { totalItems, lowStockItems, outOfStockItems, totalValue };
-    }
-  });
+  // Extract data with fallbacks
+  const revenueData = analyticsData?.revenue;
+  const appointmentsData = analyticsData?.appointments;
+  const patientsData = analyticsData?.patients;
+  const inventoryData = analyticsData?.inventory;
 
   // Chart data based on selected type
-  const chartData = React.useMemo(() => {
+  const chartData = useMemo(() => {
     if (chartType === 'revenue' && revenueData?.dailyRevenue) {
       return Object.entries(revenueData.dailyRevenue).map(([date, value]) => ({
         name: format(new Date(date), 'MM/dd'),
@@ -173,7 +180,7 @@ export function AnalyticalDashboard() {
   }, [chartType, revenueData, appointmentsData]);
 
   // Performance metrics
-  const performanceMetrics = React.useMemo(() => {
+  const performanceMetrics = useMemo(() => {
     const metrics = [];
     
     if (revenueData && appointmentsData) {
@@ -214,7 +221,7 @@ export function AnalyticalDashboard() {
     return metrics;
   }, [revenueData, appointmentsData, inventoryData]);
 
-  const todayStats = [
+  const todayStats = useMemo(() => [
     {
       title: "إيرادات اليوم",
       value: `$${revenueData?.todayRevenue?.toFixed(2) || '0.00'}`,
@@ -239,7 +246,45 @@ export function AnalyticalDashboard() {
       icon: Package,
       trend: inventoryData?.lowStockItems ? 'down' : 'neutral'
     }
-  ];
+  ], [revenueData, appointmentsData, patientsData, inventoryData]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="space-y-0 pb-2">
+                <div className="h-4 bg-muted rounded animate-pulse" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-muted rounded animate-pulse" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Card>
+          <CardHeader>
+            <div className="h-6 bg-muted rounded animate-pulse w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] bg-muted rounded animate-pulse" />
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">حدث خطأ في تحميل البيانات التحليلية</p>
+        <Button onClick={() => window.location.reload()} className="mt-4">
+          إعادة المحاولة
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -375,5 +420,17 @@ export function AnalyticalDashboard() {
         </Card>
       </div>
     </div>
+  );
+}
+
+// Memoized component for better performance
+export const AnalyticalDashboard = memo(AnalyticalDashboardComponent);
+
+// Wrapped with Error Boundary
+export default function AnalyticalDashboardWithErrorBoundary() {
+  return (
+    <ErrorBoundary>
+      <AnalyticalDashboard />
+    </ErrorBoundary>
   );
 }

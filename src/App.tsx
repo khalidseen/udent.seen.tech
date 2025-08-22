@@ -37,11 +37,17 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 2 * 60 * 1000, // 2 minutes - optimized for better performance
+      gcTime: 5 * 60 * 1000, // 5 minutes - reduced memory usage
       refetchOnWindowFocus: false,
-      retry: 2
+      refetchOnReconnect: 'always',
+      retry: 1, // Reduced retries for faster error feedback
+      retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     },
+    mutations: {
+      retry: 1,
+      retryDelay: 1000,
+    }
   },
 });
 
