@@ -325,21 +325,6 @@ export function AppSidebar() {
       <SidebarFooter className="p-4 border-t">
         {!collapsed ? (
           <div className="space-y-3">
-            <div className="flex items-center space-x-3 space-x-reverse p-2 bg-muted/50 rounded-lg">
-              <Avatar className="w-8 h-8">
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-                  د.ك
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">
-                  د. كريم أحمد
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  طبيب أسنان
-                </p>
-              </div>
-            </div>
             <Button 
               variant="ghost" 
               size="sm" 
