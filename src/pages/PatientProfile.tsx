@@ -46,10 +46,10 @@ const PatientProfile = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (patientId) {
+    if (patientId && user) {
       fetchPatient();
     }
-  }, [patientId]);
+  }, [patientId, user]);
 
   const fetchPatient = async () => {
     if (!user) {
