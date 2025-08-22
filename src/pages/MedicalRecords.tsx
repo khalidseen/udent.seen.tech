@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, FileText, Camera, Search, Eye, RotateCcw, Brain } from "lucide-react";
 import { AISmartDiagnosisButton } from "@/components/medical-records/AISmartDiagnosisButton";
 import { AIInsightsDashboard } from "@/components/ai-analysis/AIInsightsDashboard";
+import { SmartDiagnosisEngine } from "@/components/ai-analysis/SmartDiagnosisEngine";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -178,15 +179,19 @@ export default function MedicalRecords() {
         description="إدارة السجلات الطبية والأشعة"
         action={
           <div className="flex gap-2">
-            <AISmartDiagnosisButton
-              onDiagnosisComplete={(diagnosis) => {
-                refetch();
-                toast({
-                  title: "تم حفظ التشخيص الذكي",
-                  description: "تم إضافة التشخيص إلى السجلات الطبية",
-                });
+            <Button 
+              onClick={() => {
+                const smartDiagnosisSection = document.querySelector('[data-section="smart-diagnosis"]');
+                if (smartDiagnosisSection) {
+                  smartDiagnosisSection.scrollIntoView({ behavior: 'smooth' });
+                }
               }}
-            />
+              variant="outline"
+              className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 hover:from-primary/20 hover:to-primary/10"
+            >
+              <Brain className="w-4 h-4 ml-2" />
+              التشخيص الذكي المتطور
+            </Button>
             <Button onClick={() => setIsUploadImageOpen(true)} variant="outline">
               <Camera className="w-4 h-4 ml-2" />
               رفع صورة
@@ -198,6 +203,11 @@ export default function MedicalRecords() {
           </div>
         }
       />
+
+      {/* Smart Diagnosis Engine */}
+      <div className="mb-6" data-section="smart-diagnosis">
+        <SmartDiagnosisEngine />
+      </div>
 
       {/* AI Insights Dashboard */}
       <div className="mb-6">
