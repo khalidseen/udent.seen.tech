@@ -4,6 +4,10 @@ import { NetworkStatusIndicator } from "@/components/ui/network-status";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { SmartNotificationSystem } from "@/components/notifications/SmartNotificationSystem";
 import { GlobalSearch } from "./GlobalSearch";
+import { DateTime } from "./DateTime";
+import { UserProfile } from "./UserProfile";
+import { Bell } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -23,9 +27,13 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <GlobalSearch />
               </div>
               
-              <div className="flex items-center gap-2">
-                <NetworkStatusIndicator />
-                <NotificationCenter />
+              <div className="flex items-center gap-4">
+                <DateTime />
+                <div className="flex items-center gap-2">
+                  <NetworkStatusIndicator />
+                  <NotificationCenter />
+                  <UserProfile />
+                </div>
               </div>
             </div>
           </header>
