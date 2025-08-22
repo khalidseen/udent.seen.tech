@@ -178,6 +178,42 @@ export type Database = {
           },
         ]
       }
+      audit_log: {
+        Row: {
+          id: string
+          ip_address: unknown | null
+          new_data: Json | null
+          old_data: Json | null
+          operation: string
+          table_name: string
+          timestamp: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          operation: string
+          table_name: string
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          operation?: string
+          table_name?: string
+          timestamp?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       dental_treatments: {
         Row: {
           clinic_id: string
@@ -1075,6 +1111,7 @@ export type Database = {
       }
       secretaries: {
         Row: {
+          clinic_id: string | null
           created_at: string
           email: string
           full_name: string
@@ -1082,6 +1119,7 @@ export type Database = {
           phone: string | null
         }
         Insert: {
+          clinic_id?: string | null
           created_at?: string
           email: string
           full_name: string
@@ -1089,13 +1127,22 @@ export type Database = {
           phone?: string | null
         }
         Update: {
+          clinic_id?: string | null
           created_at?: string
           email?: string
           full_name?: string
           id?: number
           phone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "secretaries_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       security_events: {
         Row: {
@@ -1281,6 +1328,15 @@ export type Database = {
       }
       check_doctor_application_rate_limit: {
         Args: { ip_address: unknown }
+        Returns: boolean
+      }
+      enhanced_rate_limit_check: {
+        Args: {
+          ip_address: unknown
+          max_requests?: number
+          table_name: string
+          time_window?: unknown
+        }
         Returns: boolean
       }
       generate_automatic_notifications: {
