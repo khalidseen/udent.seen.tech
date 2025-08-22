@@ -32,13 +32,29 @@ const mainMenuItems = [{
   url: "/treatments",
   icon: Activity
 }, {
+  title: "علاجات الأسنان",
+  url: "/dental-treatments",
+  icon: Activity
+}, {
   title: "الفواتير",
   url: "/invoices",
   icon: Receipt
 }, {
+  title: "المدفوعات",
+  url: "/payments",
+  icon: DollarSign
+}, {
   title: "المخزون",
   url: "/inventory",
   icon: Package
+}, {
+  title: "أوامر الشراء",
+  url: "/purchase-orders",
+  icon: ClipboardList
+}, {
+  title: "حركة المخزون",
+  url: "/stock-movements",
+  icon: Activity
 }, {
   title: "الملفات الطبية",
   url: "/medical-records",
@@ -46,6 +62,14 @@ const mainMenuItems = [{
 }];
 
 const clinicMenuItems = [{
+  title: "الأطباء",
+  url: "/doctors",
+  icon: User
+}, {
+  title: "مساعدو الأطباء", 
+  url: "/doctor-assistants",
+  icon: UserCheck
+}, {
   title: "طلبات الأطباء",
   url: "/doctor-applications",
   icon: UserCheck

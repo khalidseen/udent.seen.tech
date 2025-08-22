@@ -10,6 +10,12 @@ import NewAppointment from "./pages/NewAppointment";
 import Patients from "./pages/Patients";
 import PatientProfile from "./pages/PatientProfile";
 import Treatments from "./pages/Treatments";
+import DentalTreatments from "./pages/DentalTreatments";
+import Doctors from "./pages/Doctors";
+import DoctorAssistants from "./pages/DoctorAssistants";
+import Payments from "./pages/Payments";
+import PurchaseOrders from "./pages/PurchaseOrders";
+import StockMovements from "./pages/StockMovements";
 
 import Appointments from "./pages/Appointments";
 import PublicBooking from "./pages/PublicBooking";
@@ -90,13 +96,55 @@ const App = () => {
                   </MainLayout>
                 </ProtectedRoute>
               } />
-              <Route path="/treatments" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Treatments />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
+               <Route path="/treatments" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <Treatments />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
+               <Route path="/dental-treatments" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <DentalTreatments />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
+               <Route path="/doctors" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <Doctors />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
+               <Route path="/doctor-assistants" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <DoctorAssistants />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
+               <Route path="/payments" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <Payments />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
+               <Route path="/purchase-orders" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <PurchaseOrders />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
+               <Route path="/stock-movements" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <StockMovements />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
               <Route path="/invoices" element={
                 <ProtectedRoute>
                   <MainLayout>
