@@ -46,31 +46,80 @@ const PatientProfile = () => {
   const { user } = useAuth();
 
   useEffect(() => {
+    console.log('PatientProfile useEffect triggered:', { 
+      patientId, 
+      user: user ? { id: user.id, email: user.email } : null,
+      loading 
+    });
+    
     if (patientId && user) {
+      console.log('Starting fetchPatient...');
       fetchPatient();
+    } else {
+      console.log('Not fetching patient:', { 
+        hasPatientId: !!patientId, 
+        hasUser: !!user 
+      });
+      // Set a timeout to prevent infinite loading
+      const timeout = setTimeout(() => {
+        if (!user) {
+          console.log('Timeout: No user found, stopping loading');
+          setLoading(false);
+          toast({
+            title: "خطأ في التحقق",
+            description: "لم يتم العثور على بيانات المستخدم. يرجى تسجيل الدخول مرة أخرى.",
+            variant: "destructive",
+          });
+        }
+      }, 5000);
+      
+      return () => clearTimeout(timeout);
     }
   }, [patientId, user]);
 
   const fetchPatient = async () => {
+    console.log('fetchPatient called with user:', user ? { id: user.id, email: user.email } : null);
+    
     if (!user) {
+      console.log('fetchPatient: No user, stopping loading');
       setLoading(false);
       return;
     }
 
     try {
+      console.log('fetchPatient: Getting user profile...');
       // Get the clinic_id from user profile first
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
         .eq('user_id', user.id)
         .single();
 
-      if (!profile) {
-        console.error('No profile found for user');
+      console.log('fetchPatient: Profile query result:', { profile, profileError });
+
+      if (profileError) {
+        console.error('Profile query error:', profileError);
+        toast({
+          title: "خطأ في الملف الشخصي",
+          description: "حدث خطأ في تحميل بيانات الملف الشخصي: " + profileError.message,
+          variant: "destructive",
+        });
         setLoading(false);
         return;
       }
 
+      if (!profile) {
+        console.error('No profile found for user');
+        toast({
+          title: "ملف شخصي مفقود",
+          description: "لم يتم العثور على ملف شخصي للمستخدم. يرجى الاتصال بالإدارة.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log('fetchPatient: Getting patient data with clinic_id:', profile.id, 'patient_id:', patientId);
       const { data, error } = await supabase
         .from('patients')
         .select('*')
@@ -78,16 +127,33 @@ const PatientProfile = () => {
         .eq('clinic_id', profile.id)
         .maybeSingle();
 
-      if (error) throw error;
+      console.log('fetchPatient: Patient query result:', { data, error });
+
+      if (error) {
+        console.error('Patient query error:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        console.log('fetchPatient: No patient found');
+        toast({
+          title: "مريض غير موجود",
+          description: "لم يتم العثور على المريض أو ليس لديك صلاحية للوصول إليه",
+          variant: "destructive",
+        });
+      }
+      
+      console.log('fetchPatient: Setting patient data:', data);
       setPatient(data);
     } catch (error) {
       console.error('Error fetching patient:', error);
       toast({
         title: "خطأ",
-        description: "حدث خطأ أثناء تحميل بيانات المريض",
+        description: "حدث خطأ أثناء تحميل بيانات المريض: " + (error as Error).message,
         variant: "destructive",
       });
     } finally {
+      console.log('fetchPatient: Setting loading to false');
       setLoading(false);
     }
   };
