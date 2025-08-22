@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User, ShoppingCart, TrendingUp, UserPlus, MessageSquare } from "lucide-react";
+import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User, ShoppingCart, TrendingUp, UserPlus, MessageSquare, Wallet } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -34,34 +34,14 @@ const mainMenuItems = [{
 }, {
   title: "علاجات الأسنان",
   url: "/dental-treatments",
-  icon: Activity
-}, {
-  title: "الفواتير",
-  url: "/invoices",
-  icon: Receipt
-}, {
-  title: "المدفوعات",
-  url: "/payments",
-  icon: DollarSign
-}, {
-  title: "المخزون",
-  url: "/inventory",
-  icon: Package
-}, {
-  title: "أوامر الشراء",
-  url: "/purchase-orders",
-  icon: ClipboardList
-}, {
-  title: "حركة المخزون",
-  url: "/stock-movements",
-  icon: Activity
+  icon: Stethoscope
 }, {
   title: "الملفات الطبية",
   url: "/medical-records",
   icon: FolderOpen
 }];
 
-const clinicMenuItems = [{
+const managementMenuItems = [{
   title: "الأطباء",
   url: "/doctors",
   icon: Stethoscope
@@ -72,36 +52,62 @@ const clinicMenuItems = [{
 }, {
   title: "السكرتيرات",
   url: "/secretaries",
-  icon: UserPlus
+  icon: User
 }, {
   title: "طلبات الأطباء",
   url: "/doctor-applications",
   icon: ClipboardList
+}];
+
+const financialMenuItems = [{
+  title: "الفواتير",
+  url: "/invoices",
+  icon: Receipt
+}, {
+  title: "المدفوعات",
+  url: "/payments",
+  icon: DollarSign
 }, {
   title: "أسعار الخدمات",
   url: "/service-prices",
   icon: DollarSign
+}];
+
+const inventoryMenuItems = [{
+  title: "المخزون",
+  url: "/inventory",
+  icon: Package
+}, {
+  title: "أوامر الشراء",
+  url: "/purchase-orders",
+  icon: ShoppingCart
+}, {
+  title: "حركة المخزون",
+  url: "/stock-movements",
+  icon: TrendingUp
+}];
+
+const systemMenuItems = [{
+  title: "الإشعارات",
+  url: "/notifications",
+  icon: Bell
 }, {
   title: "قوالب الإشعارات",
   url: "/notification-templates",
   icon: MessageSquare
 }, {
-  title: "رابط حجز المرضى",
-  url: "/book?clinic=default",
-  icon: ExternalLink,
-  external: true
+  title: "التقارير",
+  url: "/reports",
+  icon: FileText
 }, {
   title: "الإعدادات",
   url: "/settings",
   icon: Settings
 }, {
-  title: "التقارير",
-  url: "/reports",
-  icon: FileText
-}, {
-  title: "الإشعارات",
-  url: "/notifications",
-  icon: Bell
+  title: "رابط حجز المرضى",
+  url: "/book?clinic=default",
+  icon: ExternalLink,
+  external: true
 }];
 
 export function AppSidebar() {
@@ -127,7 +133,21 @@ export function AppSidebar() {
     }
     return `${baseClasses} hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground`;
   };
-  const filteredMainMenu = mainMenuItems.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredMainMenu = mainMenuItems.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const filteredManagementMenu = managementMenuItems.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const filteredFinancialMenu = financialMenuItems.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const filteredInventoryMenu = inventoryMenuItems.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  const filteredSystemMenu = systemMenuItems.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return <Sidebar side="right" className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 shadow-sidebar border-l border-sidebar-border shrink-0`} style={{
     background: 'var(--gradient-sidebar)'
@@ -184,14 +204,80 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Clinic Management */}
-        <SidebarGroup>
+        {/* Staff Management */}
+        <SidebarGroup className="mb-4">
           {!collapsed && <SidebarGroupLabel className="text-sidebar-foreground/70 font-medium mb-2">
-              إدارة العيادة
+              إدارة الموظفين
             </SidebarGroupLabel>}
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
-              {clinicMenuItems.map(item => {
+              {filteredManagementMenu.map(item => {
+              const Icon = item.icon;
+              return <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <Icon className={`${collapsed ? "w-5 h-5" : "w-4 h-4 ml-3"}`} />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>;
+            })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Financial Management */}
+        <SidebarGroup className="mb-4">
+          {!collapsed && <SidebarGroupLabel className="text-sidebar-foreground/70 font-medium mb-2">
+              الإدارة المالية
+            </SidebarGroupLabel>}
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {filteredFinancialMenu.map(item => {
+              const Icon = item.icon;
+              return <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <Icon className={`${collapsed ? "w-5 h-5" : "w-4 h-4 ml-3"}`} />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>;
+            })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Inventory Management */}
+        <SidebarGroup className="mb-4">
+          {!collapsed && <SidebarGroupLabel className="text-sidebar-foreground/70 font-medium mb-2">
+              إدارة المخزون
+            </SidebarGroupLabel>}
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {filteredInventoryMenu.map(item => {
+              const Icon = item.icon;
+              return <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <Icon className={`${collapsed ? "w-5 h-5" : "w-4 h-4 ml-3"}`} />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>;
+            })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* System Management */}
+        <SidebarGroup>
+          {!collapsed && <SidebarGroupLabel className="text-sidebar-foreground/70 font-medium mb-2">
+              إدارة النظام
+            </SidebarGroupLabel>}
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {filteredSystemMenu.map(item => {
               const Icon = item.icon;
               return <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
