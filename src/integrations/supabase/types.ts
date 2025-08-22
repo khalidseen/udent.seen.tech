@@ -1317,6 +1317,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tooth_conditions: {
+        Row: {
+          clinic_id: string
+          condition_color: string | null
+          condition_type: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          numbering_system: string
+          patient_id: string
+          tooth_number: string
+          treatment_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          condition_color?: string | null
+          condition_type?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          numbering_system?: string
+          patient_id: string
+          tooth_number: string
+          treatment_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          condition_color?: string | null
+          condition_type?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          numbering_system?: string
+          patient_id?: string
+          tooth_number?: string
+          treatment_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
