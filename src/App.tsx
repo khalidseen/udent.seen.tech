@@ -47,191 +47,189 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider delayDuration={300}>
-          <BrowserRouter>
-            <Routes>
-              {/* Public routes without MainLayout */}
-              <Route path="/book" element={<PublicBooking />} />
-              <Route path="/auth" element={<Auth />} />
-              
-              {/* Protected routes with MainLayout */}
-              <Route path="/" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Index />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/patients" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Patients />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/patients/:patientId" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <PatientProfile />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/appointments" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Appointments />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/appointment-requests" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <AppointmentRequests />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/new-appointment" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <NewAppointment />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-               <Route path="/treatments" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <Treatments />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-               <Route path="/dental-treatments" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <DentalTreatments />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-               <Route path="/doctors" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <Doctors />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-               <Route path="/doctor-assistants" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <DoctorAssistants />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-               <Route path="/payments" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <Payments />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-               <Route path="/purchase-orders" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <PurchaseOrders />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-               <Route path="/stock-movements" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <StockMovements />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-               <Route path="/secretaries" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <Secretaries />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-               <Route path="/notification-templates" element={
-                 <ProtectedRoute>
-                   <MainLayout>
-                     <NotificationTemplates />
-                   </MainLayout>
-                 </ProtectedRoute>
-               } />
-              <Route path="/invoices" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Invoices />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/service-prices" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <ServicePrices />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/inventory" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Inventory />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/medical-records" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <MedicalRecords />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/doctor-applications" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <DoctorApplications />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/settings" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Settings />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/reports" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Reports />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/notifications" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Notifications />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="/advanced-3d-dental" element={
-                <ProtectedRoute>
-                  <MainLayout>
-                    <Advanced3DDental />
-                  </MainLayout>
-                </ProtectedRoute>
-              } />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <Toaster />
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider delayDuration={300}>
+        <BrowserRouter>
+          <Routes>
+            {/* Public routes without MainLayout */}
+            <Route path="/book" element={<PublicBooking />} />
+            <Route path="/auth" element={<Auth />} />
+            
+            {/* Protected routes with MainLayout */}
+            <Route path="/" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Index />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/patients" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Patients />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/patients/:patientId" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PatientProfile />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/appointments" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Appointments />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/appointment-requests" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <AppointmentRequests />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/new-appointment" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <NewAppointment />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+             <Route path="/treatments" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <Treatments />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+             <Route path="/dental-treatments" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <DentalTreatments />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+             <Route path="/doctors" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <Doctors />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+             <Route path="/doctor-assistants" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <DoctorAssistants />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+             <Route path="/payments" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <Payments />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+             <Route path="/purchase-orders" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <PurchaseOrders />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+             <Route path="/stock-movements" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <StockMovements />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+             <Route path="/secretaries" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <Secretaries />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+             <Route path="/notification-templates" element={
+               <ProtectedRoute>
+                 <MainLayout>
+                   <NotificationTemplates />
+                 </MainLayout>
+               </ProtectedRoute>
+             } />
+            <Route path="/invoices" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Invoices />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/service-prices" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <ServicePrices />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/inventory" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Inventory />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/medical-records" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <MedicalRecords />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/doctor-applications" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <DoctorApplications />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Settings />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/reports" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Reports />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/notifications" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Notifications />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/advanced-3d-dental" element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Advanced3DDental />
+                </MainLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+          <Toaster />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 
