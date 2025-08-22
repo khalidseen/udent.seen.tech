@@ -16,7 +16,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, FileText, Camera, Search, Eye, RotateCcw, Brain } from "lucide-react";
 import { AISmartDiagnosisButton } from "@/components/medical-records/AISmartDiagnosisButton";
 import { AIInsightsDashboard } from "@/components/ai-analysis/AIInsightsDashboard";
-import { SmartDiagnosisEngine } from "@/components/ai-analysis/SmartDiagnosisEngine";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -180,12 +179,7 @@ export default function MedicalRecords() {
         action={
           <div className="flex gap-2">
             <Button 
-              onClick={() => {
-                const smartDiagnosisSection = document.querySelector('[data-section="smart-diagnosis"]');
-                if (smartDiagnosisSection) {
-                  smartDiagnosisSection.scrollIntoView({ behavior: 'smooth' });
-                }
-              }}
+              onClick={() => window.open('/smart-diagnosis', '_blank')}
               variant="outline"
               className="bg-gradient-to-r from-primary/10 to-primary/5 border-primary/20 hover:from-primary/20 hover:to-primary/10"
             >
@@ -204,10 +198,7 @@ export default function MedicalRecords() {
         }
       />
 
-      {/* Smart Diagnosis Engine */}
-      <div className="mb-6" data-section="smart-diagnosis">
-        <SmartDiagnosisEngine />
-      </div>
+      {/* Smart Diagnosis Engine - Removed from here */}
 
       {/* AI Insights Dashboard */}
       <div className="mb-6">

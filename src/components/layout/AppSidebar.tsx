@@ -39,10 +39,16 @@ const mainMenuItems = [{
   title: "الملفات الطبية",
   url: "/medical-records",
   icon: FolderOpen
+}];
+
+const aiMenuItems = [{
+  title: "التشخيص الذكي",
+  url: "/smart-diagnosis",
+  icon: Brain
 }, {
   title: "الذكاء الاصطناعي",
   url: "/ai-insights",
-  icon: Brain
+  icon: TrendingUp
 }];
 
 const managementMenuItems = [{
@@ -141,6 +147,9 @@ export function AppSidebar() {
   const filteredMainMenu = mainMenuItems.filter(item => 
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
+  const filteredAIMenu = aiMenuItems.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
   const filteredManagementMenu = managementMenuItems.filter(item => 
     item.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -187,6 +196,32 @@ export function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="space-y-1">
               {filteredMainMenu.map(item => {
+                const Icon = item.icon;
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild className="h-9">
+                      <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <Icon className="w-4 h-4 shrink-0" />
+                        {!collapsed && <span>{item.title}</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* AI & Smart Diagnosis */}
+        <SidebarGroup className="mb-4">
+          {!collapsed && (
+            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+              الذكاء الاصطناعي
+            </SidebarGroupLabel>
+          )}
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1">
+              {filteredAIMenu.map(item => {
                 const Icon = item.icon;
                 return (
                   <SidebarMenuItem key={item.title}>
