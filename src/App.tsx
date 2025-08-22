@@ -13,6 +13,8 @@ import Treatments from "./pages/Treatments";
 import DentalTreatments from "./pages/DentalTreatments";
 import Doctors from "./pages/Doctors";
 import DoctorAssistants from "./pages/DoctorAssistants";
+import Secretaries from "./pages/Secretaries";
+import NotificationTemplates from "./pages/NotificationTemplates";
 import Payments from "./pages/Payments";
 import PurchaseOrders from "./pages/PurchaseOrders";
 import StockMovements from "./pages/StockMovements";
@@ -142,6 +144,20 @@ const App = () => {
                  <ProtectedRoute>
                    <MainLayout>
                      <StockMovements />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
+               <Route path="/secretaries" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <Secretaries />
+                   </MainLayout>
+                 </ProtectedRoute>
+               } />
+               <Route path="/notification-templates" element={
+                 <ProtectedRoute>
+                   <MainLayout>
+                     <NotificationTemplates />
                    </MainLayout>
                  </ProtectedRoute>
                } />

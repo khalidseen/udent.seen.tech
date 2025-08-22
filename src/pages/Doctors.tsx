@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Edit, Trash2, User, Phone, Mail, GraduationCap } from "lucide-react";
+import { Plus, Search, User, Edit, Trash2, Stethoscope, Phone, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,132 +8,185 @@ import { Badge } from "@/components/ui/badge";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import AddDoctorDialog from "@/components/doctors/AddDoctorDialog";
 
 interface Doctor {
   id: string;
   full_name: string;
-  phone?: string;
-  email?: string;
-  specialization?: string;
-  license_number?: string;
-  experience_years?: number;
+  specialization: string | null;
   status: string;
+  email: string | null;
+  phone: string | null;
+  experience_years: number | null;
+  consultation_fee: number | null;
+  working_hours: string | null;
   created_at: string;
 }
 
 const Doctors = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const { user } = useAuth();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
+  const { toast } = useToast();
 
-  const { data: doctors = [], isLoading, refetch } = useQuery({
+  const { data: doctors, isLoading, refetch } = useQuery({
     queryKey: ['doctors'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('doctors')
         .select('*')
-        .order('created_at', { ascending: false });
-      
+        .order('full_name', { ascending: true });
+
       if (error) throw error;
       return data as Doctor[];
     }
   });
 
-  const filteredDoctors = doctors.filter(doctor =>
+  const filteredDoctors = doctors?.filter(doctor =>
     doctor.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     doctor.specialization?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const handleCreate = () => {
+    setEditingDoctor(null);
+    setIsDialogOpen(true);
+  };
+
+  const handleEdit = (doctor: Doctor) => {
+    setEditingDoctor(doctor);
+    setIsDialogOpen(true);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm('هل أنت متأكد من حذف هذا الطبيب؟')) return;
-    
+
     try {
-      const { error } = await supabase.from('doctors').delete().eq('id', id);
+      const { error } = await supabase
+        .from('doctors')
+        .delete()
+        .eq('id', id);
+
       if (error) throw error;
-      
-      toast.success('تم حذف الطبيب بنجاح');
+
       refetch();
-    } catch (error) {
-      console.error('Error deleting doctor:', error);
-      toast.error('حدث خطأ في حذف الطبيب');
+      toast({
+        title: "تم الحذف",
+        description: "تم حذف الطبيب بنجاح",
+      });
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء حذف الطبيب",
+        variant: "destructive"
+      });
     }
   };
 
   const getStatusBadge = (status: string) => {
-    const statusMap = {
-      active: { label: 'نشط', variant: 'default' as const },
-      inactive: { label: 'غير نشط', variant: 'secondary' as const },
-      suspended: { label: 'موقوف', variant: 'destructive' as const }
-    };
-    
-    const statusInfo = statusMap[status as keyof typeof statusMap] || { label: status, variant: 'outline' as const };
-    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
+    switch (status) {
+      case 'active':
+        return <Badge className="bg-green-100 text-green-800 hover:bg-green-200">نشط</Badge>;
+      case 'inactive':
+        return <Badge variant="secondary">غير نشط</Badge>;
+      case 'suspended':
+        return <Badge variant="destructive">معلق</Badge>;
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
   };
 
   return (
     <PageContainer>
       <PageHeader 
         title="إدارة الأطباء"
-        description="إدارة الأطباء والكادر الطبي في العيادة"
+        description="إدارة الأطباء والموظفين الطبيين"
+        action={
+          <Button onClick={handleCreate}>
+            <Plus className="w-4 h-4 ml-2" />
+            إضافة طبيب جديد
+          </Button>
+        }
       />
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="البحث عن طبيب..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pr-10"
-          />
-        </div>
-        <Button>
-          <Plus className="w-4 h-4 ml-2" />
-          إضافة طبيب جديد
-        </Button>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">إجمالي الأطباء</CardTitle>
+            <Stethoscope className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{doctors?.length || 0}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">أطباء نشطين</CardTitle>
+            <User className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-success">
+              {doctors?.filter(d => d.status === 'active').length || 0}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">متوسط الخبرة</CardTitle>
+            <Stethoscope className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-info">
+              {doctors?.length ? 
+                Math.round(doctors.filter(d => d.experience_years).reduce((sum, d) => sum + (d.experience_years || 0), 0) / doctors.filter(d => d.experience_years).length) || 0
+                : 0} سنة
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[...Array(6)].map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-4 bg-muted rounded w-3/4"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <div className="h-3 bg-muted rounded"></div>
-                  <div className="h-3 bg-muted rounded w-2/3"></div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardContent className="py-8">
+            <div className="text-center">جاري التحميل...</div>
+          </CardContent>
+        </Card>
+      ) : filteredDoctors?.length === 0 ? (
+        <Card className="text-center py-12">
+          <CardContent>
+            <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">لا توجد أطباء</h3>
+            <p className="text-muted-foreground mb-4">
+              {searchQuery ? "لم يتم العثور على نتائج للبحث" : "لم يتم إضافة أي طبيب بعد"}
+            </p>
+            {!searchQuery && (
+              <Button onClick={handleCreate}>
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة أول طبيب
+              </Button>
+            )}
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredDoctors.map((doctor) => (
+          {filteredDoctors?.map((doctor) => (
             <Card key={doctor.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                      <User className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg">{doctor.full_name}</CardTitle>
-                      {doctor.specialization && (
-                        <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
-                      )}
-                    </div>
+                  <div>
+                    <CardTitle className="text-lg">{doctor.full_name}</CardTitle>
+                    {doctor.specialization && (
+                      <p className="text-sm text-muted-foreground">{doctor.specialization}</p>
+                    )}
                   </div>
                   {getStatusBadge(doctor.status)}
                 </div>
               </CardHeader>
               
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {doctor.phone && (
                     <div className="flex items-center gap-2 text-sm">
                       <Phone className="w-4 h-4 text-muted-foreground" />
@@ -149,54 +202,40 @@ const Doctors = () => {
                   )}
                   
                   {doctor.experience_years && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <GraduationCap className="w-4 h-4 text-muted-foreground" />
-                      <span>{doctor.experience_years} سنة خبرة</span>
-                    </div>
-                  )}
-                  
-                  {doctor.license_number && (
                     <div className="text-sm text-muted-foreground">
-                      رقم الترخيص: {doctor.license_number}
+                      {doctor.experience_years} سنة خبرة
                     </div>
                   )}
                 </div>
                 
                 <div className="flex gap-2 mt-4 pt-3 border-t">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Edit className="w-4 h-4 ml-1" />
-                    تعديل
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleEdit(doctor)}
+                  >
+                    <Edit className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => handleDelete(doctor.id)}
-                    className="text-destructive hover:text-destructive"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </div>      
       )}
-
-      {!isLoading && filteredDoctors.length === 0 && (
-        <Card className="text-center py-12">
-          <CardContent>
-            <User className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">لا توجد أطباء</h3>
-            <p className="text-muted-foreground mb-4">
-              {searchQuery ? 'لم يتم العثور على أطباء مطابقين للبحث' : 'لم يتم إضافة أي أطباء بعد'}
-            </p>
-            <Button>
-              <Plus className="w-4 h-4 ml-2" />
-              إضافة أول طبيب
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      
+      <AddDoctorDialog 
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSuccess={refetch}
+        editingDoctor={editingDoctor}
+      />
     </PageContainer>
   );
 };

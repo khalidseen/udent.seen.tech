@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User } from "lucide-react";
+import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCheck, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User, ShoppingCart, TrendingUp, UserPlus, MessageSquare } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter, useSidebar } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -64,24 +64,32 @@ const mainMenuItems = [{
 const clinicMenuItems = [{
   title: "الأطباء",
   url: "/doctors",
-  icon: User
+  icon: Stethoscope
 }, {
   title: "مساعدو الأطباء", 
   url: "/doctor-assistants",
   icon: UserCheck
 }, {
+  title: "السكرتيرات",
+  url: "/secretaries",
+  icon: UserPlus
+}, {
   title: "طلبات الأطباء",
   url: "/doctor-applications",
-  icon: UserCheck
+  icon: ClipboardList
+}, {
+  title: "أسعار الخدمات",
+  url: "/service-prices",
+  icon: DollarSign
+}, {
+  title: "قوالب الإشعارات",
+  url: "/notification-templates",
+  icon: MessageSquare
 }, {
   title: "رابط حجز المرضى",
   url: "/book?clinic=default",
   icon: ExternalLink,
   external: true
-}, {
-  title: "أسعار الخدمات",
-  url: "/service-prices",
-  icon: DollarSign
 }, {
   title: "الإعدادات",
   url: "/settings",
