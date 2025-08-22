@@ -52,17 +52,41 @@ const PatientProfile = () => {
   }, [patientId]);
 
   const fetchPatient = async () => {
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
     try {
+      // Get the clinic_id from user profile first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) {
+        console.error('No profile found for user');
+        setLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase
         .from('patients')
         .select('*')
         .eq('id', patientId)
-        .single();
+        .eq('clinic_id', profile.id)
+        .maybeSingle();
 
       if (error) throw error;
       setPatient(data);
     } catch (error) {
       console.error('Error fetching patient:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء تحميل بيانات المريض",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
