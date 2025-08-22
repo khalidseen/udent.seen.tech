@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { offlineDB } from '@/lib/offline-db';
 import { offlineSupabase } from '@/lib/offline-supabase';
 
@@ -16,13 +16,30 @@ export function useOfflineData<T = any>({ table, filter, order, autoRefresh = tr
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
-  const fetchData = async () => {
+  // Memoize filter and order to prevent unnecessary re-renders
+  const memoizedFilter = useMemo(() => filter, [JSON.stringify(filter)]);
+  const memoizedOrder = useMemo(() => order, [JSON.stringify(order)]);
+
+  const fetchData = useCallback(async (force = false) => {
+    const now = Date.now();
+    // Prevent frequent fetches (min 10 seconds between calls unless forced)
+    if (!force && now - lastFetchRef.current < 10000) {
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);
+      lastFetchRef.current = now;
       
-      const result = await offlineSupabase.select(table, { filter, order });
+      const result = await offlineSupabase.select(table, { 
+        filter: memoizedFilter, 
+        order: memoizedOrder 
+      });
       
       if (result.error) {
         setError(result.error.message || 'خطأ في جلب البيانات');
@@ -34,28 +51,37 @@ export function useOfflineData<T = any>({ table, filter, order, autoRefresh = tr
     } finally {
       setLoading(false);
     }
-  };
+  }, [table, memoizedFilter, memoizedOrder]);
 
   useEffect(() => {
-    fetchData();
+    fetchData(true);
 
     if (autoRefresh) {
-      // Refresh data every 30 seconds when online
-      const interval = setInterval(() => {
-        if (navigator.onLine) {
+      // Clear any existing interval
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+      
+      // Refresh data every 5 minutes when online (reduced from 30 seconds)
+      refreshIntervalRef.current = setInterval(() => {
+        if (navigator.onLine && document.visibilityState === 'visible') {
           fetchData();
         }
-      }, 30000);
+      }, 300000); // 5 minutes
 
-      return () => clearInterval(interval);
+      return () => {
+        if (refreshIntervalRef.current) {
+          clearInterval(refreshIntervalRef.current);
+        }
+      };
     }
-  }, [table, JSON.stringify(filter), JSON.stringify(order), autoRefresh]);
+  }, [fetchData, autoRefresh]);
 
   useEffect(() => {
     const handleOnline = () => {
       setIsOffline(false);
       if (autoRefresh) {
-        fetchData();
+        fetchData(true);
       }
     };
 
@@ -63,60 +89,70 @@ export function useOfflineData<T = any>({ table, filter, order, autoRefresh = tr
       setIsOffline(true);
     };
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && navigator.onLine && autoRefresh) {
+        fetchData();
+      }
+    };
+
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [autoRefresh]);
+  }, [fetchData, autoRefresh]);
 
-  const add = async (newData: Omit<T, 'id' | 'created_at' | 'updated_at'>) => {
+  const add = useCallback(async (newData: Omit<T, 'id' | 'created_at' | 'updated_at'>) => {
     try {
       const result = await offlineSupabase.insert(table, newData);
       if (result.error) {
         throw new Error(result.error.message);
       }
-      await fetchData(); // Refresh data
+      await fetchData(true); // Force refresh after add
       return result.data;
     } catch (err) {
       throw err;
     }
-  };
+  }, [table, fetchData]);
 
-  const update = async (id: string, updates: Partial<T>) => {
+  const update = useCallback(async (id: string, updates: Partial<T>) => {
     try {
       const result = await offlineSupabase.update(table, updates, { column: 'id', value: id });
       if (result.error) {
         throw new Error(result.error.message);
       }
-      await fetchData(); // Refresh data
+      await fetchData(true); // Force refresh after update
       return result.data;
     } catch (err) {
       throw err;
     }
-  };
+  }, [table, fetchData]);
 
-  const remove = async (id: string) => {
+  const remove = useCallback(async (id: string) => {
     try {
       const result = await offlineSupabase.delete(table, { column: 'id', value: id });
       if (result.error) {
         throw new Error(result.error.message);
       }
-      await fetchData(); // Refresh data
+      await fetchData(true); // Force refresh after delete
       return result.data;
     } catch (err) {
       throw err;
     }
-  };
+  }, [table, fetchData]);
+
+  const refresh = useCallback(() => fetchData(true), [fetchData]);
 
   return {
     data,
     loading,
     error,
     isOffline,
-    refresh: fetchData,
+    refresh,
     add,
     update,
     remove

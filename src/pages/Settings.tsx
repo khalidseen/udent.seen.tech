@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Building2, User, Bell, Shield, Palette, Clock, Globe, Save } from "lucide-react";
+import { Building2, User, Bell, Shield, Palette, Clock, Globe, Save, Database } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { CacheManager } from "@/components/cache/CacheManager";
 
 export default function Settings() {
   const [clinicSettings, setClinicSettings] = useState({
@@ -65,7 +66,7 @@ export default function Settings() {
       />
 
       <Tabs defaultValue="clinic" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="clinic" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             العيادة
@@ -85,6 +86,10 @@ export default function Settings() {
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Palette className="w-4 h-4" />
             المظهر
+          </TabsTrigger>
+          <TabsTrigger value="cache" className="flex items-center gap-2">
+            <Database className="w-4 h-4" />
+            البيانات
           </TabsTrigger>
         </TabsList>
 
@@ -534,6 +539,11 @@ export default function Settings() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* إعدادات إدارة البيانات والكاش */}
+        <TabsContent value="cache">
+          <CacheManager />
         </TabsContent>
       </Tabs>
     </PageContainer>

@@ -1,10 +1,12 @@
-const CACHE_NAME = 'fourdentist-v2';
+const VERSION = 'v' + Date.now();
+const CACHE_NAME = 'fourdentist-' + VERSION;
+const STATIC_CACHE = 'fourdentist-static-' + VERSION;
+
 const urlsToCache = [
   '/',
   '/manifest.json',
   '/icon-192x192.png',
   '/icon-512x512.png',
-  // Add other static assets as needed
 ];
 
 // Install event - cache essential resources
@@ -22,47 +24,76 @@ self.addEventListener('install', (event) => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - Network First strategy for main app, Cache First for static assets
 self.addEventListener('fetch', (event) => {
   // Skip non-GET requests and external requests
   if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version if available
-        if (response) {
+  const url = new URL(event.request.url);
+  
+  // API requests - Network First with fallback
+  if (url.pathname.includes('/rest/v1/') || url.pathname.includes('/auth/v1/')) {
+    event.respondWith(
+      fetch(event.request)
+        .then(response => {
+          // Clone and cache successful responses
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
           return response;
-        }
-
-        // Network first for API requests
-        if (event.request.url.includes('/rest/v1/') || event.request.url.includes('/auth/v1/')) {
-          return fetch(event.request).catch(() => {
-            // Return offline page or cached data for API failures
-            return new Response(JSON.stringify({ error: 'Offline' }), {
+        })
+        .catch(() => {
+          // Fallback to cache for offline
+          return caches.match(event.request).then(cachedResponse => {
+            return cachedResponse || new Response(JSON.stringify({ error: 'Offline' }), {
               headers: { 'Content-Type': 'application/json' }
             });
           });
+        })
+    );
+    return;
+  }
+
+  // Static assets - Cache First
+  if (url.pathname.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2)$/)) {
+    event.respondWith(
+      caches.match(event.request).then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
+        return fetch(event.request).then(response => {
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(STATIC_CACHE).then(cache => {
+              cache.put(event.request, responseClone);
+            });
+          }
+          return response;
+        });
+      })
+    );
+    return;
+  }
 
-        // Cache first for static resources
-        return fetch(event.request)
-          .then((response) => {
-            // Don't cache non-successful responses
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
+  // HTML pages - Network First with stale-while-revalidate
+  event.respondWith(
+    fetch(event.request)
+      .then(response => {
+        if (response.ok) {
+          const responseClone = response.clone();
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, responseClone);
           });
+        }
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request);
       })
   );
 });
@@ -73,15 +104,25 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          // Keep current cache versions
+          if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE && 
+              cacheName.startsWith('fourdentist-')) {
             console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     }).then(() => {
-      console.log('Service worker activated');
+      console.log('Service worker activated with version:', VERSION);
+      // Take control of all clients immediately
       return self.clients.claim();
+    }).then(() => {
+      // Notify clients about update
+      return self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({ type: 'SW_UPDATED', version: VERSION });
+        });
+      });
     })
   );
 });
