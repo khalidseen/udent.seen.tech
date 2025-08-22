@@ -67,10 +67,20 @@ const PalmerDentalChart = ({ patientId, patientAge }: PalmerDentalChartProps) =>
     if (!user) return;
 
     try {
+      // Get the clinic_id from user profile first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) return;
+
       const { data, error } = await supabase
         .from('tooth_conditions')
         .select('*')
         .eq('patient_id', patientId)
+        .eq('clinic_id', profile.id)  
         .eq('numbering_system', 'palmer');
 
       if (error) throw error;

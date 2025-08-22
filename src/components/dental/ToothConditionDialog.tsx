@@ -68,11 +68,21 @@ const ToothConditionDialog = ({
     if (!user) return;
 
     try {
+      // Get the clinic_id from user profile first
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) return;
+
       const { data, error } = await supabase
         .from('tooth_conditions')
         .select('*')
         .eq('patient_id', patientId)
         .eq('tooth_number', toothNumber)
+        .eq('clinic_id', profile.id)
         .eq('numbering_system', 'palmer')
         .maybeSingle();
 
@@ -115,7 +125,23 @@ const ToothConditionDialog = ({
 
     setLoading(true);
     try {
-      const clinicId = user.id; // Assuming user.id is the clinic_id
+      // Get the clinic_id from user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!profile) {
+        toast({
+          title: "خطأ",
+          description: "لم يتم العثور على ملف العيادة",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const clinicId = profile.id;
 
       const conditionData = {
         patient_id: patientId,
