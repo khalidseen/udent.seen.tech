@@ -48,13 +48,14 @@ const DoctorAssistants = () => {
   const { data: assistants, isLoading, refetch } = useQuery({
     queryKey: ['doctor-assistants'],
     queryFn: async () => {
+      // Use the correct table name from Supabase schema
       const { data, error } = await supabase
-        .from('doctor_assistants')
+        .from('doctor_assistants' as any)
         .select('*')
         .order('full_name', { ascending: true });
 
       if (error) throw error;
-      return data as DoctorAssistant[];
+      return (data as any) as DoctorAssistant[];
     }
   });
 
@@ -97,10 +98,10 @@ const DoctorAssistants = () => {
     if (!confirm('هل أنت متأكد من حذف هذا المساعد؟')) return;
 
     try {
-      const { error } = await supabase
-        .from('doctor_assistants')
-        .delete()
-        .eq('id', assistantId);
+        const { error } = await supabase
+          .from('doctor_assistants' as any)
+          .delete()
+          .eq('id', assistantId);
 
       if (error) throw error;
 
@@ -155,7 +156,7 @@ const DoctorAssistants = () => {
 
       if (editingAssistant) {
         const { error } = await supabase
-          .from('doctor_assistants')
+          .from('doctor_assistants' as any)
           .update(assistantData)
           .eq('id', editingAssistant.id);
 
@@ -167,7 +168,7 @@ const DoctorAssistants = () => {
         });
       } else {
         const { error } = await supabase
-          .from('doctor_assistants')
+          .from('doctor_assistants' as any)
           .insert(assistantData);
 
         if (error) throw error;

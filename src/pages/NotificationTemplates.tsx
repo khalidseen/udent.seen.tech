@@ -49,12 +49,12 @@ export default function NotificationTemplates() {
     queryKey: ['notification-templates'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('notification_templates')
+        .from('notification_templates' as any)
         .select('*')
         .order('name', { ascending: true });
 
       if (error) throw error;
-      return data as NotificationTemplate[];
+      return (data as any) as NotificationTemplate[];
     }
   });
 
@@ -130,7 +130,7 @@ export default function NotificationTemplates() {
 
     try {
       const { error } = await supabase
-        .from('notification_templates')
+        .from('notification_templates' as any)
         .delete()
         .eq('id', templateId);
 
@@ -186,7 +186,7 @@ export default function NotificationTemplates() {
 
       if (editingTemplate) {
         const { error } = await supabase
-          .from('notification_templates')
+          .from('notification_templates' as any)
           .update(templateData)
           .eq('id', editingTemplate.id);
 
@@ -198,7 +198,7 @@ export default function NotificationTemplates() {
         });
       } else {
         const { error } = await supabase
-          .from('notification_templates')
+          .from('notification_templates' as any)
           .insert(templateData);
 
         if (error) throw error;
