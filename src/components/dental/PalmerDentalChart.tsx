@@ -64,18 +64,39 @@ const PalmerDentalChart = ({ patientId, patientAge }: PalmerDentalChartProps) =>
   }, [patientId]);
 
   const fetchToothConditions = async () => {
-    if (!user) return;
+    console.log('PalmerDentalChart: fetchToothConditions called', { patientId, user: user?.id });
+    
+    if (!user) {
+      console.log('PalmerDentalChart: No user found');
+      setLoading(false);
+      return;
+    }
 
     try {
+      console.log('PalmerDentalChart: Getting user profile...');
       // Get the clinic_id from user profile first
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
         .eq('user_id', user.id)
         .single();
 
-      if (!profile) return;
+      console.log('PalmerDentalChart: Profile result', { profile, profileError });
 
+      if (profileError) {
+        console.error('PalmerDentalChart: Profile error', profileError);
+        setLoading(false);
+        return;
+      }
+
+      if (!profile) {
+        console.log('PalmerDentalChart: No profile found');
+        setLoading(false);
+        return;
+      }
+
+      console.log('PalmerDentalChart: Fetching tooth conditions...', { patientId, clinicId: profile.id });
+      
       const { data, error } = await supabase
         .from('tooth_conditions')
         .select('*')
@@ -83,11 +104,23 @@ const PalmerDentalChart = ({ patientId, patientAge }: PalmerDentalChartProps) =>
         .eq('clinic_id', profile.id)  
         .eq('numbering_system', 'palmer');
 
-      if (error) throw error;
+      console.log('PalmerDentalChart: Tooth conditions result', { data, error });
+
+      if (error) {
+        console.error('PalmerDentalChart: Query error', error);
+        throw error;
+      }
+      
       setToothConditions(data || []);
     } catch (error) {
       console.error('Error fetching tooth conditions:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ في تحميل مخطط الأسنان",
+        variant: "destructive",
+      });
     } finally {
+      console.log('PalmerDentalChart: Setting loading to false');
       setLoading(false);
     }
   };
