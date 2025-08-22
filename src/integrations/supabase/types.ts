@@ -307,6 +307,59 @@ export type Database = {
         }
         Relationships: []
       }
+      doctor_assistants: {
+        Row: {
+          address: string | null
+          clinic_id: string
+          created_at: string
+          email: string | null
+          experience_years: number | null
+          full_name: string
+          id: string
+          notes: string | null
+          phone: string | null
+          salary: number | null
+          specialization: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          clinic_id: string
+          created_at?: string
+          email?: string | null
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          salary?: number | null
+          specialization?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          clinic_id?: string
+          created_at?: string
+          email?: string | null
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          salary?: number | null
+          specialization?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "doctor_assistants_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       doctors: {
         Row: {
           address: string | null
@@ -770,43 +823,67 @@ export type Database = {
       patients: {
         Row: {
           address: string | null
+          blood_type: string | null
           clinic_id: string
           created_at: string
           date_of_birth: string | null
           email: string | null
+          emergency_contact: string | null
+          emergency_phone: string | null
           full_name: string
           gender: string | null
           id: string
+          insurance_info: string | null
+          marital_status: string | null
           medical_history: string | null
+          national_id: string | null
           notes: string | null
+          occupation: string | null
+          patient_status: string
           phone: string | null
           updated_at: string
         }
         Insert: {
           address?: string | null
+          blood_type?: string | null
           clinic_id: string
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
           full_name: string
           gender?: string | null
           id?: string
+          insurance_info?: string | null
+          marital_status?: string | null
           medical_history?: string | null
+          national_id?: string | null
           notes?: string | null
+          occupation?: string | null
+          patient_status?: string
           phone?: string | null
           updated_at?: string
         }
         Update: {
           address?: string | null
+          blood_type?: string | null
           clinic_id?: string
           created_at?: string
           date_of_birth?: string | null
           email?: string | null
+          emergency_contact?: string | null
+          emergency_phone?: string | null
           full_name?: string
           gender?: string | null
           id?: string
+          insurance_info?: string | null
+          marital_status?: string | null
           medical_history?: string | null
+          national_id?: string | null
           notes?: string | null
+          occupation?: string | null
+          patient_status?: string
           phone?: string | null
           updated_at?: string
         }
@@ -993,6 +1070,30 @@ export type Database = {
           supplier_contact?: string | null
           total_amount?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      secretaries: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string
+          id: number
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name: string
+          id?: number
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: number
+          phone?: string | null
         }
         Relationships: []
       }

@@ -25,6 +25,14 @@ interface Patient {
   address: string;
   medical_history: string;
   created_at: string;
+  national_id?: string;
+  emergency_contact?: string;
+  emergency_phone?: string;
+  patient_status: string;
+  insurance_info?: string;
+  blood_type?: string;
+  occupation?: string;
+  marital_status?: string;
 }
 
 const PatientList = () => {

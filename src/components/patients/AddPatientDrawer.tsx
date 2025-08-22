@@ -23,7 +23,15 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
     gender: '',
     address: '',
     medical_history: '',
-    notes: ''
+    notes: '',
+    national_id: '',
+    emergency_contact: '',
+    emergency_phone: '',
+    patient_status: 'active',
+    insurance_info: '',
+    blood_type: '',
+    occupation: '',
+    marital_status: ''
   });
   const [loading, setLoading] = useState(false);
 
@@ -40,7 +48,15 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
       gender: '',
       address: '',
       medical_history: '',
-      notes: ''
+      notes: '',
+      national_id: '',
+      emergency_contact: '',
+      emergency_phone: '',
+      patient_status: 'active',
+      insurance_info: '',
+      blood_type: '',
+      occupation: '',
+      marital_status: ''
     });
   };
 
@@ -102,7 +118,15 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         gender: formData.gender || null,
         address: formData.address || null,
         medical_history: formData.medical_history || null,
-        notes: formData.notes || null
+        notes: formData.notes || null,
+        national_id: formData.national_id || null,
+        emergency_contact: formData.emergency_contact || null,
+        emergency_phone: formData.emergency_phone || null,
+        patient_status: formData.patient_status || 'active',
+        insurance_info: formData.insurance_info || null,
+        blood_type: formData.blood_type || null,
+        occupation: formData.occupation || null,
+        marital_status: formData.marital_status || null
       });
 
       if (result.error) throw result.error;
@@ -217,15 +241,130 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="address">العنوان</Label>
+                <Label htmlFor="national_id">رقم الهوية الوطنية</Label>
                 <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleChange('address', e.target.value)}
-                  placeholder="عنوان المريض"
+                  id="national_id"
+                  value={formData.national_id}
+                  onChange={(e) => handleChange('national_id', e.target.value)}
+                  placeholder="رقم الهوية الوطنية"
                   className="h-11"
                 />
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="address">العنوان</Label>
+                <Textarea
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => handleChange('address', e.target.value)}
+                  placeholder="العنوان الكامل..."
+                  rows={2}
+                  className="resize-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Personal & Emergency Info Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-foreground border-b pb-2">المعلومات الشخصية والطوارئ</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="blood_type">فصيلة الدم</Label>
+                <Select value={formData.blood_type} onValueChange={(value) => handleChange('blood_type', value)}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="اختر فصيلة الدم" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A+">A+</SelectItem>
+                    <SelectItem value="A-">A-</SelectItem>
+                    <SelectItem value="B+">B+</SelectItem>
+                    <SelectItem value="B-">B-</SelectItem>
+                    <SelectItem value="AB+">AB+</SelectItem>
+                    <SelectItem value="AB-">AB-</SelectItem>
+                    <SelectItem value="O+">O+</SelectItem>
+                    <SelectItem value="O-">O-</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="marital_status">الحالة الاجتماعية</Label>
+                <Select value={formData.marital_status} onValueChange={(value) => handleChange('marital_status', value)}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue placeholder="اختر الحالة الاجتماعية" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="single">أعزب</SelectItem>
+                    <SelectItem value="married">متزوج</SelectItem>
+                    <SelectItem value="divorced">مطلق</SelectItem>
+                    <SelectItem value="widowed">أرمل</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="occupation">المهنة</Label>
+              <Input
+                id="occupation"
+                value={formData.occupation}
+                onChange={(e) => handleChange('occupation', e.target.value)}
+                placeholder="المهنة أو الوظيفة"
+                className="h-11"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="emergency_contact">جهة اتصال الطوارئ</Label>
+                <Input
+                  id="emergency_contact"
+                  value={formData.emergency_contact}
+                  onChange={(e) => handleChange('emergency_contact', e.target.value)}
+                  placeholder="اسم جهة الاتصال"
+                  className="h-11"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="emergency_phone">رقم هاتف الطوارئ</Label>
+                <Input
+                  id="emergency_phone"
+                  value={formData.emergency_phone}
+                  onChange={(e) => handleChange('emergency_phone', e.target.value)}
+                  placeholder="+201234567890"
+                  type="tel"
+                  className="h-11"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="insurance_info">معلومات التأمين الطبي</Label>
+              <Textarea
+                id="insurance_info"
+                value={formData.insurance_info}
+                onChange={(e) => handleChange('insurance_info', e.target.value)}
+                placeholder="معلومات التأمين الصحي..."
+                rows={2}
+                className="resize-none"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="patient_status">حالة المريض</Label>
+              <Select value={formData.patient_status} onValueChange={(value) => handleChange('patient_status', value)}>
+                <SelectTrigger className="h-11">
+                  <SelectValue placeholder="اختر حالة المريض" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">نشط</SelectItem>
+                  <SelectItem value="inactive">غير نشط</SelectItem>
+                  <SelectItem value="transferred">محول</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
