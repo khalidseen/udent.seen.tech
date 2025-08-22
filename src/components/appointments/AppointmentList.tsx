@@ -174,7 +174,7 @@ const AppointmentList = () => {
         title="المواعيد" 
         description="إدارة مواعيد العيادة"
         action={
-          <Link to="/new-appointment">
+          <Link to="/appointments/new">
             <Button>
               <Plus className="w-4 h-4 ml-2" />
               موعد جديد

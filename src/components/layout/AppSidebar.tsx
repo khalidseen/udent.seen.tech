@@ -25,7 +25,7 @@ const mainMenuItems = [{
   icon: ClipboardList
 }, {
   title: "موعد جديد",
-  url: "/new-appointment",
+  url: "/appointments/new",
   icon: CalendarPlus
 }, {
   title: "العلاجات",

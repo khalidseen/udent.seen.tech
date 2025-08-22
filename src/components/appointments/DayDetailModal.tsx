@@ -154,7 +154,7 @@ const DayDetailModal = ({
                     <div className="text-center text-muted-foreground">
                       <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p>لا توجد مواعيد في هذا اليوم</p>
-                      <Link to="/new-appointment">
+                      <Link to="/appointments/new">
                         <Button className="mt-4" size="sm">
                           <Plus className="w-4 h-4 ml-2" />
                           إضافة موعد جديد
@@ -264,7 +264,7 @@ const DayDetailModal = ({
           </ScrollArea>
           
           <div className="flex justify-between items-center pt-4 border-t">
-            <Link to="/new-appointment">
+            <Link to="/appointments/new">
               <Button>
                 <Plus className="w-4 h-4 ml-2" />
                 إضافة موعد جديد
