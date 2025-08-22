@@ -1,5 +1,7 @@
+import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { MainLayout } from "./components/layout/MainLayout";
 import Index from "./pages/Index";
@@ -44,9 +46,11 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
+    <React.StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider delayDuration={300}>
+          <BrowserRouter>
+            <Routes>
               {/* Public routes without MainLayout */}
               <Route path="/book" element={<PublicBooking />} />
               <Route path="/auth" element={<Auth />} />
@@ -215,10 +219,12 @@ const App = () => {
               } />
               <Route path="*" element={<NotFound />} />
             </Routes>
-          <Toaster />
-        </BrowserRouter>
+            <Toaster />
+          </BrowserRouter>
+        </TooltipProvider>
       </QueryClientProvider>
-    );
-  };
+    </React.StrictMode>
+  );
+};
 
 export default App;

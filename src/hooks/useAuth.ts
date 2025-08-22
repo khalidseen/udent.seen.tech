@@ -15,29 +15,41 @@ export const useAuth = () => {
     let subscription: any = null;
     
     const initAuth = async () => {
-      if (isOnline) {
-        // Set up auth state listener for online mode
-        const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
-          (event, session) => {
+      try {
+        if (isOnline) {
+          // Set up auth state listener for online mode
+          const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
+            (event, session) => {
+              setSession(session);
+              setUser(session?.user ?? null);
+              setLoading(false);
+            }
+          );
+          subscription = sub;
+
+          // Check for existing online session
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
             setSession(session);
             setUser(session?.user ?? null);
-            setLoading(false);
+          } catch (error) {
+            console.warn('Failed to get session:', error);
           }
-        );
-        subscription = sub;
-
-        // Check for existing online session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-          setSession(session);
-          setUser(session?.user ?? null);
-          setLoading(false);
-        });
-      } else {
-        // Check for offline session
-        const { data: { session } } = await offlineAuth.getCurrentSession();
-        setSession(session as Session);
-        setUser(session?.user as User ?? null);
-        setLoading(false);
+        } else {
+          // Check for offline session
+          try {
+            const { data: { session } } = await offlineAuth.getCurrentSession();
+            setSession(session as Session);
+            setUser(session?.user as User ?? null);
+          } catch (error) {
+            console.warn('Failed to get offline session:', error);
+          }
+        }
+      } catch (error) {
+        console.warn('Auth initialization error:', error);
+      } finally {
+        // Always set loading to false after 1 second max
+        setTimeout(() => setLoading(false), 1000);
       }
     };
 
