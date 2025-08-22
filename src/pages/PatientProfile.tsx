@@ -12,12 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Activity, Calendar, FileText, Edit, Plus } from "lucide-react";
+import { User, Activity, Calendar, FileText, Edit, Plus, Smile } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import PatientMedicalHistory from "@/components/patients/PatientMedicalHistory";
 import PatientTimeline from "@/components/patients/PatientTimeline";
 import AddTreatmentDialog from "@/components/patients/AddTreatmentDialog";
+import PalmerDentalChart from "@/components/dental/PalmerDentalChart";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -253,10 +254,14 @@ const PatientProfile = () => {
 
       {/* Patient Details Tabs */}
       <Tabs defaultValue="treatments" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="treatments" className="flex items-center">
             <Activity className="w-4 h-4 ml-1" />
             العلاجات
+          </TabsTrigger>
+          <TabsTrigger value="dental-status" className="flex items-center">
+            <Smile className="w-4 h-4 ml-1" />
+            حالة الأسنان
           </TabsTrigger>
           <TabsTrigger value="appointments" className="flex items-center">
             <Calendar className="w-4 h-4 ml-1" />
@@ -270,6 +275,13 @@ const PatientProfile = () => {
         
         <TabsContent value="treatments" className="mt-6">
           <PatientMedicalHistory patientId={patient.id} />
+        </TabsContent>
+        
+        <TabsContent value="dental-status" className="mt-6">
+          <PalmerDentalChart 
+            patientId={patient.id} 
+            patientAge={patient.date_of_birth ? getAge(patient.date_of_birth) : 25}
+          />
         </TabsContent>
         
         <TabsContent value="appointments" className="mt-6">
