@@ -28,13 +28,10 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <GlobalSearch />
               </div>
               
-              <div className="flex items-center gap-4">
-                <DateTime />
-                <div className="flex items-center gap-2">
-                  <NetworkStatusIndicator />
-                  <NotificationCenter />
-                </div>
-              </div>
+               <div className="flex items-center gap-4">
+                 <DateTime />
+                 <NotificationCenter />
+               </div>
             </div>
           </header>
           
