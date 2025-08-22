@@ -24,6 +24,7 @@ export function MainLayout({ children }: MainLayoutProps) {
             <div className="container flex h-full items-center justify-between px-4">
               <div className="flex items-center gap-4">
                 <SidebarTrigger className="mr-2" />
+                <UserProfile />
                 <GlobalSearch />
               </div>
               
@@ -32,7 +33,6 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <div className="flex items-center gap-2">
                   <NetworkStatusIndicator />
                   <NotificationCenter />
-                  <UserProfile />
                 </div>
               </div>
             </div>
