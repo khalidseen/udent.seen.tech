@@ -5,11 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, X, Calendar, User, MapPin } from "lucide-react";
+import { Filter, X, Calendar, User } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 export interface PatientFilter {
-  searchTerm: string;
   gender: string;
   ageRange: string;
   hasEmail: string;
@@ -32,7 +31,6 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
 
   const clearAllFilters = () => {
     onFiltersChange({
-      searchTerm: '',
       gender: 'all',
       ageRange: 'all',
       hasEmail: 'all',
@@ -44,7 +42,7 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
 
   const getActiveFiltersCount = () => {
     return Object.entries(filters).filter(([key, value]) => 
-      key !== 'searchTerm' && value !== '' && value !== 'all'
+      value !== '' && value !== 'all'
     ).length;
   };
 
@@ -61,40 +59,30 @@ const PatientFilters = ({ filters, onFiltersChange }: PatientFiltersProps) => {
   return (
     <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
       <CardContent className="p-6">
-        {/* Search Bar */}
-        <div className="space-y-4">
-          <div className="relative">
-            <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="البحث في المرضى بالاسم أو الهاتف أو البريد الإلكتروني..."
-              value={filters.searchTerm}
-              onChange={(e) => updateFilter('searchTerm', e.target.value)}
-              className="pr-12 h-12 text-base border-border/60 bg-white/50 dark:bg-card/50"
-            />
-          </div>
-
-          {/* Advanced Filters Toggle */}
-          <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-            <div className="flex items-center justify-between">
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <Filter className="w-4 h-4" />
-                  فلترة متقدمة
-                  {getActiveFiltersCount() > 0 && (
-                    <Badge variant="secondary" className="ml-1">
-                      {getActiveFiltersCount()}
-                    </Badge>
-                  )}
-                </Button>
-              </CollapsibleTrigger>
-              
-              {getActiveFiltersCount() > 0 && (
-                <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-1">
-                  <X className="w-4 h-4" />
-                  مسح الفلاتر
-                </Button>
-              )}
-            </div>
+          {/* Search Bar */}
+          <div className="space-y-4">
+            {/* Advanced Filters Toggle */}
+            <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+              <div className="flex items-center justify-between">
+                <CollapsibleTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Filter className="w-4 h-4" />
+                    فلترة متقدمة
+                    {getActiveFiltersCount() > 0 && (
+                      <Badge variant="secondary" className="ml-1">
+                        {getActiveFiltersCount()}
+                      </Badge>
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+                
+                {getActiveFiltersCount() > 0 && (
+                  <Button variant="ghost" size="sm" onClick={clearAllFilters} className="gap-1">
+                    <X className="w-4 h-4" />
+                    مسح الفلاتر
+                  </Button>
+                )}
+              </div>
 
             <CollapsibleContent className="space-y-4 mt-4">
               {/* Filter Grid */}

@@ -3,6 +3,7 @@ import { AppSidebar } from "./AppSidebar";
 import { NetworkStatusIndicator } from "@/components/ui/network-status";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 import { SmartNotificationSystem } from "@/components/notifications/SmartNotificationSystem";
+import { GlobalSearch } from "./GlobalSearch";
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -17,8 +18,9 @@ export function MainLayout({ children }: MainLayoutProps) {
           {/* Top Header */}
           <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full">
             <div className="container flex h-full items-center justify-between px-4">
-              <div className="flex items-center">
+              <div className="flex items-center gap-4">
                 <SidebarTrigger className="mr-2" />
+                <GlobalSearch />
               </div>
               
               <div className="flex items-center gap-2">

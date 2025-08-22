@@ -38,7 +38,6 @@ interface Patient {
 const PatientList = () => {
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [filters, setFilters] = useState<PatientFilter>({
-    searchTerm: '',
     gender: 'all',
     ageRange: 'all',
     hasEmail: 'all',
@@ -86,12 +85,6 @@ const PatientList = () => {
   });
 
   const filteredPatients = patients.filter(patient => {
-    // Text search
-    const matchesSearch = !filters.searchTerm || 
-      patient.full_name.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      patient.phone?.includes(filters.searchTerm) ||
-      patient.email?.toLowerCase().includes(filters.searchTerm.toLowerCase());
-
     // Gender filter
     const matchesGender = !filters.gender || filters.gender === 'all' || patient.gender === filters.gender;
 
@@ -140,7 +133,7 @@ const PatientList = () => {
       }
     }
 
-    return matchesSearch && matchesGender && matchesAge && matchesEmail && matchesPhone && matchesDateRange;
+    return matchesGender && matchesAge && matchesEmail && matchesPhone && matchesDateRange;
   });
 
   const getGenderBadge = (gender: string) => {
@@ -263,7 +256,7 @@ const PatientList = () => {
             <div className="text-center text-muted-foreground">
               <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-medium mb-2">لا توجد نتائج</h3>
-              <p>{filters.searchTerm || Object.values(filters).some(v => v !== '' && v !== filters.searchTerm) 
+              <p>{Object.values(filters).some(v => v !== '' && v !== 'all') 
                 ? 'لا توجد مرضى تطابق معايير البحث المحددة' 
                 : 'لا توجد مرضى مسجلين بعد'}</p>
             </div>
