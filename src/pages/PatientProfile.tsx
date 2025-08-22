@@ -36,7 +36,7 @@ interface Patient {
 }
 
 const PatientProfile = () => {
-  const { patientId } = useParams<{ patientId: string }>();
+  const { id: patientId } = useParams<{ id: string }>();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
