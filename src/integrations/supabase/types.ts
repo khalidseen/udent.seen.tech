@@ -1213,6 +1213,63 @@ export type Database = {
           },
         ]
       }
+      tooth_3d_annotations: {
+        Row: {
+          annotation_type: string
+          color: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          numbering_system: string
+          patient_id: string
+          position_x: number
+          position_y: number
+          position_z: number
+          severity: string | null
+          status: string | null
+          title: string
+          tooth_number: string
+          updated_at: string
+        }
+        Insert: {
+          annotation_type: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          numbering_system?: string
+          patient_id: string
+          position_x: number
+          position_y: number
+          position_z: number
+          severity?: string | null
+          status?: string | null
+          title: string
+          tooth_number: string
+          updated_at?: string
+        }
+        Update: {
+          annotation_type?: string
+          color?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          numbering_system?: string
+          patient_id?: string
+          position_x?: number
+          position_y?: number
+          position_z?: number
+          severity?: string | null
+          status?: string | null
+          title?: string
+          tooth_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

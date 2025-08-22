@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { MainLayout } from "./components/layout/MainLayout";
+import Advanced3DDental from "./pages/Advanced3DDental";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import NewAppointment from "./pages/NewAppointment";
@@ -214,6 +215,13 @@ const App = () => {
                 <ProtectedRoute>
                   <MainLayout>
                     <Notifications />
+                  </MainLayout>
+                </ProtectedRoute>
+              } />
+              <Route path="/advanced-3d-dental" element={
+                <ProtectedRoute>
+                  <MainLayout>
+                    <Advanced3DDental />
                   </MainLayout>
                 </ProtectedRoute>
               } />
