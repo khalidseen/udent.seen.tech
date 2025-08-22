@@ -23,8 +23,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full">
             <div className="container flex h-full items-center justify-between px-4">
               <div className="flex items-center gap-4">
-                <SidebarTrigger className="mr-2" />
                 <UserProfile />
+                <SidebarTrigger className="mr-2" />
                 <GlobalSearch />
               </div>
               
