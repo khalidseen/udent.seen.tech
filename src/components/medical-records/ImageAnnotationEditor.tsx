@@ -51,18 +51,17 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
     });
 
     // Load the image and set it as background
-    const loadImageToCanvas = async () => {
-      try {
-        // Use fabric's built-in image loading
-        const { FabricImage } = await import('fabric');
-        
-        FabricImage.fromURL(imageUrl, {
-          crossOrigin: 'anonymous'
-        }).then((img) => {
+    const loadImageToCanvas = () => {
+      // Create a regular HTML image element first
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      
+      img.onload = () => {
+        try {
           // Calculate dimensions to fit the canvas
           const canvasWidth = 800;
           const canvasHeight = 600;
-          const imageAspectRatio = img.width / img.height;
+          const imageAspectRatio = img.naturalWidth / img.naturalHeight;
           const canvasAspectRatio = canvasWidth / canvasHeight;
           
           let renderWidth = canvasWidth;
@@ -80,23 +79,7 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
             height: renderHeight
           });
 
-          // Scale image to fit canvas
-          img.scaleToWidth(renderWidth);
-          img.scaleToHeight(renderHeight);
-          img.set({
-            left: 0,
-            top: 0,
-            selectable: false,
-            evented: false
-          });
-
-          // Set as background image
-          canvas.backgroundImage = img;
-          canvas.renderAll();
-        }).catch((error) => {
-          console.error('Error loading image with FabricImage:', error);
-          
-          // Fallback to basic background approach
+          // Set background using CSS instead of fabric image
           const canvasElement = canvas.getElement();
           canvasElement.style.backgroundImage = `url(${imageUrl})`;
           canvasElement.style.backgroundSize = 'contain';
@@ -104,38 +87,44 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
           canvasElement.style.backgroundPosition = 'center';
           
           canvas.renderAll();
-        });
-        
-        toast({
-          title: "تم تحميل الصورة بنجاح", 
-          description: "يمكنك الآن الرسم والكتابة على الصورة",
-        });
+          
+          toast({
+            title: "تم تحميل الصورة بنجاح", 
+            description: "يمكنك الآن الرسم والكتابة على الصورة",
+          });
 
-      } catch (error) {
+        } catch (error) {
+          console.error('Error setting up canvas:', error);
+          toast({
+            title: "خطأ في إعداد المحرر",
+            description: "حدث خطأ أثناء إعداد محرر الصور",
+            variant: "destructive",
+          });
+        }
+      };
+
+      img.onerror = (error) => {
         console.error('Error loading image:', error);
         toast({
           title: "خطأ في تحميل الصورة",
           description: "تأكد من أن الصورة موجودة ومتاحة",
           variant: "destructive",
         });
-      }
-    };
+      };
 
-    // Initialize the freeDrawingBrush
-    if (canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush.color = activeColor;
-      canvas.freeDrawingBrush.width = 3;
-    }
+      // Start loading the image
+      img.src = imageUrl;
+    };
 
     setFabricCanvas(canvas);
     
     // Load image after canvas setup
-    loadImageToCanvas();
+    setTimeout(loadImageToCanvas, 100);
 
     return () => {
       canvas.dispose();
     };
-  }, [imageUrl]);
+  }, [imageUrl, toast]);
 
   useEffect(() => {
     if (!fabricCanvas) return;
