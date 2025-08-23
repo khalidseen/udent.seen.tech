@@ -1122,6 +1122,39 @@ export type Database = {
           },
         ]
       }
+      permissions: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          permission_key: string
+          permission_name: string
+          permission_name_ar: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          permission_key: string
+          permission_name: string
+          permission_name_ar: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          permission_key?: string
+          permission_name?: string
+          permission_name_ar?: string
+        }
+        Relationships: []
+      }
       prescription_medications: {
         Row: {
           created_at: string
@@ -1354,6 +1387,45 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          permission_id: string
+          role_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission_id: string
+          role_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          permission_id?: string
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_permission_id_fkey"
+            columns: ["permission_id"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "user_roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       secretaries: {
         Row: {
@@ -1650,6 +1722,77 @@ export type Database = {
         }
         Relationships: []
       }
+      user_role_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          role_id: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          role_id: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          role_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_role_assignments_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "user_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_system_role: boolean
+          role_name: string
+          role_name_ar: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system_role?: boolean
+          role_name: string
+          role_name_ar: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_system_role?: boolean
+          role_name?: string
+          role_name_ar?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -1695,6 +1838,27 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+      }
+      get_user_permissions: {
+        Args: { user_id_param?: string }
+        Returns: {
+          category: string
+          permission_key: string
+          permission_name: string
+          permission_name_ar: string
+        }[]
+      }
+      get_user_roles: {
+        Args: { user_id_param?: string }
+        Returns: {
+          is_primary: boolean
+          role_name: string
+          role_name_ar: string
+        }[]
+      }
+      has_permission: {
+        Args: { permission_key_param: string; user_id_param?: string }
+        Returns: boolean
       }
       log_security_event: {
         Args: { details: Json; event_type: string }
