@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, IText, FabricImage, PencilBrush } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, IText, FabricImage, PencilBrush, Pattern } from 'fabric';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -65,21 +65,37 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
     // Load the image and add it as canvas object
     const loadImageToCanvas = async () => {
       try {
-        const fabricImage = await FabricImage.fromURL(imageUrl, {
+        // Try different approaches to load the image
+        console.log('Loading image:', imageUrl);
+        
+        // First, try to load with a regular Image element to check accessibility
+        const testImg = new Image();
+        testImg.crossOrigin = 'anonymous';
+        
+        const imageLoaded = new Promise<HTMLImageElement>((resolve, reject) => {
+          testImg.onload = () => resolve(testImg);
+          testImg.onerror = () => reject(new Error('Failed to load image'));
+          testImg.src = imageUrl;
+        });
+
+        const img = await imageLoaded;
+        
+        // Now create FabricImage from the loaded Image element
+        const fabricImage = new FabricImage(img, {
           crossOrigin: 'anonymous'
         });
 
         // Calculate dimensions to fit the canvas while maintaining aspect ratio
         const maxWidth = 1000;
         const maxHeight = 700;
-        const imageWidth = fabricImage.width!;
-        const imageHeight = fabricImage.height!;
+        const imageWidth = img.naturalWidth || img.width;
+        const imageHeight = img.naturalHeight || img.height;
         
         let scaleX = maxWidth / imageWidth;
         let scaleY = maxHeight / imageHeight;
         let scale = Math.min(scaleX, scaleY);
         
-        // Apply scale but keep it reasonable (not too small)
+        // Apply reasonable scaling limits
         if (scale < 0.3) scale = 0.3;
         if (scale > 2) scale = 2;
 
@@ -92,7 +108,7 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
           height: scaledHeight
         });
 
-        // Scale and position the image
+        // Set image properties
         fabricImage.set({
           left: 0,
           top: 0,
@@ -117,13 +133,77 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
         });
 
       } catch (error) {
-        console.error('Error loading image:', error);
+        console.error('Error loading image with FabricImage:', error);
         
-        toast({
-          title: "خطأ في تحميل الصورة",
-          description: "تأكد من أن الصورة موجودة ومتاحة",
-          variant: "destructive",
-        });
+        // Fallback: Create a canvas with background image using CSS
+        try {
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          
+          img.onload = () => {
+            // Set canvas size based on image dimensions
+            const maxWidth = 1000;
+            const maxHeight = 700;
+            const imageWidth = img.naturalWidth || img.width;
+            const imageHeight = img.naturalHeight || img.height;
+            
+            let scaleX = maxWidth / imageWidth;
+            let scaleY = maxHeight / imageHeight;
+            let scale = Math.min(scaleX, scaleY);
+            
+            const scaledWidth = imageWidth * scale;
+            const scaledHeight = imageHeight * scale;
+            
+            canvas.setDimensions({
+              width: scaledWidth,
+              height: scaledHeight
+            });
+            
+             // Create a rectangle to serve as background with image fill
+             const bgRect = new Rect({
+               left: 0,
+               top: 0,
+               width: scaledWidth,
+               height: scaledHeight,
+               fill: new Pattern({
+                 source: img,
+                 repeat: 'no-repeat'
+               }),
+               selectable: false,
+               evented: false,
+               excludeFromExport: false,
+               name: 'backgroundImage'
+             });
+            
+            canvas.add(bgRect);
+            canvas.sendObjectToBack(bgRect);
+            setBackgroundImage(bgRect as any);
+            canvas.renderAll();
+            
+            toast({
+              title: "تم تحميل الصورة", 
+              description: "يمكنك الآن الرسم والكتابة على الصورة",
+            });
+          };
+          
+          img.onerror = () => {
+            toast({
+              title: "خطأ في تحميل الصورة",
+              description: "تأكد من أن الصورة موجودة ومتاحة",
+              variant: "destructive",
+            });
+          };
+          
+          img.src = imageUrl;
+          
+        } catch (fallbackError) {
+          console.error('Fallback image loading failed:', fallbackError);
+          toast({
+            title: "خطأ في تحميل الصورة",
+            description: "فشل في تحميل الصورة، تحقق من الرابط",
+            variant: "destructive",
+          });
+        }
       }
     };
 
@@ -244,22 +324,36 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
     setIsSaving(true);
     
     try {
-      // Export the entire canvas including all objects
+      console.log('Starting save process...');
+      
+      // Ensure all objects are visible and properly rendered
+      fabricCanvas.renderAll();
+      
+      // Export the canvas as high-quality image
       const dataURL = fabricCanvas.toDataURL({
         format: 'png',
         quality: 1.0,
         multiplier: 1,
-        width: fabricCanvas.width,
-        height: fabricCanvas.height,
         enableRetinaScaling: false
       });
       
-      // Get annotation data for future editing
+      console.log('Canvas exported to dataURL, length:', dataURL.length);
+      
+      // Get annotation data for future editing (excluding background image)
       const allObjects = fabricCanvas.getObjects();
       const annotationObjects = allObjects.filter(obj => obj.get('name') !== 'backgroundImage');
       
       const annotationData = {
-        objects: annotationObjects.map(obj => obj.toJSON()),
+        objects: annotationObjects.map(obj => {
+          const objData = obj.toJSON();
+          return {
+            ...objData,
+            // Preserve important properties
+            fill: obj.get('fill'),
+            stroke: obj.get('stroke'),
+            strokeWidth: obj.get('strokeWidth'),
+          };
+        }),
         canvasSize: {
           width: fabricCanvas.width,
           height: fabricCanvas.height
@@ -267,9 +361,13 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
         backgroundImage: imageUrl,
         timestamp: new Date().toISOString(),
         brushWidth,
-        activeColor
+        activeColor,
+        hasAnnotations: annotationObjects.length > 0
       };
       
+      console.log('Annotation data prepared:', annotationData);
+      
+      // Call the save function
       await onSave(dataURL, annotationData);
       
       toast({

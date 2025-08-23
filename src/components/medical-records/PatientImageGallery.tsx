@@ -93,13 +93,16 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
   };
 
   const handleEditAnnotation = (image: MedicalImage) => {
-    const originalImageUrl = supabase.storage
+    // Always use the original image for editing, not the annotated version
+    const { data } = supabase.storage
       .from('medical-images')
-      .getPublicUrl(image.file_path).data.publicUrl;
+      .getPublicUrl(image.file_path);
+      
+    console.log('Opening annotation editor for image:', image.id, 'URL:', data.publicUrl);
 
     setAnnotationEditor({
       isOpen: true,
-      imageUrl: originalImageUrl,
+      imageUrl: data.publicUrl,
       imageId: image.id
     });
   };
@@ -122,22 +125,26 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
 
       // Create unique filename for annotated image
       const timestamp = Date.now();
-      const random = Math.random().toString(36).substring(2);
+      const random = Math.random().toString(36).substring(2, 8);
       const fileName = `${profile.id}/${patientId}/annotated_${annotationEditor.imageId}_${timestamp}_${random}.png`;
+      
+      console.log('Uploading annotated image:', fileName);
+      console.log('Blob size:', blob.size, 'bytes');
       
       // Upload annotated image to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('medical-images')
         .upload(fileName, blob, {
           contentType: 'image/png',
-          upsert: false,
-          duplex: 'half'
+          upsert: false
         });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
         throw new Error(`خطأ في رفع الصورة: ${uploadError.message}`);
       }
+
+      console.log('Image uploaded successfully:', uploadData.path);
 
       // Update medical image record
       const updateData = {
@@ -146,6 +153,8 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
         has_annotations: true,
         updated_at: new Date().toISOString()
       };
+      
+      console.log('Updating image record with:', updateData);
 
       const { error: updateError } = await supabase
         .from('medical_images')
@@ -157,18 +166,19 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
         throw new Error(`خطأ في تحديث البيانات: ${updateError.message}`);
       }
 
-      // Close editor first
+      console.log('Image record updated successfully');
+
+      // Close editor and refresh
       setAnnotationEditor({ isOpen: false });
       
-      // Wait a moment then refresh to ensure the UI updates
+      // Add a small delay to ensure the storage has processed the upload
       setTimeout(() => {
         refetch();
-      }, 500);
-      
-      toast({
-        title: "تم حفظ التعديلات بنجاح",
-        description: "تم حفظ الصورة المعدلة في سجل المريض",
-      });
+        toast({
+          title: "تم حفظ التعديلات بنجاح",
+          description: "تم حفظ الصورة المعدلة في سجل المريض",
+        });
+      }, 1000);
       
     } catch (error: any) {
       console.error('Error saving annotation:', error);
