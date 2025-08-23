@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Activity, Calendar, FileText, Edit, Plus, Smile } from "lucide-react";
+import { User, Activity, Calendar, FileText, Edit, Plus, Smile, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import PatientMedicalHistory from "@/components/patients/PatientMedicalHistory";
@@ -23,6 +23,7 @@ import { PatientImageGallery } from "@/components/medical-records/PatientImageGa
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import PatientPrescriptionSection from "@/components/patients/PatientPrescriptionSection";
+import PatientFinancialStatus from "@/components/patients/PatientFinancialStatus";
 
 interface Patient {
   id: string;
@@ -280,7 +281,7 @@ const PatientProfile = () => {
 
       {/* Patient Details Tabs */}
       <Tabs defaultValue="treatments" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="treatments" className="flex items-center">
             <Activity className="w-4 h-4 ml-1" />
             العلاجات
@@ -288,6 +289,10 @@ const PatientProfile = () => {
           <TabsTrigger value="prescriptions" className="flex items-center">
             <FileText className="w-4 h-4 ml-1" />
             الوصفات الطبية
+          </TabsTrigger>
+          <TabsTrigger value="financial-status" className="flex items-center">
+            <DollarSign className="w-4 h-4 ml-1" />
+            الحالة المالية
           </TabsTrigger>
           <TabsTrigger value="dental-status" className="flex items-center">
             <Smile className="w-4 h-4 ml-1" />
@@ -319,6 +324,13 @@ const PatientProfile = () => {
               date_of_birth: patient.date_of_birth,
               phone: patient.phone
             }}
+          />
+        </TabsContent>
+        
+        <TabsContent value="financial-status" className="mt-6">
+          <PatientFinancialStatus 
+            patientId={patient.id} 
+            patientName={patient.full_name}
           />
         </TabsContent>
         

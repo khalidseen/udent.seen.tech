@@ -528,6 +528,7 @@ export type Database = {
           tax_amount: number | null
           tax_percentage: number | null
           total_amount: number
+          treatment_plan_id: string | null
           updated_at: string
         }
         Insert: {
@@ -548,6 +549,7 @@ export type Database = {
           tax_amount?: number | null
           tax_percentage?: number | null
           total_amount: number
+          treatment_plan_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -568,6 +570,7 @@ export type Database = {
           tax_amount?: number | null
           tax_percentage?: number | null
           total_amount?: number
+          treatment_plan_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -1006,6 +1009,7 @@ export type Database = {
           payment_method: string
           reference_number: string | null
           status: string
+          treatment_plan_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1020,6 +1024,7 @@ export type Database = {
           payment_method?: string
           reference_number?: string | null
           status?: string
+          treatment_plan_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1034,6 +1039,7 @@ export type Database = {
           payment_method?: string
           reference_number?: string | null
           status?: string
+          treatment_plan_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1525,6 +1531,51 @@ export type Database = {
           patient_id?: string
           tooth_number?: string
           treatment_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      treatment_plans: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          description: string | null
+          end_date: string | null
+          estimated_cost: number
+          id: string
+          notes: string | null
+          patient_id: string
+          start_date: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          estimated_cost?: number
+          id?: string
+          notes?: string | null
+          patient_id: string
+          start_date?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          description?: string | null
+          end_date?: string | null
+          estimated_cost?: number
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          start_date?: string | null
+          status?: string
+          title?: string
           updated_at?: string
         }
         Relationships: []
