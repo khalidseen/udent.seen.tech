@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { offlineSupabase } from "@/lib/offline-supabase";
 import { toast } from "@/hooks/use-toast";
-import { UserPlus, Save, Plus } from "lucide-react";
+import { UserPlus, Save, Plus, Search, User } from "lucide-react";
 
 interface AddPatientDrawerProps {
   onPatientAdded?: () => void;
@@ -15,6 +15,9 @@ interface AddPatientDrawerProps {
 
 const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [existingPatients, setExistingPatients] = useState<any[]>([]);
+  const [showExistingPatients, setShowExistingPatients] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -58,6 +61,41 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
       occupation: '',
       marital_status: ''
     });
+    setSearchQuery('');
+    setShowExistingPatients(false);
+  };
+
+  const searchExistingPatients = async (query: string) => {
+    if (!query.trim()) {
+      setExistingPatients([]);
+      setShowExistingPatients(false);
+      return;
+    }
+
+    try {
+      const { data: { user } } = await offlineSupabase.auth.getUser();
+      if (!user) return;
+
+      const profileResult = await offlineSupabase.select('profiles', { 
+        filter: { user_id: user.id } 
+      });
+
+      if (!profileResult.data || profileResult.data.length === 0) return;
+
+      const patients = await offlineSupabase.select('patients', {
+        filter: { clinic_id: profileResult.data[0].id }
+      });
+
+      if (patients.data) {
+        const filtered = patients.data.filter((patient: any) => 
+          patient.full_name.toLowerCase().includes(query.toLowerCase())
+        );
+        setExistingPatients(filtered);
+        setShowExistingPatients(true);
+      }
+    } catch (error) {
+      console.error('Error searching patients:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -171,6 +209,48 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         </SheetHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Search Section */}
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium text-foreground border-b pb-2">البحث عن المرضى الموجودين</h3>
+            
+            <div className="space-y-2">
+              <Label htmlFor="search">البحث بالاسم</Label>
+              <div className="relative">
+                <Search className="w-4 h-4 absolute right-3 top-3 text-muted-foreground" />
+                <Input
+                  id="search"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    searchExistingPatients(e.target.value);
+                  }}
+                  placeholder="ابحث عن مريض موجود..."
+                  className="h-11 pr-10"
+                />
+              </div>
+              
+              {showExistingPatients && existingPatients.length > 0 && (
+                <div className="border border-border rounded-md max-h-40 overflow-y-auto bg-background">
+                  {existingPatients.map((patient: any) => (
+                    <div key={patient.id} className="p-3 border-b last:border-b-0 hover:bg-accent/50 cursor-pointer flex items-center gap-3">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <div>
+                        <div className="font-medium">{patient.full_name}</div>
+                        <div className="text-sm text-muted-foreground">{patient.phone} • {patient.email}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {showExistingPatients && existingPatients.length === 0 && searchQuery.trim() && (
+                <div className="text-sm text-muted-foreground p-2 border border-border rounded-md bg-background">
+                  لا توجد نتائج مطابقة للبحث
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Basic Info Section */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-foreground border-b pb-2">البيانات الأساسية</h3>

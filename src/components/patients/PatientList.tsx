@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { offlineSupabase } from "@/lib/offline-supabase";
 import { useOfflineData } from "@/hooks/useOfflineData";
-import { Phone, Mail, Calendar, Edit, Eye, Activity, Grid3X3, List, BarChart3, Wifi, WifiOff } from "lucide-react";
+import { Phone, Mail, Calendar, Edit, Eye, Activity, Grid3X3, List, BarChart3, Wifi, WifiOff, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -14,6 +14,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import AddPatientDrawer from "./AddPatientDrawer";
 import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface Patient {
   id: string;
@@ -157,6 +158,10 @@ const PatientList = () => {
     refresh();
   };
 
+  const getActiveFiltersCount = (filters: PatientFilter) => {
+    return Object.values(filters).filter(v => v !== '' && v !== 'all').length;
+  };
+
   if (loading) {
     return (
       <PageContainer>
@@ -182,72 +187,95 @@ const PatientList = () => {
         action={<AddPatientDrawer onPatientAdded={handlePatientAdded} />}
       />
 
-      {/* Filters and Search */}
-      <PatientFilters filters={filters} onFiltersChange={setFilters} />
-
-      {/* Stats and View Toggle */}
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Patient Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-          <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary mb-1">{filteredPatients.length}</div>
-                <div className="text-sm text-muted-foreground font-medium">المرضى المعروضين</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">
-                  {filteredPatients.filter(p => p.gender === 'female').length}
-                </div>
-                <div className="text-sm text-muted-foreground font-medium">المريضات</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-            <CardContent className="p-4">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">
-                  {filteredPatients.filter(p => p.gender === 'male').length}
-                </div>
-                <div className="text-sm text-muted-foreground font-medium">المرضى الذكور</div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* View Toggle */}
-        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm lg:w-auto">
+      {/* Patient Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
           <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">طريقة العرض:</span>
-              <div className="flex rounded-lg border border-border/60 bg-background p-1">
-                <Button
-                  variant={viewMode === 'cards' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('cards')}
-                  className="gap-1 h-8"
-                >
-                  <Grid3X3 className="w-4 h-4" />
-                  مربعات
-                </Button>
-                <Button
-                  variant={viewMode === 'table' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => setViewMode('table')}
-                  className="gap-1 h-8"
-                >
-                  <List className="w-4 h-4" />
-                  جدول
-                </Button>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-primary mb-1">{filteredPatients.length}</div>
+              <div className="text-sm text-muted-foreground font-medium">المرضى المعروضين</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600 mb-1">
+                {filteredPatients.filter(p => p.gender === 'female').length}
               </div>
+              <div className="text-sm text-muted-foreground font-medium">المريضات</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600 mb-1">
+                {filteredPatients.filter(p => p.gender === 'male').length}
+              </div>
+              <div className="text-sm text-muted-foreground font-medium">المرضى الذكور</div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Floating Filters Button */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="fixed top-20 right-4 z-50 bg-white/90 dark:bg-card/90 backdrop-blur-sm border-border/60 shadow-lg hover:shadow-xl transition-all duration-200"
+            size="sm"
+          >
+            <Filter className="w-4 h-4 ml-1" />
+            فلترة متقدمة
+            {Object.values(filters).some(v => v !== '' && v !== 'all') && (
+              <Badge variant="destructive" className="mr-2 h-5 w-5 p-0 text-xs">
+                {getActiveFiltersCount(filters)}
+              </Badge>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0" align="start">
+          <PatientFilters filters={filters} onFiltersChange={setFilters} />
+        </PopoverContent>
+      </Popover>
+
+      {/* Floating View Mode Button */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="fixed top-32 right-4 z-50 bg-white/90 dark:bg-card/90 backdrop-blur-sm border-border/60 shadow-lg hover:shadow-xl transition-all duration-200"
+            size="sm"
+          >
+            {viewMode === 'cards' ? <Grid3X3 className="w-4 h-4 ml-1" /> : <List className="w-4 h-4 ml-1" />}
+            {viewMode === 'cards' ? 'مربعات' : 'جدول'}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-48 p-2" align="start">
+          <div className="space-y-1">
+            <Button
+              variant={viewMode === 'cards' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('cards')}
+              className="w-full justify-start gap-2"
+            >
+              <Grid3X3 className="w-4 h-4" />
+              مربعات
+            </Button>
+            <Button
+              variant={viewMode === 'table' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('table')}
+              className="w-full justify-start gap-2"
+            >
+              <List className="w-4 h-4" />
+              جدول
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
 
       {/* Patients Display */}
       {filteredPatients.length === 0 ? (
@@ -263,7 +291,7 @@ const PatientList = () => {
           </CardContent>
         </Card>
       ) : viewMode === 'cards' ? (
-        <div className="grid gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredPatients.map((patient) => (
             <Card key={patient.id} className="hover:shadow-xl transition-all duration-300 border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
               <CardHeader className="pb-4">
