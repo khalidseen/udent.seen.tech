@@ -22,6 +22,7 @@ import PalmerDentalChart from "@/components/dental/PalmerDentalChart";
 import { PatientImageGallery } from "@/components/medical-records/PatientImageGallery";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import PatientPrescriptionSection from "@/components/patients/PatientPrescriptionSection";
 
 interface Patient {
   id: string;
@@ -279,10 +280,14 @@ const PatientProfile = () => {
 
       {/* Patient Details Tabs */}
       <Tabs defaultValue="treatments" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="treatments" className="flex items-center">
             <Activity className="w-4 h-4 ml-1" />
             العلاجات
+          </TabsTrigger>
+          <TabsTrigger value="prescriptions" className="flex items-center">
+            <FileText className="w-4 h-4 ml-1" />
+            الوصفات الطبية
           </TabsTrigger>
           <TabsTrigger value="dental-status" className="flex items-center">
             <Smile className="w-4 h-4 ml-1" />
@@ -304,6 +309,17 @@ const PatientProfile = () => {
         
         <TabsContent value="treatments" className="mt-6">
           <PatientMedicalHistory patientId={patient.id} />
+        </TabsContent>
+        
+        <TabsContent value="prescriptions" className="mt-6">
+          <PatientPrescriptionSection 
+            patientId={patient.id} 
+            patientData={{
+              full_name: patient.full_name,
+              date_of_birth: patient.date_of_birth,
+              phone: patient.phone
+            }}
+          />
         </TabsContent>
         
         <TabsContent value="dental-status" className="mt-6">

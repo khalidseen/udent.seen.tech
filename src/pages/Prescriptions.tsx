@@ -49,7 +49,7 @@ const Prescriptions = () => {
       if (error) throw error;
       
       // Calculate age from date_of_birth
-      return data?.map(prescription => ({
+      return data?.map((prescription: any) => ({
         ...prescription,
         patients: prescription.patients ? {
           ...prescription.patients,

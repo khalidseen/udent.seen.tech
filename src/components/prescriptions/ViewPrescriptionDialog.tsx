@@ -61,12 +61,12 @@ const ViewPrescriptionDialog = ({ open, onOpenChange, prescription }: ViewPrescr
   };
 
   const handleWhatsAppShare = () => {
-    const patientName = prescriptionDetails?.patients?.full_name || 'المريض';
+    const patientName = (prescriptionDetails as any)?.patients?.full_name || 'المريض';
     const doctorName = prescriptionDetails?.doctor_name || 'الطبيب';
     const diagnosis = prescriptionDetails?.diagnosis || '';
     
     let message = `*وصفة طبية*\n\n`;
-    message += `👤 *المريض:* ${patientName}\n`;
+    message += `👤 *المريض:* ${(prescriptionDetails as any)?.patients?.full_name || 'المريض'}\n`;
     message += `👨‍⚕️ *الطبيب:* ${doctorName}\n`;
     message += `🏥 *العيادة:* ${prescriptionDetails?.clinic_name || ''}\n`;
     message += `📅 *التاريخ:* ${new Date(prescriptionDetails?.prescription_date || '').toLocaleDateString('ar-IQ')}\n`;
@@ -91,7 +91,7 @@ const ViewPrescriptionDialog = ({ open, onOpenChange, prescription }: ViewPrescr
 
   if (!prescriptionDetails) return null;
 
-  const patientAge = prescriptionDetails.patients?.date_of_birth 
+  const patientAge = prescriptionDetails?.patients?.date_of_birth 
     ? new Date().getFullYear() - new Date(prescriptionDetails.patients.date_of_birth).getFullYear()
     : null;
 
@@ -146,7 +146,7 @@ const ViewPrescriptionDialog = ({ open, onOpenChange, prescription }: ViewPrescr
             <section className="grid grid-cols-1 sm:grid-cols-3 gap-6 py-6 border-b border-slate-200">
               <div>
                 <label className="text-sm font-semibold text-slate-500">اسم المريض</label>
-                <p className="text-lg font-medium text-slate-900 pt-1">{prescriptionDetails.patients?.full_name}</p>
+                <p className="text-lg font-medium text-slate-900 pt-1">{(prescriptionDetails as any)?.patients?.full_name}</p>
               </div>
               <div>
                 <label className="text-sm font-semibold text-slate-500">العمر</label>
