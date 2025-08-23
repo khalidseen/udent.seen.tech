@@ -50,6 +50,28 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
       backgroundColor: '#f8f9fa',
     });
 
+    // Safely initialize drawing brush
+    const initializeBrush = () => {
+      try {
+        // Enable drawing mode temporarily to ensure brush is created
+        canvas.isDrawingMode = true;
+        
+        // Now we can safely access and configure the brush
+        if (canvas.freeDrawingBrush) {
+          canvas.freeDrawingBrush.color = activeColor;
+          canvas.freeDrawingBrush.width = 3;
+        }
+        
+        // Disable drawing mode initially
+        canvas.isDrawingMode = false;
+      } catch (error) {
+        console.error('Error initializing brush:', error);
+      }
+    };
+
+    // Initialize brush after canvas is ready
+    setTimeout(initializeBrush, 50);
+
     // Load the image and set it as background
     const loadImageToCanvas = async () => {
       try {
@@ -130,11 +152,6 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
         img.src = imageUrl;
       }
     };
-
-    // Initialize drawing brush properly
-    canvas.isDrawingMode = false;
-    canvas.freeDrawingBrush.color = activeColor;
-    canvas.freeDrawingBrush.width = 3;
 
     setFabricCanvas(canvas);
     
