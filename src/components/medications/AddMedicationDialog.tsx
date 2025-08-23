@@ -37,6 +37,8 @@ const medicationSchema = z.object({
   frequency: z.string().min(1, "الجرعة مطلوبة"),
   duration: z.string().optional(),
   instructions: z.string().optional(),
+  prescription_type: z.string().min(1, "نوع الوصفة مطلوب"),
+  is_active: z.boolean().default(true),
 });
 
 type MedicationForm = z.infer<typeof medicationSchema>;
@@ -61,6 +63,8 @@ const AddMedicationDialog = ({ open, onOpenChange, onSuccess }: AddMedicationDia
       frequency: "",
       duration: "",
       instructions: "",
+      prescription_type: "prescription",
+      is_active: true,
     },
   });
 
@@ -99,6 +103,8 @@ const AddMedicationDialog = ({ open, onOpenChange, onSuccess }: AddMedicationDia
           frequency: data.frequency,
           duration: data.duration || null,
           instructions: data.instructions || null,
+          prescription_type: data.prescription_type,
+          is_active: data.is_active,
           clinic_id: profile.id,
         });
 
@@ -227,6 +233,52 @@ const AddMedicationDialog = ({ open, onOpenChange, onSuccess }: AddMedicationDia
                     <FormControl>
                       <Input placeholder="مثال: 7 أيام" {...field} />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="prescription_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>نوع الوصفة *</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر نوع الوصفة" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="prescription">بوصفة طبية</SelectItem>
+                        <SelectItem value="otc">بدون وصفة طبية (OTC)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="is_active"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>حالة الدواء</FormLabel>
+                    <Select onValueChange={(value) => field.onChange(value === "true")} defaultValue={field.value ? "true" : "false"}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="اختر حالة الدواء" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="true">نشط</SelectItem>
+                        <SelectItem value="false">غير نشط</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

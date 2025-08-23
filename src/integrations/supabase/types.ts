@@ -777,6 +777,7 @@ export type Database = {
           id: string
           instructions: string | null
           is_active: boolean
+          prescription_type: string
           strength: string
           trade_name: string
           updated_at: string
@@ -791,6 +792,7 @@ export type Database = {
           id?: string
           instructions?: string | null
           is_active?: boolean
+          prescription_type?: string
           strength: string
           trade_name: string
           updated_at?: string
@@ -805,6 +807,7 @@ export type Database = {
           id?: string
           instructions?: string | null
           is_active?: boolean
+          prescription_type?: string
           strength?: string
           trade_name?: string
           updated_at?: string
