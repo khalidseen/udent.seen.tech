@@ -104,17 +104,21 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
   };
 
   const handleEditAnnotation = (image: MedicalImage) => {
-    // Always use the original image as base, but load existing annotations if they exist
-    const originalImageUrl = supabase.storage.from('medical-images').getPublicUrl(image.file_path).data.publicUrl;
+    // Use annotated image if it exists, otherwise use original
+    const imageUrl = image.has_annotations && image.annotated_image_path 
+      ? supabase.storage.from('medical-images').getPublicUrl(image.annotated_image_path).data.publicUrl
+      : supabase.storage.from('medical-images').getPublicUrl(image.file_path).data.publicUrl;
       
     console.log('Opening annotation editor for image:', image.id);
-    console.log('Original image URL:', originalImageUrl);
+    console.log('Image URL (annotated if exists):', imageUrl);
+    console.log('Original image path:', image.file_path);
+    console.log('Annotated image path:', image.annotated_image_path);
     console.log('Existing annotations:', image.annotation_data);
     console.log('Has annotations:', image.has_annotations);
 
     setAnnotationEditor({
       isOpen: true,
-      imageUrl: originalImageUrl, // Always use original image as base
+      imageUrl: imageUrl, // Use annotated image as base if it exists
       imageId: image.id,
       existingAnnotations: image.has_annotations ? image.annotation_data : null
     });
