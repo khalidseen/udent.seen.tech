@@ -92,6 +92,10 @@ const inventoryMenuItems = [{
   url: "/medications",
   icon: Pill
 }, {
+  title: "الوصفات الطبية",
+  url: "/prescriptions", 
+  icon: FileText
+}, {
   title: "أوامر الشراء",
   url: "/purchase-orders",
   icon: ShoppingCart

@@ -1046,6 +1046,108 @@ export type Database = {
           },
         ]
       }
+      prescription_medications: {
+        Row: {
+          created_at: string
+          dosage: string
+          duration: string
+          frequency: string
+          id: string
+          instructions: string | null
+          medication_id: string | null
+          medication_name: string
+          prescription_id: string
+        }
+        Insert: {
+          created_at?: string
+          dosage: string
+          duration: string
+          frequency: string
+          id?: string
+          instructions?: string | null
+          medication_id?: string | null
+          medication_name: string
+          prescription_id: string
+        }
+        Update: {
+          created_at?: string
+          dosage?: string
+          duration?: string
+          frequency?: string
+          id?: string
+          instructions?: string | null
+          medication_id?: string | null
+          medication_name?: string
+          prescription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prescription_medications_medication_id_fkey"
+            columns: ["medication_id"]
+            isOneToOne: false
+            referencedRelation: "medications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "prescription_medications_prescription_id_fkey"
+            columns: ["prescription_id"]
+            isOneToOne: false
+            referencedRelation: "prescriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prescriptions: {
+        Row: {
+          clinic_address: string | null
+          clinic_id: string
+          clinic_name: string | null
+          clinic_phone: string | null
+          created_at: string
+          diagnosis: string
+          doctor_license: string | null
+          doctor_name: string
+          id: string
+          notes: string | null
+          patient_id: string
+          prescription_date: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_address?: string | null
+          clinic_id: string
+          clinic_name?: string | null
+          clinic_phone?: string | null
+          created_at?: string
+          diagnosis: string
+          doctor_license?: string | null
+          doctor_name: string
+          id?: string
+          notes?: string | null
+          patient_id: string
+          prescription_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_address?: string | null
+          clinic_id?: string
+          clinic_name?: string | null
+          clinic_phone?: string | null
+          created_at?: string
+          diagnosis?: string
+          doctor_license?: string | null
+          doctor_name?: string
+          id?: string
+          notes?: string | null
+          patient_id?: string
+          prescription_date?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

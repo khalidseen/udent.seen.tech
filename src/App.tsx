@@ -40,6 +40,7 @@ import DoctorApplications from "@/pages/DoctorApplications";
 import AIInsights from "@/pages/AIInsights";
 import SmartDiagnosis from "@/pages/SmartDiagnosis";
 import Medications from "@/pages/Medications";
+import Prescriptions from "@/pages/Prescriptions";
 import NotFound from "@/pages/NotFound";
 
 // Initialize the offline database
@@ -131,6 +132,7 @@ function App() {
               <Route path="reports" element={<Reports />} />
               <Route path="doctor-applications" element={<DoctorApplications />} />
               <Route path="medications" element={<Medications />} />
+              <Route path="prescriptions" element={<Prescriptions />} />
             </Route>
             
             {/* 404 route */}
