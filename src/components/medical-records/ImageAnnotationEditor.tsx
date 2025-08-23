@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, IText, PencilBrush } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, IText } from 'fabric';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -53,55 +53,63 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
     // Load the image and set it as background
     const loadImageToCanvas = async () => {
       try {
-        const response = await fetch(imageUrl);
-        const blob = await response.blob();
-        const imgUrl = URL.createObjectURL(blob);
+        // Use fabric's built-in image loading
+        const { FabricImage } = await import('fabric');
         
-        const img = new Image();
-        img.crossOrigin = 'anonymous';
-        
-        await new Promise((resolve, reject) => {
-          img.onload = resolve;
-          img.onerror = reject;
-          img.src = imgUrl;
-        });
-        
-        // Calculate dimensions to fit the canvas
-        const canvasWidth = 800;
-        const canvasHeight = 600;
-        const imageAspectRatio = img.width / img.height;
-        const canvasAspectRatio = canvasWidth / canvasHeight;
-        
-        let renderWidth = canvasWidth;
-        let renderHeight = canvasHeight;
-        
-        if (imageAspectRatio > canvasAspectRatio) {
-          renderHeight = canvasWidth / imageAspectRatio;
-        } else {
-          renderWidth = canvasHeight * imageAspectRatio;
-        }
+        FabricImage.fromURL(imageUrl, {
+          crossOrigin: 'anonymous'
+        }).then((img) => {
+          // Calculate dimensions to fit the canvas
+          const canvasWidth = 800;
+          const canvasHeight = 600;
+          const imageAspectRatio = img.width / img.height;
+          const canvasAspectRatio = canvasWidth / canvasHeight;
+          
+          let renderWidth = canvasWidth;
+          let renderHeight = canvasHeight;
+          
+          if (imageAspectRatio > canvasAspectRatio) {
+            renderHeight = canvasWidth / imageAspectRatio;
+          } else {
+            renderWidth = canvasHeight * imageAspectRatio;
+          }
 
-        // Set canvas background using CSS instead
-        canvas.setDimensions({
-          width: renderWidth,
-          height: renderHeight
-        });
+          // Set canvas dimensions
+          canvas.setDimensions({
+            width: renderWidth,
+            height: renderHeight
+          });
 
-        // Set the canvas style background
-        const canvasElement = canvas.getElement();
-        canvasElement.style.backgroundImage = `url(${imgUrl})`;
-        canvasElement.style.backgroundSize = '100% 100%';
-        canvasElement.style.backgroundRepeat = 'no-repeat';
-        
-        canvas.renderAll();
+          // Scale image to fit canvas
+          img.scaleToWidth(renderWidth);
+          img.scaleToHeight(renderHeight);
+          img.set({
+            left: 0,
+            top: 0,
+            selectable: false,
+            evented: false
+          });
+
+          // Set as background image
+          canvas.backgroundImage = img;
+          canvas.renderAll();
+        }).catch((error) => {
+          console.error('Error loading image with FabricImage:', error);
+          
+          // Fallback to basic background approach
+          const canvasElement = canvas.getElement();
+          canvasElement.style.backgroundImage = `url(${imageUrl})`;
+          canvasElement.style.backgroundSize = 'contain';
+          canvasElement.style.backgroundRepeat = 'no-repeat';
+          canvasElement.style.backgroundPosition = 'center';
+          
+          canvas.renderAll();
+        });
         
         toast({
           title: "تم تحميل الصورة بنجاح", 
           description: "يمكنك الآن الرسم والكتابة على الصورة",
         });
-
-        // Clean up blob URL
-        URL.revokeObjectURL(imgUrl);
 
       } catch (error) {
         console.error('Error loading image:', error);
@@ -114,7 +122,6 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
     };
 
     // Initialize the freeDrawingBrush
-    canvas.freeDrawingBrush = new PencilBrush(canvas);
     canvas.freeDrawingBrush.color = activeColor;
     canvas.freeDrawingBrush.width = 3;
 
