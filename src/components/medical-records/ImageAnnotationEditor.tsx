@@ -50,34 +50,68 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
       backgroundColor: '#ffffff',
     });
 
-    // Load the image
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      // Calculate dimensions to fit the canvas
-      const canvasWidth = 800;
-      const canvasHeight = 600;
-      const imageAspectRatio = img.width / img.height;
-      const canvasAspectRatio = canvasWidth / canvasHeight;
-      
-      let renderWidth = canvasWidth;
-      let renderHeight = canvasHeight;
-      
-      if (imageAspectRatio > canvasAspectRatio) {
-        renderHeight = canvasWidth / imageAspectRatio;
-      } else {
-        renderWidth = canvasHeight * imageAspectRatio;
+    // Load the image and set it as background
+    const loadImageToCanvas = async () => {
+      try {
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const imgUrl = URL.createObjectURL(blob);
+        
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = imgUrl;
+        });
+        
+        // Calculate dimensions to fit the canvas
+        const canvasWidth = 800;
+        const canvasHeight = 600;
+        const imageAspectRatio = img.width / img.height;
+        const canvasAspectRatio = canvasWidth / canvasHeight;
+        
+        let renderWidth = canvasWidth;
+        let renderHeight = canvasHeight;
+        
+        if (imageAspectRatio > canvasAspectRatio) {
+          renderHeight = canvasWidth / imageAspectRatio;
+        } else {
+          renderWidth = canvasHeight * imageAspectRatio;
+        }
+
+        // Set canvas background using CSS instead
+        canvas.setDimensions({
+          width: renderWidth,
+          height: renderHeight
+        });
+
+        // Set the canvas style background
+        const canvasElement = canvas.getElement();
+        canvasElement.style.backgroundImage = `url(${imgUrl})`;
+        canvasElement.style.backgroundSize = '100% 100%';
+        canvasElement.style.backgroundRepeat = 'no-repeat';
+        
+        canvas.renderAll();
+        
+        toast({
+          title: "تم تحميل الصورة بنجاح", 
+          description: "يمكنك الآن الرسم والكتابة على الصورة",
+        });
+
+        // Clean up blob URL
+        URL.revokeObjectURL(imgUrl);
+
+      } catch (error) {
+        console.error('Error loading image:', error);
+        toast({
+          title: "خطأ في تحميل الصورة",
+          description: "تأكد من أن الصورة موجودة ومتاحة",
+          variant: "destructive",
+        });
       }
-
-      canvas.setDimensions({
-        width: renderWidth,
-        height: renderHeight
-      });
-
-      // Remove background image assignment for now
-      canvas.renderAll();
     };
-    img.src = imageUrl;
 
     // Initialize the freeDrawingBrush
     canvas.freeDrawingBrush = new PencilBrush(canvas);
@@ -86,10 +120,8 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
 
     setFabricCanvas(canvas);
     
-    toast({
-      title: "محرر الصور جاهز",
-      description: "يمكنك الآن الرسم والكتابة على الصورة",
-    });
+    // Load image after canvas setup
+    loadImageToCanvas();
 
     return () => {
       canvas.dispose();
@@ -158,18 +190,19 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
 
   const handleClear = () => {
     if (!fabricCanvas) return;
-    fabricCanvas.clear();
-    // Reload the background image
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvasWidth = fabricCanvas.width || 800;
-      const canvasHeight = fabricCanvas.height || 600;
-      
-      // Remove background image assignment for now
-      fabricCanvas.renderAll();
-    };
-    img.src = imageUrl;
+    
+    // Clear all objects but keep the background image
+    const objects = fabricCanvas.getObjects();
+    objects.forEach(obj => {
+      fabricCanvas.remove(obj);
+    });
+    
+    fabricCanvas.renderAll();
+    
+    toast({
+      title: "تم مسح التعديلات",
+      description: "تم الاحتفاظ بالصورة الأصلية",
+    });
   };
 
   const handleSave = async () => {
