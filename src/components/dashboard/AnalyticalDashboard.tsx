@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { OptimizedChart } from "@/components/ui/optimized-chart";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import FinancialStatusDashboard from "./FinancialStatusDashboard";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   TrendingUp, 
@@ -418,6 +419,15 @@ function AnalyticalDashboardComponent() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Financial Status Dashboard */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4 flex items-center">
+          <DollarSign className="w-5 h-5 ml-2" />
+          الحالة المالية للمرضى
+        </h2>
+        <FinancialStatusDashboard />
       </div>
     </div>
   );

@@ -1002,7 +1002,7 @@ export type Database = {
           clinic_id: string
           created_at: string
           id: string
-          invoice_id: string
+          invoice_id: string | null
           notes: string | null
           patient_id: string
           payment_date: string
@@ -1017,7 +1017,7 @@ export type Database = {
           clinic_id: string
           created_at?: string
           id?: string
-          invoice_id: string
+          invoice_id?: string | null
           notes?: string | null
           patient_id: string
           payment_date?: string
@@ -1032,7 +1032,7 @@ export type Database = {
           clinic_id?: string
           created_at?: string
           id?: string
-          invoice_id?: string
+          invoice_id?: string | null
           notes?: string | null
           patient_id?: string
           payment_date?: string
