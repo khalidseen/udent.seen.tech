@@ -155,9 +155,9 @@ const advancedMenuItems = [{
   permissions: ["settings.general"]
 }, {
   title: "3D للأسنان المتقدم",
-  url: "/advanced-3d-dental",
+  url: "/advanced-3d-dental", 
   icon: Stethoscope,
-  permissions: ["dental.view"]
+  permissions: ["dental.3d"]
 }];
 
 export function AppSidebar() {
