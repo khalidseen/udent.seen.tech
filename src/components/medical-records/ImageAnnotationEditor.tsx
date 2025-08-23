@@ -122,8 +122,10 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
     };
 
     // Initialize the freeDrawingBrush
-    canvas.freeDrawingBrush.color = activeColor;
-    canvas.freeDrawingBrush.width = 3;
+    if (canvas.freeDrawingBrush) {
+      canvas.freeDrawingBrush.color = activeColor;
+      canvas.freeDrawingBrush.width = 3;
+    }
 
     setFabricCanvas(canvas);
     
