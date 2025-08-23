@@ -1,23 +1,72 @@
-import { AnalyticalDashboard } from "@/components/dashboard/AnalyticalDashboard";
+import { AdvancedAnalyticsDashboard } from "@/components/dashboard/AdvancedAnalyticsDashboard";
+import { SmartNotificationSystem } from "@/components/dashboard/SmartNotificationSystem";
+import { QuickActionCenter } from "@/components/dashboard/QuickActionCenter";
+import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
+import { SystemHealthMonitor } from "@/components/system/SystemHealthMonitor";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
-import AddPatientDrawer from "@/components/patients/AddPatientDrawer";
-import AddAppointmentDrawer from "@/components/appointments/AddAppointmentDrawer";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  BarChart3, 
+  Bell, 
+  Zap, 
+  Plus,
+  Activity,
+  Shield
+} from "lucide-react";
 
 const Index = () => {
   return (
     <PageContainer>
       <PageHeader 
-        title="لوحة التحكم التحليلية"
-        description="مراقبة الأداء والإحصائيات التفاعلية"
-        action={
-          <div className="flex gap-2">
-            <AddPatientDrawer />
-            <AddAppointmentDrawer />
-          </div>
-        }
+        title="لوحة التحكم المتقدمة"
+        description="مراقبة شاملة ومتقدمة لجميع أنشطة العيادة"
       />
-      <AnalyticalDashboard />
+      
+      <Tabs defaultValue="analytics" className="space-y-6">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            التحليلات
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="flex items-center gap-2">
+            <Bell className="w-4 h-4" />
+            الإشعارات
+          </TabsTrigger>
+          <TabsTrigger value="actions" className="flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            الإجراءات
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            <Zap className="w-4 h-4" />
+            الأداء
+          </TabsTrigger>
+          <TabsTrigger value="system" className="flex items-center gap-2">
+            <Shield className="w-4 h-4" />
+            النظام
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <AdvancedAnalyticsDashboard />
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-6">
+          <SmartNotificationSystem />
+        </TabsContent>
+
+        <TabsContent value="actions" className="space-y-6">
+          <QuickActionCenter />
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-6">
+          <PerformanceOptimizer />
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-6">
+          <SystemHealthMonitor />
+        </TabsContent>
+      </Tabs>
     </PageContainer>
   );
 };

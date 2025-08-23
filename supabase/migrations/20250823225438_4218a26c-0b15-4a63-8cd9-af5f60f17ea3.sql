@@ -1,0 +1,19 @@
+-- إصلاح مسارات البحث في باقي الدوال لحل تحذيرات الأمان المتبقية
+ALTER FUNCTION public.audit_trigger_function() SET search_path = public;
+ALTER FUNCTION public.check_appointment_request_rate_limit(inet) SET search_path = public;  
+ALTER FUNCTION public.check_doctor_application_rate_limit(inet) SET search_path = public;
+ALTER FUNCTION public.enhanced_rate_limit_check(text, inet, integer, interval) SET search_path = public;
+ALTER FUNCTION public.generate_automatic_notifications() SET search_path = public;
+ALTER FUNCTION public.generate_invoice_number(uuid) SET search_path = public;
+ALTER FUNCTION public.generate_purchase_order_number(uuid) SET search_path = public;
+ALTER FUNCTION public.handle_new_user() SET search_path = public;
+ALTER FUNCTION public.log_doctor_application_activity() SET search_path = public;
+ALTER FUNCTION public.log_security_event(text, jsonb) SET search_path = public;
+ALTER FUNCTION public.log_suspicious_appointment_activity() SET search_path = public;
+ALTER FUNCTION public.update_doctor_assistants_updated_at() SET search_path = public;
+ALTER FUNCTION public.update_invoice_payments() SET search_path = public;
+ALTER FUNCTION public.update_invoice_totals() SET search_path = public;
+ALTER FUNCTION public.update_tooth_conditions_updated_at() SET search_path = public;
+ALTER FUNCTION public.update_updated_at_column() SET search_path = public;
+ALTER FUNCTION public.validate_appointment_request() SET search_path = public;
+ALTER FUNCTION public.validate_doctor_application() SET search_path = public;
