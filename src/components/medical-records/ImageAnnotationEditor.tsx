@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Canvas as FabricCanvas, Circle, Rect, IText, FabricImage, PencilBrush, Pattern } from 'fabric';
+import { Canvas as FabricCanvas, Circle, Rect, IText, FabricImage, PencilBrush, Pattern, Path } from 'fabric';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -22,11 +22,12 @@ import { useToast } from '@/hooks/use-toast';
 
 interface ImageAnnotationEditorProps {
   imageUrl: string;
+  existingAnnotations?: any;
   onSave: (annotatedImageUrl: string, annotationData: any) => Promise<void>;
   onClose: () => void;
 }
 
-export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnotationEditorProps) {
+export function ImageAnnotationEditor({ imageUrl, existingAnnotations, onSave, onClose }: ImageAnnotationEditorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [fabricCanvas, setFabricCanvas] = useState<FabricCanvas | null>(null);
   const [activeColor, setActiveColor] = useState('#ef4444');
@@ -214,6 +215,60 @@ export function ImageAnnotationEditor({ imageUrl, onSave, onClose }: ImageAnnota
       canvas.dispose();
     };
   }, [imageUrl, toast]);
+
+  // Load existing annotations after canvas is ready
+  useEffect(() => {
+    if (!fabricCanvas || !existingAnnotations || !existingAnnotations.objects) return;
+
+    console.log('Loading existing annotations:', existingAnnotations);
+
+    try {
+      // Wait for the canvas to be ready and background image to be loaded
+      setTimeout(() => {
+        existingAnnotations.objects.forEach((objData: any) => {
+          try {
+            let fabricObject;
+
+            // Recreate objects based on their type
+            switch (objData.type) {
+              case 'rect':
+                fabricObject = new Rect(objData);
+                break;
+              case 'circle':
+                fabricObject = new Circle(objData);
+                break;
+              case 'i-text':
+                fabricObject = new IText(objData.text || 'نص', objData);
+                break;
+              case 'path':
+                // For drawing paths, we need to recreate them properly
+                fabricObject = new Path(objData.path, objData);
+                break;
+              default:
+                console.log('Unknown object type:', objData.type);
+                return;
+            }
+
+            if (fabricObject) {
+              fabricCanvas.add(fabricObject);
+            }
+          } catch (err) {
+            console.error('Error recreating object:', err, objData);
+          }
+        });
+
+        fabricCanvas.renderAll();
+        
+        toast({
+          title: "تم تحميل التعديلات السابقة",
+          description: "يمكنك الآن متابعة التعديل على الصورة",
+        });
+      }, 1000); // Wait for background image to load
+
+    } catch (error) {
+      console.error('Error loading existing annotations:', error);
+    }
+  }, [fabricCanvas, existingAnnotations, toast]);
 
   useEffect(() => {
     if (!fabricCanvas || !fabricCanvas.freeDrawingBrush) return;

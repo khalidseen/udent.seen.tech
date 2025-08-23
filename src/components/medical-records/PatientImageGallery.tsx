@@ -31,6 +31,7 @@ interface MedicalImage {
   file_path: string;
   annotated_image_path: string;
   has_annotations: boolean;
+  annotation_data: any;
   tooth_number: string;
   is_before_treatment: boolean;
   is_after_treatment: boolean;
@@ -45,6 +46,7 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
     isOpen: boolean;
     imageUrl?: string;
     imageId?: string;
+    existingAnnotations?: any;
   }>({ isOpen: false });
   const [viewerOpen, setViewerOpen] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string>('');
@@ -93,17 +95,19 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
   };
 
   const handleEditAnnotation = (image: MedicalImage) => {
-    // Always use the original image for editing, not the annotated version
-    const { data } = supabase.storage
-      .from('medical-images')
-      .getPublicUrl(image.file_path);
+    // Always use the original image as base, but load existing annotations if they exist
+    const originalImageUrl = supabase.storage.from('medical-images').getPublicUrl(image.file_path).data.publicUrl;
       
-    console.log('Opening annotation editor for image:', image.id, 'URL:', data.publicUrl);
+    console.log('Opening annotation editor for image:', image.id);
+    console.log('Original image URL:', originalImageUrl);
+    console.log('Existing annotations:', image.annotation_data);
+    console.log('Has annotations:', image.has_annotations);
 
     setAnnotationEditor({
       isOpen: true,
-      imageUrl: data.publicUrl,
-      imageId: image.id
+      imageUrl: originalImageUrl, // Always use original image as base
+      imageId: image.id,
+      existingAnnotations: image.has_annotations ? image.annotation_data : null
     });
   };
 
@@ -330,6 +334,7 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
       {annotationEditor.isOpen && annotationEditor.imageUrl && (
         <ImageAnnotationEditor
           imageUrl={annotationEditor.imageUrl}
+          existingAnnotations={annotationEditor.existingAnnotations}
           onSave={handleSaveAnnotation}
           onClose={() => setAnnotationEditor({ isOpen: false })}
         />
