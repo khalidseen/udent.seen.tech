@@ -36,6 +36,7 @@ interface MedicalImage {
   is_after_treatment: boolean;
   image_date: string;
   created_at: string;
+  updated_at: string;
 }
 
 export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
@@ -64,6 +65,7 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
   });
 
   const getImageUrl = (image: MedicalImage) => {
+    // Always show annotated image if it exists and has annotations
     const path = image.has_annotations && image.annotated_image_path 
       ? image.annotated_image_path 
       : image.file_path;
@@ -72,7 +74,9 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
       .from('medical-images')
       .getPublicUrl(path);
     
-    return data.publicUrl;
+    // Add timestamp to prevent caching issues
+    const timestamp = new Date(image.updated_at).getTime();
+    return `${data.publicUrl}?t=${timestamp}`;
   };
 
   const getImageTypeLabel = (type: string) => {
@@ -113,11 +117,16 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
 
       if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
 
-      // Upload annotated image to storage
-      const fileName = `${profile.id}/${patientId}/annotated_${Date.now()}.png`;
+      // Upload annotated image to storage with unique filename
+      const timestamp = Date.now();
+      const fileName = `${profile.id}/${patientId}/annotated_${annotationEditor.imageId}_${timestamp}.png`;
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('medical-images')
-        .upload(fileName, blob);
+        .upload(fileName, blob, {
+          contentType: 'image/png',
+          upsert: false
+        });
 
       if (uploadError) throw uploadError;
 
@@ -134,10 +143,24 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
 
       if (updateError) throw updateError;
 
-      refetch();
+      // Refresh the images list to show updated annotations
+      await refetch();
+      
+      // Close the editor
+      setAnnotationEditor({ isOpen: false });
+      
+      toast({
+        title: "تم حفظ التعديلات بنجاح",
+        description: "تم حفظ الصورة المعدلة في سجل المريض",
+      });
       
     } catch (error: any) {
-      throw new Error(error.message || 'حدث خطأ أثناء حفظ التعديلات');
+      console.error('Error saving annotation:', error);
+      toast({
+        title: "خطأ في حفظ التعديلات",
+        description: error.message || 'حدث خطأ أثناء حفظ التعديلات',
+        variant: "destructive",
+      });
     }
   };
 
