@@ -65,18 +65,21 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
   });
 
   const getImageUrl = (image: MedicalImage) => {
-    // Always show annotated image if it exists and has annotations
-    const path = image.has_annotations && image.annotated_image_path 
+    // Always prioritize annotated image if it exists and has annotations
+    const imagePath = image.has_annotations && image.annotated_image_path 
       ? image.annotated_image_path 
       : image.file_path;
     
     const { data } = supabase.storage
       .from('medical-images')
-      .getPublicUrl(path);
+      .getPublicUrl(imagePath);
     
-    // Add timestamp to prevent caching issues
-    const timestamp = new Date(image.updated_at).getTime();
-    return `${data.publicUrl}?t=${timestamp}`;
+    // Add cache-busting timestamp for updated images
+    const timestamp = image.has_annotations 
+      ? new Date(image.updated_at).getTime() 
+      : new Date(image.created_at).getTime();
+    
+    return `${data.publicUrl}?t=${timestamp}&cache=bust`;
   };
 
   const getImageTypeLabel = (type: string) => {
@@ -117,37 +120,50 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
 
       if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
 
-      // Upload annotated image to storage with unique filename
+      // Create unique filename for annotated image
       const timestamp = Date.now();
-      const fileName = `${profile.id}/${patientId}/annotated_${annotationEditor.imageId}_${timestamp}.png`;
+      const random = Math.random().toString(36).substring(2);
+      const fileName = `${profile.id}/${patientId}/annotated_${annotationEditor.imageId}_${timestamp}_${random}.png`;
       
+      // Upload annotated image to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('medical-images')
         .upload(fileName, blob, {
           contentType: 'image/png',
-          upsert: false
+          upsert: false,
+          duplex: 'half'
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error(`خطأ في رفع الصورة: ${uploadError.message}`);
+      }
 
-      // Update medical image record with annotation data
+      // Update medical image record
+      const updateData = {
+        annotated_image_path: uploadData.path,
+        annotation_data: annotationData,
+        has_annotations: true,
+        updated_at: new Date().toISOString()
+      };
+
       const { error: updateError } = await supabase
         .from('medical_images')
-        .update({
-          annotated_image_path: uploadData.path,
-          annotation_data: annotationData,
-          has_annotations: true,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', annotationEditor.imageId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Update error:', updateError);
+        throw new Error(`خطأ في تحديث البيانات: ${updateError.message}`);
+      }
 
-      // Refresh the images list to show updated annotations
-      await refetch();
-      
-      // Close the editor
+      // Close editor first
       setAnnotationEditor({ isOpen: false });
+      
+      // Wait a moment then refresh to ensure the UI updates
+      setTimeout(() => {
+        refetch();
+      }, 500);
       
       toast({
         title: "تم حفظ التعديلات بنجاح",
@@ -217,6 +233,17 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
                         src={getImageUrl(image)}
                         alt={image.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        onError={(e) => {
+                          // Fallback to original image if annotated version fails
+                          const target = e.target as HTMLImageElement;
+                          if (image.has_annotations && image.annotated_image_path && !target.src.includes('fallback')) {
+                            const { data } = supabase.storage
+                              .from('medical-images')
+                              .getPublicUrl(image.file_path);
+                            target.src = `${data.publicUrl}?fallback=true`;
+                          }
+                        }}
+                        loading="lazy"
                       />
                       {image.has_annotations && (
                         <Badge 
