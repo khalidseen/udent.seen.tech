@@ -216,6 +216,7 @@ export type Database = {
       }
       dental_treatments: {
         Row: {
+          assigned_doctor_id: string | null
           clinic_id: string
           created_at: string
           diagnosis: string
@@ -232,6 +233,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          assigned_doctor_id?: string | null
           clinic_id: string
           created_at?: string
           diagnosis: string
@@ -248,6 +250,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          assigned_doctor_id?: string | null
           clinic_id?: string
           created_at?: string
           diagnosis?: string
@@ -264,6 +267,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "dental_treatments_assigned_doctor_id_fkey"
+            columns: ["assigned_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "dental_treatments_clinic_id_fkey"
             columns: ["clinic_id"]
@@ -574,6 +584,50 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      medical_conditions: {
+        Row: {
+          category: string | null
+          clinic_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          severity_level: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          clinic_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          severity_level?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          clinic_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          severity_level?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_conditions_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       medical_images: {
         Row: {
@@ -922,6 +976,7 @@ export type Database = {
       patients: {
         Row: {
           address: string | null
+          assigned_doctor_id: string | null
           blood_type: string | null
           clinic_id: string
           created_at: string
@@ -929,11 +984,13 @@ export type Database = {
           email: string | null
           emergency_contact: string | null
           emergency_phone: string | null
+          financial_status: string | null
           full_name: string
           gender: string | null
           id: string
           insurance_info: string | null
           marital_status: string | null
+          medical_condition: string | null
           medical_history: string | null
           national_id: string | null
           notes: string | null
@@ -944,6 +1001,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          assigned_doctor_id?: string | null
           blood_type?: string | null
           clinic_id: string
           created_at?: string
@@ -951,11 +1009,13 @@ export type Database = {
           email?: string | null
           emergency_contact?: string | null
           emergency_phone?: string | null
+          financial_status?: string | null
           full_name: string
           gender?: string | null
           id?: string
           insurance_info?: string | null
           marital_status?: string | null
+          medical_condition?: string | null
           medical_history?: string | null
           national_id?: string | null
           notes?: string | null
@@ -966,6 +1026,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          assigned_doctor_id?: string | null
           blood_type?: string | null
           clinic_id?: string
           created_at?: string
@@ -973,11 +1034,13 @@ export type Database = {
           email?: string | null
           emergency_contact?: string | null
           emergency_phone?: string | null
+          financial_status?: string | null
           full_name?: string
           gender?: string | null
           id?: string
           insurance_info?: string | null
           marital_status?: string | null
+          medical_condition?: string | null
           medical_history?: string | null
           national_id?: string | null
           notes?: string | null
@@ -987,6 +1050,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "patients_assigned_doctor_id_fkey"
+            columns: ["assigned_doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "patients_clinic_id_fkey"
             columns: ["clinic_id"]

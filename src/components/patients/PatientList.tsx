@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import { offlineSupabase } from "@/lib/offline-supabase";
 import { useOfflineData } from "@/hooks/useOfflineData";
 import { Phone, Mail, Calendar, Edit, Eye, Activity, Grid3X3, List, BarChart3, Wifi, WifiOff, Filter } from "lucide-react";
+import PatientCard from "./PatientCard";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
@@ -34,6 +36,12 @@ interface Patient {
   blood_type?: string;
   occupation?: string;
   marital_status?: string;
+  assigned_doctor_id?: string;
+  medical_condition?: string;
+  financial_status: 'paid' | 'pending' | 'overdue' | 'partial';
+  assigned_doctor?: {
+    full_name: string;
+  };
 }
 
 const PatientList = () => {
@@ -54,15 +62,16 @@ const PatientList = () => {
   useEffect(() => {
     const getClinicId = async () => {
       try {
-        const { data: { user } } = await offlineSupabase.auth.getUser();
+        const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const profileResult = await offlineSupabase.select('profiles', { 
-          filter: { user_id: user.id } 
-        });
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id);
 
-        if (profileResult.data && profileResult.data.length > 0) {
-          setClinicId(profileResult.data[0].id);
+        if (profiles && profiles.length > 0) {
+          setClinicId(profiles[0].id);
         }
       } catch (error) {
         console.error('Error getting clinic ID:', error);
@@ -72,18 +81,73 @@ const PatientList = () => {
     getClinicId();
   }, []);
 
-  // Use offline data hook for patients
-  const { 
-    data: patients, 
-    loading, 
-    isOffline, 
-    refresh,
-    add: addPatient 
-  } = useOfflineData<Patient>({
-    table: 'patients',
-    filter: clinicId ? { clinic_id: clinicId } : undefined,
-    order: { column: 'created_at', ascending: false }
-  });
+  // Fetch enhanced patient data with doctor information
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isOffline, setIsOffline] = useState(false);
+
+  const fetchPatientsWithDoctors = async () => {
+    if (!clinicId) return;
+    
+    try {
+      // Get patients with doctor information using supabase
+      const { data: patientsData, error } = await supabase
+        .from('patients')
+        .select(`
+          *,
+          assigned_doctor:doctors(full_name)
+        `)
+        .eq('clinic_id', clinicId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      const enhancedPatients: Patient[] = patientsData?.map(patient => ({
+        ...patient,
+        financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
+        assigned_doctor: patient.assigned_doctor ? { full_name: patient.assigned_doctor.full_name } : undefined
+      })) || [];
+
+      setPatients(enhancedPatients);
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+      setIsOffline(true);
+      
+      // Fallback to offline data without doctors
+      try {
+        const patientsResult = await offlineSupabase.select('patients', { 
+          filter: { clinic_id: clinicId },
+          order: { column: 'created_at', ascending: false }
+        });
+        
+        const fallbackPatients: Patient[] = patientsResult.data?.map(patient => ({
+          ...patient,
+          financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
+          assigned_doctor: undefined
+        })) || [];
+        
+        setPatients(fallbackPatients);
+      } catch (offlineError) {
+        console.error('Offline fallback failed:', offlineError);
+        setPatients([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (clinicId) {
+      fetchPatientsWithDoctors();
+    }
+  }, [clinicId]);
+
+  const refresh = () => {
+    if (clinicId) {
+      setLoading(true);
+      fetchPatientsWithDoctors();
+    }
+  };
 
   const filteredPatients = patients.filter(patient => {
     // Gender filter
@@ -148,6 +212,11 @@ const PatientList = () => {
   const handleAddTreatment = (patientId: string, patientName: string) => {
     setSelectedPatient({ id: patientId, name: patientName });
     setTreatmentDialogOpen(true);
+  };
+
+  const handleEditPatient = (patientId: string) => {
+    // Navigate to edit patient page or open edit dialog
+    window.location.href = `/patients/${patientId}`;
   };
 
   const handleTreatmentAdded = () => {
@@ -291,76 +360,14 @@ const PatientList = () => {
           </CardContent>
         </Card>
       ) : viewMode === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredPatients.map((patient) => (
-            <Card key={patient.id} className="hover:shadow-xl transition-all duration-300 border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center space-x-3 space-x-reverse">
-                    <CardTitle className="text-xl font-semibold">{patient.full_name}</CardTitle>
-                    {getGenderBadge(patient.gender)}
-                    {patient.date_of_birth && (
-                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                        {new Date().getFullYear() - new Date(patient.date_of_birth).getFullYear()} سنة
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex space-x-2 space-x-reverse">
-                    <Link to={`/patients/${patient.id}`}>
-                      <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
-                        <Eye className="w-4 h-4 ml-1" />
-                        عرض
-                      </Button>
-                    </Link>
-                    <Button 
-                      variant="default" 
-                      size="sm" 
-                      className="bg-gradient-to-r from-primary to-primary/90 hover:shadow-md transition-all duration-200"
-                      onClick={() => handleAddTreatment(patient.id, patient.full_name)}
-                    >
-                      <Activity className="w-4 h-4 ml-1" />
-                      العلاج
-                    </Button>
-                    <Button variant="outline" size="sm" className="border-border/60 hover:bg-accent/60 transition-all duration-200">
-                      <Edit className="w-4 h-4 ml-1" />
-                      تعديل
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {patient.phone && (
-                    <div className="flex items-center space-x-2 space-x-reverse">
-                      <Phone className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{patient.phone}</span>
-                    </div>
-                  )}
-                  {patient.email && (
-                    <div className="flex items-center space-x-2 space-x-reverse">
-                      <Mail className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{patient.email}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center space-x-2 space-x-reverse">
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">
-                      مسجل {format(new Date(patient.created_at), 'yyyy/MM/dd', { locale: ar })}
-                    </span>
-                  </div>
-                </div>
-                {patient.address && (
-                  <div className="mt-3">
-                    <p className="text-sm text-muted-foreground">العنوان: {patient.address}</p>
-                  </div>
-                )}
-                {patient.medical_history && (
-                  <div className="mt-3">
-                    <p className="text-sm text-muted-foreground">التاريخ المرضي: {patient.medical_history}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <PatientCard
+              key={patient.id}
+              patient={patient}
+              onAddTreatment={handleAddTreatment}
+              onEditPatient={handleEditPatient}
+            />
           ))}
         </div>
       ) : (
