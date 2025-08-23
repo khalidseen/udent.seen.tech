@@ -7,15 +7,30 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Activity, Save, Stethoscope } from "lucide-react";
+import { Activity, Save, Stethoscope, Pill } from "lucide-react";
 import ToothChart from "./ToothChart";
 import SmartTreatmentRecommendations from "../treatments/SmartTreatmentRecommendations";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
+import MedicationSelector from "@/components/medications/MedicationSelector";
 
 interface Patient {
   id: string;
   full_name: string;
+}
+
+interface SelectedMedication {
+  id: string;
+  trade_name: string;
+  generic_name?: string;
+  strength: string;
+  form: string;
+  frequency: string;
+  duration?: string;
+  instructions?: string;
+  custom_dosage?: string;
+  custom_duration?: string;
+  custom_instructions?: string;
 }
 
 interface DentalTreatmentFormProps {
@@ -27,6 +42,7 @@ const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
   const [selectedPatient, setSelectedPatient] = useState(patientId || '');
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
   const [numberingSystem, setNumberingSystem] = useState<'universal' | 'palmer' | 'fdi'>('universal');
+  const [selectedMedications, setSelectedMedications] = useState<SelectedMedication[]>([]);
   const [formData, setFormData] = useState({
     toothSurface: '',
     diagnosis: '',
@@ -102,7 +118,17 @@ const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
         treatment_plan: formData.treatmentPlan,
         treatment_date: formData.treatmentDate,
         status: formData.status,
-        notes: formData.notes
+        notes: formData.notes,
+        prescribed_medications: selectedMedications.map(med => ({
+          medication_id: med.id,
+          trade_name: med.trade_name,
+          generic_name: med.generic_name,
+          strength: med.strength,
+          form: med.form,
+          dosage: med.custom_dosage || med.frequency,
+          duration: med.custom_duration || med.duration,
+          instructions: med.custom_instructions || med.instructions
+        }))
       };
 
       if (editingId) {
@@ -140,6 +166,7 @@ const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
         notes: ''
       });
       setSelectedTooth(null);
+      setSelectedMedications([]);
 
     } catch (error: any) {
       toast({
@@ -341,6 +368,18 @@ const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
                   onChange={(e) => handleChange('notes', e.target.value)}
                   placeholder="ملاحظات إضافية..."
                   rows={3}
+                />
+              </div>
+
+              {/* Medications */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Pill className="w-4 h-4" />
+                  الأدوية الموصوفة
+                </Label>
+                <MedicationSelector
+                  selectedMedications={selectedMedications}
+                  onMedicationsChange={setSelectedMedications}
                 />
               </div>
 

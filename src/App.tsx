@@ -39,6 +39,7 @@ import Reports from "@/pages/Reports";
 import DoctorApplications from "@/pages/DoctorApplications";
 import AIInsights from "@/pages/AIInsights";
 import SmartDiagnosis from "@/pages/SmartDiagnosis";
+import Medications from "@/pages/Medications";
 import NotFound from "@/pages/NotFound";
 
 // Initialize the offline database
@@ -129,6 +130,7 @@ function App() {
               <Route path="notification-templates" element={<NotificationTemplates />} />
               <Route path="reports" element={<Reports />} />
               <Route path="doctor-applications" element={<DoctorApplications />} />
+              <Route path="medications" element={<Medications />} />
             </Route>
             
             {/* 404 route */}

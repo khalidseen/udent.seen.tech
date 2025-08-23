@@ -223,6 +223,7 @@ export type Database = {
           notes: string | null
           numbering_system: string
           patient_id: string
+          prescribed_medications: Json | null
           status: string
           tooth_number: string
           tooth_surface: string | null
@@ -238,6 +239,7 @@ export type Database = {
           notes?: string | null
           numbering_system?: string
           patient_id: string
+          prescribed_medications?: Json | null
           status?: string
           tooth_number: string
           tooth_surface?: string | null
@@ -253,6 +255,7 @@ export type Database = {
           notes?: string | null
           numbering_system?: string
           patient_id?: string
+          prescribed_medications?: Json | null
           status?: string
           tooth_number?: string
           tooth_surface?: string | null
@@ -759,6 +762,51 @@ export type Database = {
           supplier_contact?: string | null
           unit?: string
           unit_cost?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      medications: {
+        Row: {
+          clinic_id: string
+          created_at: string
+          duration: string | null
+          form: string
+          frequency: string
+          generic_name: string | null
+          id: string
+          instructions: string | null
+          is_active: boolean
+          strength: string
+          trade_name: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string
+          duration?: string | null
+          form: string
+          frequency: string
+          generic_name?: string | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          strength: string
+          trade_name: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string
+          duration?: string | null
+          form?: string
+          frequency?: string
+          generic_name?: string | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean
+          strength?: string
+          trade_name?: string
           updated_at?: string
         }
         Relationships: []
