@@ -364,74 +364,76 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
       </Tabs>
 
       {/* Add Plan Dialog */}
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>إضافة خطة علاج جديدة</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="title">عنوان الخطة</Label>
-            <Input
-              id="title"
-              value={newPlan.title}
-              onChange={(e) => setNewPlan({ ...newPlan, title: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="description">الوصف</Label>
-            <Textarea
-              id="description"
-              value={newPlan.description}
-              onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
-            />
-          </div>
-          <div>
-            <Label htmlFor="cost">التكلفة المتوقعة (ريال)</Label>
-            <Input
-              id="cost"
-              type="number"
-              value={newPlan.estimated_cost}
-              onChange={(e) => setNewPlan({ ...newPlan, estimated_cost: e.target.value })}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+      <Dialog open={addPlanDialog} onOpenChange={setAddPlanDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>إضافة خطة علاج جديدة</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
             <div>
-              <Label htmlFor="start_date">تاريخ البداية</Label>
+              <Label htmlFor="title">عنوان الخطة</Label>
               <Input
-                id="start_date"
-                type="date"
-                value={newPlan.start_date}
-                onChange={(e) => setNewPlan({ ...newPlan, start_date: e.target.value })}
+                id="title"
+                value={newPlan.title}
+                onChange={(e) => setNewPlan({ ...newPlan, title: e.target.value })}
               />
             </div>
             <div>
-              <Label htmlFor="end_date">تاريخ النهاية</Label>
-              <Input
-                id="end_date"
-                type="date"
-                value={newPlan.end_date}
-                onChange={(e) => setNewPlan({ ...newPlan, end_date: e.target.value })}
+              <Label htmlFor="description">الوصف</Label>
+              <Textarea
+                id="description"
+                value={newPlan.description}
+                onChange={(e) => setNewPlan({ ...newPlan, description: e.target.value })}
               />
             </div>
+            <div>
+              <Label htmlFor="cost">التكلفة المتوقعة (ريال)</Label>
+              <Input
+                id="cost"
+                type="number"
+                value={newPlan.estimated_cost}
+                onChange={(e) => setNewPlan({ ...newPlan, estimated_cost: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="start_date">تاريخ البداية</Label>
+                <Input
+                  id="start_date"
+                  type="date"
+                  value={newPlan.start_date}
+                  onChange={(e) => setNewPlan({ ...newPlan, start_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label htmlFor="end_date">تاريخ النهاية</Label>
+                <Input
+                  id="end_date"
+                  type="date"
+                  value={newPlan.end_date}
+                  onChange={(e) => setNewPlan({ ...newPlan, end_date: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="notes">ملاحظات</Label>
+              <Textarea
+                id="notes"
+                value={newPlan.notes}
+                onChange={(e) => setNewPlan({ ...newPlan, notes: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end space-x-2 space-x-reverse">
+              <Button variant="outline" onClick={() => setAddPlanDialog(false)}>
+                إلغاء
+              </Button>
+              <Button onClick={handleAddPlan} disabled={!newPlan.title || !newPlan.estimated_cost}>
+                إضافة
+              </Button>
+            </div>
           </div>
-          <div>
-            <Label htmlFor="notes">ملاحظات</Label>
-            <Textarea
-              id="notes"
-              value={newPlan.notes}
-              onChange={(e) => setNewPlan({ ...newPlan, notes: e.target.value })}
-            />
-          </div>
-          <div className="flex justify-end space-x-2 space-x-reverse">
-            <Button variant="outline" onClick={() => setAddPlanDialog(false)}>
-              إلغاء
-            </Button>
-            <Button onClick={handleAddPlan} disabled={!newPlan.title || !newPlan.estimated_cost}>
-              إضافة
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
+        </DialogContent>
+      </Dialog>
 
       {/* Add Payment Dialog */}
       <Dialog open={addPaymentDialog} onOpenChange={setAddPaymentDialog}>
