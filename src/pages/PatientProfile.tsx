@@ -19,6 +19,7 @@ import PatientMedicalHistory from "@/components/patients/PatientMedicalHistory";
 import PatientTimeline from "@/components/patients/PatientTimeline";
 import AddTreatmentDialog from "@/components/patients/AddTreatmentDialog";
 import PalmerDentalChart from "@/components/dental/PalmerDentalChart";
+import { PatientImageGallery } from "@/components/medical-records/PatientImageGallery";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -278,7 +279,7 @@ const PatientProfile = () => {
 
       {/* Patient Details Tabs */}
       <Tabs defaultValue="treatments" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="treatments" className="flex items-center">
             <Activity className="w-4 h-4 ml-1" />
             العلاجات
@@ -286,6 +287,10 @@ const PatientProfile = () => {
           <TabsTrigger value="dental-status" className="flex items-center">
             <Smile className="w-4 h-4 ml-1" />
             حالة السنان
+          </TabsTrigger>
+          <TabsTrigger value="images" className="flex items-center">
+            <FileText className="w-4 h-4 ml-1" />
+            الصور الطبية
           </TabsTrigger>
           <TabsTrigger value="appointments" className="flex items-center">
             <Calendar className="w-4 h-4 ml-1" />
@@ -306,6 +311,10 @@ const PatientProfile = () => {
             patientId={patient.id} 
             patientAge={patient.date_of_birth ? getAge(patient.date_of_birth) : 25}
           />
+        </TabsContent>
+        
+        <TabsContent value="images" className="mt-6">
+          <PatientImageGallery patientId={patient.id} />
         </TabsContent>
         
         <TabsContent value="appointments" className="mt-6">

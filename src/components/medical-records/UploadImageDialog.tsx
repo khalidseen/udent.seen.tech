@@ -15,10 +15,11 @@ interface UploadImageDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onImageUploaded: () => void;
+  defaultPatientId?: string;
 }
 
-export function UploadImageDialog({ isOpen, onClose, onImageUploaded }: UploadImageDialogProps) {
-  const [selectedPatientId, setSelectedPatientId] = useState("");
+export function UploadImageDialog({ isOpen, onClose, onImageUploaded, defaultPatientId }: UploadImageDialogProps) {
+  const [selectedPatientId, setSelectedPatientId] = useState(defaultPatientId || "");
   const [selectedRecordId, setSelectedRecordId] = useState("");
   const [imageType, setImageType] = useState("xray");
   const [title, setTitle] = useState("");
@@ -156,7 +157,7 @@ export function UploadImageDialog({ isOpen, onClose, onImageUploaded }: UploadIm
   };
 
   const resetForm = () => {
-    setSelectedPatientId("");
+    setSelectedPatientId(defaultPatientId || "");
     setSelectedRecordId("");
     setImageType("xray");
     setTitle("");

@@ -576,11 +576,14 @@ export type Database = {
           ai_analysis_status: string | null
           ai_confidence_score: number | null
           ai_detected_conditions: string[] | null
+          annotated_image_path: string | null
+          annotation_data: Json | null
           clinic_id: string
           created_at: string
           description: string | null
           file_path: string
           file_size: number | null
+          has_annotations: boolean | null
           id: string
           image_date: string
           image_type: string
@@ -599,11 +602,14 @@ export type Database = {
           ai_analysis_status?: string | null
           ai_confidence_score?: number | null
           ai_detected_conditions?: string[] | null
+          annotated_image_path?: string | null
+          annotation_data?: Json | null
           clinic_id: string
           created_at?: string
           description?: string | null
           file_path: string
           file_size?: number | null
+          has_annotations?: boolean | null
           id?: string
           image_date?: string
           image_type?: string
@@ -622,11 +628,14 @@ export type Database = {
           ai_analysis_status?: string | null
           ai_confidence_score?: number | null
           ai_detected_conditions?: string[] | null
+          annotated_image_path?: string | null
+          annotation_data?: Json | null
           clinic_id?: string
           created_at?: string
           description?: string | null
           file_path?: string
           file_size?: number | null
+          has_annotations?: boolean | null
           id?: string
           image_date?: string
           image_type?: string
