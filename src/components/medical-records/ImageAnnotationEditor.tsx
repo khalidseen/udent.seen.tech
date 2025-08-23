@@ -218,31 +218,65 @@ export function ImageAnnotationEditor({ imageUrl, existingAnnotations, onSave, o
 
   // Load existing annotations after canvas is ready
   useEffect(() => {
-    if (!fabricCanvas || !existingAnnotations || !existingAnnotations.objects) return;
+    if (!fabricCanvas || !existingAnnotations || !existingAnnotations.objects || !backgroundImage) return;
 
     console.log('Loading existing annotations:', existingAnnotations);
 
-    try {
-      // Wait for the canvas to be ready and background image to be loaded
-      setTimeout(() => {
+    const loadAnnotations = () => {
+      try {
+        // Clear any existing annotations first (keep only background)
+        const objects = fabricCanvas.getObjects();
+        objects.forEach(obj => {
+          if (obj.get('name') !== 'backgroundImage') {
+            fabricCanvas.remove(obj);
+          }
+        });
+
+        // Load annotations
         existingAnnotations.objects.forEach((objData: any) => {
           try {
             let fabricObject;
 
-            // Recreate objects based on their type
+            // Recreate objects based on their type with proper error handling
             switch (objData.type) {
               case 'rect':
-                fabricObject = new Rect(objData);
+                fabricObject = new Rect({
+                  ...objData,
+                  fill: objData.fill || 'transparent',
+                  stroke: objData.stroke || '#ef4444',
+                  strokeWidth: objData.strokeWidth || 2
+                });
                 break;
               case 'circle':
-                fabricObject = new Circle(objData);
+                fabricObject = new Circle({
+                  ...objData,
+                  fill: objData.fill || 'transparent',
+                  stroke: objData.stroke || '#ef4444',
+                  strokeWidth: objData.strokeWidth || 2
+                });
                 break;
               case 'i-text':
-                fabricObject = new IText(objData.text || 'نص', objData);
+                fabricObject = new IText(objData.text || 'نص', {
+                  ...objData,
+                  fill: objData.fill || '#ef4444'
+                });
                 break;
               case 'path':
-                // For drawing paths, we need to recreate them properly
-                fabricObject = new Path(objData.path, objData);
+                // For drawing paths, ensure we have the proper path data
+                if (objData.path) {
+                  try {
+                    fabricObject = new Path(objData.path, {
+                      ...objData,
+                      fill: objData.fill || '',
+                      stroke: objData.stroke || '#ef4444',
+                      strokeWidth: objData.strokeWidth || 2
+                    });
+                  } catch (pathError) {
+                    console.error('Error creating path object:', pathError);
+                    // Skip this object if path creation fails
+                    return;
+                  }
+                }
                 break;
               default:
                 console.log('Unknown object type:', objData.type);
@@ -251,6 +285,7 @@ export function ImageAnnotationEditor({ imageUrl, existingAnnotations, onSave, o
 
             if (fabricObject) {
               fabricCanvas.add(fabricObject);
+              console.log('Successfully added object:', objData.type);
             }
           } catch (err) {
             console.error('Error recreating object:', err, objData);
@@ -261,14 +296,25 @@ export function ImageAnnotationEditor({ imageUrl, existingAnnotations, onSave, o
         
         toast({
           title: "تم تحميل التعديلات السابقة",
-          description: "يمكنك الآن متابعة التعديل على الصورة",
+          description: `تم تحميل ${existingAnnotations.objects.length} عنصر من التعديلات السابقة`,
         });
-      }, 1000); // Wait for background image to load
+      } catch (error) {
+        console.error('Error loading existing annotations:', error);
+        toast({
+          title: "تحذير",
+          description: "حدث خطأ في تحميل بعض التعديلات السابقة",
+          variant: "destructive",
+        });
+      }
+    };
 
-    } catch (error) {
-      console.error('Error loading existing annotations:', error);
+    // Use a more reliable approach to ensure background is loaded
+    if (backgroundImage) {
+      // Small delay to ensure everything is ready
+      const timer = setTimeout(loadAnnotations, 300);
+      return () => clearTimeout(timer);
     }
-  }, [fabricCanvas, existingAnnotations, toast]);
+  }, [fabricCanvas, existingAnnotations, backgroundImage, toast]);
 
   useEffect(() => {
     if (!fabricCanvas || !fabricCanvas.freeDrawingBrush) return;

@@ -80,12 +80,17 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
       .from('medical-images')
       .getPublicUrl(imagePath);
     
-    // Add cache-busting timestamp for updated images
+    // Add cache-busting timestamp for updated images with more aggressive cache busting
     const timestamp = image.has_annotations 
       ? new Date(image.updated_at).getTime() 
       : new Date(image.created_at).getTime();
     
-    return `${data.publicUrl}?t=${timestamp}&cache=bust`;
+    // Add random component for better cache busting of annotated images
+    const cacheParam = image.has_annotations 
+      ? `${timestamp}-${Math.random().toString(36).substring(2, 8)}`
+      : timestamp;
+    
+    return `${data.publicUrl}?v=${cacheParam}`;
   };
 
   const getImageTypeLabel = (type: string) => {
@@ -176,17 +181,19 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
 
       console.log('Image record updated successfully');
 
-      // Close editor and refresh
+      // Close editor and refresh immediately
       setAnnotationEditor({ isOpen: false });
       
-      // Add a small delay to ensure the storage has processed the upload
+      toast({
+        title: "تم حفظ التعديلات بنجاح",
+        description: "تم حفظ الصورة المعدلة في سجل المريض",
+      });
+
+      // Refresh data immediately and then again after a short delay to ensure storage sync
+      refetch();
       setTimeout(() => {
         refetch();
-        toast({
-          title: "تم حفظ التعديلات بنجاح",
-          description: "تم حفظ الصورة المعدلة في سجل المريض",
-        });
-      }, 1000);
+      }, 2000);
       
     } catch (error: any) {
       console.error('Error saving annotation:', error);
