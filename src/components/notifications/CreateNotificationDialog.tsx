@@ -60,8 +60,14 @@ export function CreateNotificationDialog() {
         return;
       }
 
-      await offlineSupabase.insert('notifications', {
+      // Convert "none" back to undefined for proper handling
+      const formData = {
         ...data,
+        patient_id: data.patient_id === "none" ? undefined : data.patient_id,
+      };
+
+      await offlineSupabase.insert('notifications', {
+        ...formData,
         clinic_id: user.id,
         status: 'unread',
         auto_generated: false,
@@ -207,7 +213,7 @@ export function CreateNotificationDialog() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">بدون تحديد مريض</SelectItem>
+                      <SelectItem value="none">بدون تحديد مريض</SelectItem>
                       {patients.map((patient) => (
                         <SelectItem key={patient.id} value={patient.id}>
                           {patient.full_name}
