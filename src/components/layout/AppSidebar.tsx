@@ -104,10 +104,10 @@ const inventoryMenuItems = [{
   icon: FileText,
   permissions: ["prescriptions.view"]
 }, {
-  title: "أوامر الشراء",
-  url: "/purchase-orders",
-  icon: ShoppingCart,
-  permissions: ["inventory.orders"]
+  title: "حركة المخزون",
+  url: "/stock-movements",
+  icon: TrendingUp,
+  permissions: ["inventory.movements"]
 }];
 
 const systemMenuItems = [{
@@ -137,8 +137,8 @@ const systemMenuItems = [{
   external: true
 }];
 
-// صفحات تحت التطوير
-const developmentMenuItems = [{
+// الصفحات المتقدمة - للمدراء والمستخدمين ذوي الصلاحيات الخاصة
+const advancedMenuItems = [{
   title: "العلاجات",
   url: "/treatments",
   icon: Activity,
@@ -153,11 +153,6 @@ const developmentMenuItems = [{
   url: "/service-prices",
   icon: DollarSign,
   permissions: ["settings.general"]
-}, {
-  title: "حركة المخزون",
-  url: "/stock-movements",
-  icon: TrendingUp,
-  permissions: ["inventory.view"]
 }, {
   title: "3D للأسنان المتقدم",
   url: "/advanced-3d-dental",
@@ -214,7 +209,7 @@ export function AppSidebar() {
   const filteredSystemMenu = systemMenuItems.filter(item => 
     item.title.toLowerCase().includes(searchQuery.toLowerCase()) && canAccessMenuItem(item)
   );
-  const filteredDevelopmentMenu = developmentMenuItems.filter(item => 
+  const filteredAdvancedMenu = advancedMenuItems.filter(item => 
     item.title.toLowerCase().includes(searchQuery.toLowerCase()) && canAccessMenuItem(item)
   );
   
@@ -416,35 +411,24 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* تحت التطوير */}
-        {filteredDevelopmentMenu.length > 0 && (
+        {/* الصفحات المتقدمة */}
+        {filteredAdvancedMenu.length > 0 && (
           <SidebarGroup>
             {!collapsed && (
-              <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                <Construction className="w-3 h-3" />
-                تحت التطوير
+              <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+                الميزات المتقدمة
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {filteredDevelopmentMenu.map(item => {
+                {filteredAdvancedMenu.map(item => {
                   const Icon = item.icon;
                   return (
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className="h-9">
-                        <NavLink 
-                          to={item.url} 
-                          className={`${getNavClasses(item.url)} opacity-60 pointer-events-none`}
-                        >
+                        <NavLink to={item.url} className={getNavClasses(item.url)}>
                           <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && (
-                            <span className="flex items-center gap-2">
-                              {item.title}
-                              <Badge variant="secondary" className="text-[10px] px-1">
-                                قريباً
-                              </Badge>
-                            </span>
-                          )}
+                          {!collapsed && <span>{item.title}</span>}
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

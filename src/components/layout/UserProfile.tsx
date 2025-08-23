@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,22 +14,34 @@ import {
   LogOut,
   ChevronDown
 } from "lucide-react";
-
-// Mock user data - في التطبيق الحقيقي ستأتي من useAuth
-const mockUser = {
-  name: "د. أحمد محمد",
-  position: "طبيب أسنان رئيسي",
-  email: "ahmed@clinic.com",
-  avatar: null
-};
+import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
+import { supabase } from "@/integrations/supabase/client";
 
 export function UserProfile() {
   const [isOpen, setIsOpen] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+  const { signOut } = useAuth();
+  const { getPrimaryRole } = usePermissions();
 
-  const handleLogout = () => {
-    // Handle logout logic here
-    console.log("Logging out...");
+  // Fetch user profile data
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      setProfile(data);
+    };
+    fetchProfile();
+  }, []);
+
+  const handleLogout = async () => {
+    await signOut();
   };
+
+  // Fallback to default values if profile is not loaded yet
+  const displayName = profile?.full_name || "مستخدم";
+  const primaryRole = getPrimaryRole();
+  const roleDisplayName = primaryRole?.role_name_ar || "مستخدم";
+  const userEmail = profile?.user_id || "";
 
   const getInitials = (name: string) => {
     return name
@@ -48,17 +60,16 @@ export function UserProfile() {
           className="flex items-center gap-2 h-auto p-2 hover:bg-accent"
         >
           <Avatar className="w-8 h-8">
-            <AvatarImage src={mockUser.avatar || undefined} />
             <AvatarFallback className="bg-primary text-primary-foreground text-sm">
-              {getInitials(mockUser.name)}
+              {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
           <div className="hidden md:flex flex-col items-start">
             <span className="text-sm font-medium text-foreground">
-              {mockUser.name}
+              {displayName}
             </span>
             <span className="text-xs text-muted-foreground">
-              {mockUser.position}
+              {roleDisplayName}
             </span>
           </div>
           <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -68,20 +79,19 @@ export function UserProfile() {
       <DropdownMenuContent align="end" className="w-56 bg-popover border-border">
         <div className="flex items-center gap-2 p-2">
           <Avatar className="w-10 h-10">
-            <AvatarImage src={mockUser.avatar || undefined} />
             <AvatarFallback className="bg-primary text-primary-foreground">
-              {getInitials(mockUser.name)}
+              {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <span className="font-medium text-sm text-foreground">
-              {mockUser.name}
+              {displayName}
             </span>
             <span className="text-xs text-muted-foreground">
-              {mockUser.position}
+              {roleDisplayName}
             </span>
             <span className="text-xs text-muted-foreground">
-              {mockUser.email}
+              {userEmail}
             </span>
           </div>
         </div>
