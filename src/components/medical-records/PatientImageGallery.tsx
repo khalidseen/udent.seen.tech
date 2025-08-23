@@ -10,13 +10,16 @@ import {
   Edit3, 
   Eye, 
   Calendar,
-  Tag
+  Tag,
+  Search,
+  Image
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { UploadImageDialog } from './UploadImageDialog';
 import { ImageAnnotationEditor } from './ImageAnnotationEditor';
 import { EnhancedImageViewer } from './EnhancedImageViewer';
+import { ImagePreviewModal } from './ImagePreviewModal';
 import { useToast } from '@/hooks/use-toast';
 
 interface PatientImageGalleryProps {
@@ -49,6 +52,7 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
     existingAnnotations?: any;
   }>({ isOpen: false });
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string>('');
   const { toast } = useToast();
 
@@ -199,6 +203,11 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
     setViewerOpen(true);
   };
 
+  const handlePreviewImage = (imageId: string) => {
+    setSelectedImageId(imageId);
+    setPreviewOpen(true);
+  };
+
   if (isLoading) {
     return (
       <Card>
@@ -270,7 +279,16 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
                         <Button 
                           size="sm" 
                           variant="secondary"
+                          onClick={() => handlePreviewImage(image.id)}
+                          title="معاينة سريعة"
+                        >
+                          <Search className="w-4 h-4" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="secondary"
                           onClick={() => handleViewImage(image.id)}
+                          title="عرض متقدم"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
@@ -278,9 +296,40 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
                           size="sm" 
                           variant="secondary"
                           onClick={() => handleEditAnnotation(image)}
+                          title="تحرير وتخطيط"
                         >
                           <Edit3 className="w-4 h-4" />
                         </Button>
+                      </div>
+                      
+                      {/* Quick Action Icons */}
+                      <div className="absolute bottom-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePreviewImage(image.id);
+                          }}
+                          title="معاينة سريعة"
+                        >
+                          <Image className="w-3 h-3" />
+                        </Button>
+                        {image.has_annotations && (
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            className="h-8 w-8 p-0 bg-white/90 hover:bg-white"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePreviewImage(image.id);
+                            }}
+                            title="عرض النسختين"
+                          >
+                            <Eye className="w-3 h-3 text-primary" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                     <CardContent className="p-3">
@@ -340,12 +389,21 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
         />
       )}
 
-      {/* Image Viewer */}
+      {/* Enhanced Image Viewer */}
       {viewerOpen && selectedImageId && (
         <EnhancedImageViewer
           image={images?.find(img => img.id === selectedImageId)!}
           isOpen={viewerOpen}
           onClose={() => setViewerOpen(false)}
+        />
+      )}
+
+      {/* Quick Preview Modal */}
+      {previewOpen && selectedImageId && (
+        <ImagePreviewModal
+          image={images?.find(img => img.id === selectedImageId)!}
+          isOpen={previewOpen}
+          onClose={() => setPreviewOpen(false)}
         />
       )}
     </>
