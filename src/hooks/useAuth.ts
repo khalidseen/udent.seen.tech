@@ -168,24 +168,43 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
-    const { error } = await offlineAuth.signOut();
-    
-    setUser(null);
-    setSession(null);
-    
-    if (error) {
+    try {
+      setLoading(true);
+      const { error } = await offlineAuth.signOut();
+      
+      // Clear user state immediately
+      setUser(null);
+      setSession(null);
+      
+      if (error) {
+        toast({
+          title: 'خطأ في تسجيل الخروج',
+          description: error.message,
+          variant: 'destructive'
+        });
+      } else {
+        toast({
+          title: 'تم تسجيل الخروج',
+          description: 'نراك قريباً'
+        });
+      }
+      
+      // Force redirect to auth page after logout
+      setTimeout(() => {
+        window.location.href = '/auth';
+      }, 1000);
+      
+      return { error };
+    } catch (error: any) {
       toast({
         title: 'خطأ في تسجيل الخروج',
-        description: error.message,
+        description: error.message || 'حدث خطأ غير متوقع',
         variant: 'destructive'
       });
-    } else {
-      toast({
-        title: 'تم تسجيل الخروج',
-        description: 'نراك قريباً'
-      });
+      return { error };
+    } finally {
+      setLoading(false);
     }
-    return { error };
   };
 
   return {

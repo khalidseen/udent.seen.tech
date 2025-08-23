@@ -10,10 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Building2, User, Bell, Shield, Palette, Clock, Globe, Save, Database } from "lucide-react";
+import { Building2, User, Bell, Shield, Palette, Clock, Globe, Save, Database, Users } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CacheManager } from "@/components/cache/CacheManager";
+import { PermissionsManagement } from "@/components/settings/PermissionsManagement";
+import { PermissionGate } from "@/components/auth/PermissionGate";
 
 export default function Settings() {
   const [clinicSettings, setClinicSettings] = useState({
@@ -66,7 +68,7 @@ export default function Settings() {
       />
 
       <Tabs defaultValue="clinic" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="clinic" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             العيادة
@@ -91,6 +93,12 @@ export default function Settings() {
             <Database className="w-4 h-4" />
             البيانات
           </TabsTrigger>
+          <PermissionGate permissions={["settings.permissions"]}>
+            <TabsTrigger value="permissions" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              الصلاحيات
+            </TabsTrigger>
+          </PermissionGate>
         </TabsList>
 
         {/* إعدادات العيادة */}
@@ -545,6 +553,13 @@ export default function Settings() {
         <TabsContent value="cache">
           <CacheManager />
         </TabsContent>
+
+        {/* إدارة الصلاحيات والأدوار */}
+        <PermissionGate permissions={["settings.permissions"]}>
+          <TabsContent value="permissions">
+            <PermissionsManagement />
+          </TabsContent>
+        </PermissionGate>
       </Tabs>
     </PageContainer>
   );

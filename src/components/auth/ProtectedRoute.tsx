@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Lock, AlertTriangle } from 'lucide-react';
@@ -19,7 +20,15 @@ export const ProtectedRoute = ({
   children, 
   redirectTo = "/" 
 }: ProtectedRouteProps) => {
-  const { hasAnyPermission, hasRole, loading, getPrimaryRole } = usePermissions();
+  const { user, loading: authLoading } = useAuth();
+  const { hasAnyPermission, hasRole, loading: permissionsLoading, getPrimaryRole } = usePermissions();
+  
+  const loading = authLoading || permissionsLoading;
+
+  // Redirect to auth page if user is not authenticated
+  if (!authLoading && !user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   // Show loading state while checking permissions
   if (loading) {
