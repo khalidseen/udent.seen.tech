@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Filter, Download, Upload, Grid, List, FileSpreadsheet } from "lucide-react";
+import { Plus, Search, Filter, Download, Upload, Grid, List, FileSpreadsheet, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -54,6 +54,16 @@ const Medications = () => {
       }
       
       return data as Medication[];
+    }
+  });
+
+  // Get clinic_id for insertions
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_current_user_profile');
+      if (error) throw error;
+      return data;
     }
   });
 
@@ -111,14 +121,75 @@ const Medications = () => {
   const handleImportExcel = () => {
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".csv,.xlsx,.xls";
-    input.onchange = (e) => {
+    input.accept = ".csv";
+    input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
-        toast({
-          title: "قريباً",
-          description: "ميزة استيراد Excel ستكون متاحة قريباً",
-        });
+        try {
+          const text = await file.text();
+          const lines = text.split('\n').filter(line => line.trim());
+          
+          if (lines.length < 2) {
+            toast({
+              title: "خطأ في الملف",
+              description: "الملف فارغ أو لا يحتوي على بيانات صحيحة",
+              variant: "destructive"
+            });
+            return;
+          }
+
+          // Skip header row
+          const dataLines = lines.slice(1);
+          let successCount = 0;
+          let errorCount = 0;
+
+          for (const line of dataLines) {
+            const columns = line.split(',').map(col => col.trim().replace(/"/g, ''));
+            
+            if (columns.length >= 8) {
+              try {
+                const { error } = await supabase
+                  .from('medications')
+                  .insert({
+                    clinic_id: profile?.id,
+                    trade_name: columns[0],
+                    generic_name: columns[1] || null,
+                    strength: columns[2],
+                    form: columns[3],
+                    frequency: columns[4],
+                    duration: columns[5] || null,
+                    prescription_type: columns[6] === "بوصفة طبية" ? "prescription" : "otc",
+                    is_active: columns[7] === "نشط",
+                    instructions: columns[8] || null
+                  });
+
+                if (error) {
+                  console.error('Error inserting medication:', error);
+                  errorCount++;
+                } else {
+                  successCount++;
+                }
+              } catch (err) {
+                console.error('Error processing row:', err);
+                errorCount++;
+              }
+            }
+          }
+
+          refetch();
+          toast({
+            title: "تم الاستيراد",
+            description: `تم استيراد ${successCount} دواء بنجاح${errorCount > 0 ? ` وفشل ${errorCount} دواء` : ''}`,
+            variant: errorCount > 0 ? "destructive" : "default"
+          });
+        } catch (error) {
+          console.error('Error reading file:', error);
+          toast({
+            title: "خطأ في قراءة الملف",
+            description: "تأكد من أن الملف بصيغة CSV صحيحة",
+            variant: "destructive"
+          });
+        }
       }
     };
     input.click();
@@ -143,6 +214,35 @@ const Medications = () => {
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تحديث حالة الدواء",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteMedication = async (medicationId: string, medicationName: string) => {
+    if (!confirm(`هل أنت متأكد من حذف الدواء "${medicationName}"؟ هذا الإجراء لا يمكن التراجع عنه.`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('medications')
+        .delete()
+        .eq('id', medicationId);
+
+      if (error) throw error;
+
+      toast({
+        title: "تم الحذف بنجاح",
+        description: `تم حذف الدواء "${medicationName}" نهائياً`
+      });
+
+      refetch();
+    } catch (error) {
+      console.error('Error deleting medication:', error);
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء حذف الدواء",
         variant: "destructive"
       });
     }
@@ -349,6 +449,13 @@ const Medications = () => {
                         >
                           {medication.is_active ? "إلغاء تفعيل" : "تفعيل"}
                         </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteMedication(medication.id, medication.trade_name)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -428,6 +535,13 @@ const Medications = () => {
                               onClick={() => handleToggleActive(medication.id, medication.is_active)}
                             >
                               {medication.is_active ? "إلغاء" : "تفعيل"}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteMedication(medication.id, medication.trade_name)}
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </div>
                         </TableCell>
