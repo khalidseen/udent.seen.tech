@@ -6,6 +6,7 @@ import { SmartNotificationSystem } from "@/components/notifications/SmartNotific
 import { GlobalSearch } from "./GlobalSearch";
 import { DateTime } from "./DateTime";
 import { UserProfile } from "./UserProfile";
+import { FloatingActionMenu } from "./FloatingActionMenu";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -44,6 +45,9 @@ export function MainLayout({ children }: MainLayoutProps) {
             </div>
           </main>
         </SidebarInset>
+        
+        {/* Floating Action Menu */}
+        <FloatingActionMenu />
       </div>
     </SidebarProvider>
   );
