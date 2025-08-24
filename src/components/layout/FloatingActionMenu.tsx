@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, UserPlus, Calendar, FileText, CreditCard, X, ChevronUp } from "lucide-react";
+import { Plus, UserPlus, Calendar, FileText, CreditCard, X, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
@@ -77,160 +77,146 @@ export function FloatingActionMenu({ className }: FloatingActionMenuProps) {
 
   if (isHidden) {
     return (
-      <div className={cn(
-        "fixed bottom-4 z-[9999] transition-all duration-300",
-        isMobile ? "left-4" : "right-4",
-        className
-      )}>
-        <Button
-          onClick={toggleHidden}
-          size="icon"
-          className="h-12 w-12 rounded-full bg-primary/90 hover:bg-primary shadow-[var(--shadow-elegant)] backdrop-blur-sm"
-        >
-          <ChevronUp className="h-5 w-5" />
-        </Button>
-      </div>
+      <Button
+        onClick={toggleHidden}
+        size="icon"
+        className="fixed bottom-2 right-4 z-[9999] h-8 w-8 rounded-full bg-primary/90 hover:bg-primary shadow-[var(--shadow-elegant)] backdrop-blur-sm"
+      >
+        <ChevronUp className="h-4 w-4" />
+      </Button>
     );
   }
 
   return (
-    <div className={cn(
-      "fixed bottom-4 z-[9999] transition-all duration-300",
-      isMobile ? "left-4" : "right-4",
-      className
-    )}>
-      {/* Menu Items */}
+    <>
+      {/* Bottom Bar */}
       <div className={cn(
-        "flex flex-col gap-3 mb-4 transition-all duration-500 ease-out",
-        isOpen 
-          ? "opacity-100 transform translate-y-0 pointer-events-auto" 
-          : "opacity-0 transform translate-y-8 pointer-events-none"
+        "fixed bottom-0 left-0 right-0 z-[9999] bg-background/95 backdrop-blur-sm border-t border-border shadow-lg transition-all duration-300",
+        className
       )}>
-        {/* Hide Button */}
-        <div className="relative">
-          <Button
-            onClick={toggleHidden}
-            size="icon"
-            variant="outline"
-            className="h-12 w-12 rounded-full bg-background/90 hover:bg-accent/90 shadow-[var(--shadow-card)] backdrop-blur-sm border-border/40"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        {/* Hide/Show Toggle */}
+        <Button
+          onClick={toggleHidden}
+          size="icon"
+          variant="ghost"
+          className="absolute -top-8 right-4 h-8 w-8 rounded-t-lg bg-background/90 border border-b-0 border-border hover:bg-accent"
+        >
+          <ChevronDown className="h-4 w-4" />
+        </Button>
 
-        {/* Today's Appointments */}
-        <div className="relative group">
-          <Button
-            onClick={() => handleNavigation('/appointments')}
-            size="icon"
-            variant="outline"
-            className="h-12 w-12 rounded-full bg-background/90 hover:bg-accent/90 shadow-[var(--shadow-card)] backdrop-blur-sm border-border/40 transition-all duration-200 hover:scale-105"
-          >
-            <Calendar className="h-5 w-5" />
-          </Button>
-          {upcomingCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs animate-pulse-subtle"
-            >
-              {upcomingCount}
-            </Badge>
-          )}
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-foreground text-background px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none z-[10000] shadow-lg">
-            مواعيد اليوم ({upcomingCount})
-          </div>
-        </div>
+        {/* Scrollable Button Container */}
+        <div className="overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-3 px-4 py-3 min-w-max">
+            
+            {/* Today's Appointments */}
+            <div className="relative group">
+              <Button
+                onClick={() => handleNavigation('/appointments')}
+                variant="outline"
+                className="flex-shrink-0 flex flex-col items-center justify-center min-w-16 h-16 bg-muted/50 hover:bg-muted text-foreground rounded-xl transition-all duration-200 hover:scale-105 p-2"
+              >
+                <Calendar className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium text-center leading-tight">
+                  المواعيد
+                </span>
+                {upcomingCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  >
+                    {upcomingCount}
+                  </Badge>
+                )}
+              </Button>
+              {/* Tooltip */}
+              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-foreground text-background px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                مواعيد اليوم ({upcomingCount})
+              </div>
+            </div>
 
-        {/* Add Patient */}
-        <div className="relative group">
-          <Button
-            onClick={() => handleNavigation('/patients')}
-            size="icon"
-            variant="outline"
-            className="h-12 w-12 rounded-full bg-background/90 hover:bg-accent/90 shadow-[var(--shadow-card)] backdrop-blur-sm border-border/40 transition-all duration-200 hover:scale-105"
-          >
-            <UserPlus className="h-5 w-5" />
-          </Button>
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-foreground text-background px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none z-[10000] shadow-lg">
-            إضافة مريض
-          </div>
-        </div>
+            {/* Add Patient */}
+            <div className="relative group">
+              <Button
+                onClick={() => handleNavigation('/patients')}
+                variant="outline"
+                className="flex-shrink-0 flex flex-col items-center justify-center min-w-16 h-16 bg-muted/50 hover:bg-muted text-foreground rounded-xl transition-all duration-200 hover:scale-105 p-2"
+              >
+                <UserPlus className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium text-center leading-tight">
+                  مريض جديد
+                </span>
+              </Button>
+              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-foreground text-background px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                إضافة مريض
+              </div>
+            </div>
 
-        {/* Add Appointment */}
-        <div className="relative group">
-          <Button
-            onClick={() => handleNavigation('/new-appointment')}
-            size="icon"
-            variant="outline"
-            className="h-12 w-12 rounded-full bg-background/90 hover:bg-accent/90 shadow-[var(--shadow-card)] backdrop-blur-sm border-border/40 transition-all duration-200 hover:scale-105"
-          >
-            <Calendar className="h-5 w-5" />
-          </Button>
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-foreground text-background px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none z-[10000] shadow-lg">
-            موعد جديد
-          </div>
-        </div>
+            {/* Add Appointment */}
+            <div className="relative group">
+              <Button
+                onClick={() => handleNavigation('/new-appointment')}
+                variant="outline"
+                className="flex-shrink-0 flex flex-col items-center justify-center min-w-16 h-16 bg-muted/50 hover:bg-muted text-foreground rounded-xl transition-all duration-200 hover:scale-105 p-2"
+              >
+                <Plus className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium text-center leading-tight">
+                  موعد جديد
+                </span>
+              </Button>
+              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-foreground text-background px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                حجز موعد جديد
+              </div>
+            </div>
 
-        {/* Invoices */}
-        <div className="relative group">
-          <Button
-            onClick={() => handleNavigation('/invoices')}
-            size="icon"
-            variant="outline"
-            className="h-12 w-12 rounded-full bg-background/90 hover:bg-accent/90 shadow-[var(--shadow-card)] backdrop-blur-sm border-border/40 transition-all duration-200 hover:scale-105"
-          >
-            <FileText className="h-5 w-5" />
-          </Button>
-          {invoicesCount > 0 && (
-            <Badge 
-              variant="secondary" 
-              className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs animate-pulse-subtle"
-            >
-              {invoicesCount}
-            </Badge>
-          )}
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-foreground text-background px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none z-[10000] shadow-lg">
-            الفواتير ({invoicesCount})
-          </div>
-        </div>
+            {/* Invoices */}
+            <div className="relative group">
+              <Button
+                onClick={() => handleNavigation('/invoices')}
+                variant="outline"
+                className="flex-shrink-0 flex flex-col items-center justify-center min-w-16 h-16 bg-muted/50 hover:bg-muted text-foreground rounded-xl transition-all duration-200 hover:scale-105 p-2"
+              >
+                <FileText className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium text-center leading-tight">
+                  الفواتير
+                </span>
+                {invoicesCount > 0 && (
+                  <Badge 
+                    variant="secondary" 
+                    className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                  >
+                    {invoicesCount}
+                  </Badge>
+                )}
+              </Button>
+              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-foreground text-background px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                الفواتير ({invoicesCount})
+              </div>
+            </div>
 
-        {/* Payments */}
-        <div className="relative group">
-          <Button
-            onClick={() => handleNavigation('/payments')}
-            size="icon"
-            variant="outline"
-            className="h-12 w-12 rounded-full bg-background/90 hover:bg-accent/90 shadow-[var(--shadow-card)] backdrop-blur-sm border-border/40 transition-all duration-200 hover:scale-105"
-          >
-            <CreditCard className="h-5 w-5" />
-          </Button>
-          <div className="absolute right-full mr-3 top-1/2 -translate-y-1/2 bg-foreground text-background px-3 py-2 rounded-lg text-sm opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none z-[10000] shadow-lg">
-            المدفوعات
+            {/* Payments */}
+            <div className="relative group">
+              <Button
+                onClick={() => handleNavigation('/payments')}
+                variant="outline"
+                className="flex-shrink-0 flex flex-col items-center justify-center min-w-16 h-16 bg-muted/50 hover:bg-muted text-foreground rounded-xl transition-all duration-200 hover:scale-105 p-2"
+              >
+                <CreditCard className="w-5 h-5 mb-1" />
+                <span className="text-xs font-medium text-center leading-tight">
+                  المدفوعات
+                </span>
+              </Button>
+              <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-foreground text-background px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none">
+                المدفوعات
+              </div>
+            </div>
+
+            {/* Scroll indicator */}
+            <div className="flex-shrink-0 w-2 h-16 flex items-center justify-center">
+              <div className="w-1 h-8 bg-gradient-to-b from-transparent via-border to-transparent rounded-full" />
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Main Toggle Button */}
-      <Button
-        onClick={() => setIsOpen(!isOpen)}
-        size="icon"
-        className={cn(
-          "h-14 w-14 rounded-full transition-all duration-300 shadow-[var(--shadow-elegant)] backdrop-blur-sm",
-          "bg-gradient-to-br from-primary via-primary to-primary/90",
-          "hover:shadow-[var(--shadow-elegant)] hover:scale-110",
-          isOpen && "rotate-45"
-        )}
-      >
-        <Plus className="h-6 w-6 text-primary-foreground" />
-      </Button>
-
-      {/* Background overlay when open (mobile only) */}
-      {isOpen && isMobile && (
-        <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm -z-10"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </div>
+    </>
   );
 }
