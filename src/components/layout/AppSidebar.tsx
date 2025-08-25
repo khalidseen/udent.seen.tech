@@ -9,156 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PermissionGate } from "@/components/auth/PermissionGate";
-
-const mainMenuItems = [{
-  title: "لوحة التحكم",
-  url: "/",
-  icon: BarChart3,
-  permissions: ["dashboard.view"]
-}, {
-  title: "المرضى",
-  url: "/patients",
-  icon: Users,
-  permissions: ["patients.view"]
-}, {
-  title: "المواعيد",
-  url: "/appointments",
-  icon: Calendar,
-  permissions: ["appointments.view"]
-}, {
-  title: "طلبات المواعيد",
-  url: "/appointment-requests",
-  icon: ClipboardList,
-  permissions: ["appointments.requests"]
-}, {
-  title: "موعد جديد",
-  url: "/appointments/new",
-  icon: CalendarPlus,
-  permissions: ["appointments.create"]
-}, {
-  title: "علاجات الأسنان",
-  url: "/dental-treatments",
-  icon: Stethoscope,
-  permissions: ["dental.view"]
-}, {
-  title: "الملفات الطبية",
-  url: "/medical-records",
-  icon: FolderOpen,
-  permissions: ["medical_records.view"]
-}];
-
-const aiMenuItems = [{
-  title: "التشخيص الذكي",
-  url: "/smart-diagnosis",
-  icon: Brain,
-  permissions: ["ai.diagnosis"]
-}, {
-  title: "الذكاء الاصطناعي",
-  url: "/ai-insights",
-  icon: TrendingUp,
-  permissions: ["ai.analysis"]
-}];
-
-const managementMenuItems = [{
-  title: "الأطباء",
-  url: "/doctors",
-  icon: Stethoscope,
-  permissions: ["doctors.view"]
-}, {
-  title: "مساعدو الأطباء", 
-  url: "/doctor-assistants",
-  icon: UserCheck,
-  permissions: ["assistants.view"]
-}, {
-  title: "طلبات الأطباء",
-  url: "/doctor-applications",
-  icon: ClipboardList,
-  permissions: ["doctors.view"]
-}];
-
-const financialMenuItems = [{
-  title: "الفواتير",
-  url: "/invoices",
-  icon: Receipt,
-  permissions: ["invoices.view"]
-}, {
-  title: "المدفوعات",
-  url: "/payments",
-  icon: DollarSign,
-  permissions: ["payments.view"]
-}];
-
-const inventoryMenuItems = [{
-  title: "المخزون",
-  url: "/inventory",
-  icon: Package,
-  permissions: ["inventory.view"]
-}, {
-  title: "الأدوية",
-  url: "/medications",
-  icon: Pill,
-  permissions: ["inventory.view"]
-}, {
-  title: "الوصفات الطبية",
-  url: "/prescriptions", 
-  icon: FileText,
-  permissions: ["prescriptions.view"]
-}, {
-  title: "حركة المخزون",
-  url: "/stock-movements",
-  icon: TrendingUp,
-  permissions: ["inventory.movements"]
-}];
-
-const systemMenuItems = [{
-  title: "الإشعارات",
-  url: "/notifications",
-  icon: Bell,
-  permissions: ["notifications.manage"]
-}, {
-  title: "قوالب الإشعارات",
-  url: "/notification-templates",
-  icon: MessageSquare,
-  permissions: ["notifications.manage"]
-}, {
-  title: "التقارير",
-  url: "/reports",
-  icon: FileText,
-  permissions: ["reports.view"]
-}, {
-  title: "الإعدادات",
-  url: "/settings",
-  icon: Settings,
-  permissions: ["settings.general"]
-}, {
-  title: "رابط حجز المرضى",
-  url: "/book?clinic=default",
-  icon: ExternalLink,
-  external: true
-}];
-
-// الصفحات المتقدمة - للمدراء والمستخدمين ذوي الصلاحيات الخاصة
-const advancedMenuItems = [{
-  title: "العلاجات",
-  url: "/treatments",
-  icon: Activity,
-  permissions: ["medical_records.view"]
-}, {
-  title: "السكرتيرات",
-  url: "/secretaries",
-  icon: User,
-  permissions: ["assistants.view"]
-}, {
-  title: "أسعار الخدمات",
-  url: "/service-prices",
-  icon: DollarSign,
-  permissions: ["settings.general"]
-}, {
-  title: "3D للأسنان المتقدم",
-  url: "/advanced-3d-dental", 
-  icon: Stethoscope,
-  permissions: ["dental.3d"]
-}];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -175,7 +26,158 @@ export function AppSidebar() {
   const [searchQuery, setSearchQuery] = useState("");
   const { signOut, user } = useAuth();
   const { hasAnyPermission, getPrimaryRole } = usePermissions();
+  const { t } = useLanguage();
+  
   const isActive = (path: string) => currentPath === path;
+
+  const mainMenuItems = [{
+    title: t('navigation.dashboard'),
+    url: "/",
+    icon: BarChart3,
+    permissions: ["dashboard.view"]
+  }, {
+    title: t('navigation.patients'),
+    url: "/patients",
+    icon: Users,
+    permissions: ["patients.view"]
+  }, {
+    title: t('navigation.appointments'),
+    url: "/appointments",
+    icon: Calendar,
+    permissions: ["appointments.view"]
+  }, {
+    title: t('appointments.appointmentRequests'),
+    url: "/appointment-requests",
+    icon: ClipboardList,
+    permissions: ["appointments.requests"]
+  }, {
+    title: t('actions.addAppointment'),
+    url: "/appointments/new",
+    icon: CalendarPlus,
+    permissions: ["appointments.create"]
+  }, {
+    title: t('navigation.dentalTreatments'),
+    url: "/dental-treatments",
+    icon: Stethoscope,
+    permissions: ["dental.view"]
+  }, {
+    title: t('navigation.medicalRecords'),
+    url: "/medical-records",
+    icon: FolderOpen,
+    permissions: ["medical_records.view"]
+  }];
+
+  const aiMenuItems = [{
+    title: t('sidebar.smartDiagnosis'),
+    url: "/smart-diagnosis",
+    icon: Brain,
+    permissions: ["ai.diagnosis"]
+  }, {
+    title: t('navigation.aiInsights'),
+    url: "/ai-insights",
+    icon: TrendingUp,
+    permissions: ["ai.analysis"]
+  }];
+
+  const managementMenuItems = [{
+    title: t('navigation.doctors'),
+    url: "/doctors",
+    icon: Stethoscope,
+    permissions: ["doctors.view"]
+  }, {
+    title: t('sidebar.doctorAssistants'), 
+    url: "/doctor-assistants",
+    icon: UserCheck,
+    permissions: ["assistants.view"]
+  }, {
+    title: t('sidebar.doctorApplications'),
+    url: "/doctor-applications",
+    icon: ClipboardList,
+    permissions: ["doctors.view"]
+  }];
+
+  const financialMenuItems = [{
+    title: t('navigation.invoices'),
+    url: "/invoices",
+    icon: Receipt,
+    permissions: ["invoices.view"]
+  }, {
+    title: "المدفوعات",
+    url: "/payments",
+    icon: DollarSign,
+    permissions: ["payments.view"]
+  }];
+
+  const inventoryMenuItems = [{
+    title: t('navigation.inventory'),
+    url: "/inventory",
+    icon: Package,
+    permissions: ["inventory.view"]
+  }, {
+    title: "الأدوية",
+    url: "/medications",
+    icon: Pill,
+    permissions: ["inventory.view"]
+  }, {
+    title: t('navigation.prescriptions'),
+    url: "/prescriptions", 
+    icon: FileText,
+    permissions: ["prescriptions.view"]
+  }, {
+    title: t('sidebar.stockMovements'),
+    url: "/stock-movements",
+    icon: TrendingUp,
+    permissions: ["inventory.movements"]
+  }];
+
+  const systemMenuItems = [{
+    title: t('navigation.notifications'),
+    url: "/notifications",
+    icon: Bell,
+    permissions: ["notifications.manage"]
+  }, {
+    title: t('sidebar.notificationTemplates'),
+    url: "/notification-templates",
+    icon: MessageSquare,
+    permissions: ["notifications.manage"]
+  }, {
+    title: t('navigation.reports'),
+    url: "/reports",
+    icon: FileText,
+    permissions: ["reports.view"]
+  }, {
+    title: t('navigation.settings'),
+    url: "/settings",
+    icon: Settings,
+    permissions: ["settings.general"]
+  }, {
+    title: t('sidebar.patientBookingLink'),
+    url: "/book?clinic=default",
+    icon: ExternalLink,
+    external: true
+  }];
+
+  const advancedMenuItems = [{
+    title: t('navigation.treatments'),
+    url: "/treatments",
+    icon: Activity,
+    permissions: ["medical_records.view"]
+  }, {
+    title: t('sidebar.secretaries'),
+    url: "/secretaries",
+    icon: User,
+    permissions: ["assistants.view"]
+  }, {
+    title: t('sidebar.servicePrices'),
+    url: "/service-prices",
+    icon: DollarSign,
+    permissions: ["settings.general"]
+  }, {
+    title: t('sidebar.advanced3DDental'),
+    url: "/advanced-3d-dental", 
+    icon: Stethoscope,
+    permissions: ["dental.3d"]
+  }];
   
   // دالة لفحص إذا كان المستخدم يملك صلاحية الوصول لعنصر القائمة
   const canAccessMenuItem = (item: any) => {
@@ -225,8 +227,8 @@ export function AppSidebar() {
               <Stethoscope className="w-5 h-5 text-primary-foreground" />
             </div>
             <div className="flex-1">
-              <h1 className="text-lg font-bold">فوردنتست</h1>
-              <p className="text-xs text-muted-foreground">نظام إدارة العيادة</p>
+              <h1 className="text-lg font-bold">{t('sidebar.systemName')}</h1>
+              <p className="text-xs text-muted-foreground">{t('sidebar.systemDescription')}</p>
             </div>
           </div>
         ) : (
@@ -242,7 +244,7 @@ export function AppSidebar() {
         <SidebarGroup className="mb-4">
           {!collapsed && (
             <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
-              القائمة الرئيسية
+              {t('sidebar.mainMenu')}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -268,7 +270,7 @@ export function AppSidebar() {
         <SidebarGroup className="mb-4">
           {!collapsed && (
             <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
-              الذكاء الاصطناعي
+              {t('sidebar.aiMenu')}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -294,7 +296,7 @@ export function AppSidebar() {
         <SidebarGroup className="mb-4">
           {!collapsed && (
             <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
-              إدارة الموظفين
+              {t('sidebar.staffManagement')}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -320,7 +322,7 @@ export function AppSidebar() {
         <SidebarGroup className="mb-4">
           {!collapsed && (
             <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
-              الإدارة المالية
+              {t('sidebar.financialManagement')}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -346,7 +348,7 @@ export function AppSidebar() {
         <SidebarGroup className="mb-4">
           {!collapsed && (
             <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
-              إدارة المخزون
+              {t('sidebar.inventoryManagement')}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -372,7 +374,7 @@ export function AppSidebar() {
         <SidebarGroup className="mb-4">
           {!collapsed && (
             <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
-              إدارة النظام
+              {t('sidebar.systemManagement')}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -416,7 +418,7 @@ export function AppSidebar() {
           <SidebarGroup>
             {!collapsed && (
               <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
-                الميزات المتقدمة
+                {t('sidebar.advancedFeatures')}
               </SidebarGroupLabel>
             )}
             <SidebarGroupContent>
@@ -459,7 +461,7 @@ export function AppSidebar() {
               onClick={signOut}
             >
               <LogOut className="w-4 h-4" />
-              تسجيل الخروج
+              {t('common.logout')}
             </Button>
           </div>
         ) : (

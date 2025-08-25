@@ -17,6 +17,7 @@ import AddPatientDrawer from "./AddPatientDrawer";
 import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Patient {
   id: string;
@@ -45,6 +46,7 @@ interface Patient {
 }
 
 const PatientList = () => {
+  const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [filters, setFilters] = useState<PatientFilter>({
     gender: 'all',
@@ -203,9 +205,9 @@ const PatientList = () => {
 
   const getGenderBadge = (gender: string) => {
     return gender === 'male' ? (
-      <Badge variant="outline">ذكر</Badge>
+      <Badge variant="outline">{t('status.male')}</Badge>
     ) : gender === 'female' ? (
-      <Badge variant="outline">أنثى</Badge>
+      <Badge variant="outline">{t('status.female')}</Badge>
     ) : null;
   };
 
@@ -234,13 +236,13 @@ const PatientList = () => {
   if (loading) {
     return (
       <PageContainer>
-        <PageHeader title="المرضى" description="جاري تحميل البيانات..." />
+        <PageHeader title={t('navigation.patients')} description={t('messages.loadingData')} />
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-center gap-2">
               {isOffline ? <WifiOff className="w-5 h-5 text-orange-500" /> : <Wifi className="w-5 h-5 text-blue-500" />}
-              <span>جاري التحميل...</span>
-              {isOffline && <span className="text-sm text-orange-600">(وضع offline)</span>}
+              <span>{t('common.loading')}</span>
+              {isOffline && <span className="text-sm text-orange-600">({t('messages.offlineMode')})</span>}
             </div>
           </CardContent>
         </Card>
@@ -251,8 +253,8 @@ const PatientList = () => {
   return (
     <PageContainer>
       <PageHeader 
-        title="إدارة المرضى" 
-        description="إدارة بيانات المرضى والسجلات الطبية"
+        title={t('patients.title')} 
+        description={t('patients.description')}
         action={<AddPatientDrawer onPatientAdded={handlePatientAdded} />}
       />
 
@@ -262,7 +264,7 @@ const PatientList = () => {
           <CardContent className="p-4">
             <div className="text-center">
               <div className="text-2xl font-bold text-primary mb-1">{filteredPatients.length}</div>
-              <div className="text-sm text-muted-foreground font-medium">المرضى المعروضين</div>
+              <div className="text-sm text-muted-foreground font-medium">{t('charts.displayedPatients')}</div>
             </div>
           </CardContent>
         </Card>
@@ -272,7 +274,7 @@ const PatientList = () => {
               <div className="text-2xl font-bold text-green-600 mb-1">
                 {filteredPatients.filter(p => p.gender === 'female').length}
               </div>
-              <div className="text-sm text-muted-foreground font-medium">المريضات</div>
+              <div className="text-sm text-muted-foreground font-medium">{t('charts.femalePatients')}</div>
             </div>
           </CardContent>
         </Card>
@@ -282,7 +284,7 @@ const PatientList = () => {
               <div className="text-2xl font-bold text-blue-600 mb-1">
                 {filteredPatients.filter(p => p.gender === 'male').length}
               </div>
-              <div className="text-sm text-muted-foreground font-medium">المرضى الذكور</div>
+              <div className="text-sm text-muted-foreground font-medium">{t('charts.malePatients')}</div>
             </div>
           </CardContent>
         </Card>
@@ -297,7 +299,7 @@ const PatientList = () => {
             size="sm"
           >
             <Filter className="w-4 h-4 ml-1" />
-            فلترة متقدمة
+            {t('actions.advancedFilter')}
             {Object.values(filters).some(v => v !== '' && v !== 'all') && (
               <Badge variant="destructive" className="mr-2 h-5 w-5 p-0 text-xs">
                 {getActiveFiltersCount(filters)}
@@ -319,7 +321,7 @@ const PatientList = () => {
             size="sm"
           >
             {viewMode === 'cards' ? <Grid3X3 className="w-4 h-4 ml-1" /> : <List className="w-4 h-4 ml-1" />}
-            {viewMode === 'cards' ? 'مربعات' : 'جدول'}
+            {viewMode === 'cards' ? t('actions.cardsView') : t('actions.tableView')}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-48 p-2" align="start">
@@ -331,7 +333,7 @@ const PatientList = () => {
               className="w-full justify-start gap-2"
             >
               <Grid3X3 className="w-4 h-4" />
-              مربعات
+              {t('actions.cardsView')}
             </Button>
             <Button
               variant={viewMode === 'table' ? 'default' : 'ghost'}
@@ -340,7 +342,7 @@ const PatientList = () => {
               className="w-full justify-start gap-2"
             >
               <List className="w-4 h-4" />
-              جدول
+              {t('actions.tableView')}
             </Button>
           </div>
         </PopoverContent>
@@ -352,10 +354,10 @@ const PatientList = () => {
           <CardContent className="p-8">
             <div className="text-center text-muted-foreground">
               <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">لا توجد نتائج</h3>
+              <h3 className="text-lg font-medium mb-2">{t('messages.noResults')}</h3>
               <p>{Object.values(filters).some(v => v !== '' && v !== 'all') 
-                ? 'لا توجد مرضى تطابق معايير البحث المحددة' 
-                : 'لا توجد مرضى مسجلين بعد'}</p>
+                ? t('messages.noPatientsMatchFilter')
+                : t('messages.noPatients')}</p>
             </div>
           </CardContent>
         </Card>

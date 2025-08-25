@@ -17,6 +17,7 @@ import EditAppointmentDialog from "./EditAppointmentDialog";
 import PostAppointmentActions from "./PostAppointmentActions";
 import CalendarView from "./CalendarView";
 import { toast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Appointment {
   id: string;
@@ -41,6 +42,7 @@ interface Appointment {
 }
 
 const AppointmentList = () => {
+  const { t } = useLanguage();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,8 +87,8 @@ const AppointmentList = () => {
     } catch (error) {
       console.error('Error fetching appointments:', error);
       toast({
-        title: 'خطأ في تحميل البيانات',
-        description: 'حدث خطأ أثناء تحميل المواعيد',
+        title: t('common.error'),
+        description: t('messages.dataLoadError'),
         variant: 'destructive'
       });
     } finally {
@@ -96,10 +98,10 @@ const AppointmentList = () => {
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
-      scheduled: { label: 'مجدول', variant: 'default' as const },
-      completed: { label: 'مكتمل', variant: 'secondary' as const },
-      cancelled: { label: 'ملغي', variant: 'destructive' as const },
-      no_show: { label: 'لم يحضر', variant: 'outline' as const }
+      scheduled: { label: t('status.scheduled'), variant: 'default' as const },
+      completed: { label: t('status.completed'), variant: 'secondary' as const },
+      cancelled: { label: t('status.cancelled'), variant: 'destructive' as const },
+      no_show: { label: t('status.noShow'), variant: 'outline' as const }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.scheduled;
@@ -133,14 +135,14 @@ const AppointmentList = () => {
       if (error) throw error;
 
       toast({
-        title: 'تم الإكمال',
-        description: 'تم إكمال الموعد بنجاح'
+        title: t('common.success'),
+        description: t('messages.appointmentCompleted')
       });
 
       fetchAppointments();
     } catch (error: any) {
       toast({
-        title: 'خطأ',
+        title: t('common.error'),
         description: error.message,
         variant: 'destructive'
       });
@@ -158,10 +160,10 @@ const AppointmentList = () => {
   if (loading) {
     return (
       <PageContainer>
-        <PageHeader title="المواعيد" description="جاري تحميل البيانات..." />
+        <PageHeader title={t('navigation.appointments')} description={t('messages.loadingData')} />
         <Card>
           <CardContent className="p-6">
-            <div className="text-center">جاري التحميل...</div>
+            <div className="text-center">{t('common.loading')}</div>
           </CardContent>
         </Card>
       </PageContainer>
@@ -171,13 +173,13 @@ const AppointmentList = () => {
   return (
     <PageContainer>
       <PageHeader 
-        title="المواعيد" 
-        description="إدارة مواعيد العيادة"
+        title={t('navigation.appointments')} 
+        description={t('appointments.description')}
         action={
           <Link to="/appointments/new">
             <Button>
               <Plus className="w-4 h-4 ml-2" />
-              موعد جديد
+              {t('actions.addAppointment')}
             </Button>
           </Link>
         }
@@ -188,11 +190,11 @@ const AppointmentList = () => {
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="calendar" className="flex items-center gap-2">
             <CalendarDays className="w-4 h-4" />
-            عرض التقويم
+            {t('actions.calendarView')}
           </TabsTrigger>
           <TabsTrigger value="list" className="flex items-center gap-2">
             <List className="w-4 h-4" />
-            عرض القائمة
+            {t('actions.listView')}
           </TabsTrigger>
         </TabsList>
 
@@ -213,7 +215,7 @@ const AppointmentList = () => {
                     <div className="relative">
                       <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
-                        placeholder="البحث بالاسم أو نوع العلاج..."
+                        placeholder={t('filters.searchByName')}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="pr-10"
@@ -225,11 +227,11 @@ const AppointmentList = () => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">جميع المواعيد</SelectItem>
-                      <SelectItem value="scheduled">مجدول</SelectItem>
-                      <SelectItem value="completed">مكتمل</SelectItem>
-                      <SelectItem value="cancelled">ملغي</SelectItem>
-                      <SelectItem value="no_show">لم يحضر</SelectItem>
+                      <SelectItem value="all">{t('filters.allAppointments')}</SelectItem>
+                      <SelectItem value="scheduled">{t('status.scheduled')}</SelectItem>
+                      <SelectItem value="completed">{t('status.completed')}</SelectItem>
+                      <SelectItem value="cancelled">{t('status.cancelled')}</SelectItem>
+                      <SelectItem value="no_show">{t('status.noShow')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <Button
@@ -238,7 +240,7 @@ const AppointmentList = () => {
                     className="flex items-center gap-2"
                   >
                     <Filter className="w-4 h-4" />
-                    فلتر متقدم
+                    {t('actions.advancedFilter')}
                   </Button>
                 </div>
 
@@ -247,26 +249,26 @@ const AppointmentList = () => {
                   <div className="border-t pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        <Label>البحث بتاريخ الإضافة للسجل</Label>
+                        <Label>{t('filters.dateAdded')}</Label>
                         <Input
                           type="date"
                           value={dateFilter}
                           onChange={(e) => setDateFilter(e.target.value)}
-                          placeholder="اختر التاريخ"
+                          placeholder={t('filters.dateFrom')}
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <Label>البحث باسم المريض</Label>
+                        <Label>{t('filters.searchByPatientName')}</Label>
                         <Input
                           value={patientNameFilter}
                           onChange={(e) => setPatientNameFilter(e.target.value)}
-                          placeholder="أدخل اسم المريض"
+                          placeholder={t('filters.patientName')}
                         />
                       </div>
                       
                       <div className="space-y-2">
-                        <Label>مسح الفلاتر</Label>
+                        <Label>{t('common.clear')}</Label>
                         <Button
                           variant="outline"
                           onClick={() => {
@@ -278,7 +280,7 @@ const AppointmentList = () => {
                           className="w-full flex items-center gap-2"
                         >
                           <X className="w-4 h-4" />
-                          مسح الكل
+                          {t('actions.clearAll')}
                         </Button>
                       </div>
                     </div>
@@ -286,28 +288,28 @@ const AppointmentList = () => {
                     {/* Active Filters Display */}
                     {(searchTerm || filterStatus !== "all" || dateFilter || patientNameFilter) && (
                       <div className="mt-4 p-3 bg-muted rounded-lg">
-                        <div className="text-sm font-medium mb-2">الفلاتر النشطة:</div>
+                        <div className="text-sm font-medium mb-2">{t('filters.activeFilters')}:</div>
                         <div className="flex flex-wrap gap-2">
                           {searchTerm && (
                             <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                              البحث: {searchTerm}
+                              {t('common.search')}: {searchTerm}
                             </span>
                           )}
                           {filterStatus !== "all" && (
                             <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                              الحالة: {filterStatus === "scheduled" ? "مجدول" : 
-                                       filterStatus === "completed" ? "مكتمل" : 
-                                       filterStatus === "cancelled" ? "ملغي" : "لم يحضر"}
+                              {t('forms.status')}: {filterStatus === "scheduled" ? t('status.scheduled') : 
+                                       filterStatus === "completed" ? t('status.completed') : 
+                                       filterStatus === "cancelled" ? t('status.cancelled') : t('status.noShow')}
                             </span>
                           )}
                           {dateFilter && (
                             <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                              تاريخ الإضافة: {dateFilter}
+                              {t('filters.dateAdded')}: {dateFilter}
                             </span>
                           )}
                           {patientNameFilter && (
                             <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                              اسم المريض: {patientNameFilter}
+                              {t('filters.patientName')}: {patientNameFilter}
                             </span>
                           )}
                         </div>
@@ -325,7 +327,7 @@ const AppointmentList = () => {
               <Card>
                 <CardContent className="p-6">
                   <div className="text-center text-muted-foreground">
-                    لا توجد مواعيد تطابق البحث
+                    {t('messages.noAppointments')}
                   </div>
                 </CardContent>
               </Card>
@@ -366,7 +368,7 @@ const AppointmentList = () => {
                         
                         {appointment.treatment_type && (
                           <div className="mt-2">
-                            <span className="text-sm font-medium">نوع العلاج: </span>
+                            <span className="text-sm font-medium">{t('forms.treatmentType')}: </span>
                             <span className="text-sm text-muted-foreground">
                               {appointment.treatment_type}
                             </span>
@@ -375,7 +377,7 @@ const AppointmentList = () => {
                         
                         {appointment.notes && (
                           <div className="mt-2">
-                            <span className="text-sm font-medium">ملاحظات: </span>
+                            <span className="text-sm font-medium">{t('forms.notes')}: </span>
                             <span className="text-sm text-muted-foreground">
                               {appointment.notes}
                             </span>
@@ -394,7 +396,7 @@ const AppointmentList = () => {
                           className="border-border/60 hover:bg-accent/60 transition-all duration-200"
                         >
                           <Edit className="w-4 h-4 ml-1" />
-                          تعديل
+                          {t('common.edit')}
                         </Button>
                         
                         {appointment.status !== 'completed' && (
@@ -410,7 +412,7 @@ const AppointmentList = () => {
                           className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200"
                         >
                           <CheckCircle className="w-4 h-4 ml-1" />
-                          إكمال
+                          {t('common.complete')}
                         </Button>
                       </div>
                     </div>

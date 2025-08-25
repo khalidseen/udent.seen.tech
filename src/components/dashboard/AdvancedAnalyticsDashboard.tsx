@@ -32,6 +32,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/usePermissions';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface AnalyticsData {
   monthlyRevenue: Array<{ month: string; revenue: number; appointments: number; }>;
@@ -50,6 +51,7 @@ interface MetricCard {
 }
 
 export const AdvancedAnalyticsDashboard: React.FC = () => {
+  const { t } = useLanguage();
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [metrics, setMetrics] = useState<MetricCard[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,12 +72,12 @@ export const AdvancedAnalyticsDashboard: React.FC = () => {
       // محاكاة بيانات التحليلات - في التطبيق الحقيقي ستأتي من قاعدة البيانات
       const mockData: AnalyticsData = {
         monthlyRevenue: [
-          { month: 'يناير', revenue: 45000, appointments: 120 },
-          { month: 'فبراير', revenue: 52000, appointments: 135 },
-          { month: 'مارس', revenue: 48000, appointments: 128 },
-          { month: 'أبريل', revenue: 61000, appointments: 152 },
-          { month: 'مايو', revenue: 55000, appointments: 142 },
-          { month: 'يونيو', revenue: 67000, appointments: 165 },
+          { month: t('months.january'), revenue: 45000, appointments: 120 },
+          { month: t('months.february'), revenue: 52000, appointments: 135 },
+          { month: t('months.march'), revenue: 48000, appointments: 128 },
+          { month: t('months.april'), revenue: 61000, appointments: 152 },
+          { month: t('months.may'), revenue: 55000, appointments: 142 },
+          { month: t('months.june'), revenue: 67000, appointments: 165 },
         ],
         patientGrowth: [
           { month: 'يناير', newPatients: 25, totalPatients: 250 },
