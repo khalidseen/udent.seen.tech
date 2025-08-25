@@ -6,22 +6,10 @@ import { SystemHealthMonitor } from "@/components/system/SystemHealthMonitor";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  BarChart3, 
-  Bell, 
-  Zap, 
-  Plus,
-  Activity,
-  Shield
-} from "lucide-react";
-
+import { BarChart3, Bell, Zap, Plus, Activity, Shield } from "lucide-react";
 const Index = () => {
-  return (
-    <PageContainer>
-      <PageHeader 
-        title="لوحة التحكم المتقدمة"
-        description="مراقبة شاملة ومتقدمة لجميع أنشطة العيادة"
-      />
+  return <PageContainer>
+      <PageHeader title="لوحة التحكم المتقدمة" description="مراقبة شاملة ومتقدمة لجميع أنشطة العيادة" />
       
       <Tabs defaultValue="analytics" className="space-y-6">
         <TabsList className="grid w-full grid-cols-5">
@@ -41,10 +29,7 @@ const Index = () => {
             <Zap className="w-4 h-4" />
             الأداء
           </TabsTrigger>
-          <TabsTrigger value="system" className="flex items-center gap-2">
-            <Shield className="w-4 h-4" />
-            النظام
-          </TabsTrigger>
+          
         </TabsList>
 
         <TabsContent value="analytics" className="space-y-6">
@@ -67,8 +52,6 @@ const Index = () => {
           <SystemHealthMonitor />
         </TabsContent>
       </Tabs>
-    </PageContainer>
-  );
+    </PageContainer>;
 };
-
 export default Index;
