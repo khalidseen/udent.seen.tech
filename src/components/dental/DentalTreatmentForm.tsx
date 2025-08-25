@@ -35,13 +35,19 @@ interface SelectedMedication {
 
 interface DentalTreatmentFormProps {
   patientId?: string;
+  preSelectedTooth?: string;
+  preSelectedSystem?: 'universal' | 'palmer' | 'fdi';
 }
 
-const DentalTreatmentForm = ({ patientId }: DentalTreatmentFormProps) => {
+const DentalTreatmentForm = ({ patientId, preSelectedTooth, preSelectedSystem }: DentalTreatmentFormProps) => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState(patientId || '');
-  const [selectedTooth, setSelectedTooth] = useState<number | null>(null);
-  const [numberingSystem, setNumberingSystem] = useState<'universal' | 'palmer' | 'fdi'>('universal');
+  const [selectedTooth, setSelectedTooth] = useState<number | null>(
+    preSelectedTooth ? parseInt(preSelectedTooth) : null
+  );
+  const [numberingSystem, setNumberingSystem] = useState<'universal' | 'palmer' | 'fdi'>(
+    preSelectedSystem || 'universal'
+  );
   const [selectedMedications, setSelectedMedications] = useState<SelectedMedication[]>([]);
   const [formData, setFormData] = useState({
     toothSurface: '',

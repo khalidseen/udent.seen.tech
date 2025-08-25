@@ -1677,6 +1677,69 @@ export type Database = {
         }
         Relationships: []
       }
+      tooth_notes: {
+        Row: {
+          clinic_id: string
+          color_code: string | null
+          content: string
+          created_at: string
+          diagnosis: string | null
+          examination_date: string
+          follow_up_date: string | null
+          id: string
+          images: Json | null
+          note_type: string
+          numbering_system: string
+          patient_id: string
+          priority: string
+          status: string
+          title: string
+          tooth_number: string
+          treatment_plan: string | null
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          color_code?: string | null
+          content: string
+          created_at?: string
+          diagnosis?: string | null
+          examination_date?: string
+          follow_up_date?: string | null
+          id?: string
+          images?: Json | null
+          note_type?: string
+          numbering_system?: string
+          patient_id: string
+          priority?: string
+          status?: string
+          title: string
+          tooth_number: string
+          treatment_plan?: string | null
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          color_code?: string | null
+          content?: string
+          created_at?: string
+          diagnosis?: string | null
+          examination_date?: string
+          follow_up_date?: string | null
+          id?: string
+          images?: Json | null
+          note_type?: string
+          numbering_system?: string
+          patient_id?: string
+          priority?: string
+          status?: string
+          title?: string
+          tooth_number?: string
+          treatment_plan?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       treatment_plans: {
         Row: {
           clinic_id: string
