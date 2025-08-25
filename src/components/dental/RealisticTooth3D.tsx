@@ -1,6 +1,7 @@
+
 import { useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Html, useGLTF } from "@react-three/drei";
+import { OrbitControls, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -23,10 +24,54 @@ interface RealisticTooth3DProps {
   interactionMode?: 'view' | 'annotate';
 }
 
-// Load realistic canine tooth model
-function useCanineModel() {
-  const { scene } = useGLTF("/src/assets/models/maxillary-canine.glb");
-  return scene;
+// Create realistic canine tooth geometry
+function createCanineGeometry() {
+  const geometry = new THREE.ConeGeometry(0.4, 1.8, 8);
+  const positions = geometry.attributes.position.array as Float32Array;
+  
+  // Modify vertices to create more realistic canine shape
+  for (let i = 0; i < positions.length; i += 3) {
+    const x = positions[i];
+    const y = positions[i + 1];
+    const z = positions[i + 2];
+    
+    // Create pointed tip and curved sides typical of canine teeth
+    const heightFactor = (y + 0.9) / 1.8;
+    const curveFactor = Math.pow(heightFactor, 2);
+    
+    // Make the tooth more pointed at the tip
+    positions[i] = x * (0.3 + 0.7 * curveFactor);
+    positions[i + 2] = z * (0.3 + 0.7 * curveFactor);
+    
+    // Add slight curve to make it more natural
+    positions[i] += Math.sin(y * 2) * 0.05;
+    positions[i + 2] += Math.cos(y * 2) * 0.03;
+  }
+  
+  geometry.attributes.position.needsUpdate = true;
+  geometry.computeVertexNormals();
+  
+  return geometry;
+}
+
+// Create tooth root geometry
+function createRootGeometry() {
+  const geometry = new THREE.CylinderGeometry(0.25, 0.15, 1.2, 8);
+  const positions = geometry.attributes.position.array as Float32Array;
+  
+  // Make root more tapered and realistic
+  for (let i = 0; i < positions.length; i += 3) {
+    const y = positions[i + 1];
+    const factor = (y + 0.6) / 1.2;
+    
+    positions[i] *= (0.5 + 0.5 * factor);
+    positions[i + 2] *= (0.5 + 0.5 * factor);
+  }
+  
+  geometry.attributes.position.needsUpdate = true;
+  geometry.computeVertexNormals();
+  
+  return geometry;
 }
 
 function RealisticToothMesh({ 
@@ -38,10 +83,10 @@ function RealisticToothMesh({
   interactionMode = 'view' 
 }: RealisticTooth3DProps) {
   const meshRef = useRef<THREE.Group>(null);
-  const toothModel = useCanineModel();
   
-  // Clone the model to avoid conflicts
-  const clonedModel = useMemo(() => toothModel.clone(), [toothModel]);
+  // Create realistic tooth geometries
+  const crownGeometry = useMemo(() => createCanineGeometry(), []);
+  const rootGeometry = useMemo(() => createRootGeometry(), []);
   
   // Animation for subtle movement
   useFrame((state) => {
@@ -63,32 +108,39 @@ function RealisticToothMesh({
     }
   };
   
-  // Enhance the model materials for realistic appearance
-  useMemo(() => {
-    clonedModel.traverse((child: any) => {
-      if (child.isMesh) {
-        // Apply realistic tooth material properties
-        child.material = child.material.clone();
-        child.material.color.setHex(0xfffff0); // Ivory white
-        child.material.roughness = 0.3;
-        child.material.metalness = 0.1;
-        child.material.transparent = true;
-        child.material.opacity = 0.98;
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-  }, [clonedModel]);
-  
   return (
     <group ref={meshRef}>
-      <primitive 
-        object={clonedModel}
+      {/* Tooth Crown */}
+      <mesh 
+        geometry={crownGeometry}
         onClick={handleClick}
-        scale={[2, 2, 2]}
-        position={[0, -0.5, 0]}
-        rotation={[0, Math.PI, 0]}
-      />
+        position={[0, 0.3, 0]}
+        castShadow
+        receiveShadow
+      >
+        <meshPhongMaterial 
+          color={0xfffff0} // Ivory white
+          shininess={30}
+          transparent={true}
+          opacity={0.98}
+        />
+      </mesh>
+      
+      {/* Tooth Root */}
+      <mesh 
+        geometry={rootGeometry}
+        onClick={handleClick}
+        position={[0, -0.9, 0]}
+        castShadow
+        receiveShadow
+      >
+        <meshPhongMaterial 
+          color={0xfff8dc} // Slightly more yellow for root
+          shininess={20}
+          transparent={true}
+          opacity={0.9}
+        />
+      </mesh>
       
       {/* Render annotations */}
       {annotations.map((annotation) => (
