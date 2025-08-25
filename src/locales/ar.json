@@ -87,5 +87,15 @@
     "treatmentPlan": "خطة العلاج",
     "ongoingTreatments": "العلاجات الجارية",
     "completedTreatments": "العلاجات المكتملة"
+  },
+  "settings": {
+    "description": "إدارة إعدادات النظام والعيادة والمستخدم",
+    "clinic": "العيادة",
+    "user": "المستخدم",
+    "notifications": "الإشعارات",
+    "security": "الأمان",
+    "appearance": "المظهر",
+    "data": "البيانات",
+    "permissions": "الصلاحيات"
   }
 }

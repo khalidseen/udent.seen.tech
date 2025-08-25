@@ -87,5 +87,15 @@
     "treatmentPlan": "Treatment Plan",
     "ongoingTreatments": "Ongoing Treatments",
     "completedTreatments": "Completed Treatments"
+  },
+  "settings": {
+    "description": "Manage system, clinic and user settings",
+    "clinic": "Clinic",
+    "user": "User",
+    "notifications": "Notifications",
+    "security": "Security",
+    "appearance": "Appearance",
+    "data": "Data",
+    "permissions": "Permissions"
   }
 }

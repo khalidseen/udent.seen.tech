@@ -16,8 +16,10 @@ import { toast } from "sonner";
 import { CacheManager } from "@/components/cache/CacheManager";
 import { PermissionsManagement } from "@/components/settings/PermissionsManagement";
 import { PermissionGate } from "@/components/auth/PermissionGate";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Settings() {
+  const { t } = useLanguage();
   const [clinicSettings, setClinicSettings] = useState({
     name: "عيادة الأسنان المتطورة",
     address: "شارع الملك فهد، الرياض",
@@ -63,40 +65,40 @@ export default function Settings() {
   return (
     <PageContainer>
       <PageHeader
-        title="الإعدادات"
-        description="إدارة إعدادات النظام والعيادة والمستخدم"
+        title={t('common.settings')}
+        description={t('settings.description')}
       />
 
       <Tabs defaultValue="clinic" className="space-y-6">
         <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="clinic" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
-            العيادة
+            {t('settings.clinic')}
           </TabsTrigger>
           <TabsTrigger value="user" className="flex items-center gap-2">
             <User className="w-4 h-4" />
-            المستخدم
+            {t('settings.user')}
           </TabsTrigger>
           <TabsTrigger value="notifications" className="flex items-center gap-2">
             <Bell className="w-4 h-4" />
-            الإشعارات
+            {t('settings.notifications')}
           </TabsTrigger>
           <TabsTrigger value="security" className="flex items-center gap-2">
             <Shield className="w-4 h-4" />
-            الأمان
+            {t('settings.security')}
           </TabsTrigger>
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Palette className="w-4 h-4" />
-            المظهر
+            {t('settings.appearance')}
           </TabsTrigger>
           <TabsTrigger value="cache" className="flex items-center gap-2">
             <Database className="w-4 h-4" />
-            البيانات
+            {t('settings.data')}
           </TabsTrigger>
           <PermissionGate permissions={["settings.permissions"]}>
             <TabsTrigger value="permissions" className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              الصلاحيات
+              {t('settings.permissions')}
             </TabsTrigger>
           </PermissionGate>
         </TabsList>
