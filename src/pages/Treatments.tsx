@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import RealisticToothChart from "@/components/dental/RealisticToothChart";
+import ZoomableToothChart from "@/components/dental/ZoomableToothChart";
+import OralHealthStatistics from "@/components/dental/OralHealthStatistics";
 import DentalTreatmentForm from "@/components/dental/DentalTreatmentForm";
-import { Zap, FileText, Activity } from "lucide-react";
+import { Zap, FileText, Activity, BarChart3, Maximize } from "lucide-react";
 
 const Treatments = () => {
   const location = useLocation();
@@ -28,14 +30,22 @@ const Treatments = () => {
       />
 
       <Tabs defaultValue="chart" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
           <TabsTrigger value="chart" className="flex items-center gap-2">
             <Zap className="w-4 h-4" />
-            مخطط الأسنان والملاحظات
+            مخطط الأسنان
+          </TabsTrigger>
+          <TabsTrigger value="interactive" className="flex items-center gap-2">
+            <Maximize className="w-4 h-4" />
+            المخطط التفاعلي
+          </TabsTrigger>
+          <TabsTrigger value="statistics" className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4" />
+            الإحصائيات
           </TabsTrigger>
           <TabsTrigger value="treatments" className="flex items-center gap-2">
             <Activity className="w-4 h-4" />
-            إضافة علاج جديد
+            إضافة علاج
           </TabsTrigger>
         </TabsList>
 
@@ -79,6 +89,21 @@ const Treatments = () => {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        <TabsContent value="interactive" className="space-y-6">
+          <ZoomableToothChart
+            patientId={patientId}
+            onToothSelect={handleToothSelect}
+            selectedTooth={selectedTooth}
+            numberingSystem={numberingSystem}
+          />
+        </TabsContent>
+
+        <TabsContent value="statistics" className="space-y-6">
+          <OralHealthStatistics 
+            patientId={patientId}
+          />
         </TabsContent>
 
         <TabsContent value="treatments">
