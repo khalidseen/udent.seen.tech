@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import Enhanced3DToothChart from '@/components/dental/Enhanced3DToothChart';
 import Tooth3DManager from '@/components/dental/Tooth3DManager';
+import RealisticTooth3D from '@/components/dental/RealisticTooth3D';
 import { 
   User, 
   Calendar, 
@@ -230,7 +231,7 @@ const Advanced3DDental = () => {
 
             {/* Main Content Tabs */}
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="overview" className="flex items-center gap-2">
                   <Eye className="w-4 h-4" />
                   نظرة عامة
@@ -238,6 +239,10 @@ const Advanced3DDental = () => {
                 <TabsTrigger value="3d-chart" className="flex items-center gap-2">
                   <Box className="w-4 h-4" />
                   المخطط ثلاثي الأبعاد
+                </TabsTrigger>
+                <TabsTrigger value="realistic-tooth" className="flex items-center gap-2">
+                  <Box className="w-4 h-4" />
+                  النموذج الواقعي - سن 23
                 </TabsTrigger>
                 <TabsTrigger value="tooth-detail" className="flex items-center gap-2" disabled={!selectedTooth}>
                   <Settings className="w-4 h-4" />
@@ -319,6 +324,119 @@ const Advanced3DDental = () => {
                   selectedTooth={selectedTooth}
                   numberingSystem={numberingSystem}
                 />
+              </TabsContent>
+
+              <TabsContent value="realistic-tooth">
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-center">
+                        النموذج ثلاثي الأبعاد الواقعي للسن رقم 23 (الناب العلوي الأيسر)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center mb-4">
+                        <p className="text-muted-foreground">
+                          نموذج متطور يُظهر التضاريس الحقيقية والشكل التشريحي الدقيق للناب
+                        </p>
+                      </div>
+                      <RealisticTooth3D
+                        toothNumber="23"
+                        annotations={[
+                          {
+                            id: "1",
+                            position: [0.3, 0.5, 0.2],
+                            color: "#ef4444",
+                            title: "منطقة تسوس",
+                            description: "تسوس صغير في الجانب الأمامي",
+                            type: "decay",
+                            severity: "medium"
+                          },
+                          {
+                            id: "2", 
+                            position: [-0.2, 0.8, 0.1],
+                            color: "#10b981",
+                            title: "منطقة سليمة",
+                            description: "النسيج في حالة جيدة",
+                            type: "healthy",
+                            severity: "low"
+                          }
+                        ]}
+                        onToothClick={() => {
+                          console.log('تم النقر على السن 23');
+                        }}
+                        interactionMode="view"
+                      />
+                    </CardContent>
+                  </Card>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>خصائص الناب العلوي الأيسر</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div>
+                            <h4 className="font-medium">الرقم حسب نظام FDI</h4>
+                            <p className="text-sm text-muted-foreground">23</p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">الموقع</h4>
+                            <p className="text-sm text-muted-foreground">الفك العلوي الأيسر</p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">الوظيفة</h4>
+                            <p className="text-sm text-muted-foreground">تمزيق الطعام والإطباق</p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium">الخصائص التشريحية</h4>
+                            <ul className="text-sm text-muted-foreground list-disc list-inside">
+                              <li>قمة حادة ومدببة</li>
+                              <li>جذر واحد طويل</li>
+                              <li>سطح قطع مثلثي</li>
+                              <li>حواف جانبية مائلة</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>مميزات النموذج الواقعي</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm">تضاريس تشريحية دقيقة</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm">ألوان واقعية للمينا والجذر</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm">إضاءة متقدمة ثلاثية الأبعاد</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm">تفاعل حقيقي مع التعليقات</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm">حركة تنفس طبيعية</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm">تحكم كامل في الدوران والتكبير</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               </TabsContent>
 
               <TabsContent value="tooth-detail">
