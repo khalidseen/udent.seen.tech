@@ -1,0 +1,91 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel", 
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "confirm": "Confirm",
+    "close": "Close",
+    "view": "View",
+    "print": "Print",
+    "export": "Export",
+    "import": "Import",
+    "refresh": "Refresh",
+    "settings": "Settings",
+    "profile": "Profile",
+    "logout": "Logout",
+    "login": "Login"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "patients": "Patients",
+    "appointments": "Appointments",
+    "treatments": "Treatments",
+    "invoices": "Invoices",
+    "reports": "Reports",
+    "settings": "Settings",
+    "inventory": "Inventory",
+    "doctors": "Doctors",
+    "prescriptions": "Prescriptions",
+    "notifications": "Notifications",
+    "medicalRecords": "Medical Records",
+    "dentalTreatments": "Dental Treatments",
+    "aiInsights": "AI Insights",
+    "advanced3D": "Advanced 3D Models"
+  },
+  "header": {
+    "search": "Search system...",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "description": "Overview of clinic status",
+    "totalPatients": "Total Patients",
+    "todayAppointments": "Today's Appointments",
+    "pendingTreatments": "Pending Treatments",
+    "monthlyRevenue": "Monthly Revenue",
+    "quickActions": "Quick Actions",
+    "recentActivity": "Recent Activity"
+  },
+  "patients": {
+    "title": "Patients",
+    "description": "Manage patient information",
+    "addPatient": "Add New Patient",
+    "patientInfo": "Patient Information",
+    "medicalHistory": "Medical History",
+    "appointments": "Appointments",
+    "treatments": "Treatments",
+    "invoices": "Invoices"
+  },
+  "appointments": {
+    "title": "Appointments",
+    "description": "Manage clinic appointments",
+    "newAppointment": "New Appointment",
+    "todayAppointments": "Today's Appointments",
+    "upcomingAppointments": "Upcoming Appointments",
+    "appointmentRequests": "Appointment Requests",
+    "calendar": "Calendar",
+    "status": {
+      "scheduled": "Scheduled",
+      "confirmed": "Confirmed",
+      "completed": "Completed", 
+      "cancelled": "Cancelled",
+      "noShow": "No Show"
+    }
+  },
+  "treatments": {
+    "title": "Treatments",
+    "description": "Manage medical treatments",
+    "addTreatment": "Add Treatment",
+    "treatmentPlan": "Treatment Plan",
+    "ongoingTreatments": "Ongoing Treatments",
+    "completedTreatments": "Completed Treatments"
+  }
+}

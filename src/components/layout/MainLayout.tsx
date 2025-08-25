@@ -7,6 +7,7 @@ import { GlobalSearch } from "./GlobalSearch";
 import { DateTime } from "./DateTime";
 import { UserProfile } from "./UserProfile";
 import { FloatingActionMenu } from "./FloatingActionMenu";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -28,11 +29,12 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <GlobalSearch />
               </div>
               
-               <div className="flex items-center gap-4">
-                 <UserProfile />
-                 <DateTime />
-                 <NotificationCenter />
-               </div>
+                <div className="flex items-center gap-4">
+                  <LanguageToggle />
+                  <UserProfile />
+                  <DateTime />
+                  <NotificationCenter />
+                </div>
             </div>
           </header>
           

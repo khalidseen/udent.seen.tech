@@ -1,0 +1,91 @@
+{
+  "common": {
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "add": "إضافة",
+    "search": "بحث",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "confirm": "تأكيد",
+    "close": "إغلاق",
+    "view": "عرض",
+    "print": "طباعة",
+    "export": "تصدير",
+    "import": "استيراد",
+    "refresh": "تحديث",
+    "settings": "الإعدادات",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل الخروج",
+    "login": "تسجيل الدخول"
+  },
+  "navigation": {
+    "dashboard": "لوحة التحكم",
+    "patients": "المرضى",
+    "appointments": "المواعيد",
+    "treatments": "العلاجات",
+    "invoices": "الفواتير",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "inventory": "المخزون",
+    "doctors": "الأطباء",
+    "prescriptions": "الوصفات الطبية",
+    "notifications": "الإشعارات",
+    "medicalRecords": "السجلات الطبية",
+    "dentalTreatments": "العلاجات السنية",
+    "aiInsights": "رؤى الذكاء الاصطناعي",
+    "advanced3D": "النماذج ثلاثية الأبعاد المتقدمة"
+  },
+  "header": {
+    "search": "البحث في النظام...",
+    "notifications": "الإشعارات",
+    "profile": "الملف الشخصي",
+    "logout": "تسجيل الخروج"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "description": "نظرة عامة على حالة العيادة",
+    "totalPatients": "إجمالي المرضى",
+    "todayAppointments": "مواعيد اليوم",
+    "pendingTreatments": "العلاجات المعلقة",
+    "monthlyRevenue": "الإيرادات الشهرية",
+    "quickActions": "الإجراءات السريعة",
+    "recentActivity": "النشاط الأخير"
+  },
+  "patients": {
+    "title": "المرضى",
+    "description": "إدارة معلومات المرضى",
+    "addPatient": "إضافة مريض جديد",
+    "patientInfo": "معلومات المريض",
+    "medicalHistory": "التاريخ الطبي",
+    "appointments": "المواعيد",
+    "treatments": "العلاجات",
+    "invoices": "الفواتير"
+  },
+  "appointments": {
+    "title": "المواعيد",
+    "description": "إدارة مواعيد العيادة",
+    "newAppointment": "موعد جديد",
+    "todayAppointments": "مواعيد اليوم",
+    "upcomingAppointments": "المواعيد القادمة",
+    "appointmentRequests": "طلبات المواعيد",
+    "calendar": "التقويم",
+    "status": {
+      "scheduled": "مجدول",
+      "confirmed": "مؤكد", 
+      "completed": "مكتمل",
+      "cancelled": "ملغي",
+      "noShow": "لم يحضر"
+    }
+  },
+  "treatments": {
+    "title": "العلاجات",
+    "description": "إدارة العلاجات الطبية",
+    "addTreatment": "إضافة علاج",
+    "treatmentPlan": "خطة العلاج",
+    "ongoingTreatments": "العلاجات الجارية",
+    "completedTreatments": "العلاجات المكتملة"
+  }
+}
