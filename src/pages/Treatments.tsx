@@ -93,4 +93,5 @@ const Treatments = () => {
   );
 };
 
+// Realistic dental chart with individual tooth notes system
 export default Treatments;
