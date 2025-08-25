@@ -256,10 +256,11 @@ const PalmerDentalChart = ({ patientId, patientAge }: PalmerDentalChartProps) =>
       </Card>
 
       <ToothConditionDialog
-        open={conditionDialogOpen}
+        isOpen={conditionDialogOpen}
         onOpenChange={setConditionDialogOpen}
         patientId={patientId}
         toothNumber={selectedTooth || ''}
+        numberingSystem="palmer"
         onConditionUpdate={fetchToothConditions}
       />
     </>

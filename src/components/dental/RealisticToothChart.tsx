@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import ToothNoteDialog from "./ToothNoteDialog";
+import ToothConditionDialog from "./ToothConditionDialog";
 
 interface RealisticToothChartProps {
   patientId?: string;
@@ -40,6 +41,8 @@ const RealisticToothChart = ({
   const [toothNotes, setToothNotes] = useState<ToothNote[]>([]);
   const [selectedToothForNote, setSelectedToothForNote] = useState<string>('');
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  const [selectedToothForCondition, setSelectedToothForCondition] = useState<string>('');
+  const [isConditionDialogOpen, setIsConditionDialogOpen] = useState(false);
 
   // FDI numbering system (most commonly used internationally)
   const fdiNumbers = {
@@ -173,11 +176,15 @@ const RealisticToothChart = ({
       <button
         key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`}
         onClick={() => handleToothClick(toothNumber)}
+        onDoubleClick={() => {
+          setSelectedToothForCondition(toothNumber);
+          setIsConditionDialogOpen(true);
+        }}
         className={cn(
           "relative transition-all duration-200 hover:scale-110 p-2 group",
           isSelected && "ring-2 ring-primary ring-offset-2"
         )}
-        title={`السن رقم ${toothNumber} (${activeSystem.toUpperCase()})`}
+        title={`السن رقم ${toothNumber} (${activeSystem.toUpperCase()}) - انقر مرتين لتغيير الحالة`}
       >
         <svg 
           width="24" 
@@ -350,6 +357,16 @@ const RealisticToothChart = ({
         toothNumber={selectedToothForNote}
         numberingSystem={activeSystem}
         onNoteUpdate={fetchToothData}
+      />
+
+      {/* Tooth Condition Dialog */}
+      <ToothConditionDialog
+        isOpen={isConditionDialogOpen}
+        onOpenChange={setIsConditionDialogOpen}
+        patientId={patientId || ''}
+        toothNumber={selectedToothForCondition}
+        numberingSystem={activeSystem}
+        onConditionUpdate={fetchToothData}
       />
     </>
   );
