@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface QuickAction {
   id: string;
@@ -31,12 +32,13 @@ interface QuickAction {
 export const QuickActionCenter: React.FC = () => {
   const { hasPermission } = usePermissions();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const quickActions: QuickAction[] = [
     {
       id: 'add-patient',
-      title: 'إضافة مريض جديد',
-      description: 'تسجيل مريض جديد في النظام',
+      title: t("quickActions.addPatient"),
+      description: t("quickActions.addPatientDesc"),
       icon: <Users className="w-4 h-4" />,
       action: () => {
         window.open('/patients', '_blank');
@@ -47,8 +49,8 @@ export const QuickActionCenter: React.FC = () => {
     },
     {
       id: 'schedule-appointment',
-      title: 'حجز موعد',
-      description: 'إنشاء موعد جديد للمريض',
+      title: t("quickActions.scheduleAppointment"),
+      description: t("quickActions.scheduleAppointmentDesc"),
       icon: <Calendar className="w-4 h-4" />,
       action: () => {
         window.open('/appointments/new', '_blank');
@@ -59,13 +61,13 @@ export const QuickActionCenter: React.FC = () => {
     },
     {
       id: 'emergency-contact',
-      title: 'اتصال طارئ',
-      description: 'الاتصال بخدمة الطوارئ',
+      title: t("quickActions.emergencyContact"),
+      description: t("quickActions.emergencyContactDesc"),
       icon: <Phone className="w-4 h-4" />,
       action: () => {
         toast({
-          title: 'جاري الاتصال...',
-          description: 'يتم توصيلك بخدمة الطوارئ',
+          title: t("common.loading"),
+          description: t("quickActions.emergencyContactDesc"),
         });
       },
       priority: 'high',
@@ -73,16 +75,15 @@ export const QuickActionCenter: React.FC = () => {
     },
     {
       id: 'quick-search',
-      title: 'بحث سريع',
-      description: 'البحث في قاعدة بيانات المرضى',
+      title: t("quickActions.quickSearch"),
+      description: t("quickActions.quickSearchDesc"),
       icon: <Search className="w-4 h-4" />,
       action: () => {
-        // فتح نافذة البحث السريع
-        const searchQuery = prompt('ادخل اسم المريض أو رقم الهوية:');
+        const searchQuery = prompt(t("quickActions.quickSearchDesc"));
         if (searchQuery) {
           toast({
-            title: 'جاري البحث...',
-            description: `البحث عن: ${searchQuery}`,
+            title: t("common.loading"),
+            description: `${t("common.search")}: ${searchQuery}`,
           });
         }
       },
@@ -92,13 +93,13 @@ export const QuickActionCenter: React.FC = () => {
     },
     {
       id: 'medical-record',
-      title: 'سجل طبي جديد',
-      description: 'إنشاء سجل طبي أو تشخيص',
+      title: t("quickActions.medicalRecord"),
+      description: t("quickActions.medicalRecordDesc"),
       icon: <FileText className="w-4 h-4" />,
       action: () => {
         toast({
-          title: 'قريباً',
-          description: 'هذه الميزة ستكون متاحة قريباً',
+          title: "Coming Soon",
+          description: t("quickActions.medicalRecordDesc"),
         });
       },
       permission: 'medical_records.create',
@@ -107,13 +108,13 @@ export const QuickActionCenter: React.FC = () => {
     },
     {
       id: 'send-reminder',
-      title: 'إرسال تذكير',
-      description: 'إرسال تذكير للمرضى بمواعيدهم',
+      title: t("quickActions.sendReminder"),
+      description: t("quickActions.sendReminderDesc"),
       icon: <Bell className="w-4 h-4" />,
       action: () => {
         toast({
-          title: 'تم الإرسال',
-          description: 'تم إرسال التذكيرات للمرضى',
+          title: t("common.success"),
+          description: t("quickActions.sendReminderDesc"),
         });
       },
       permission: 'notifications.send',
@@ -151,10 +152,10 @@ export const QuickActionCenter: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Plus className="w-5 h-5" />
-            مركز الإجراءات السريعة
+            {t("quickActions.title")}
           </CardTitle>
           <CardDescription>
-            إجراءات مهمة يمكن تنفيذها بسرعة
+            {t("quickActions.description")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -172,11 +173,9 @@ export const QuickActionCenter: React.FC = () => {
                     <Badge 
                       variant={getPriorityColor(action.priority)} 
                       className="text-xs"
-                    >
-                      {action.priority === 'high' && 'عاجل'}
-                      {action.priority === 'medium' && 'متوسط'}
-                      {action.priority === 'low' && 'عادي'}
-                    </Badge>
+                     >
+                       {t(`quickActions.priority.${action.priority}`)}
+                     </Badge>
                   </div>
                   {getCategoryIcon(action.category)}
                 </div>
@@ -193,8 +192,8 @@ export const QuickActionCenter: React.FC = () => {
           {filteredActions.length === 0 && (
             <div className="text-center py-8 text-muted-foreground">
               <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>لا توجد إجراءات متاحة حالياً</p>
-              <p className="text-sm">تحقق من صلاحياتك أو تواصل مع المدير</p>
+              <p>{t("quickActions.noActions")}</p>
+              <p className="text-sm">{t("quickActions.checkPermissions")}</p>
             </div>
           )}
         </CardContent>

@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import Enhanced3DToothChart from '@/components/dental/Enhanced3DToothChart';
 import Tooth3DManager from '@/components/dental/Tooth3DManager';
 import RealisticTooth3D from '@/components/dental/RealisticTooth3D';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { 
   User, 
   Calendar, 
@@ -26,6 +27,7 @@ import {
 } from 'lucide-react';
 
 const Advanced3DDental = () => {
+  const { t } = useLanguage();
   const [searchParams] = useSearchParams();
   const initialPatientId = searchParams.get('patientId');
   
@@ -122,8 +124,8 @@ const Advanced3DDental = () => {
   return (
     <PageContainer>
       <PageHeader 
-        title="النظام المتقدم ثلاثي الأبعاد للأسنان" 
-        description="تشخيص وتحليل شامل باستخدام النماذج ثلاثية الأبعاد"
+        title={t("dental3d.title")} 
+        description={t("dental3d.description")}
       />
 
       <div className="space-y-6">
@@ -132,7 +134,7 @@ const Advanced3DDental = () => {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="w-5 h-5" />
-              اختيار المريض
+              {t("dental3d.selectPatient")}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -140,7 +142,7 @@ const Advanced3DDental = () => {
               <div className="flex-1">
                 <Select value={selectedPatientId} onValueChange={setSelectedPatientId}>
                   <SelectTrigger>
-                    <SelectValue placeholder="اختر مريضاً" />
+                    <SelectValue placeholder={t("appointmentForm.selectPatient")} />
                   </SelectTrigger>
                   <SelectContent>
                     {patients.map((patient) => (
@@ -156,11 +158,11 @@ const Advanced3DDental = () => {
                 <div className="flex gap-2">
                   <Badge variant="outline">
                     <Calendar className="w-3 h-3 mr-1" />
-                    {treatments.length} علاج
+                    {treatments.length} {t("treatments.title")}
                   </Badge>
                   <Badge variant="outline">
                     <Box className="w-3 h-3 mr-1" />
-                    {annotationsStats?.total || 0} تعليق ثلاثي الأبعاد
+                    {annotationsStats?.total || 0} {t("dental3d.3dAnnotations")}
                   </Badge>
                 </div>
               )}

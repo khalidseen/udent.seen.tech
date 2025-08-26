@@ -11,12 +11,14 @@ import { toast } from "@/hooks/use-toast";
 import { CalendarPlus, Clock, User, Stethoscope, UserPlus } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
 interface Patient {
   id: string;
   full_name: string;
   phone: string;
 }
 const NewAppointmentForm = () => {
+  const { t } = useLanguage();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [patientType, setPatientType] = useState<'existing' | 'new'>('existing');
   const [formData, setFormData] = useState({
@@ -241,7 +243,7 @@ const NewAppointmentForm = () => {
     'أخرى'
   ];
   return <PageContainer maxWidth="2xl">
-      <PageHeader title="حجز موعد جديد" description="احجز موعد جديد للمريض" />
+      <PageHeader title={t("appointmentForm.title")} description={t("appointmentForm.description")} />
 
       <Card>
         <CardHeader>

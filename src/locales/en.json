@@ -95,6 +95,7 @@
     "completedTreatments": "Completed Treatments"
   },
   "settings": {
+    "title": "Settings",
     "description": "Manage system, clinic and user settings",
     "clinic": "Clinic",
     "user": "User",
@@ -102,7 +103,12 @@
     "security": "Security",
     "appearance": "Appearance",
     "data": "Data",
-    "permissions": "Permissions"
+    "permissions": "Permissions",
+    "general": "General",
+    "system": "System",
+    "advanced": "Advanced",
+    "language": "Language",
+    "theme": "Theme"
   },
   "sidebar": {
     "mainMenu": "Main Menu",
@@ -255,5 +261,186 @@
     "wednesday": "Wednesday",
     "thursday": "Thursday",
     "friday": "Friday"
+  },
+  "dashboard": {
+    "title": "Advanced Control Dashboard",
+    "description": "Comprehensive monitoring and advanced management of all clinic activities",
+    "tabs": {
+      "analytics": "Analytics",
+      "notifications": "Notifications",
+      "actions": "Actions",
+      "performance": "Performance",
+      "system": "System"
+    }
+  },
+  "quickActions": {
+    "title": "Quick Action Center",
+    "description": "Important actions that can be performed quickly",
+    "addPatient": "Add New Patient",
+    "addPatientDesc": "Register a new patient in the system",
+    "scheduleAppointment": "Schedule Appointment",
+    "scheduleAppointmentDesc": "Create a new patient appointment",
+    "emergencyContact": "Emergency Contact",
+    "emergencyContactDesc": "Contact emergency services",
+    "quickSearch": "Quick Search",
+    "quickSearchDesc": "Search patient database",
+    "medicalRecord": "New Medical Record",
+    "medicalRecordDesc": "Create medical record or diagnosis",
+    "sendReminder": "Send Reminder",
+    "sendReminderDesc": "Send appointment reminders to patients",
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "noActions": "No actions available currently",
+    "checkPermissions": "Check your permissions or contact administrator"
+  },
+  "ai": {
+    "insights": "AI Insights",
+    "totalAnalyses": "Total Analyses",
+    "xrayAnalyses": "X-ray Analysis",
+    "dsdAnalyses": "DSD Analysis",
+    "avgConfidence": "Average Confidence",
+    "detectedConditions": "Detected Conditions",
+    "recentInsights": "Recent Insights",
+    "performanceMetrics": "AI Performance Metrics",
+    "recommendations": "Smart Recommendations",
+    "diagnosisAccuracy": "Diagnosis Accuracy",
+    "analysisSpeed": "Analysis Speed",
+    "earlyDetectionRate": "Early Detection Rate",
+    "conditions": {
+      "decay": "Tooth Decay",
+      "gingivitis": "Gingivitis",
+      "erosion": "Tooth Erosion",
+      "abscess": "Dental Abscess",
+      "fracture": "Tooth Fracture"
+    }
+  },
+  "dental3d": {
+    "title": "Advanced 3D Dental System",
+    "description": "Comprehensive diagnosis and analysis using 3D models",
+    "selectPatient": "Select Patient",
+    "patientInfo": "Patient Information",
+    "exportReport": "Export Report",
+    "share": "Share",
+    "age": "Age",
+    "lastVisit": "Last Visit",
+    "teethCondition": "Teeth Condition",
+    "overview": "Overview",
+    "3dChart": "3D Chart",
+    "realisticTooth": "Realistic Model - Tooth 23",
+    "toothDetail": "Tooth Details",
+    "analytics": "Analytics",
+    "totalTreatments": "Total Treatments",
+    "3dAnnotations": "3D Annotations",
+    "teethWithAnnotations": "Teeth with Annotations",
+    "criticalCases": "Critical Cases",
+    "severityLevels": {
+      "critical": "Critical",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "healthy": "Healthy"
+    }
+  },
+  "patientForm": {
+    "title": "Add New Patient",
+    "description": "Enter new patient information",
+    "patientData": "Patient Data",
+    "fullName": "Patient Name",
+    "phone": "Phone Number",
+    "email": "Email",
+    "dateOfBirth": "Date of Birth",
+    "gender": "Gender",
+    "address": "Address",
+    "medicalHistory": "Medical History",
+    "notes": "Additional Notes",
+    "savePatient": "Save Patient",
+    "saving": "Saving...",
+    "success": "Patient added successfully",
+    "error": "Patient name is required",
+    "placeholders": {
+      "fullName": "Full Name",
+      "phone": "+1234567890",
+      "email": "patient@example.com",
+      "address": "Patient Address",
+      "medicalHistory": "Medical history and allergies...",
+      "notes": "Any additional notes or information..."
+    }
+  },
+  "appointmentForm": {
+    "title": "Schedule New Appointment",
+    "description": "Schedule a new appointment for patient",
+    "patientType": "Patient Type",
+    "existingPatient": "Existing Patient",
+    "newPatient": "New Patient",
+    "selectPatient": "Select Patient",
+    "newPatientData": "New Patient Data",
+    "appointmentDetails": "Appointment Details",
+    "appointmentDate": "Appointment Date",
+    "appointmentTime": "Appointment Time",
+    "duration": "Duration",
+    "treatmentType": "Treatment Type",
+    "chiefComplaint": "Chief Complaint",
+    "emergencyLevel": "Priority Level",
+    "emergencyLevels": {
+      "routine": "Routine",
+      "urgent": "Urgent",
+      "emergency": "Emergency"
+    },
+    "estimatedCost": "Estimated Cost",
+    "requiresAnesthesia": "Requires Anesthesia",
+    "followUpRequired": "Follow-up Required",
+    "bloodType": "Blood Type",
+    "insurance": "Insurance",
+    "emergencyContact": "Emergency Contact",
+    "emergencyPhone": "Emergency Phone",
+    "allergies": "Allergies",
+    "currentMedications": "Current Medications",
+    "lastDentalVisit": "Last Dental Visit",
+    "bookAppointment": "Book Appointment",
+    "booking": "Booking...",
+    "success": "Appointment booked successfully",
+    "successNewPatient": "Patient added and appointment booked successfully"
+  },
+  "medicalRecord": {
+    "createTitle": "Create New Medical Record",
+    "recordType": "Record Type",
+    "title": "Title",
+    "description": "Description",
+    "treatmentDate": "Treatment Date",
+    "diagnosis": "Diagnosis",
+    "treatmentPlan": "Treatment Plan",
+    "notes": "Notes",
+    "createRecord": "Create Record",
+    "saving": "Saving...",
+    "types": {
+      "consultation": "Consultation",
+      "treatment": "Treatment",
+      "surgery": "Surgery",
+      "followup": "Follow-up",
+      "xray": "X-ray"
+    }
+  },
+  "invoice": {
+    "createTitle": "Create New Invoice",
+    "dueDate": "Due Date",
+    "notes": "Notes",
+    "items": "Invoice Items",
+    "addItem": "Add Item",
+    "service": "Service",
+    "description": "Description",
+    "quantity": "Quantity",
+    "price": "Price",
+    "total": "Total",
+    "actions": "Actions",
+    "subtotal": "Subtotal",
+    "grandTotal": "Grand Total",
+    "createInvoice": "Create Invoice",
+    "noItems": "No items. Click \"Add Item\" to start creating the invoice.",
+    "selectService": "Select Service",
+    "enterService": "or enter service name",
+    "serviceDescription": "Service description"
   }
 }

@@ -95,6 +95,7 @@
     "completedTreatments": "العلاجات المكتملة"
   },
   "settings": {
+    "title": "الإعدادات",
     "description": "إدارة إعدادات النظام والعيادة والمستخدم",
     "clinic": "العيادة",
     "user": "المستخدم",
@@ -102,7 +103,12 @@
     "security": "الأمان",
     "appearance": "المظهر",
     "data": "البيانات",
-    "permissions": "الصلاحيات"
+    "permissions": "الصلاحيات",
+    "general": "عام",
+    "system": "النظام",
+    "advanced": "متقدم",
+    "language": "اللغة",
+    "theme": "المظهر"
   },
   "sidebar": {
     "mainMenu": "القائمة الرئيسية",
@@ -255,5 +261,186 @@
     "wednesday": "الأربعاء",
     "thursday": "الخميس",
     "friday": "الجمعة"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم المتقدمة",
+    "description": "مراقبة شاملة ومتقدمة لجميع أنشطة العيادة",
+    "tabs": {
+      "analytics": "التحليلات",
+      "notifications": "الإشعارات",
+      "actions": "الإجراءات",
+      "performance": "الأداء",
+      "system": "النظام"
+    }
+  },
+  "quickActions": {
+    "title": "مركز الإجراءات السريعة",
+    "description": "إجراءات مهمة يمكن تنفيذها بسرعة",
+    "addPatient": "إضافة مريض جديد",
+    "addPatientDesc": "تسجيل مريض جديد في النظام",
+    "scheduleAppointment": "حجز موعد",
+    "scheduleAppointmentDesc": "إنشاء موعد جديد للمريض",
+    "emergencyContact": "اتصال طارئ",
+    "emergencyContactDesc": "الاتصال بخدمة الطوارئ",
+    "quickSearch": "بحث سريع",
+    "quickSearchDesc": "البحث في قاعدة بيانات المرضى",
+    "medicalRecord": "سجل طبي جديد",
+    "medicalRecordDesc": "إنشاء سجل طبي أو تشخيص",
+    "sendReminder": "إرسال تذكير",
+    "sendReminderDesc": "إرسال تذكير للمرضى بمواعيدهم",
+    "priority": {
+      "high": "عاجل",
+      "medium": "متوسط",
+      "low": "عادي"
+    },
+    "noActions": "لا توجد إجراءات متاحة حالياً",
+    "checkPermissions": "تحقق من صلاحياتك أو تواصل مع المدير"
+  },
+  "ai": {
+    "insights": "رؤى الذكاء الاصطناعي",
+    "totalAnalyses": "إجمالي التحاليل",
+    "xrayAnalyses": "تحليل الأشعة السينية",
+    "dsdAnalyses": "تحليل DSD",
+    "avgConfidence": "متوسط الثقة",
+    "detectedConditions": "الحالات المكتشفة",
+    "recentInsights": "الرؤى الحديثة",
+    "performanceMetrics": "مؤشرات أداء الذكاء الاصطناعي",
+    "recommendations": "التوصيات الذكية",
+    "diagnosisAccuracy": "دقة التشخيص",
+    "analysisSpeed": "سرعة التحليل",
+    "earlyDetectionRate": "معدل الكشف المبكر",
+    "conditions": {
+      "decay": "تسوس الأسنان",
+      "gingivitis": "التهاب اللثة", 
+      "erosion": "تآكل الأسنان",
+      "abscess": "خراج سني",
+      "fracture": "كسر في الأسنان"
+    }
+  },
+  "dental3d": {
+    "title": "النظام المتقدم ثلاثي الأبعاد للأسنان",
+    "description": "تشخيص وتحليل شامل باستخدام النماذج ثلاثية الأبعاد",
+    "selectPatient": "اختيار المريض",
+    "patientInfo": "معلومات المريض",
+    "exportReport": "تصدير التقرير",
+    "share": "مشاركة",
+    "age": "العمر",
+    "lastVisit": "آخر زيارة",
+    "teethCondition": "حالة الأسنان",
+    "overview": "نظرة عامة",
+    "3dChart": "المخطط ثلاثي الأبعاد",
+    "realisticTooth": "النموذج الواقعي - سن 23",
+    "toothDetail": "تفاصيل السن",
+    "analytics": "التحليلات",
+    "totalTreatments": "إجمالي العلاجات",
+    "3dAnnotations": "التعليقات ثلاثية الأبعاد",
+    "teethWithAnnotations": "أسنان بتعليقات",
+    "criticalCases": "حالات حرجة",
+    "severityLevels": {
+      "critical": "حرج",
+      "high": "عالي",
+      "medium": "متوسط",
+      "low": "منخفض",
+      "healthy": "سليم"
+    }
+  },
+  "patientForm": {
+    "title": "إضافة مريض جديد",
+    "description": "أدخل بيانات المريض الجديد",
+    "patientData": "بيانات المريض",
+    "fullName": "اسم المريض",
+    "phone": "رقم الهاتف",
+    "email": "البريد الإلكتروني",
+    "dateOfBirth": "تاريخ الميلاد",
+    "gender": "الجنس",
+    "address": "العنوان",
+    "medicalHistory": "التاريخ المرضي",
+    "notes": "ملاحظات إضافية",
+    "savePatient": "حفظ المريض",
+    "saving": "جاري الحفظ...",
+    "success": "تم إضافة المريض بنجاح",
+    "error": "يجب إدخال اسم المريض",
+    "placeholders": {
+      "fullName": "الاسم الكامل",
+      "phone": "+201234567890",
+      "email": "patient@example.com",
+      "address": "عنوان المريض",
+      "medicalHistory": "التاريخ المرضي والحساسيات...",
+      "notes": "أي ملاحظات أو معلومات إضافية..."
+    }
+  },
+  "appointmentForm": {
+    "title": "حجز موعد جديد",
+    "description": "احجز موعد جديد للمريض",
+    "patientType": "نوع المريض",
+    "existingPatient": "مريض موجود",
+    "newPatient": "مريض جديد",
+    "selectPatient": "اختر المريض",
+    "newPatientData": "بيانات المريض الجديد",
+    "appointmentDetails": "تفاصيل الموعد",
+    "appointmentDate": "تاريخ الموعد",
+    "appointmentTime": "وقت الموعد",
+    "duration": "المدة",
+    "treatmentType": "نوع العلاج",
+    "chiefComplaint": "سبب الزيارة",
+    "emergencyLevel": "مستوى الأولوية",
+    "emergencyLevels": {
+      "routine": "روتيني",
+      "urgent": "عاجل",
+      "emergency": "طارئ"
+    },
+    "estimatedCost": "التكلفة المقدرة",
+    "requiresAnesthesia": "يتطلب تخدير",
+    "followUpRequired": "يتطلب متابعة",
+    "bloodType": "فصيلة الدم",
+    "insurance": "التأمين الصحي",
+    "emergencyContact": "جهة الاتصال في الطوارئ",
+    "emergencyPhone": "رقم الطوارئ",
+    "allergies": "الحساسيات",
+    "currentMedications": "الأدوية الحالية",
+    "lastDentalVisit": "آخر زيارة لطبيب أسنان",
+    "bookAppointment": "حجز الموعد",
+    "booking": "جاري الحجز...",
+    "success": "تم حجز الموعد بنجاح",
+    "successNewPatient": "تم إضافة المريض وحجز الموعد بنجاح"
+  },
+  "medicalRecord": {
+    "createTitle": "إنشاء سجل طبي جديد",
+    "recordType": "نوع السجل",
+    "title": "العنوان",
+    "description": "الوصف",
+    "treatmentDate": "تاريخ العلاج",
+    "diagnosis": "التشخيص",
+    "treatmentPlan": "خطة العلاج",
+    "notes": "ملاحظات",
+    "createRecord": "إنشاء السجل",
+    "saving": "جاري الحفظ...",
+    "types": {
+      "consultation": "استشارة",
+      "treatment": "علاج",
+      "surgery": "جراحة",
+      "followup": "متابعة",
+      "xray": "أشعة"
+    }
+  },
+  "invoice": {
+    "createTitle": "إنشاء فاتورة جديدة",
+    "dueDate": "تاريخ الاستحقاق",
+    "notes": "ملاحظات",
+    "items": "عناصر الفاتورة",
+    "addItem": "إضافة عنصر",
+    "service": "الخدمة",
+    "description": "الوصف",
+    "quantity": "الكمية",
+    "price": "السعر",
+    "total": "المجموع",
+    "actions": "الإجراءات",
+    "subtotal": "المجموع الفرعي",
+    "grandTotal": "المجموع الكلي",
+    "createInvoice": "إنشاء الفاتورة",
+    "noItems": "لا توجد عناصر. انقر \"إضافة عنصر\" لبدء إنشاء الفاتورة.",
+    "selectService": "اختر الخدمة",
+    "enterService": "أو أدخل اسم الخدمة",
+    "serviceDescription": "وصف الخدمة"
   }
 }

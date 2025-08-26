@@ -10,8 +10,10 @@ import { toast } from "@/hooks/use-toast";
 import { UserPlus, Save } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const AddPatientForm = () => {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -129,8 +131,8 @@ const AddPatientForm = () => {
   return (
     <PageContainer>
       <PageHeader 
-        title="إضافة مريض جديد" 
-        description="أدخل بيانات المريض الجديد" 
+        title={t("patientForm.title")} 
+        description={t("patientForm.description")} 
       />
 
       <Card className="w-full">
