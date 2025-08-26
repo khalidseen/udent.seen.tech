@@ -17,9 +17,11 @@ import { CacheManager } from "@/components/cache/CacheManager";
 import { PermissionsManagement } from "@/components/settings/PermissionsManagement";
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSettings } from "@/contexts/SettingsContext";
 
 export default function Settings() {
   const { t } = useLanguage();
+  const { fontWeight, setFontWeight } = useSettings();
   const [clinicSettings, setClinicSettings] = useState({
     name: "عيادة الأسنان المتطورة",
     address: "شارع الملك فهد، الرياض",
@@ -55,7 +57,8 @@ export default function Settings() {
   const [appearance, setAppearance] = useState({
     theme: "system",
     language: "ar",
-    compactMode: false
+    compactMode: false,
+    fontWeight: fontWeight
   });
 
   const handleSave = (section: string) => {
@@ -536,6 +539,22 @@ export default function Settings() {
                   <Switch 
                     checked={appearance.compactMode}
                     onCheckedChange={(checked) => setAppearance({...appearance, compactMode: checked})}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>{t('settings.fontWeight')}</Label>
+                    <p className="text-sm text-muted-foreground">
+                      {t('settings.fontWeightDescription')}
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={fontWeight === 'bold'}
+                    onCheckedChange={(checked) => {
+                      const newWeight = checked ? 'bold' : 'normal';
+                      setFontWeight(newWeight);
+                      setAppearance({...appearance, fontWeight: newWeight});
+                    }}
                   />
                 </div>
               </div>

@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -92,7 +93,8 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
-        <TooltipProvider>
+        <SettingsProvider>
+          <TooltipProvider>
           <BrowserRouter>
             <Routes>
             {/* Public routes */}
@@ -143,7 +145,8 @@ function App() {
           </BrowserRouter>
           <Toaster />
         </TooltipProvider>
-      </LanguageProvider>
+      </SettingsProvider>
+    </LanguageProvider>
     </QueryClientProvider>
   );
 }

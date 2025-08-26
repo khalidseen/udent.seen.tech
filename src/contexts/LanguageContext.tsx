@@ -7,6 +7,7 @@ interface LanguageContextType {
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
   isRTL: boolean;
+  isLTR: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -48,9 +49,10 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   };
 
   const isRTL = language === 'ar';
+  const isLTR = language === 'en';
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL, isLTR }}>
       {children}
     </LanguageContext.Provider>
   );

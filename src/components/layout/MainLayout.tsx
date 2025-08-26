@@ -8,6 +8,7 @@ import { DateTime } from "./DateTime";
 import { UserProfile } from "./UserProfile";
 import { FloatingActionMenu } from "./FloatingActionMenu";
 import { LanguageToggle } from "@/components/ui/language-toggle";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -16,20 +17,22 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ children }: MainLayoutProps) {
+  const { isLTR } = useLanguage();
+  
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
+      <div className={`flex min-h-screen w-full ${isLTR ? 'flex-row' : 'flex-row-reverse'}`}>
         <AppSidebar />
         <SidebarInset className="flex-1">
           {/* Top Header */}
           <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full">
             <div className="container flex h-full items-center justify-between px-4">
-              <div className="flex items-center gap-4">
-                <SidebarTrigger className="mr-2" />
+              <div className={`flex items-center gap-4 ${isLTR ? '' : 'flex-row-reverse'}`}>
+                <SidebarTrigger className={isLTR ? "mr-2" : "ml-2"} />
                 <GlobalSearch />
               </div>
               
-                <div className="flex items-center gap-4">
+                <div className={`flex items-center gap-4 ${isLTR ? '' : 'flex-row-reverse'}`}>
                   <LanguageToggle />
                   <UserProfile />
                   <DateTime />
