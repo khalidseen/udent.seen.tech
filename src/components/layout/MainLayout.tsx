@@ -21,7 +21,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className={`flex min-h-screen w-full ${isLTR ? 'flex-row' : 'flex-row-reverse'}`}>
+      <div className="flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
           {/* Top Header */}

@@ -26,7 +26,7 @@ export function AppSidebar() {
   const [searchQuery, setSearchQuery] = useState("");
   const { signOut, user } = useAuth();
   const { hasAnyPermission, getPrimaryRole } = usePermissions();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   
   const isActive = (path: string) => currentPath === path;
 
@@ -218,7 +218,11 @@ export function AppSidebar() {
   const primaryRole = getPrimaryRole();
 
   return (
-    <Sidebar side="right" className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 border-l`} collapsible="icon">
+    <Sidebar 
+      side={isRTL ? "right" : "left"} 
+      className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 ${isRTL ? "border-l" : "border-r"}`} 
+      collapsible="icon"
+    >
       {/* Header */}
       <SidebarHeader className="p-4 border-b">
         {!collapsed ? (

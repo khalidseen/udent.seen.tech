@@ -494,30 +494,30 @@ export default function Settings() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Palette className="w-5 h-5" />
-                إعدادات المظهر
+                {t('settings.appearance')}
               </CardTitle>
               <CardDescription>
-                تخصيص مظهر النظام وإعدادات العرض
+                {t('settings.appearanceDescription')}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>المظهر</Label>
+                  <Label>{t('settings.theme')}</Label>
                   <Select value={appearance.theme} onValueChange={(value) => setAppearance({...appearance, theme: value})}>
                     <SelectTrigger className="w-48">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="light">فاتح</SelectItem>
-                      <SelectItem value="dark">داكن</SelectItem>
-                      <SelectItem value="system">تلقائي</SelectItem>
+                      <SelectItem value="light">{t('settings.light')}</SelectItem>
+                      <SelectItem value="dark">{t('settings.dark')}</SelectItem>
+                      <SelectItem value="system">{t('settings.system')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>اللغة</Label>
+                  <Label>{t('settings.language')}</Label>
                   <Select value={appearance.language} onValueChange={(value) => setAppearance({...appearance, language: value})}>
                     <SelectTrigger className="w-48">
                       <SelectValue />
@@ -529,11 +529,33 @@ export default function Settings() {
                   </Select>
                 </div>
 
+                <div className="space-y-2">
+                  <Label>{t('settings.fontWeight')}</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('settings.fontWeightDescription')}
+                  </p>
+                  <Select 
+                    value={fontWeight} 
+                    onValueChange={(value: 'normal' | 'bold') => {
+                      setFontWeight(value);
+                      setAppearance({...appearance, fontWeight: value});
+                    }}
+                  >
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="normal">{t('settings.normal')}</SelectItem>
+                      <SelectItem value="bold">{t('settings.bold')}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>الوضع المضغوط</Label>
+                    <Label>{t('settings.compactMode')}</Label>
                     <p className="text-sm text-muted-foreground">
-                      عرض أكثر كثافة للمحتوى
+                      {t('settings.compactModeDescription')}
                     </p>
                   </div>
                   <Switch 
@@ -541,29 +563,13 @@ export default function Settings() {
                     onCheckedChange={(checked) => setAppearance({...appearance, compactMode: checked})}
                   />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>{t('settings.fontWeight')}</Label>
-                    <p className="text-sm text-muted-foreground">
-                      {t('settings.fontWeightDescription')}
-                    </p>
-                  </div>
-                  <Switch 
-                    checked={fontWeight === 'bold'}
-                    onCheckedChange={(checked) => {
-                      const newWeight = checked ? 'bold' : 'normal';
-                      setFontWeight(newWeight);
-                      setAppearance({...appearance, fontWeight: newWeight});
-                    }}
-                  />
-                </div>
               </div>
 
               <Separator />
               <div className="flex justify-end">
-                <Button onClick={() => handleSave('المظهر')}>
+                <Button onClick={() => handleSave(t('settings.appearance'))}>
                   <Save className="w-4 h-4 mr-2" />
-                  حفظ التغييرات
+                  {t('common.save')}
                 </Button>
               </div>
             </CardContent>
