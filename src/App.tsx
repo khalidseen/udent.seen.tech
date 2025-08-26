@@ -95,58 +95,60 @@ function App() {
       <LanguageProvider>
         <SettingsProvider>
           <TooltipProvider>
-          <BrowserRouter>
-            <Routes>
-            {/* Public routes */}
-            <Route path="/book" element={<PublicBooking />} />
-            <Route path="/auth" element={<Auth />} />
-            
-            {/* Protected routes with main layout */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <MainLayout>
-                  <Outlet />
-                </MainLayout>
-              </ProtectedRoute>
-            }>
-              <Route index element={<Index />} />
-              <Route path="patients" element={<Patients />} />
-              <Route path="patients/:id" element={<PatientProfile />} />
-              <Route path="appointments" element={<Appointments />} />
-              <Route path="appointments/new" element={<NewAppointment />} />
-              <Route path="appointment-requests" element={<AppointmentRequests />} />
-              <Route path="medical-records" element={<MedicalRecords />} />
-              <Route path="smart-diagnosis" element={<SmartDiagnosis />} />
-              <Route path="ai-insights" element={<AIInsights />} />
-              <Route path="settings" element={<Settings />} />
-              <Route path="doctors" element={<Doctors />} />
-              <Route path="doctor-assistants" element={<DoctorAssistants />} />
-              <Route path="secretaries" element={<Secretaries />} />
-              <Route path="invoices" element={<Invoices />} />
-              <Route path="payments" element={<Payments />} />
-              <Route path="inventory" element={<Inventory />} />
-              <Route path="service-prices" element={<ServicePrices />} />
-              <Route path="purchase-orders" element={<PurchaseOrders />} />
-              <Route path="stock-movements" element={<StockMovements />} />
-              <Route path="dental-treatments" element={<DentalTreatments />} />
-              <Route path="treatments" element={<Treatments />} />
-              <Route path="advanced-3d-dental" element={<Advanced3DDental />} />
-              <Route path="notifications" element={<Notifications />} />
-              <Route path="notification-templates" element={<NotificationTemplates />} />
-              <Route path="reports" element={<Reports />} />
-              <Route path="doctor-applications" element={<DoctorApplications />} />
-              <Route path="medications" element={<Medications />} />
-              <Route path="prescriptions" element={<Prescriptions />} />
-            </Route>
-            
-            {/* 404 route */}
-            <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-          <Toaster />
-        </TooltipProvider>
-      </SettingsProvider>
-    </LanguageProvider>
+            <BrowserRouter>
+              <div className="min-h-screen bg-background">
+                <Routes>
+                  {/* Public routes */}
+                  <Route path="/book" element={<PublicBooking />} />
+                  <Route path="/auth" element={<Auth />} />
+                  
+                  {/* Protected routes with main layout */}
+                  <Route path="/" element={
+                    <ProtectedRoute>
+                      <MainLayout>
+                        <Outlet />
+                      </MainLayout>
+                    </ProtectedRoute>
+                  }>
+                    <Route index element={<Index />} />
+                    <Route path="patients" element={<Patients />} />
+                    <Route path="patients/:id" element={<PatientProfile />} />
+                    <Route path="appointments" element={<Appointments />} />
+                    <Route path="appointments/new" element={<NewAppointment />} />
+                    <Route path="appointment-requests" element={<AppointmentRequests />} />
+                    <Route path="medical-records" element={<MedicalRecords />} />
+                    <Route path="smart-diagnosis" element={<SmartDiagnosis />} />
+                    <Route path="ai-insights" element={<AIInsights />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="doctors" element={<Doctors />} />
+                    <Route path="doctor-assistants" element={<DoctorAssistants />} />
+                    <Route path="secretaries" element={<Secretaries />} />
+                    <Route path="invoices" element={<Invoices />} />
+                    <Route path="payments" element={<Payments />} />
+                    <Route path="inventory" element={<Inventory />} />
+                    <Route path="service-prices" element={<ServicePrices />} />
+                    <Route path="purchase-orders" element={<PurchaseOrders />} />
+                    <Route path="stock-movements" element={<StockMovements />} />
+                    <Route path="dental-treatments" element={<DentalTreatments />} />
+                    <Route path="treatments" element={<Treatments />} />
+                    <Route path="advanced-3d-dental" element={<Advanced3DDental />} />
+                    <Route path="notifications" element={<Notifications />} />
+                    <Route path="notification-templates" element={<NotificationTemplates />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="doctor-applications" element={<DoctorApplications />} />
+                    <Route path="medications" element={<Medications />} />
+                    <Route path="prescriptions" element={<Prescriptions />} />
+                  </Route>
+                  
+                  {/* 404 route */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Toaster />
+              </div>
+            </BrowserRouter>
+          </TooltipProvider>
+        </SettingsProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
