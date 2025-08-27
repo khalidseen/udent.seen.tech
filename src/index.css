@@ -114,6 +114,22 @@ All colors MUST be HSL.
     text-rendering: optimizeLegibility;
     font-weight: var(--font-weight-global, 400);
   }
+  
+  /* LTR mode adjustments */
+  body.ltr {
+    direction: ltr;
+  }
+  
+  /* Sidebar positioning fix for LTR */
+  .ltr [data-side="left"] {
+    left: 0;
+    right: auto;
+  }
+  
+  .ltr [data-side="right"] {
+    right: 0;
+    left: auto;
+  }
 
   /* Removed conflicting sidebar-layout CSS */
 

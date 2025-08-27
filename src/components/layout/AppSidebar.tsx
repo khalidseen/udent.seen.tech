@@ -220,13 +220,13 @@ export function AppSidebar() {
   return (
     <Sidebar 
       side={isRTL ? "right" : "left"} 
-      className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 ${isRTL ? "border-l" : "border-r"}`} 
+      className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 ${isRTL ? "border-l" : "border-r"} relative z-30`} 
       collapsible="icon"
     >
       {/* Header */}
       <SidebarHeader className="p-4 border-b">
         {!collapsed ? (
-          <div className="flex items-center space-x-3 space-x-reverse">
+          <div className={`flex items-center ${isRTL ? 'space-x-3 space-x-reverse' : 'gap-3'}`}>
             <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
               <Stethoscope className="w-5 h-5 text-primary-foreground" />
             </div>
@@ -259,8 +259,10 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
                       <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <Icon className="w-4 h-4 shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
+                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                          <Icon className="w-4 h-4 shrink-0" />
+                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                        </div>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -285,8 +287,10 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
                       <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <Icon className="w-4 h-4 shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
+                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                          <Icon className="w-4 h-4 shrink-0" />
+                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                        </div>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -311,8 +315,10 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
                       <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <Icon className="w-4 h-4 shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
+                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                          <Icon className="w-4 h-4 shrink-0" />
+                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                        </div>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -337,8 +343,10 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
                       <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <Icon className="w-4 h-4 shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
+                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                          <Icon className="w-4 h-4 shrink-0" />
+                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                        </div>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -363,8 +371,10 @@ export function AppSidebar() {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
                       <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <Icon className="w-4 h-4 shrink-0" />
-                        {!collapsed && <span>{item.title}</span>}
+                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                          <Icon className="w-4 h-4 shrink-0" />
+                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                        </div>
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -395,18 +405,22 @@ export function AppSidebar() {
                           rel="noopener noreferrer"
                           className={`${getNavClasses(item.url)} text-blue-600 hover:text-blue-700`}
                         >
-                          <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && (
-                            <span className="flex items-center gap-1">
-                              {item.title} 
-                              <ExternalLink className="w-3 h-3" />
-                            </span>
-                          )}
+                          <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                            <Icon className="w-4 h-4 shrink-0" />
+                            {!collapsed && (
+                              <span className="flex items-center gap-1 flex-1">
+                                {item.title} 
+                                <ExternalLink className="w-3 h-3" />
+                              </span>
+                            )}
+                          </div>
                         </a>
                       ) : (
                         <NavLink to={item.url} className={getNavClasses(item.url)}>
-                          <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span>{item.title}</span>}
+                          <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                            <Icon className="w-4 h-4 shrink-0" />
+                            {!collapsed && <span className="flex-1">{item.title}</span>}
+                          </div>
                         </NavLink>
                       )}
                     </SidebarMenuButton>
@@ -433,8 +447,10 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className="h-9">
                         <NavLink to={item.url} className={getNavClasses(item.url)}>
-                          <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span>{item.title}</span>}
+                          <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                            <Icon className="w-4 h-4 shrink-0" />
+                            {!collapsed && <span className="flex-1">{item.title}</span>}
+                          </div>
                         </NavLink>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

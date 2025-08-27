@@ -21,11 +21,11 @@ export function MainLayout({ children }: MainLayoutProps) {
   
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
+      <div className={`flex min-h-screen w-full ${isLTR ? 'flex-row' : 'flex-row-reverse'}`}>
         <AppSidebar />
-        <SidebarInset className="flex-1">
+        <SidebarInset className="flex-1 relative">
           {/* Top Header */}
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full">
+          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full">
             <div className="container flex h-full items-center justify-between px-4">
               <div className={`flex items-center gap-4 ${isLTR ? '' : 'flex-row-reverse'}`}>
                 <SidebarTrigger className={isLTR ? "mr-2" : "ml-2"} />
