@@ -220,7 +220,7 @@ export function AppSidebar() {
   return (
     <Sidebar 
       side={isRTL ? "right" : "left"} 
-      className={`${isRTL ? "border-l" : "border-r"}`}
+      className={`${isRTL ? "border-l" : "border-r"} flex-shrink-0`}
       collapsible="icon"
     >
       {/* Header */}
