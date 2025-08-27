@@ -44,8 +44,8 @@ export function MainLayout({ children }: MainLayoutProps) {
           <SmartNotificationSystem />
           
           {/* Page Content */}
-          <main className="flex-1 px-6 py-6 overflow-auto bg-gradient-to-br from-background via-background to-muted/30">
-            <div className="max-w-full mx-auto">
+          <main className="flex-1 px-6 py-6 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 w-full min-w-0">
+            <div className="max-w-full mx-auto w-full">
               {children}
             </div>
           </main>
