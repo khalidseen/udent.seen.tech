@@ -247,7 +247,7 @@ export function AppSidebar() {
         {/* Main Menu */}
         <SidebarGroup className="mb-4">
           {!collapsed && (
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+            <SidebarGroupLabel className={`text-xs font-semibold text-muted-foreground mb-2 ${isRTL ? 'text-right' : ''}`}>
               {t('sidebar.mainMenu')}
             </SidebarGroupLabel>
           )}
@@ -258,10 +258,10 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
-                      <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                       <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <div className={`flex items-center gap-2 w-full ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
                           <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                          {!collapsed && <span className={`flex-1 ${isRTL ? 'text-right' : ''}`}>{item.title}</span>}
                         </div>
                       </NavLink>
                     </SidebarMenuButton>
@@ -275,7 +275,7 @@ export function AppSidebar() {
         {/* AI & Smart Diagnosis */}
         <SidebarGroup className="mb-4">
           {!collapsed && (
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+            <SidebarGroupLabel className={`text-xs font-semibold text-muted-foreground mb-2 ${isRTL ? 'text-right' : ''}`}>
               {t('sidebar.aiMenu')}
             </SidebarGroupLabel>
           )}
@@ -286,10 +286,10 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
-                      <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                       <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <div className={`flex items-center gap-2 w-full ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
                           <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                          {!collapsed && <span className={`flex-1 ${isRTL ? 'text-right' : ''}`}>{item.title}</span>}
                         </div>
                       </NavLink>
                     </SidebarMenuButton>
@@ -303,7 +303,7 @@ export function AppSidebar() {
         {/* Staff Management */}
         <SidebarGroup className="mb-4">
           {!collapsed && (
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+            <SidebarGroupLabel className={`text-xs font-semibold text-muted-foreground mb-2 ${isRTL ? 'text-right' : ''}`}>
               {t('sidebar.staffManagement')}
             </SidebarGroupLabel>
           )}
@@ -314,10 +314,10 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
-                      <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                       <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <div className={`flex items-center gap-2 w-full ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
                           <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                          {!collapsed && <span className={`flex-1 ${isRTL ? 'text-right' : ''}`}>{item.title}</span>}
                         </div>
                       </NavLink>
                     </SidebarMenuButton>
@@ -331,7 +331,7 @@ export function AppSidebar() {
         {/* Financial Management */}
         <SidebarGroup className="mb-4">
           {!collapsed && (
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+            <SidebarGroupLabel className={`text-xs font-semibold text-muted-foreground mb-2 ${isRTL ? 'text-right' : ''}`}>
               {t('sidebar.financialManagement')}
             </SidebarGroupLabel>
           )}
@@ -342,10 +342,10 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
-                      <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                       <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <div className={`flex items-center gap-2 w-full ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
                           <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                          {!collapsed && <span className={`flex-1 ${isRTL ? 'text-right' : ''}`}>{item.title}</span>}
                         </div>
                       </NavLink>
                     </SidebarMenuButton>
@@ -359,7 +359,7 @@ export function AppSidebar() {
         {/* Inventory Management */}
         <SidebarGroup className="mb-4">
           {!collapsed && (
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+            <SidebarGroupLabel className={`text-xs font-semibold text-muted-foreground mb-2 ${isRTL ? 'text-right' : ''}`}>
               {t('sidebar.inventoryManagement')}
             </SidebarGroupLabel>
           )}
@@ -370,10 +370,10 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild className="h-9">
-                      <NavLink to={item.url} className={getNavClasses(item.url)}>
-                        <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                       <NavLink to={item.url} className={getNavClasses(item.url)}>
+                        <div className={`flex items-center gap-2 w-full ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
                           <Icon className="w-4 h-4 shrink-0" />
-                          {!collapsed && <span className="flex-1">{item.title}</span>}
+                          {!collapsed && <span className={`flex-1 ${isRTL ? 'text-right' : ''}`}>{item.title}</span>}
                         </div>
                       </NavLink>
                     </SidebarMenuButton>
@@ -387,7 +387,7 @@ export function AppSidebar() {
         {/* System Management */}
         <SidebarGroup className="mb-4">
           {!collapsed && (
-            <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+            <SidebarGroupLabel className={`text-xs font-semibold text-muted-foreground mb-2 ${isRTL ? 'text-right' : ''}`}>
               {t('sidebar.systemManagement')}
             </SidebarGroupLabel>
           )}
@@ -405,10 +405,10 @@ export function AppSidebar() {
                           rel="noopener noreferrer"
                           className={`${getNavClasses(item.url)} text-blue-600 hover:text-blue-700`}
                         >
-                          <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                          <div className={`flex items-center gap-2 w-full ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
                             <Icon className="w-4 h-4 shrink-0" />
                             {!collapsed && (
-                              <span className="flex items-center gap-1 flex-1">
+                              <span className={`flex items-center gap-1 flex-1 ${isRTL ? 'text-right' : ''}`}>
                                 {item.title} 
                                 <ExternalLink className="w-3 h-3" />
                               </span>
@@ -417,9 +417,9 @@ export function AppSidebar() {
                         </a>
                       ) : (
                         <NavLink to={item.url} className={getNavClasses(item.url)}>
-                          <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                          <div className={`flex items-center gap-2 w-full ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
                             <Icon className="w-4 h-4 shrink-0" />
-                            {!collapsed && <span className="flex-1">{item.title}</span>}
+                            {!collapsed && <span className={`flex-1 ${isRTL ? 'text-right' : ''}`}>{item.title}</span>}
                           </div>
                         </NavLink>
                       )}
@@ -435,7 +435,7 @@ export function AppSidebar() {
         {filteredAdvancedMenu.length > 0 && (
           <SidebarGroup>
             {!collapsed && (
-              <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground mb-2">
+              <SidebarGroupLabel className={`text-xs font-semibold text-muted-foreground mb-2 ${isRTL ? 'text-right' : ''}`}>
                 {t('sidebar.advancedFeatures')}
               </SidebarGroupLabel>
             )}
@@ -447,9 +447,9 @@ export function AppSidebar() {
                     <SidebarMenuItem key={item.title}>
                       <SidebarMenuButton asChild className="h-9">
                         <NavLink to={item.url} className={getNavClasses(item.url)}>
-                          <div className={`flex items-center ${isRTL ? 'gap-2' : 'gap-2'} w-full`}>
+                          <div className={`flex items-center gap-2 w-full ${isRTL ? 'flex-row-reverse text-right' : ''}`}>
                             <Icon className="w-4 h-4 shrink-0" />
-                            {!collapsed && <span className="flex-1">{item.title}</span>}
+                            {!collapsed && <span className={`flex-1 ${isRTL ? 'text-right' : ''}`}>{item.title}</span>}
                           </div>
                         </NavLink>
                       </SidebarMenuButton>
