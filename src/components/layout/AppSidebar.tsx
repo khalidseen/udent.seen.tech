@@ -220,7 +220,7 @@ export function AppSidebar() {
   return (
     <Sidebar 
       side={isRTL ? "right" : "left"} 
-      className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 ${isRTL ? "border-l" : "border-r"} relative z-30`} 
+      className={`${isRTL ? "border-l" : "border-r"}`}
       collapsible="icon"
     >
       {/* Header */}
