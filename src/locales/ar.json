@@ -58,7 +58,13 @@
     "pendingTreatments": "العلاجات المعلقة",
     "monthlyRevenue": "الإيرادات الشهرية",
     "quickActions": "الإجراءات السريعة",
-    "recentActivity": "النشاط الأخير"
+    "recentActivity": "النشاط الأخير",
+    "tabs": {
+      "analytics": "التحليلات",
+      "notifications": "الإشعارات",
+      "actions": "الإجراءات",
+      "system": "النظام"
+    }
   },
   "patients": {
     "title": "المرضى",
@@ -118,8 +124,7 @@
     "compactModeDescription": "تقليل المسافات بين العناصر",
     "data": "البيانات",
     "permissions": "الصلاحيات",
-    "data": "البيانات",
-    "permissions": "الصلاحيات",
+    "performance": "الأداء",
     "general": "عام",
     "system": "النظام",
     "advanced": "متقدم",

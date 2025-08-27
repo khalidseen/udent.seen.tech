@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Building2, User, Bell, Shield, Palette, Clock, Globe, Save, Database, Users } from "lucide-react";
+import { Building2, User, Bell, Shield, Palette, Clock, Globe, Save, Database, Users, Zap } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { CacheManager } from "@/components/cache/CacheManager";
@@ -18,6 +18,7 @@ import { PermissionsManagement } from "@/components/settings/PermissionsManageme
 import { PermissionGate } from "@/components/auth/PermissionGate";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSettings } from "@/contexts/SettingsContext";
+import { PerformanceOptimizer } from "@/components/performance/PerformanceOptimizer";
 
 export default function Settings() {
   const { t } = useLanguage();
@@ -73,7 +74,7 @@ export default function Settings() {
       />
 
       <Tabs defaultValue="clinic" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
           <TabsTrigger value="clinic" className="flex items-center gap-2">
             <Building2 className="w-4 h-4" />
             {t('settings.clinic')}
@@ -93,6 +94,10 @@ export default function Settings() {
           <TabsTrigger value="appearance" className="flex items-center gap-2">
             <Palette className="w-4 h-4" />
             {t('settings.appearance')}
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            <Zap className="w-4 h-4" />
+            {t('settings.performance')}
           </TabsTrigger>
           <TabsTrigger value="cache" className="flex items-center gap-2">
             <Database className="w-4 h-4" />
@@ -579,6 +584,11 @@ export default function Settings() {
         {/* إعدادات إدارة البيانات والكاش */}
         <TabsContent value="cache">
           <CacheManager />
+        </TabsContent>
+
+        {/* إعدادات الأداء */}
+        <TabsContent value="performance">
+          <PerformanceOptimizer />
         </TabsContent>
 
         {/* إدارة الصلاحيات والأدوار */}

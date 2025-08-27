@@ -58,7 +58,13 @@
     "pendingTreatments": "Pending Treatments",
     "monthlyRevenue": "Monthly Revenue",
     "quickActions": "Quick Actions",
-    "recentActivity": "Recent Activity"
+    "recentActivity": "Recent Activity",
+    "tabs": {
+      "analytics": "Analytics",
+      "notifications": "Notifications",
+      "actions": "Actions",
+      "system": "System"
+    }
   },
   "patients": {
     "title": "Patients",
@@ -118,6 +124,7 @@
     "compactModeDescription": "Reduce spacing between elements",
     "data": "Data",
     "permissions": "Permissions",
+    "performance": "Performance",
     "general": "General",
     "system": "System",
     "advanced": "Advanced",
