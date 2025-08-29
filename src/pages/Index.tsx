@@ -62,6 +62,15 @@ const Index = () => {
       order_index: 2
     },
     {
+      id: "public-booking-link",
+      title: "رابط حجز المرضى",
+      description: "رابط مباشر يمكن مشاركته مع المرضى لحجز موعد عبر الإنترنت",
+      icon: Link,
+      color: "bg-lime-600",
+      route: "/public-booking",
+      order_index: 3
+    },
+    {
       id: "3",
       title: "السجلات الطبية",
       description: "إدارة السجلات الطبية للمرضى",
@@ -164,7 +173,14 @@ const Index = () => {
       // أولاً محاولة التحميل من localStorage
       const savedCards = localStorage.getItem('dashboard_cards');
       if (savedCards) {
-        const parsedCards = JSON.parse(savedCards);
+        let parsedCards = JSON.parse(savedCards);
+        // دمج البطاقات الجديدة من defaultCards إذا لم تكن موجودة
+        defaultCards.forEach((defCard) => {
+          if (!parsedCards.some((c: any) => c.id === defCard.id)) {
+            parsedCards.push(defCard);
+          }
+        });
+        // تحديث الخصائص (color, icon) من defaultCards دائماً
         const loadedCards = parsedCards.map((item: any) => {
           const defaultCard = defaultCards.find(card => card.id === item.id);
           return {
@@ -174,6 +190,7 @@ const Index = () => {
           };
         });
         setActionCards(loadedCards);
+        localStorage.setItem('dashboard_cards', JSON.stringify(loadedCards));
         setLoading(false);
         return;
       }
@@ -191,7 +208,7 @@ const Index = () => {
         setActionCards(defaultCards);
       } else if (data && data.length > 0) {
         // تحويل البيانات من قاعدة البيانات إلى تنسيق المكون
-        const loadedCards = data.map((item: any) => {
+        let loadedCards = data.map((item: any) => {
           const defaultCard = defaultCards.find(card => card.id === item.id);
           return {
             id: item.id,
@@ -202,6 +219,12 @@ const Index = () => {
             icon: defaultCard?.icon || Settings,
             order_index: item.order_index
           };
+        });
+        // دمج البطاقات الجديدة من defaultCards إذا لم تكن موجودة
+        defaultCards.forEach((defCard) => {
+          if (!loadedCards.some((c: any) => c.id === defCard.id)) {
+            loadedCards.push(defCard);
+          }
         });
         setActionCards(loadedCards);
         // حفظ في localStorage للمرة القادمة
