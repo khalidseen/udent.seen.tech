@@ -194,4 +194,44 @@ All colors MUST be HSL.
   ::-webkit-scrollbar-thumb:hover {
     @apply bg-border/70;
   }
+
+  /* Hide scrollbar for WebKit browsers */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Smooth scrolling for sidebar */
+  .sidebar-scroll {
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+  }
+
+  /* Custom thin scrollbar for collapsed sidebar */
+  .sidebar-collapsed-scroll::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  .sidebar-collapsed-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-collapsed-scroll::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+
+  .sidebar-collapsed-scroll::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Firefox scrollbar for collapsed sidebar */
+  .sidebar-collapsed-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
 }
