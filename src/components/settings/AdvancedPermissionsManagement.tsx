@@ -182,13 +182,24 @@ export const AdvancedPermissionsManagement = () => {
     fetchTemporaryPermissions();
   }, []);
 
-  // تجميع الصلاحيات حسب الفئة
+  // تجميع الصلاحيات حسب الفئة مع تحسين الأسماء
+  const categoryNames = {
+    'main_menu': 'القائمة الرئيسية',
+    'ai_features': 'الذكاء الاصطناعي',
+    'staff_management': 'إدارة الموظفين',
+    'financial_management': 'الإدارة المالية',
+    'inventory_management': 'إدارة المخزون',
+    'system_management': 'إدارة النظام',
+    'advanced_features': 'الميزات المتقدمة'
+  };
+
   const groupedPermissions = permissions.reduce((acc, permission) => {
     const category = permission.category || 'أخرى';
-    if (!acc[category]) {
-      acc[category] = [];
+    const categoryDisplayName = categoryNames[category as keyof typeof categoryNames] || category;
+    if (!acc[categoryDisplayName]) {
+      acc[categoryDisplayName] = [];
     }
-    acc[category].push(permission);
+    acc[categoryDisplayName].push(permission);
     return acc;
   }, {} as Record<string, typeof permissions>);
 
