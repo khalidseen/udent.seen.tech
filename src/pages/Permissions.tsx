@@ -3,12 +3,18 @@ import { usePermissions } from '@/hooks/usePermissions';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { AdvancedPermissionsManagement } from '@/components/settings/AdvancedPermissionsManagement';
 import { PageContainer } from '@/components/layout/PageContainer';
+import { PageHeader } from '@/components/layout/PageHeader';
 import { AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Permissions() {
   return (
     <PageContainer>
+      <PageHeader 
+        title="إدارة الصلاحيات والأدوار" 
+        description="إدارة وتعديل صلاحيات المستخدمين والأدوار في النظام"
+      />
+      
       <PermissionGate 
         permissions={['permissions.manage']}
         fallback={
@@ -19,7 +25,7 @@ export default function Permissions() {
                 غير مصرح لك بالوصول
               </CardTitle>
               <CardDescription>
-                تحتاج إلى صلاحية "permissions.manage" للوصول إلى إدارة الصلاحيات.
+                تحتاج إلى صلاحية "permissions.manage" للوصول إلى إدارة الصلاحيات والأدوار.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -30,16 +36,7 @@ export default function Permissions() {
           </Card>
         }
       >
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">إدارة الصلاحيات والأدوار</h1>
-            <p className="text-muted-foreground">
-              تحكم في صلاحيات المستخدمين وإدارة الأدوار في النظام
-            </p>
-          </div>
-          
-          <AdvancedPermissionsManagement />
-        </div>
+        <AdvancedPermissionsManagement />
       </PermissionGate>
     </PageContainer>
   );
