@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Loader2, User, Mail, Phone, Key, UserCheck, Shield } from 'lucide-react';
+import { Loader2, User, Mail, Phone, Key, UserCheck, Shield, AlertCircle, CheckCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface AddUserDialogProps {
   open: boolean;
@@ -61,6 +62,7 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>('');
+  const [successMessage, setSuccessMessage] = useState<string>('');
   
   const [formData, setFormData] = useState({
     email: '',
@@ -72,6 +74,8 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear success message when user starts typing
+    if (successMessage) setSuccessMessage('');
   };
 
   const generateRandomPassword = () => {
@@ -120,12 +124,8 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
 
     try {
       setLoading(true);
-
-      console.log('Submitting user creation with:', { 
-        email: formData.email, 
-        fullName: formData.fullName, 
-        role: selectedRole 
-      });
+      setSuccessMessage('');
+      console.log('Submitting user creation form...');
 
       // استخدام Edge Function لإنشاء المستخدم
       const { data, error } = await supabase.functions.invoke('create-user', {
@@ -139,23 +139,26 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
         }
       });
 
-      console.log('Function response:', { data, error });
+      console.log('Edge function response:', { data, error });
 
       if (error) {
-        console.error('Function invocation error:', error);
+        console.error('Edge function error:', error);
         throw new Error(error.message || 'خطأ في استدعاء الدالة');
       }
 
-      if (data?.error) {
-        throw new Error(data.error);
+      // التحقق من نجاح العملية
+      if (!data?.success) {
+        const errorMsg = data?.error || 'فشل في إنشاء المستخدم';
+        console.error('Creation failed:', errorMsg);
+        throw new Error(errorMsg);
       }
 
-      if (!data?.success) {
-        throw new Error(data?.error || 'فشل في إنشاء المستخدم');
-      }
+      console.log('User created successfully:', data.user);
+      
+      setSuccessMessage(`تم إنشاء المستخدم بنجاح! الاسم: ${formData.fullName}, الدور: ${roles.find(r => r.role_name === selectedRole)?.role_name_ar}`);
 
       toast({
-        title: 'تم إنشاء المستخدم بنجاح ✅',
+        title: 'تم إنشاء المستخدم بنجاح!',
         description: `تم إنشاء حساب ${formData.fullName} بصلاحية ${roles.find(r => r.role_name === selectedRole)?.role_name_ar}`,
       });
 
@@ -169,34 +172,37 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
       });
       setSelectedRole('');
       
-      // تحديث قائمة المستخدمين
+      // إعادة تحميل قائمة المستخدمين مع تأخير للتأكد من حفظ البيانات
       setTimeout(() => {
         onSuccess?.();
-      }, 1000); // انتظار قصير للتأكد من حفظ البيانات
+      }, 2000);
       
-      onOpenChange(false);
+      // إغلاق الحوار بعد فترة قصيرة لإظهار رسالة النجاح
+      setTimeout(() => {
+        onOpenChange(false);
+        setSuccessMessage('');
+      }, 3000);
 
     } catch (error: any) {
-      console.error('Error creating user:', error);
-      
+      console.error('Error in user creation:', error);
       let errorMessage = 'حدث خطأ أثناء إنشاء المستخدم';
       
       if (error.message) {
-        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
+        if (error.message.includes('already registered') || error.message.includes('email_exists') || error.message.includes('User already registered')) {
           errorMessage = 'هذا البريد الإلكتروني مسجل مسبقاً';
-        } else if (error.message.includes('Missing required fields')) {
-          errorMessage = 'البيانات المطلوبة ناقصة';
-        } else if (error.message.includes('Invalid email')) {
-          errorMessage = 'البريد الإلكتروني غير صالح';
-        } else if (error.message.includes('password') || error.message.includes('Password')) {
-          errorMessage = 'كلمة المرور غير قوية بما فيه الكفاية (يجب أن تحتوي على 8 أحرف على الأقل)';
+        } else if (error.message.includes('email')) {
+          errorMessage = 'خطأ في البريد الإلكتروني';
+        } else if (error.message.includes('password')) {
+          errorMessage = 'كلمة المرور غير قوية بما فيه الكفاية';
+        } else if (error.message.includes('Network') || error.message.includes('network')) {
+          errorMessage = 'خطأ في الاتصال بالخادم - يرجى المحاولة مرة أخرى';
         } else {
           errorMessage = error.message;
         }
       }
       
       toast({
-        title: 'خطأ في إنشاء المستخدم ❌',
+        title: 'خطأ في إنشاء المستخدم',
         description: errorMessage,
         variant: 'destructive'
       });
@@ -218,6 +224,16 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          {/* رسالة النجاح */}
+          {successMessage && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                {successMessage}
+              </AlertDescription>
+            </Alert>
+          )}
+
           {/* معلومات المستخدم الأساسية */}
           <Card>
             <CardHeader>
@@ -235,6 +251,7 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
                     placeholder="أدخل الاسم الكامل"
+                    disabled={loading}
                   />
                 </div>
 
@@ -249,6 +266,7 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
                       onChange={(e) => handleInputChange('email', e.target.value)}
                       placeholder="user@example.com"
                       className="pl-9"
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -267,6 +285,7 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
                         onChange={(e) => handleInputChange('password', e.target.value)}
                         placeholder="أدخل كلمة المرور"
                         className="pl-9"
+                        disabled={loading}
                       />
                     </div>
                     <Button
@@ -274,6 +293,7 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
                       variant="outline"
                       onClick={generateRandomPassword}
                       className="whitespace-nowrap"
+                      disabled={loading}
                     >
                       إنشاء عشوائي
                     </Button>
@@ -293,6 +313,7 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       placeholder="05xxxxxxxx"
                       className="pl-9"
+                      disabled={loading}
                     />
                   </div>
                 </div>
@@ -306,6 +327,7 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
                   onChange={(e) => handleInputChange('notes', e.target.value)}
                   placeholder="ملاحظات إضافية عن المستخدم..."
                   rows={3}
+                  disabled={loading}
                 />
               </div>
             </CardContent>
@@ -325,7 +347,7 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="role">الدور *</Label>
-                <Select value={selectedRole} onValueChange={setSelectedRole}>
+                <Select value={selectedRole} onValueChange={setSelectedRole} disabled={loading}>
                   <SelectTrigger>
                     <SelectValue placeholder="اختر دور المستخدم" />
                   </SelectTrigger>
@@ -371,23 +393,34 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
               )}
             </CardContent>
           </Card>
+
+          {/* تنبيه أمني */}
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              سيتم إنشاء حساب جديد وإرسال إيميل تأكيد للمستخدم. تأكد من صحة البريد الإلكتروني المُدخل.
+            </AlertDescription>
+          </Alert>
         </div>
 
         {/* أزرار الإجراءات */}
         <div className="flex justify-end gap-2 pt-4">
           <Button
             variant="outline"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onOpenChange(false);
+              setSuccessMessage('');
+            }}
             disabled={loading}
           >
             إلغاء
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={loading || !selectedRole}
+            disabled={loading || !selectedRole || !formData.email || !formData.password || !formData.fullName}
           >
             {loading && <Loader2 className="w-4 h-4 ml-2 animate-spin" />}
-            إنشاء المستخدم
+            {loading ? 'جاري الإنشاء...' : 'إنشاء المستخدم'}
           </Button>
         </div>
       </DialogContent>

@@ -12,7 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    // Create admin client using service role key
+    console.log('Starting user creation process...');
+    
+    // Create admin client with service role
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -24,14 +26,23 @@ serve(async (req) => {
       }
     );
 
-    const { email, password, fullName, role, phone, notes } = await req.json();
+    console.log('Admin client created successfully');
 
-    console.log('Creating user with:', { email, fullName, role });
+    const requestBody = await req.json();
+    console.log('Request body received:', { 
+      email: requestBody.email, 
+      hasPassword: !!requestBody.password,
+      fullName: requestBody.fullName,
+      role: requestBody.role 
+    });
+
+    const { email, password, fullName, role, phone, notes } = requestBody;
 
     // Validate input
     if (!email || !password || !fullName || !role) {
+      console.log('Validation failed: missing required fields');
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: email, password, fullName, role' }), 
+        JSON.stringify({ error: 'Missing required fields: email, password, fullName, and role are required' }), 
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -39,25 +50,13 @@ serve(async (req) => {
       );
     }
 
-    // Check if user already exists
-    const { data: existingUser } = await supabaseAdmin.auth.admin.listUsers();
-    const userExists = existingUser.users?.find(u => u.email === email);
-    
-    if (userExists) {
-      return new Response(
-        JSON.stringify({ error: 'A user with this email address has already been registered' }), 
-        { 
-          status: 422, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
+    console.log('Validation passed, creating user...');
 
-    // Create user in Auth with email confirmation
+    // Create user in Auth
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
       email: email,
       password: password,
-      email_confirm: true, // تأكيد البريد الإلكتروني تلقائياً
+      email_confirm: true, // Auto-confirm for admin-created users
       user_metadata: {
         full_name: fullName,
         role: role,
@@ -67,20 +66,21 @@ serve(async (req) => {
     });
 
     if (authError) {
-      console.error('Auth error:', authError);
+      console.error('Auth creation failed:', authError);
       return new Response(
         JSON.stringify({ 
-          error: authError.message || 'Database error creating new user',
-          details: authError 
+          error: authError.message,
+          code: authError.code || 'auth_error'
         }), 
         { 
-          status: 500, 
+          status: authError.status || 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
         }
       );
     }
 
     if (!authData.user) {
+      console.error('User creation returned no user data');
       return new Response(
         JSON.stringify({ error: 'Failed to create user - no user data returned' }), 
         { 
@@ -90,9 +90,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('User created successfully:', authData.user.id);
+    console.log('Auth user created successfully, ID:', authData.user.id);
 
-    // Create profile explicitly (في حالة لم يتم تشغيل trigger)
+    // Small delay to ensure trigger completion
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Create profile explicitly to ensure it exists
+    console.log('Creating profile...');
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .upsert([
@@ -107,11 +111,13 @@ serve(async (req) => {
       });
 
     if (profileError) {
-      console.error('Profile creation error (non-fatal):', profileError);
-      // لا نفشل العملية إذا فشل إنشاء الملف الشخصي لأن trigger قد يكون تولى الأمر
+      console.warn('Profile creation warning (may be handled by trigger):', profileError);
+      // Don't fail the request if profile creation fails - trigger might handle it
+    } else {
+      console.log('Profile created/updated successfully');
     }
 
-    console.log('Profile created/updated successfully');
+    console.log('User creation completed successfully');
 
     return new Response(
       JSON.stringify({ 
@@ -121,8 +127,7 @@ serve(async (req) => {
           id: authData.user.id,
           email: authData.user.email,
           full_name: fullName,
-          role: role,
-          created_at: authData.user.created_at
+          role: role
         }
       }), 
       { 
@@ -132,33 +137,14 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Function error:', error);
-    
-    let errorMessage = 'Internal server error';
-    let status = 500;
-    
-    if (error.message) {
-      if (error.message.includes('already registered')) {
-        errorMessage = 'A user with this email address has already been registered';
-        status = 422;
-      } else if (error.message.includes('email')) {
-        errorMessage = 'Invalid email address';
-        status = 400;
-      } else if (error.message.includes('password')) {
-        errorMessage = 'Password does not meet security requirements';
-        status = 400;
-      } else {
-        errorMessage = error.message;
-      }
-    }
-    
+    console.error('Unexpected error in user creation:', error);
     return new Response(
       JSON.stringify({ 
-        error: errorMessage,
-        details: error.toString()
+        error: 'Internal server error',
+        details: error.message || 'Unknown error occurred'
       }), 
       { 
-        status: status, 
+        status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
