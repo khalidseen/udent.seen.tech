@@ -261,7 +261,7 @@ const PatientList = () => {
 
   return (
     <PageContainer>
-      {/* شريط الأدوات الجديد */}
+      {/* شريط الأدوات الجديد - محدث */}
       <PatientToolbar
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
