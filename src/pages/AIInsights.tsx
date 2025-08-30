@@ -6,13 +6,16 @@ import { PredictiveAnalyticsDashboard } from "@/components/ai-analysis/Predictiv
 import { SmartPatientRecommendations } from "@/components/ai-analysis/SmartPatientRecommendations";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Brain, TrendingUp, Users, Bot } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function AIInsights() {
+  const { t } = useLanguage();
+  
   return (
     <PageContainer>
       <PageHeader
-        title="الذكاء الاصطناعي والتحليلات"
-        description="مركز شامل للتحليل المدعوم بالذكاء الاصطناعي والتنبؤات الذكية"
+        title={t("aiFeatures.title")}
+        description={t("aiFeatures.description")}
       />
 
       <div className="space-y-6">
@@ -20,19 +23,19 @@ export default function AIInsights() {
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Brain className="h-4 w-4" />
-              نظرة عامة
+              {t("aiFeatures.overview")}
             </TabsTrigger>
             <TabsTrigger value="assistant" className="flex items-center gap-2">
               <Bot className="h-4 w-4" />
-              المساعد الطبي
+              {t("aiFeatures.assistant")}
             </TabsTrigger>
             <TabsTrigger value="predictions" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
-              التحليلات التنبؤية
+              {t("aiFeatures.predictions")}
             </TabsTrigger>
             <TabsTrigger value="recommendations" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
-              توصيات المرضى
+              {t("aiFeatures.recommendations")}
             </TabsTrigger>
           </TabsList>
 

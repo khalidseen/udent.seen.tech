@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Auth() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, signIn, signInDemo } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
@@ -336,6 +336,23 @@ export default function Auth() {
                     {isSubmitting ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
                   </Button>
                 </form>
+
+                {/* Demo Login Button */}
+                <div className="mt-4">
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    className="w-full" 
+                    disabled={isSubmitting || loading}
+                    onClick={async () => {
+                      setIsSubmitting(true);
+                      await signInDemo();
+                      setIsSubmitting(false);
+                    }}
+                  >
+                    {isSubmitting ? "جاري الدخول..." : "🎮 دخول تجريبي (للمطورين)"}
+                  </Button>
+                </div>
 
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border/50">
                   <div className="flex items-center gap-2 mb-2">

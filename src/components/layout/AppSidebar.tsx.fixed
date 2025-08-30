@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, NavLink } from "react-router-dom";
 import "./sidebar.css";
 import { 
@@ -34,17 +34,16 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useSettings } from "@/hooks/useSettingsHook";
-import { useSidebar } from "@/contexts/SidebarContext";
+import { useSettings } from "@/contexts/SettingsContext";
 import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
-  const { isCollapsed, setIsCollapsed } = useSidebar();
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { t, isRTL } = useLanguage();
   const location = useLocation();
   const currentPath = location.pathname;
   
-  const [searchQuery, setSearchQuery] = React.useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const { signOut, user } = useAuth();
   const { hasAnyPermission, getPrimaryRole, loading: permissionsLoading } = usePermissions();
   const { sidebarIconSize } = useSettings();
@@ -83,21 +82,14 @@ export function AppSidebar() {
       groupTitle: t('sidebar.staffManagement'),
       items: [
         { title: t('navigation.doctors'), url: "/doctors", icon: Stethoscope, permissions: ["doctors.view"] },
-        { title: t('sidebar.doctorAssistants'), url: "/doctor-assistants", icon: UserCog, permissions: ["assistants.view"] },
-        { title: t('sidebar.secretaries'), url: "/secretaries", icon: User, permissions: ["secretaries.view"] }
+        { title: t('sidebar.doctorAssistants'), url: "/doctor-assistants", icon: UserCog, permissions: ["assistants.view"] }
       ]
     },
     {
       groupTitle: t('sidebar.financialManagement'),
       items: [
         { title: t('navigation.invoices'), url: "/invoices", icon: Receipt, permissions: ["invoices.view"] },
-        { title: t('payments.title'), url: "/payments", icon: DollarSign, permissions: ["payments.view"] }
-      ]
-    },
-    {
-      groupTitle: t('sidebar.systemManagement'),
-      items: [
-        { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: ["settings.view"] }
+        { title: t('payments'), url: "/payments", icon: DollarSign, permissions: ["payments.view"] }
       ]
     }
   ];
@@ -164,36 +156,28 @@ export function AppSidebar() {
 
   const primaryRole = getPrimaryRole();
 
-  // إضافة متغير CSS لمشاركة حالة القائمة مع المكونات الأخرى
-  React.useEffect(() => {
-    document.documentElement.style.setProperty(
-      '--sidebar-width', 
-      isCollapsed ? '4.5rem' : '16rem'
-    );
-  }, [isCollapsed]);
+  // تم إضافة console.log للتصحيح
+  console.log("permissionsLoading:", permissionsLoading);
 
-     if (permissionsLoading) {
-     return (
-       <aside className={cn(
-         "fixed inset-y-0 z-40 bg-background border shadow-sm flex items-center justify-center",
-         isRTL ? "right-0 border-l" : "left-0 border-r",
-         isCollapsed ? "w-[4.5rem]" : "w-64"
-       )}>
-         <div className="text-muted-foreground">جاري تحميل القائمة...</div>
-       </aside>
-     );
-   }
+  if (permissionsLoading) {
+    return (
+      <aside className={cn(
+        "fixed inset-y-0 z-50 bg-background border shadow-sm flex items-center justify-center",
+        isRTL ? "right-0 border-l" : "left-0 border-r",
+        isCollapsed ? "w-[4.5rem]" : "w-64"
+      )}>
+        <div className="text-muted-foreground">جاري تحميل القائمة...</div>
+      </aside>
+    );
+  }
 
   return (
-         <aside 
-       className={cn(
-         "fixed inset-y-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm flex flex-col",
-         isRTL ? "right-0 border-l" : "left-0 border-r",
-         isCollapsed ? "w-[4.5rem]" : "w-64",
-         "transition-all duration-300"
-       )}
-       data-state={isCollapsed ? "collapsed" : "expanded"}
-     >
+    <aside className={cn(
+      "fixed inset-y-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm flex flex-col",
+      isRTL ? "right-0 border-l" : "left-0 border-r",
+      isCollapsed ? "w-[4.5rem]" : "w-64",
+      "transition-all duration-300"
+    )}>
       {/* Header */}
       <div className="h-16 flex items-center px-4 border-b">
         <div className={cn(
@@ -294,12 +278,12 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           <Avatar className="h-9 w-9 shrink-0">
             <AvatarFallback>
-              {user?.email?.[0]?.toUpperCase() || 'U'}
+              {user?.name?.[0]?.toUpperCase() || 'U'}
             </AvatarFallback>
           </Avatar>
           {!isCollapsed && (
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.email}</p>
+              <p className="text-sm font-medium truncate">{user?.name}</p>
               {primaryRole && (
                 <p className="text-xs text-muted-foreground truncate">
                   {primaryRole.role_name_ar}

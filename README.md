@@ -1,73 +1,121 @@
-# Welcome to your Lovable project
+# فوردنتست - نظام إدارة العيادة الذكي
 
-## Project info
+## 🚀 تشغيل التطبيق
 
-**URL**: https://lovable.dev/projects/72cdf40d-ac1a-4e66-a280-be19856a334f
+### المتطلبات الأساسية
+- Node.js (الإصدار 18 أو أحدث)
+- npm أو bun
 
-## How can I edit this code?
+### خطوات التشغيل
 
-There are several ways of editing your application.
+1. **تثبيت التبعيات:**
+```bash
+npm install
+```
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/72cdf40d-ac1a-4e66-a280-be19856a334f) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+2. **تشغيل التطبيق:**
+```bash
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+3. **فتح المتصفح:**
+```
+http://localhost:5173
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🔐 تسجيل الدخول
 
-**Use GitHub Codespaces**
+### للمطورين (وضع التطوير)
+- استخدم زر **"🎮 دخول تجريبي (للمطورين)"** في صفحة تسجيل الدخول
+- سيتم إنشاء مستخدم تجريبي تلقائياً مع صلاحيات كاملة
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### للمستخدمين العاديين
+- قم بتقديم طلب انضمام من صفحة تسجيل الدخول
+- انتظر موافقة الإدارة (24-48 ساعة)
+- استخدم بيانات الدخول المرسلة عبر البريد الإلكتروني
 
-## What technologies are used for this project?
+## 🛠️ إصلاح المشاكل الشائعة
 
-This project is built with:
+### مشكلة الصفحة البيضاء
+إذا واجهت صفحة بيضاء:
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+1. **تأكد من تسجيل الدخول:**
+   - انتقل إلى `/auth`
+   - استخدم زر الدخول التجريبي للمطورين
 
-## How can I deploy this project?
+2. **مسح ذاكرة التخزين المؤقت:**
+   - اضغط `Ctrl + Shift + R` (أو `Cmd + Shift + R` على Mac)
+   - أو امسح ذاكرة التخزين المؤقت للمتصفح
 
-Simply open [Lovable](https://lovable.dev/projects/72cdf40d-ac1a-4e66-a280-be19856a334f) and click on Share -> Publish.
+3. **إعادة تشغيل الخادم:**
+   - أوقف الخادم (`Ctrl + C`)
+   - أعد تشغيله: `npm run dev`
 
-## Can I connect a custom domain to my Lovable project?
+### مشاكل في التبعيات
+```bash
+# حذف node_modules وإعادة التثبيت
+rm -rf node_modules package-lock.json
+npm install
+```
 
-Yes, you can!
+## 📱 الميزات
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **إدارة المرضى:** تسجيل وإدارة بيانات المرضى
+- **المواعيد:** جدولة وإدارة المواعيد
+- **السجلات الطبية:** حفظ وتتبع السجلات الطبية
+- **الفواتير:** إنشاء وإدارة الفواتير
+- **المخزون:** إدارة المخزون والمشتريات
+- **التقارير:** تقارير شاملة وتحليلات
+- **وضع عدم الاتصال:** العمل بدون إنترنت
+- **دعم متعدد اللغات:** العربية والإنجليزية
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🏗️ التقنيات المستخدمة
+
+- **Frontend:** React 18, TypeScript, Vite
+- **UI:** shadcn/ui, Tailwind CSS
+- **Backend:** Supabase
+- **التخزين المحلي:** IndexedDB
+- **التوجيه:** React Router DOM
+- **إدارة الحالة:** React Query, Context API
+
+## 📁 هيكل المشروع
+
+```
+src/
+├── components/          # المكونات القابلة لإعادة الاستخدام
+├── pages/              # صفحات التطبيق
+├── hooks/              # React Hooks المخصصة
+├── contexts/           # React Contexts
+├── lib/                # المكتبات والمرافق
+├── integrations/       # تكاملات خارجية
+└── locales/            # ملفات الترجمة
+```
+
+## 🔧 أوامر التطوير
+
+```bash
+# تشغيل التطبيق
+npm run dev
+
+# بناء التطبيق للإنتاج
+npm run build
+
+# معاينة البناء
+npm run preview
+
+# فحص الأخطاء
+npm run lint
+
+# فحص الأنواع
+npm run type-check
+```
+
+## 📞 الدعم
+
+للمساعدة أو الإبلاغ عن مشاكل:
+- افتح issue في GitHub
+- أو تواصل مع فريق التطوير
+
+---
+
+**فوردنتست** - نظام إدارة العيادة الذكي والمتطور 🦷✨

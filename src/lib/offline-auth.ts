@@ -217,10 +217,70 @@ class OfflineAuth {
   }
 
   async signInDemo() {
-    return {
-      data: { user: null, session: null },
-      error: { message: 'Demo login has been disabled for security reasons. Please contact admin for account access.' }
-    };
+    try {
+      // Create demo user for development
+      const demoUserId = 'demo-user-123';
+      const demoUser = {
+        id: demoUserId,
+        email: 'demo@example.com',
+        password_hash: 'demo-hash',
+        full_name: 'مستخدم تجريبي',
+        role: 'doctor',
+        created_at: new Date().toISOString()
+      };
+      
+      // Store demo user
+      await offlineDB.put('offline_users', demoUser);
+      
+      // Create demo session
+      const sessionId = crypto.randomUUID();
+      const demoSession = {
+        id: sessionId,
+        user_id: demoUserId,
+        access_token: `demo_${sessionId}`,
+        refresh_token: '',
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date().toISOString()
+      };
+      
+      await offlineDB.put('offline_sessions', demoSession);
+      
+      // Create fake user and session objects for Auth
+      const fakeUser = {
+        id: demoUserId,
+        email: 'demo@example.com',
+        user_metadata: { full_name: 'مستخدم تجريبي' },
+        app_metadata: { provider: 'demo', providers: ['demo'] },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        aud: 'authenticated',
+        role: 'authenticated',
+        email_confirmed_at: new Date().toISOString(),
+        phone: '',
+        confirmed_at: new Date().toISOString(),
+        last_sign_in_at: new Date().toISOString(),
+        identities: []
+      };
+      
+      const fakeSession = {
+        access_token: demoSession.access_token,
+        refresh_token: demoSession.refresh_token,
+        expires_at: Math.floor(new Date(demoSession.expires_at).getTime() / 1000),
+        expires_in: 86400,
+        token_type: 'bearer',
+        user: fakeUser
+      };
+      
+      return {
+        data: { user: fakeUser, session: fakeSession },
+        error: null
+      };
+    } catch (error) {
+      return {
+        data: { user: null, session: null },
+        error: { message: 'خطأ في تسجيل الدخول التجريبي' }
+      };
+    }
   }
 
   async signOut() {

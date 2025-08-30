@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -44,6 +46,8 @@ import SmartDiagnosis from "@/pages/SmartDiagnosis";
 import Medications from "@/pages/Medications";
 import Prescriptions from "@/pages/Prescriptions";
 import NotFound from "@/pages/NotFound";
+import SplashCursorDemo from "@/pages/SplashCursorDemo";
+import NoiseDemo from "@/pages/NoiseDemo";
 
 // Initialize the offline database
 import { offlineDB } from "@/lib/offline-db";
@@ -94,9 +98,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <LanguageProvider>
         <SettingsProvider>
-          <TooltipProvider>
-            <BrowserRouter>
-              <div className="min-h-screen bg-background">
+          <SidebarProvider>
+            <ThemeProvider>
+              <TooltipProvider>
+              <BrowserRouter>
+                <div className="min-h-screen bg-background">
                 <Routes>
                   {/* Public routes */}
                   <Route path="/book" element={<PublicBooking />} />
@@ -105,9 +111,7 @@ function App() {
                   {/* Protected routes with main layout */}
                   <Route path="/" element={
                     <ProtectedRoute>
-                      <MainLayout>
-                        <Outlet />
-                      </MainLayout>
+                      <MainLayout />
                     </ProtectedRoute>
                   }>
                     <Route index element={<Index />} />
@@ -138,7 +142,11 @@ function App() {
                     <Route path="doctor-applications" element={<DoctorApplications />} />
                     <Route path="medications" element={<Medications />} />
                     <Route path="prescriptions" element={<Prescriptions />} />
+                    <Route path="splash-cursor-demo" element={<SplashCursorDemo />} />
                   </Route>
+
+                  {/* Public demo routes */}
+                  <Route path="/demos/noise" element={<NoiseDemo />} />
                   
                   {/* 404 route */}
                   <Route path="*" element={<NotFound />} />
@@ -147,9 +155,11 @@ function App() {
               </div>
             </BrowserRouter>
           </TooltipProvider>
-        </SettingsProvider>
-      </LanguageProvider>
-    </QueryClientProvider>
+        </ThemeProvider>
+        </SidebarProvider>
+      </SettingsProvider>
+    </LanguageProvider>
+  </QueryClientProvider>
   );
 }
 

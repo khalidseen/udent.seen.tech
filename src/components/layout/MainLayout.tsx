@@ -1,59 +1,27 @@
-import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
+import React from "react";
+import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
-import { NetworkStatusIndicator } from "@/components/ui/network-status";
-import { NotificationCenter } from "@/components/notifications/NotificationCenter";
-import { SmartNotificationSystem } from "@/components/notifications/SmartNotificationSystem";
-import { GlobalSearch } from "./GlobalSearch";
-import { DateTime } from "./DateTime";
-import { UserProfile } from "./UserProfile";
-import { FloatingActionMenu } from "./FloatingActionMenu";
-import { LanguageToggle } from "@/components/ui/language-toggle";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import TopNavbar from "./TopNavbar";
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-}
+export function MainLayout() {
+  const { isRTL } = useLanguage();
 
-export function MainLayout({ children }: MainLayoutProps) {
-  const { isLTR } = useLanguage();
-  
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
-        <AppSidebar />
-        <SidebarInset className="flex-1 min-w-0">
-          {/* Top Header */}
-          <header className="h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full">
-            <div className="container flex h-full items-center justify-between px-4">
-              <div className={`flex items-center gap-4 ${isLTR ? '' : 'flex-row-reverse'}`}>
-                <SidebarTrigger className={isLTR ? "mr-2" : "ml-2"} />
-                <GlobalSearch />
-              </div>
-              
-                <div className={`flex items-center gap-4 ${isLTR ? '' : 'flex-row-reverse'}`}>
-                  <LanguageToggle />
-                  <UserProfile />
-                  <DateTime />
-                  <NotificationCenter />
-                </div>
-            </div>
-          </header>
-          
-          <SmartNotificationSystem />
-          
-          {/* Page Content */}
-          <main className="flex-1 px-6 py-6 overflow-auto bg-gradient-to-br from-background via-background to-muted/30 w-full min-w-0">
-            <div className="max-w-full mx-auto w-full">
-              {children}
-            </div>
-          </main>
-        </SidebarInset>
-        
-        {/* Floating Action Menu */}
-        <FloatingActionMenu />
-      </div>
-    </SidebarProvider>
+    <div className="min-h-screen bg-background flex">
+      <AppSidebar />
+      <main 
+        className={cn(
+          "flex-1 flex flex-col transition-all duration-300",
+          isRTL ? "mr-[var(--sidebar-width)]" : "ml-[var(--sidebar-width)]"
+        )}
+      >
+        <TopNavbar />
+        <div className="flex-1 container py-6 px-4">
+          <Outlet />
+        </div>
+      </main>
+    </div>
   );
 }

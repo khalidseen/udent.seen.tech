@@ -1,0 +1,11 @@
+.data-state-collapsed {
+  width: 4.5rem;
+}
+
+.data-state-expanded {
+  width: 16rem;
+}
+
+:root {
+  --sidebar-width: 16rem;
+}

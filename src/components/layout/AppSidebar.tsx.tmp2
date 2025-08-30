@@ -1,0 +1,255 @@
+import { useState } from "react";
+import { useLocation } from "react-router-dom";
+import React from "react";
+import "./sidebar.css";
+import {
+  Calendar,
+  Users,
+  Activity,
+  BarChart3,
+  Settings,
+  LogOut,
+  Stethoscope,
+  CalendarPlus,
+  FileText,
+  Bell,
+  Search,
+  ClipboardList,
+  UserCog,
+  Receipt,
+  DollarSign,
+  Package,
+  FolderOpen,
+  ExternalLink,
+  User,
+  ShoppingCart,
+  TrendingUp,
+  UserPlus,
+  MessageSquare,
+  Wallet,
+  Brain,
+  Pill,
+  Construction,
+  Lock
+} from "lucide-react";
+
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem as BaseSidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
+  SidebarTrigger,
+  useSidebar
+} from "@/components/ui/sidebar";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useSettings } from "@/contexts/SettingsContext";
+import { cn } from "@/lib/utils";
+import { SidebarMenuItem } from "./SidebarMenuItem";
+
+export function AppSidebar() {
+  const { state } = useSidebar();
+  const collapsed = state === "collapsed";
+  const { t, isRTL } = useLanguage();
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const { signOut, user } = useAuth();
+  const { hasAnyPermission, getPrimaryRole, loading: permissionsLoading } = usePermissions();
+  const { sidebarIconSize, collapsedIconSize } = useSettings();
+
+  const getIconSize = (isCollapsed: boolean) => {
+    const size = isCollapsed ? collapsedIconSize : sidebarIconSize;
+    return size === 'small' ? 'w-4 h-4' : 
+           size === 'medium' ? 'w-5 h-5' : 
+           size === 'large' ? 'w-6 h-6' : 'w-5 h-5';
+  };
+
+  const isActive = (path: string) => currentPath === path;
+
+  const menuConfig = [
+    {
+      groupTitle: t('sidebar.mainMenu'),
+      items: [
+        { title: t('navigation.dashboard'), url: "/", icon: BarChart3, permissions: ["dashboard.view"] },
+        { title: t('navigation.patients'), url: "/patients", icon: Users, permissions: ["patients.view"] },
+        { title: t('navigation.appointments'), url: "/appointments", icon: Calendar, permissions: ["appointments.view"] },
+        { title: t('appointments.appointmentRequests'), url: "/appointment-requests", icon: ClipboardList, permissions: ["appointments.requests"] },
+        { title: t('actions.addAppointment'), url: "/appointments/new", icon: CalendarPlus, permissions: ["appointments.create"] },
+        { title: t('navigation.dentalTreatments'), url: "/dental-treatments", icon: Stethoscope, permissions: ["dental.view"] },
+        { title: t('navigation.medicalRecords'), url: "/medical-records", icon: FolderOpen, permissions: ["medical_records.view"] }
+      ]
+    },
+    // Other menu groups...
+  ];
+
+  interface MenuItem {
+    title: string;
+    url: string;
+    icon: React.ComponentType;
+    permissions?: string[];
+    external?: boolean;
+  }
+
+  const canAccessMenuItem = (item: MenuItem): boolean => {
+    if (!item.permissions || item.permissions.length === 0) return true;
+    return hasAnyPermission(item.permissions);
+  };
+
+  const primaryRole = getPrimaryRole();
+
+  const sidebarContent = (
+    <Sidebar 
+      side={isRTL ? "right" : "left"} 
+      className="h-screen"
+      collapsible="icon"
+    >
+      <SidebarHeader className="h-16 flex items-center px-4 border-b">
+        <div className={cn(
+          "flex items-center gap-3",
+          isRTL && "flex-row-reverse"
+        )}>
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+            <Stethoscope className="w-5 h-5 text-primary-foreground" />
+          </div>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-bold text-primary truncate">
+                {t('sidebar.systemName')}
+              </h1>
+            </div>
+          )}
+        </div>
+        <div className={cn(
+          "absolute",
+          isRTL ? "-left-3" : "-right-3",
+          "top-3"
+        )}>
+          <SidebarTrigger className="bg-background hover:bg-accent shadow-sm border rounded-lg" />
+        </div>
+      </SidebarHeader>
+
+      <SidebarContent className="h-[calc(100vh-4rem)] flex flex-col">
+        {!collapsed && (
+          <div className="p-4 border-b">
+            <div className="relative">
+              <Search className={cn(
+                "w-4 h-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground",
+                isRTL ? "right-3" : "left-3"
+              )} />
+              <Input
+                type="search"
+                placeholder={t('common.search')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={cn(
+                  "w-full h-9",
+                  isRTL ? "pr-9" : "pl-9"
+                )}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto">
+          <div className={cn("py-2", collapsed ? "px-2" : "px-3")}>
+            {menuConfig.map(group => {
+              const filteredItems = group.items.filter(item =>
+                item.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
+                canAccessMenuItem(item)
+              );
+
+              if (filteredItems.length === 0) return null;
+
+              return (
+                <SidebarGroup key={group.groupTitle} className="mb-2">
+                  {!collapsed && (
+                    <SidebarGroupLabel className={cn(
+                      "text-xs font-medium text-muted-foreground px-2 mb-2",
+                      isRTL && "text-right"
+                    )}>
+                      {group.groupTitle}
+                    </SidebarGroupLabel>
+                  )}
+                  <SidebarMenu>
+                    {filteredItems.map(item => (
+                      <SidebarMenuItem
+                        key={item.title}
+                        icon={item.icon}
+                        title={item.title}
+                        url={item.url}
+                        collapsed={collapsed}
+                        iconSize={getIconSize(collapsed)}
+                        isActive={isActive(item.url)}
+                        external={item.external}
+                      />
+                    ))}
+                  </SidebarMenu>
+                </SidebarGroup>
+              );
+            })}
+          </div>
+        </div>
+      </SidebarContent>
+
+      <SidebarFooter className="border-t p-4">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9">
+            <AvatarFallback>
+              {user?.name?.[0]?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{user?.name}</p>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
+            </div>
+          )}
+        </div>
+        <Button
+          variant="ghost"
+          size={collapsed ? "icon" : "default"}
+          className={cn(
+            "w-full mt-2",
+            !collapsed && "justify-start gap-2"
+          )}
+          onClick={signOut}
+        >
+          <LogOut className="w-4 h-4" />
+          {!collapsed && t('common.logout')}
+        </Button>
+      </SidebarFooter>
+    </Sidebar>
+  );
+
+  return (
+    <aside className={cn(
+      "fixed inset-y-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm z-40",
+      isRTL ? "right-0 border-l" : "left-0 border-r",
+      collapsed ? "w-[4.5rem]" : "w-64",
+      "transition-all duration-300"
+    )}>
+      {permissionsLoading ? (
+        <div className="flex items-center justify-center h-full">
+          <span className="text-muted-foreground">جاري تحميل القائمة...</span>
+        </div>
+      ) : (
+        sidebarContent
+      )}
+    </aside>
+  );
+}
