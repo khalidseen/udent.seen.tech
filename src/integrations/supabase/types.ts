@@ -1462,31 +1462,141 @@ export type Database = {
           },
         ]
       }
+      security_alerts: {
+        Row: {
+          alert_type: string
+          clinic_id: string
+          created_at: string
+          description: string
+          id: string
+          metadata: Json | null
+          resolution_notes: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          title: string
+          triggered_by_event_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          clinic_id: string
+          created_at?: string
+          description: string
+          id?: string
+          metadata?: Json | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title: string
+          triggered_by_event_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          clinic_id?: string
+          created_at?: string
+          description?: string
+          id?: string
+          metadata?: Json | null
+          resolution_notes?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          title?: string
+          triggered_by_event_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "security_alerts_triggered_by_event_id_fkey"
+            columns: ["triggered_by_event_id"]
+            isOneToOne: false
+            referencedRelation: "security_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_events: {
         Row: {
+          context_data: Json | null
           created_at: string
           details: Json | null
+          error_message: string | null
+          event_category: Database["public"]["Enums"]["event_category"] | null
           event_type: string
+          geolocation: Json | null
           id: string
           ip_address: unknown | null
+          new_data: Json | null
+          old_data: Json | null
+          operation: string | null
+          processed_for_alerts: boolean | null
+          record_id: string | null
+          risk_score: number | null
+          sensitivity_level:
+            | Database["public"]["Enums"]["operation_sensitivity"]
+            | null
+          session_id: string | null
+          success: boolean | null
+          table_name: string | null
           user_agent: string | null
           user_id: string | null
         }
         Insert: {
+          context_data?: Json | null
           created_at?: string
           details?: Json | null
+          error_message?: string | null
+          event_category?: Database["public"]["Enums"]["event_category"] | null
           event_type: string
+          geolocation?: Json | null
           id?: string
           ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          operation?: string | null
+          processed_for_alerts?: boolean | null
+          record_id?: string | null
+          risk_score?: number | null
+          sensitivity_level?:
+            | Database["public"]["Enums"]["operation_sensitivity"]
+            | null
+          session_id?: string | null
+          success?: boolean | null
+          table_name?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
         Update: {
+          context_data?: Json | null
           created_at?: string
           details?: Json | null
+          error_message?: string | null
+          event_category?: Database["public"]["Enums"]["event_category"] | null
           event_type?: string
+          geolocation?: Json | null
           id?: string
           ip_address?: unknown | null
+          new_data?: Json | null
+          old_data?: Json | null
+          operation?: string | null
+          processed_for_alerts?: boolean | null
+          record_id?: string | null
+          risk_score?: number | null
+          sensitivity_level?:
+            | Database["public"]["Enums"]["operation_sensitivity"]
+            | null
+          session_id?: string | null
+          success?: boolean | null
+          table_name?: string | null
           user_agent?: string | null
           user_id?: string | null
         }
@@ -1905,6 +2015,10 @@ export type Database = {
         Args: { ip_address: unknown }
         Returns: boolean
       }
+      detect_suspicious_activities: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       enhanced_rate_limit_check: {
         Args: {
           ip_address: unknown
@@ -1925,6 +2039,10 @@ export type Database = {
       generate_purchase_order_number: {
         Args: { clinic_id_param: string }
         Returns: string
+      }
+      get_audit_statistics: {
+        Args: { days_back?: number }
+        Returns: Json
       }
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
@@ -1969,7 +2087,15 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      event_category:
+        | "authentication"
+        | "data_access"
+        | "data_modification"
+        | "permission_change"
+        | "system_admin"
+        | "financial"
+        | "medical_record"
+      operation_sensitivity: "normal" | "sensitive" | "critical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2096,6 +2222,17 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      event_category: [
+        "authentication",
+        "data_access",
+        "data_modification",
+        "permission_change",
+        "system_admin",
+        "financial",
+        "medical_record",
+      ],
+      operation_sensitivity: ["normal", "sensitive", "critical"],
+    },
   },
 } as const
