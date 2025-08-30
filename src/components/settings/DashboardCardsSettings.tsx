@@ -40,13 +40,13 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface ActionCard {
+interface SimpleActionCard {
   id: string;
   title: string;
   description: string;
-  icon: React.ComponentType<any>;
-  color: string;
   route: string;
+  iconName: string;
+  color: string;
   order_index?: number;
 }
 
@@ -87,9 +87,29 @@ const getIconComponent = (iconName: string) => {
   return iconMap[iconName] || Settings;
 };
 
+// Helper function to convert old format to new format
+const convertToSimpleCard = (card: any): SimpleActionCard => {
+  // If card already has iconName, return as is
+  if (card.iconName) {
+    return card as SimpleActionCard;
+  }
+  
+  // Convert old format
+  const routeData = availableRoutes.find(r => r.route === card.route);
+  return {
+    id: card.id,
+    title: card.title,
+    description: card.description,
+    route: card.route,
+    iconName: routeData?.iconName || "Settings",
+    color: routeData?.color || card.color || "bg-gray-500",
+    order_index: card.order_index
+  };
+};
+
 export function DashboardCardsSettings() {
   const { toast } = useToast();
-  const [cards, setCards] = useState<ActionCard[]>([]);
+  const [cards, setCards] = useState<SimpleActionCard[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newCard, setNewCard] = useState({
     title: "",
@@ -108,7 +128,16 @@ export function DashboardCardsSettings() {
       const savedCards = localStorage.getItem('dashboard_cards');
       if (savedCards) {
         const parsedCards = JSON.parse(savedCards);
-        setCards(parsedCards);
+        // Convert all cards to simple format
+        const convertedCards = parsedCards.map(convertToSimpleCard);
+        setCards(convertedCards);
+        
+        // Update localStorage with converted format
+        const dashboardCards = convertedCards.map(card => ({
+          ...card,
+          icon: getIconComponent(card.iconName), // Add icon for dashboard compatibility
+        }));
+        localStorage.setItem('dashboard_cards', JSON.stringify(dashboardCards));
       }
     } catch (error) {
       console.error('Error loading cards:', error);
@@ -120,10 +149,19 @@ export function DashboardCardsSettings() {
     }
   };
 
-  const saveCards = (updatedCards: ActionCard[]) => {
+  const saveCards = (updatedCards: SimpleActionCard[]) => {
     try {
-      localStorage.setItem('dashboard_cards', JSON.stringify(updatedCards));
+      // Save simple format for this component
       setCards(updatedCards);
+      
+      // Convert to dashboard format and save to localStorage
+      const dashboardCards = updatedCards.map(card => ({
+        ...card,
+        icon: getIconComponent(card.iconName), // Add icon component for dashboard
+      }));
+      
+      localStorage.setItem('dashboard_cards', JSON.stringify(dashboardCards));
+      
       toast({
         title: "تم الحفظ",
         description: "تم حفظ التغييرات بنجاح",
@@ -149,7 +187,7 @@ export function DashboardCardsSettings() {
       if (routeData) {
         updatedCards.forEach(card => {
           if (card.id === id) {
-            card.icon = getIconComponent(routeData.iconName);
+            card.iconName = routeData.iconName;
             card.color = routeData.color;
           }
         });
@@ -170,12 +208,12 @@ export function DashboardCardsSettings() {
     }
 
     const routeData = availableRoutes.find(r => r.route === newCard.route);
-    const newCardData: ActionCard = {
+    const newCardData: SimpleActionCard = {
       id: Date.now().toString(),
       title: newCard.title,
       description: newCard.description,
       route: newCard.route,
-      icon: routeData ? getIconComponent(routeData.iconName) : Settings,
+      iconName: routeData?.iconName || "Settings",
       color: routeData?.color || "bg-gray-500",
       order_index: cards.length + 1,
     };
@@ -215,16 +253,6 @@ export function DashboardCardsSettings() {
     return routeData ? routeData.name : route;
   };
 
-  const getRouteIconName = (route: string) => {
-    const routeData = availableRoutes.find(r => r.route === route);
-    return routeData?.iconName || "Settings";
-  };
-
-  const getRouteColor = (route: string) => {
-    const routeData = availableRoutes.find(r => r.route === route);
-    return routeData?.color || "bg-gray-500";
-  };
-
   return (
     <div className="space-y-6">
       <Card>
@@ -261,7 +289,7 @@ export function DashboardCardsSettings() {
               </TableHeader>
               <TableBody>
                 {cards.map((card, index) => {
-                  const IconComponent = card.icon;
+                  const IconComponent = getIconComponent(card.iconName);
                   return (
                     <TableRow key={card.id}>
                       <TableCell>
