@@ -1578,6 +1578,42 @@ export type Database = {
           },
         ]
       }
+      temporary_permissions: {
+        Row: {
+          created_at: string | null
+          expires_at: string
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          is_active: boolean | null
+          permission_key: string
+          reason: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at: string
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          permission_key: string
+          reason?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          permission_key?: string
+          reason?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       tooth_3d_annotations: {
         Row: {
           annotation_type: string
@@ -1921,6 +1957,10 @@ export type Database = {
       }
       has_permission: {
         Args: { permission_key_param: string; user_id_param?: string }
+        Returns: boolean
+      }
+      has_temporary_permission: {
+        Args: { permission_key_param: string; user_id_param: string }
         Returns: boolean
       }
       log_security_event: {

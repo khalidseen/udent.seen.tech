@@ -1,22 +1,24 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
+import { usePermissions } from '@/hooks/usePermissions';
+import { useRoles } from '@/hooks/useRoles';
+import { AdvancedPermissionsManagement } from './AdvancedPermissionsManagement';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { usePermissions } from '@/hooks/usePermissions';
-import { useRoles } from '@/hooks/useRoles';
 import { Shield, Users, Settings, Plus, Edit, Trash2, UserCheck, Calendar, AlertTriangle } from 'lucide-react';
 
 export const PermissionsManagement = () => {
   const { permissions, userRoles, loading: permissionsLoading } = usePermissions();
   const { roles, roleAssignments, loading: rolesLoading, createRole, updateRole, deleteRole } = useRoles();
+  const [showAdvanced, setShowAdvanced] = useState(false);
   
   const [selectedRole, setSelectedRole] = useState<string>('');
   const [showCreateRoleDialog, setShowCreateRoleDialog] = useState(false);
@@ -69,17 +71,25 @@ export const PermissionsManagement = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">إدارة الصلاحيات والأدوار</h2>
+          <h1 className="text-3xl font-bold">إدارة الصلاحيات</h1>
           <p className="text-muted-foreground">
-            إدارة أدوار المستخدمين وصلاحياتهم في النظام
+            إدارة الأدوار والصلاحيات لمستخدمي النظام
           </p>
         </div>
+        <Button onClick={() => setShowAdvanced(!showAdvanced)} variant="outline">
+          {showAdvanced ? 'الواجهة البسيطة' : 'الواجهة المتقدمة'}
+        </Button>
       </div>
 
-      <Tabs defaultValue="roles" className="space-y-4">
+      {showAdvanced ? (
+        <AdvancedPermissionsManagement />
+      ) : (
+        <div className="space-y-6">
+          {/* الواجهة القديمة البسيطة */}
+          <Tabs defaultValue="roles" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="roles" className="flex items-center gap-2">
             <Users className="w-4 h-4" />
@@ -344,6 +354,8 @@ export const PermissionsManagement = () => {
           </Card>
         </TabsContent>
       </Tabs>
+        </div>
+      )}
     </div>
   );
 };
