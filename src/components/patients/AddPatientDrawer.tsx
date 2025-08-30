@@ -194,7 +194,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
           إضافة مريض جديد
         </Button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-screen h-screen max-w-none p-0 overflow-hidden">
+      <SheetContent side="right" className="w-full h-full max-w-none max-h-none p-0 overflow-hidden fixed inset-0 z-50">
         {/* Custom Header with Close Button */}
         <div className="sticky top-0 z-50 bg-background border-b border-border p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
