@@ -440,13 +440,15 @@ export const AdvancedPermissionsManagement = () => {
                         <SelectValue placeholder="اختر الصلاحية" />
                       </SelectTrigger>
                       <SelectContent>
-                        {permissions
-                          .filter(p => p.category === 'sensitive' || p.category === 'emergency')
-                          .map((permission) => (
-                            <SelectItem key={permission.permission_key} value={permission.permission_key}>
-                              {permission.permission_name_ar}
-                            </SelectItem>
-                          ))}
+                        {permissions.map((permission) => (
+                          <SelectItem key={permission.permission_key} value={permission.permission_key}>
+                            <div className="text-right">
+                              <div className="font-medium">{permission.permission_name_ar}</div>
+                              <div className="text-xs text-muted-foreground">{permission.permission_key}</div>
+                              <div className="text-xs text-muted-foreground">الفئة: {permission.category}</div>
+                            </div>
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
