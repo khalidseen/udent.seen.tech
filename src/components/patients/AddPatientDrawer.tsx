@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { offlineSupabase } from "@/lib/offline-supabase";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus, Save, Plus, Search, User, X } from "lucide-react";
@@ -187,14 +187,14 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   };
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button>
           <Plus className="w-4 h-4 ml-2" />
           إضافة مريض جديد
         </Button>
-      </SheetTrigger>
-      <SheetContent side="right" className="w-full h-full max-w-none max-h-none p-0 overflow-hidden fixed inset-0 z-50">
+      </DialogTrigger>
+      <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none overflow-hidden">
         {/* Custom Header with Close Button */}
         <div className="sticky top-0 z-50 bg-background border-b border-border p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         </div>
 
         {/* Scrollable Content */}
-        <div className="h-[calc(100vh-88px)] overflow-y-auto p-6">
+        <div className="h-[calc(100vh-160px)] overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Search Section */}
             <div className="space-y-4">
@@ -480,7 +480,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         </div>
 
         {/* Fixed Action Buttons */}
-        <div className="sticky bottom-0 bg-background border-t border-border p-4">
+        <div className="absolute bottom-0 left-0 right-0 bg-background border-t border-border p-4">
           <div className="flex gap-4">
             <Button 
               type="button" 
@@ -504,8 +504,8 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
             </Button>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 };
 
