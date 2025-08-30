@@ -7,8 +7,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -37,7 +35,6 @@ export function TopNavbar() {
   const { user, signOut } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [fontSize, setFontSize] = useState("medium");
 
   // Fetch user profile
   useEffect(() => {
@@ -172,32 +169,14 @@ export function TopNavbar() {
         </DropdownMenu>
 
         {/* Theme Toggle */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              {theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => setTheme("light")}>
-              <Sun className="mr-2 h-4 w-4" />
-              <span>{t("lightTheme")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setTheme("dark")}>
-              <Moon className="mr-2 h-4 w-4" />
-              <span>{t("darkTheme")}</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <div className="p-2">
-              <h3 className="font-semibold text-sm mb-1">{t("fontSize")}</h3>
-              <DropdownMenuRadioGroup value={fontSize} onValueChange={setFontSize}>
-                <DropdownMenuRadioItem value="small">{t("small")}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="medium">{t("medium")}</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="large">{t("large")}</DropdownMenuRadioItem>
-              </DropdownMenuRadioGroup>
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          className="transition-all duration-200 hover:bg-accent"
+        >
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </Button>
 
         {/* User Profile */}
         <DropdownMenu>
