@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings as SettingsIcon, Building, Shield, Bell, Monitor, Database } from "lucide-react";
+import { Settings as SettingsIcon, Building, Shield, Bell, Monitor, Database, LayoutDashboard } from "lucide-react";
 
 // Import settings components
 import { InterfaceSettings } from "@/components/settings/InterfaceSettings";
 import { ClinicSettings } from "@/components/settings/ClinicSettings";
 import { SystemSettings } from "@/components/settings/SystemSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { DashboardCardsSettings } from "@/components/settings/DashboardCardsSettings";
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("interface");
   const settingsTabs = [{
@@ -16,6 +17,12 @@ export default function Settings() {
     icon: Monitor,
     description: "تخصيص مظهر وسلوك واجهة النظام",
     component: InterfaceSettings
+  }, {
+    value: "dashboard",
+    label: "لوحة القيادة",
+    icon: LayoutDashboard,
+    description: "إدارة وتخصيص صناديق لوحة القيادة",
+    component: DashboardCardsSettings
   }, {
     value: "clinic",
     label: "العيادة",
@@ -56,7 +63,7 @@ export default function Settings() {
             <CardDescription>اختر القسم الذي تريد تعديل إعداداته</CardDescription>
           </CardHeader>
           <CardContent>
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 h-auto p-1">
+            <TabsList className="grid grid-cols-2 md:grid-cols-5 h-auto p-1">
               {settingsTabs.map(tab => {
               const IconComponent = tab.icon;
               return <TabsTrigger key={tab.value} value={tab.value} className="flex flex-col gap-2 h-16 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
