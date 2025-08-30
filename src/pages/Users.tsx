@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { PermissionGate } from '@/components/auth/PermissionGate';
+import { AddUserDialog } from '@/components/users/AddUserDialog';
 import { 
   Users as UsersIcon, 
   Search, 
@@ -18,7 +19,8 @@ import {
   Edit, 
   Shield,
   Calendar,
-  AlertTriangle
+  AlertTriangle,
+  UserPlus
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -39,6 +41,7 @@ export default function Users() {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -110,7 +113,7 @@ export default function Users() {
 
   return (
     <PermissionGate 
-      permissions={['profiles.view_all']}
+      permissions={['users.view_all']}
       fallback={
         <PageContainer>
           <Card>
@@ -122,7 +125,7 @@ export default function Users() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground">
-                تحتاج إلى صلاحية "profiles.view_all" للوصول إلى إدارة المستخدمين.
+                تحتاج إلى صلاحية "users.view_all" للوصول إلى إدارة المستخدمين.
               </p>
             </CardContent>
           </Card>
@@ -205,12 +208,21 @@ export default function Users() {
 
           {/* جدول المستخدمين */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div className="flex items-center gap-2">
                 <UsersIcon className="w-5 h-5" />
-                قائمة المستخدمين
+                <CardTitle>قائمة المستخدمين</CardTitle>
                 <Badge variant="outline">{filteredUsers.length}</Badge>
-              </CardTitle>
+              </div>
+              <PermissionGate permissions={['users.create']}>
+                <Button 
+                  onClick={() => setAddUserDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  إضافة مستخدم
+                </Button>
+              </PermissionGate>
             </CardHeader>
             <CardContent>
               <Table>
@@ -294,6 +306,13 @@ export default function Users() {
             </CardContent>
           </Card>
         </div>
+
+        {/* حوار إضافة مستخدم جديد */}
+        <AddUserDialog 
+          open={addUserDialogOpen}
+          onOpenChange={setAddUserDialogOpen}
+          onSuccess={fetchUsers}
+        />
       </PageContainer>
     </PermissionGate>
   );

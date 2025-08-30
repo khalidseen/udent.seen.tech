@@ -123,7 +123,7 @@ export function AppSidebar() {
         { title: "قوالب الإشعارات", url: "/notification-templates", icon: Mail, permissions: [] },
         { title: "التقارير", url: "/reports", icon: FileSpreadsheet, permissions: [] },
         { title: "إدارة الصلاحيات", url: "/permissions", icon: UserCog, permissions: ['permissions.manage'] },
-        { title: "إدارة المستخدمين", url: "/users", icon: Users, permissions: ['profiles.view_all'] },
+        { title: "إدارة المستخدمين", url: "/users", icon: Users, permissions: ['users.view_all'] },
         { title: "التدقيق الأمني", url: "/security-audit", icon: Shield, permissions: ['audit.view'] },
         { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: [] },
         { title: "رابط حجز المرضى", url: "/book", icon: ExternalLink, permissions: [], external: true }
