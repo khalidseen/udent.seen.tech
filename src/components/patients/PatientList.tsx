@@ -19,7 +19,6 @@ import PatientTableView from "./PatientTableView";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { PatientToolbar } from "./PatientToolbar";
-
 interface Patient {
   id: string;
   full_name: string;
@@ -45,9 +44,10 @@ interface Patient {
     full_name: string;
   };
 }
-
 const PatientList = () => {
-  const { t } = useLanguage();
+  const {
+    t
+  } = useLanguage();
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<PatientFilter>({
@@ -59,21 +59,25 @@ const PatientList = () => {
     dateTo: ''
   });
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
-  const [selectedPatient, setSelectedPatient] = useState<{ id: string; name: string } | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const [clinicId, setClinicId] = useState<string | null>(null);
 
   // Get clinic ID first
   useEffect(() => {
     const getClinicId = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: {
+            user
+          }
+        } = await supabase.auth.getUser();
         if (!user) return;
-
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', user.id);
-
+        const {
+          data: profiles
+        } = await supabase.from('profiles').select('id').eq('user_id', user.id);
         if (profiles && profiles.length > 0) {
           setClinicId(profiles[0].id);
         }
@@ -81,7 +85,6 @@ const PatientList = () => {
         console.error('Error getting clinic ID:', error);
       }
     };
-
     getClinicId();
   }, []);
 
@@ -89,47 +92,48 @@ const PatientList = () => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(true);
   const [isOffline, setIsOffline] = useState(false);
-
   const fetchPatientsWithDoctors = async () => {
     if (!clinicId) return;
-    
     try {
       // Get patients with doctor information using supabase
-      const { data: patientsData, error } = await supabase
-        .from('patients')
-        .select(`
+      const {
+        data: patientsData,
+        error
+      } = await supabase.from('patients').select(`
           *,
           assigned_doctor:doctors(full_name)
-        `)
-        .eq('clinic_id', clinicId)
-        .order('created_at', { ascending: false });
-
+        `).eq('clinic_id', clinicId).order('created_at', {
+        ascending: false
+      });
       if (error) throw error;
-
       const enhancedPatients: Patient[] = patientsData?.map(patient => ({
         ...patient,
-        financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
-        assigned_doctor: patient.assigned_doctor ? { full_name: patient.assigned_doctor.full_name } : undefined
+        financial_status: patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial' || 'pending',
+        assigned_doctor: patient.assigned_doctor ? {
+          full_name: patient.assigned_doctor.full_name
+        } : undefined
       })) || [];
-
       setPatients(enhancedPatients);
     } catch (error) {
       console.error('Error fetching patients:', error);
       setIsOffline(true);
-      
+
       // Fallback to offline data without doctors
       try {
-        const patientsResult = await offlineSupabase.select('patients', { 
-          filter: { clinic_id: clinicId },
-          order: { column: 'created_at', ascending: false }
+        const patientsResult = await offlineSupabase.select('patients', {
+          filter: {
+            clinic_id: clinicId
+          },
+          order: {
+            column: 'created_at',
+            ascending: false
+          }
         });
-        
         const fallbackPatients: Patient[] = patientsResult.data?.map(patient => ({
           ...patient,
-          financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
+          financial_status: patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial' || 'pending',
           assigned_doctor: undefined
         })) || [];
-        
         setPatients(fallbackPatients);
       } catch (offlineError) {
         console.error('Offline fallback failed:', offlineError);
@@ -139,27 +143,20 @@ const PatientList = () => {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     if (clinicId) {
       fetchPatientsWithDoctors();
     }
   }, [clinicId]);
-
   const refresh = () => {
     if (clinicId) {
       setLoading(true);
       fetchPatientsWithDoctors();
     }
   };
-
   const filteredPatients = patients.filter(patient => {
     // Search query filter
-    const matchesSearch = !searchQuery || 
-      patient.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      patient.phone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      patient.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      patient.national_id?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = !searchQuery || patient.full_name.toLowerCase().includes(searchQuery.toLowerCase()) || patient.phone?.toLowerCase().includes(searchQuery.toLowerCase()) || patient.email?.toLowerCase().includes(searchQuery.toLowerCase()) || patient.national_id?.toLowerCase().includes(searchQuery.toLowerCase());
 
     // Gender filter
     const matchesGender = !filters.gender || filters.gender === 'all' || patient.gender === filters.gender;
@@ -188,12 +185,10 @@ const PatientList = () => {
     }
 
     // Email filter
-    const matchesEmail = !filters.hasEmail || filters.hasEmail === 'all' || 
-      (filters.hasEmail === 'yes' ? !!patient.email : !patient.email);
+    const matchesEmail = !filters.hasEmail || filters.hasEmail === 'all' || (filters.hasEmail === 'yes' ? !!patient.email : !patient.email);
 
     // Phone filter
-    const matchesPhone = !filters.hasPhone || filters.hasPhone === 'all' || 
-      (filters.hasPhone === 'yes' ? !!patient.phone : !patient.phone);
+    const matchesPhone = !filters.hasPhone || filters.hasPhone === 'all' || (filters.hasPhone === 'yes' ? !!patient.phone : !patient.phone);
 
     // Date range filter
     let matchesDateRange = true;
@@ -208,43 +203,33 @@ const PatientList = () => {
         matchesDateRange = matchesDateRange && createdDate <= toDate;
       }
     }
-
     return matchesSearch && matchesGender && matchesAge && matchesEmail && matchesPhone && matchesDateRange;
   });
-
   const getGenderBadge = (gender: string) => {
-    return gender === 'male' ? (
-      <Badge variant="outline">{t('status.male')}</Badge>
-    ) : gender === 'female' ? (
-      <Badge variant="outline">{t('status.female')}</Badge>
-    ) : null;
+    return gender === 'male' ? <Badge variant="outline">{t('status.male')}</Badge> : gender === 'female' ? <Badge variant="outline">{t('status.female')}</Badge> : null;
   };
-
   const handleAddTreatment = (patientId: string, patientName: string) => {
-    setSelectedPatient({ id: patientId, name: patientName });
+    setSelectedPatient({
+      id: patientId,
+      name: patientName
+    });
     setTreatmentDialogOpen(true);
   };
-
   const handleEditPatient = (patientId: string) => {
     // Navigate to edit patient page or open edit dialog
     window.location.href = `/patients/${patientId}`;
   };
-
   const handleTreatmentAdded = () => {
     // Optionally refresh data or show success message
   };
-
   const handlePatientAdded = () => {
     refresh();
   };
-
   const getActiveFiltersCount = (filters: PatientFilter) => {
     return Object.values(filters).filter(v => v !== '' && v !== 'all').length;
   };
-
   if (loading) {
-    return (
-      <PageContainer>
+    return <PageContainer>
         <PageHeader title={t('navigation.patients')} description={t('messages.loadingData')} />
         <Card>
           <CardContent className="p-6">
@@ -255,96 +240,32 @@ const PatientList = () => {
             </div>
           </CardContent>
         </Card>
-      </PageContainer>
-    );
+      </PageContainer>;
   }
-
-  return (
-    <PageContainer>
-      {/* شريط الأدوات مع العنوان - محدث */}
-      <PatientToolbar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        filters={filters}
-        onFiltersChange={setFilters}
-        onPatientAdded={handlePatientAdded}
-        activeFiltersCount={getActiveFiltersCount(filters)}
-      />
+  return <PageContainer>
+      <PageHeader title={t('navigation.patients')} description={t('messages.managePatients')} />
+      
+      {/* شريط الأدوات الجديد - محدث */}
+      <PatientToolbar searchQuery={searchQuery} onSearchChange={setSearchQuery} viewMode={viewMode} onViewModeChange={setViewMode} filters={filters} onFiltersChange={setFilters} onPatientAdded={handlePatientAdded} activeFiltersCount={getActiveFiltersCount(filters)} />
 
       {/* Patient Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-primary mb-1">{filteredPatients.length}</div>
-              <div className="text-sm text-muted-foreground font-medium">{t('charts.displayedPatients')}</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600 mb-1">
-                {filteredPatients.filter(p => p.gender === 'female').length}
-              </div>
-              <div className="text-sm text-muted-foreground font-medium">{t('charts.femalePatients')}</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm hover:shadow-lg transition-all duration-300">
-          <CardContent className="p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600 mb-1">
-                {filteredPatients.filter(p => p.gender === 'male').length}
-              </div>
-              <div className="text-sm text-muted-foreground font-medium">{t('charts.malePatients')}</div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      
 
       {/* Patients Display */}
-      {filteredPatients.length === 0 ? (
-        <Card>
+      {filteredPatients.length === 0 ? <Card>
           <CardContent className="p-8">
             <div className="text-center text-muted-foreground">
               <BarChart3 className="w-12 h-12 mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-medium mb-2">{t('messages.noResults')}</h3>
-              <p>{Object.values(filters).some(v => v !== '' && v !== 'all') 
-                ? t('messages.noPatientsMatchFilter')
-                : t('messages.noPatients')}</p>
+              <p>{Object.values(filters).some(v => v !== '' && v !== 'all') ? t('messages.noPatientsMatchFilter') : t('messages.noPatients')}</p>
             </div>
           </CardContent>
-        </Card>
-      ) : viewMode === 'cards' ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPatients.map((patient) => (
-            <PatientCard
-              key={patient.id}
-              patient={patient}
-              onAddTreatment={handleAddTreatment}
-              onEditPatient={handleEditPatient}
-            />
-          ))}
-        </div>
-      ) : (
-        <PatientTableView patients={filteredPatients} onAddTreatment={handleAddTreatment} />
-      )}
+        </Card> : viewMode === 'cards' ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredPatients.map(patient => <PatientCard key={patient.id} patient={patient} onAddTreatment={handleAddTreatment} onEditPatient={handleEditPatient} />)}
+        </div> : <PatientTableView patients={filteredPatients} onAddTreatment={handleAddTreatment} />}
 
       {/* Add Treatment Dialog */}
-      {selectedPatient && (
-        <AddTreatmentDialog
-          open={treatmentDialogOpen}
-          onOpenChange={setTreatmentDialogOpen}
-          patientId={selectedPatient.id}
-          patientName={selectedPatient.name}
-          onTreatmentAdded={handleTreatmentAdded}
-        />
-      )}
-    </PageContainer>
-  );
+      {selectedPatient && <AddTreatmentDialog open={treatmentDialogOpen} onOpenChange={setTreatmentDialogOpen} patientId={selectedPatient.id} patientName={selectedPatient.name} onTreatmentAdded={handleTreatmentAdded} />}
+    </PageContainer>;
 };
-
 export default PatientList;
