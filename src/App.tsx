@@ -48,6 +48,7 @@ import Prescriptions from "@/pages/Prescriptions";
 import NotFound from "@/pages/NotFound";
 import SplashCursorDemo from "@/pages/SplashCursorDemo";
 import NoiseDemo from "@/pages/NoiseDemo";
+import SecurityAudit from "@/pages/SecurityAudit";
 
 // Initialize the offline database
 import { offlineDB } from "@/lib/offline-db";
@@ -142,6 +143,7 @@ function App() {
                     <Route path="doctor-applications" element={<DoctorApplications />} />
                     <Route path="medications" element={<Medications />} />
                     <Route path="prescriptions" element={<Prescriptions />} />
+                    <Route path="security-audit" element={<SecurityAudit />} />
                     <Route path="splash-cursor-demo" element={<SplashCursorDemo />} />
                   </Route>
 

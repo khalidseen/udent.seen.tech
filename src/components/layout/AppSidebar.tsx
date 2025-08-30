@@ -35,7 +35,8 @@ import {
   UserCheck,
   Briefcase,
   Activity as TreatmentIcon,
-  Calculator
+  Calculator,
+  Shield
 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -121,6 +122,7 @@ export function AppSidebar() {
         { title: "الإشعارات", url: "/notifications", icon: Bell, permissions: [] },
         { title: "قوالب الإشعارات", url: "/notification-templates", icon: Mail, permissions: [] },
         { title: "التقارير", url: "/reports", icon: FileSpreadsheet, permissions: [] },
+        { title: "التدقيق الأمني", url: "/security-audit", icon: Shield, permissions: ['audit.view'] },
         { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: [] },
         { title: "رابط حجز المرضى", url: "/book", icon: ExternalLink, permissions: [], external: true }
       ]
