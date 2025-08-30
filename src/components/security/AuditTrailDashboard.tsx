@@ -33,14 +33,14 @@ export const AuditTrailDashboard = () => {
 
   const [filters, setFilters] = useState({
     days: 7,
-    category: '',
-    sensitivity: '',
+    category: 'all',
+    sensitivity: 'all',
     search: '',
     limit: 50
   });
 
   const [alertFilters, setAlertFilters] = useState({
-    status: ''
+    status: 'all'
   });
 
   const handleFilterChange = (key: string, value: any) => {
@@ -219,12 +219,12 @@ export const AuditTrailDashboard = () => {
 
                 <div>
                   <label className="text-sm font-medium">الفئة</label>
-                  <Select value={filters.category} onValueChange={(value) => handleFilterChange('category', value)}>
+                  <Select value={filters.category} onValueChange={(value) => handleFilterChange('category', value === 'all' ? '' : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="جميع الفئات" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">جميع الفئات</SelectItem>
+                      <SelectItem value="all">جميع الفئات</SelectItem>
                       <SelectItem value="authentication">المصادقة</SelectItem>
                       <SelectItem value="data_access">الوصول للبيانات</SelectItem>
                       <SelectItem value="data_modification">تعديل البيانات</SelectItem>
@@ -238,12 +238,12 @@ export const AuditTrailDashboard = () => {
 
                 <div>
                   <label className="text-sm font-medium">مستوى الحساسية</label>
-                  <Select value={filters.sensitivity} onValueChange={(value) => handleFilterChange('sensitivity', value)}>
+                  <Select value={filters.sensitivity} onValueChange={(value) => handleFilterChange('sensitivity', value === 'all' ? '' : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="جميع المستويات" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">جميع المستويات</SelectItem>
+                      <SelectItem value="all">جميع المستويات</SelectItem>
                       <SelectItem value="normal">عادي</SelectItem>
                       <SelectItem value="sensitive">حساس</SelectItem>
                       <SelectItem value="critical">حرج</SelectItem>
@@ -365,12 +365,12 @@ export const AuditTrailDashboard = () => {
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <label className="text-sm font-medium">الحالة</label>
-                  <Select value={alertFilters.status} onValueChange={(value) => handleAlertFilterChange('status', value)}>
+                  <Select value={alertFilters.status} onValueChange={(value) => handleAlertFilterChange('status', value === 'all' ? '' : value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="جميع الحالات" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">جميع الحالات</SelectItem>
+                      <SelectItem value="all">جميع الحالات</SelectItem>
                       <SelectItem value="open">مفتوح</SelectItem>
                       <SelectItem value="investigating">قيد التحقيق</SelectItem>
                       <SelectItem value="resolved">محلول</SelectItem>
