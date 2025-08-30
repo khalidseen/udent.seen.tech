@@ -73,7 +73,7 @@ const createIncisorCrownGeometry = () => {
     6, 7, 14,  7, 15, 14, // القاعدة اليمنى
   ]);
 
-  geometry.setIndex(indices);
+  geometry.setIndex(new THREE.BufferAttribute(indices, 1));
   geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
   geometry.computeVertexNormals();
   
@@ -94,7 +94,7 @@ const IncisorMesh = ({
   rootColor = '#daa520',
   annotations = true 
 }) => {
-  const groupRef = useRef();
+  const groupRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState<string | null>(null);
 
   useFrame((state) => {
