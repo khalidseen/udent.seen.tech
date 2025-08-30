@@ -4,16 +4,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { offlineSupabase } from "@/lib/offline-supabase";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus, Save, Plus, Search, User, X } from "lucide-react";
-
 interface AddPatientDrawerProps {
   onPatientAdded?: () => void;
 }
-
-const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
+const AddPatientDrawer = ({
+  onPatientAdded
+}: AddPatientDrawerProps) => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [existingPatients, setExistingPatients] = useState<any[]>([]);
@@ -36,11 +36,12 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
     marital_status: ''
   });
   const [loading, setLoading] = useState(false);
-
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
-
   const resetForm = () => {
     setFormData({
       full_name: '',
@@ -62,32 +63,32 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
     setSearchQuery('');
     setShowExistingPatients(false);
   };
-
   const searchExistingPatients = async (query: string) => {
     if (!query.trim()) {
       setExistingPatients([]);
       setShowExistingPatients(false);
       return;
     }
-
     try {
-      const { data: { user } } = await offlineSupabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await offlineSupabase.auth.getUser();
       if (!user) return;
-
-      const profileResult = await offlineSupabase.select('profiles', { 
-        filter: { user_id: user.id } 
+      const profileResult = await offlineSupabase.select('profiles', {
+        filter: {
+          user_id: user.id
+        }
       });
-
       if (!profileResult.data || profileResult.data.length === 0) return;
-
       const patients = await offlineSupabase.select('patients', {
-        filter: { clinic_id: profileResult.data[0].id }
+        filter: {
+          clinic_id: profileResult.data[0].id
+        }
       });
-
       if (patients.data) {
-        const filtered = patients.data.filter((patient: any) => 
-          patient.full_name.toLowerCase().includes(query.toLowerCase())
-        );
+        const filtered = patients.data.filter((patient: any) => patient.full_name.toLowerCase().includes(query.toLowerCase()));
         setExistingPatients(filtered);
         setShowExistingPatients(true);
       }
@@ -95,10 +96,8 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
       console.error('Error searching patients:', error);
     }
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.full_name.trim()) {
       toast({
         title: 'خطأ',
@@ -107,22 +106,24 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
       });
       return;
     }
-
     setLoading(true);
-    
     try {
       // Get current user
-      const { data: { user } } = await offlineSupabase.auth.getUser();
-      
+      const {
+        data: {
+          user
+        }
+      } = await offlineSupabase.auth.getUser();
       if (!user) {
         throw new Error('يجب تسجيل الدخول أولاً');
       }
 
       // Get or create user's profile
-      const profileResult = await offlineSupabase.select('profiles', { 
-        filter: { user_id: user.id } 
+      const profileResult = await offlineSupabase.select('profiles', {
+        filter: {
+          user_id: user.id
+        }
       });
-
       let profile = null;
       if (profileResult.data && profileResult.data.length > 0) {
         profile = profileResult.data[0];
@@ -133,18 +134,15 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
           full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'مستخدم جديد',
           role: 'doctor'
         });
-
         if (newProfile.error) {
           console.error('Profile creation error:', newProfile.error);
           throw new Error('فشل في إنشاء ملف المستخدم: ' + newProfile.error.message);
         }
         profile = newProfile.data;
       }
-
       if (!profile) {
         throw new Error('لم يتم العثور على ملف المستخدم أو فشل في إنشاؤه');
       }
-
       const result = await offlineSupabase.insert('patients', {
         clinic_id: profile.id,
         full_name: formData.full_name,
@@ -163,18 +161,14 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         occupation: formData.occupation || null,
         marital_status: formData.marital_status || null
       });
-
       if (result.error) throw result.error;
-
       toast({
         title: 'تم بنجاح',
         description: 'تم إضافة المريض بنجاح'
       });
-
       resetForm();
       setOpen(false);
       onPatientAdded?.();
-
     } catch (error: any) {
       toast({
         title: 'خطأ',
@@ -185,37 +179,30 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
       setLoading(false);
     }
   };
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
+  return <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
         <Button>
           <Plus className="w-4 h-4 ml-2" />
           إضافة مريض جديد
         </Button>
-      </DialogTrigger>
-      <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none overflow-hidden">
+      </SheetTrigger>
+      <SheetContent className="w-screen h-screen max-w-none max-h-none p-0 overflow-hidden fixed inset-0 z-50 data-[side=right]:right-0 data-[side=right]:left-0 data-[side=right]:slide-in-from-right-0">
         {/* Custom Header with Close Button */}
         <div className="sticky top-0 z-50 bg-background border-b border-border p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <UserPlus className="w-6 h-6 text-primary" />
             <div>
               <h2 className="text-xl font-semibold text-foreground">إضافة مريض جديد</h2>
-              <p className="text-sm text-muted-foreground">أدخل بيانات المريض الجديد في النموذج أدناه</p>
+              
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setOpen(false)}
-            className="h-10 w-10 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 dark:hover:border-red-700 dark:hover:text-red-300"
-          >
+          <Button variant="outline" size="icon" onClick={() => setOpen(false)} className="h-10 w-10 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 dark:hover:border-red-700 dark:hover:text-red-300">
             <X className="h-5 w-5" />
           </Button>
         </div>
 
         {/* Scrollable Content */}
-        <div className="h-[calc(100vh-160px)] overflow-y-auto p-6">
+        <div className="h-[calc(100vh-88px)] overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Search Section */}
             <div className="space-y-4">
@@ -225,37 +212,25 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
                 <Label htmlFor="search">البحث بالاسم</Label>
                 <div className="relative">
                   <Search className="w-4 h-4 absolute right-3 top-3 text-muted-foreground" />
-                  <Input
-                    id="search"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value);
-                      searchExistingPatients(e.target.value);
-                    }}
-                    placeholder="ابحث عن مريض موجود..."
-                    className="h-11 pr-10"
-                  />
+                  <Input id="search" value={searchQuery} onChange={e => {
+                  setSearchQuery(e.target.value);
+                  searchExistingPatients(e.target.value);
+                }} placeholder="ابحث عن مريض موجود..." className="h-11 pr-10" />
                 </div>
                 
-                {showExistingPatients && existingPatients.length > 0 && (
-                  <div className="border border-border rounded-md max-h-40 overflow-y-auto bg-background z-10">
-                    {existingPatients.map((patient: any) => (
-                      <div key={patient.id} className="p-3 border-b last:border-b-0 hover:bg-accent/50 cursor-pointer flex items-center gap-3">
+                {showExistingPatients && existingPatients.length > 0 && <div className="border border-border rounded-md max-h-40 overflow-y-auto bg-background z-10">
+                    {existingPatients.map((patient: any) => <div key={patient.id} className="p-3 border-b last:border-b-0 hover:bg-accent/50 cursor-pointer flex items-center gap-3">
                         <User className="w-4 h-4 text-muted-foreground" />
                         <div>
                           <div className="font-medium">{patient.full_name}</div>
                           <div className="text-sm text-muted-foreground">{patient.phone} • {patient.email}</div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      </div>)}
+                  </div>}
                 
-                {showExistingPatients && existingPatients.length === 0 && searchQuery.trim() && (
-                  <div className="text-sm text-muted-foreground p-2 border border-border rounded-md bg-background">
+                {showExistingPatients && existingPatients.length === 0 && searchQuery.trim() && <div className="text-sm text-muted-foreground p-2 border border-border rounded-md bg-background">
                     لا توجد نتائج مطابقة للبحث
-                  </div>
-                )}
+                  </div>}
               </div>
             </div>
 
@@ -267,38 +242,17 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="full_name">اسم المريض *</Label>
-                  <Input
-                    id="full_name"
-                    value={formData.full_name}
-                    onChange={(e) => handleChange('full_name', e.target.value)}
-                    placeholder="الاسم الكامل"
-                    required
-                    className="h-11"
-                  />
+                  <Input id="full_name" value={formData.full_name} onChange={e => handleChange('full_name', e.target.value)} placeholder="الاسم الكامل" required className="h-11" />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="phone">رقم الهاتف</Label>
-                  <Input
-                    id="phone"
-                    value={formData.phone}
-                    onChange={(e) => handleChange('phone', e.target.value)}
-                    placeholder="+201234567890"
-                    type="tel"
-                    className="h-11"
-                  />
+                  <Input id="phone" value={formData.phone} onChange={e => handleChange('phone', e.target.value)} placeholder="+201234567890" type="tel" className="h-11" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="email">البريد الإلكتروني</Label>
-                  <Input
-                    id="email"
-                    value={formData.email}
-                    onChange={(e) => handleChange('email', e.target.value)}
-                    placeholder="patient@example.com"
-                    type="email"
-                    className="h-11"
-                  />
+                  <Input id="email" value={formData.email} onChange={e => handleChange('email', e.target.value)} placeholder="patient@example.com" type="email" className="h-11" />
                 </div>
               </div>
 
@@ -306,18 +260,12 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="date_of_birth">تاريخ الميلاد</Label>
-                  <Input
-                    id="date_of_birth"
-                    value={formData.date_of_birth}
-                    onChange={(e) => handleChange('date_of_birth', e.target.value)}
-                    type="date"
-                    className="h-11"
-                  />
+                  <Input id="date_of_birth" value={formData.date_of_birth} onChange={e => handleChange('date_of_birth', e.target.value)} type="date" className="h-11" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="gender">الجنس</Label>
-                  <Select value={formData.gender} onValueChange={(value) => handleChange('gender', value)}>
+                  <Select value={formData.gender} onValueChange={value => handleChange('gender', value)}>
                     <SelectTrigger className="h-11">
                       <SelectValue placeholder="اختر الجنس" />
                     </SelectTrigger>
@@ -333,7 +281,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="blood_type">فصيلة الدم</Label>
-                  <Select value={formData.blood_type} onValueChange={(value) => handleChange('blood_type', value)}>
+                  <Select value={formData.blood_type} onValueChange={value => handleChange('blood_type', value)}>
                     <SelectTrigger className="h-11">
                       <SelectValue placeholder="اختر فصيلة الدم" />
                     </SelectTrigger>
@@ -352,7 +300,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
 
                 <div className="space-y-2">
                   <Label htmlFor="marital_status">الحالة الاجتماعية</Label>
-                  <Select value={formData.marital_status} onValueChange={(value) => handleChange('marital_status', value)}>
+                  <Select value={formData.marital_status} onValueChange={value => handleChange('marital_status', value)}>
                     <SelectTrigger className="h-11">
                       <SelectValue placeholder="اختر الحالة الاجتماعية" />
                     </SelectTrigger>
@@ -367,26 +315,13 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
 
                 <div className="space-y-2">
                   <Label htmlFor="occupation">المهنة</Label>
-                  <Input
-                    id="occupation"
-                    value={formData.occupation}
-                    onChange={(e) => handleChange('occupation', e.target.value)}
-                    placeholder="المهنة أو الوظيفة"
-                    className="h-11"
-                  />
+                  <Input id="occupation" value={formData.occupation} onChange={e => handleChange('occupation', e.target.value)} placeholder="المهنة أو الوظيفة" className="h-11" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="address">العنوان</Label>
-                <Textarea
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => handleChange('address', e.target.value)}
-                  placeholder="العنوان الكامل..."
-                  rows={2}
-                  className="resize-none"
-                />
+                <Textarea id="address" value={formData.address} onChange={e => handleChange('address', e.target.value)} placeholder="العنوان الكامل..." rows={2} className="resize-none" />
               </div>
             </div>
 
@@ -397,43 +332,23 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="emergency_contact">جهة اتصال الطوارئ</Label>
-                  <Input
-                    id="emergency_contact"
-                    value={formData.emergency_contact}
-                    onChange={(e) => handleChange('emergency_contact', e.target.value)}
-                    placeholder="اسم جهة الاتصال"
-                    className="h-11"
-                  />
+                  <Input id="emergency_contact" value={formData.emergency_contact} onChange={e => handleChange('emergency_contact', e.target.value)} placeholder="اسم جهة الاتصال" className="h-11" />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="emergency_phone">رقم هاتف الطوارئ</Label>
-                  <Input
-                    id="emergency_phone"
-                    value={formData.emergency_phone}
-                    onChange={(e) => handleChange('emergency_phone', e.target.value)}
-                    placeholder="+201234567890"
-                    type="tel"
-                    className="h-11"
-                  />
+                  <Input id="emergency_phone" value={formData.emergency_phone} onChange={e => handleChange('emergency_phone', e.target.value)} placeholder="+201234567890" type="tel" className="h-11" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="insurance_info">معلومات التأمين الطبي</Label>
-                <Textarea
-                  id="insurance_info"
-                  value={formData.insurance_info}
-                  onChange={(e) => handleChange('insurance_info', e.target.value)}
-                  placeholder="معلومات التأمين الصحي..."
-                  rows={2}
-                  className="resize-none"
-                />
+                <Textarea id="insurance_info" value={formData.insurance_info} onChange={e => handleChange('insurance_info', e.target.value)} placeholder="معلومات التأمين الصحي..." rows={2} className="resize-none" />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="patient_status">حالة المريض</Label>
-                <Select value={formData.patient_status} onValueChange={(value) => handleChange('patient_status', value)}>
+                <Select value={formData.patient_status} onValueChange={value => handleChange('patient_status', value)}>
                   <SelectTrigger className="h-11">
                     <SelectValue placeholder="اختر حالة المريض" />
                   </SelectTrigger>
@@ -453,26 +368,12 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="medical_history">التاريخ المرضي</Label>
-                  <Textarea
-                    id="medical_history"
-                    value={formData.medical_history}
-                    onChange={(e) => handleChange('medical_history', e.target.value)}
-                    placeholder="التاريخ المرضي والحساسيات والأمراض المزمنة..."
-                    rows={3}
-                    className="resize-none"
-                  />
+                  <Textarea id="medical_history" value={formData.medical_history} onChange={e => handleChange('medical_history', e.target.value)} placeholder="التاريخ المرضي والحساسيات والأمراض المزمنة..." rows={3} className="resize-none" />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="notes">ملاحظات إضافية</Label>
-                  <Textarea
-                    id="notes"
-                    value={formData.notes}
-                    onChange={(e) => handleChange('notes', e.target.value)}
-                    placeholder="أي ملاحظات أو معلومات إضافية..."
-                    rows={3}
-                    className="resize-none"
-                  />
+                  <Textarea id="notes" value={formData.notes} onChange={e => handleChange('notes', e.target.value)} placeholder="أي ملاحظات أو معلومات إضافية..." rows={3} className="resize-none" />
                 </div>
               </div>
             </div>
@@ -480,33 +381,21 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         </div>
 
         {/* Fixed Action Buttons */}
-        <div className="absolute bottom-0 left-0 right-0 bg-background border-t border-border p-4">
+        <div className="sticky bottom-0 bg-background border-t border-border p-4">
           <div className="flex gap-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              className="flex-1" 
-              onClick={() => {
-                resetForm();
-                setOpen(false);
-              }}
-            >
+            <Button type="button" variant="outline" className="flex-1" onClick={() => {
+            resetForm();
+            setOpen(false);
+          }}>
               إلغاء
             </Button>
-            <Button 
-              type="submit" 
-              className="flex-1" 
-              disabled={loading}
-              onClick={handleSubmit}
-            >
+            <Button type="submit" className="flex-1" disabled={loading} onClick={handleSubmit}>
               <Save className="w-4 h-4 ml-2" />
               {loading ? 'جاري الحفظ...' : 'حفظ المريض'}
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
-  );
+      </SheetContent>
+    </Sheet>;
 };
-
 export default AddPatientDrawer;
