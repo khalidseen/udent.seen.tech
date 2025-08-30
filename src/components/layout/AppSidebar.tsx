@@ -73,64 +73,64 @@ export function AppSidebar() {
     {
       groupTitle: t('sidebar.mainMenu'),
       items: [
-        { title: t('navigation.dashboard'), url: "/", icon: BarChart3, permissions: ["dashboard.view"] },
-        { title: t('navigation.patients'), url: "/patients", icon: Users, permissions: ["patients.view"] },
-        { title: t('navigation.appointments'), url: "/appointments", icon: Calendar, permissions: ["appointments.view"] },
-        { title: t('appointments.appointmentRequests'), url: "/appointment-requests", icon: ClipboardList, permissions: ["appointments.requests"] },
-        { title: t('actions.addAppointment'), url: "/appointments/new", icon: CalendarPlus, permissions: ["appointments.create"] },
-        { title: t('navigation.dentalTreatments'), url: "/dental-treatments", icon: Stethoscope, permissions: ["dental.view"] },
-        { title: t('navigation.medicalRecords'), url: "/medical-records", icon: FolderOpen, permissions: ["medical_records.view"] }
+        { title: t('navigation.dashboard'), url: "/", icon: BarChart3, permissions: [] },
+        { title: t('navigation.patients'), url: "/patients", icon: Users, permissions: [] },
+        { title: t('navigation.appointments'), url: "/appointments", icon: Calendar, permissions: [] },
+        { title: t('appointments.appointmentRequests'), url: "/appointment-requests", icon: ClipboardList, permissions: [] },
+        { title: t('actions.addAppointment'), url: "/appointments/new", icon: CalendarPlus, permissions: [] },
+        { title: t('navigation.dentalTreatments'), url: "/dental-treatments", icon: Stethoscope, permissions: [] },
+        { title: t('navigation.medicalRecords'), url: "/medical-records", icon: FolderOpen, permissions: [] }
       ]
     },
     {
       groupTitle: t('sidebar.aiMenu'),
       items: [
-        { title: t('sidebar.smartDiagnosis'), url: "/smart-diagnosis", icon: Brain, permissions: ["ai.diagnosis"] },
-        { title: t('navigation.aiInsights'), url: "/ai-insights", icon: TrendingUp, permissions: ["ai.analysis"] }
+        { title: t('sidebar.smartDiagnosis'), url: "/smart-diagnosis", icon: Brain, permissions: [] },
+        { title: t('navigation.aiInsights'), url: "/ai-insights", icon: TrendingUp, permissions: [] }
       ]
     },
     {
       groupTitle: t('sidebar.staffManagement'),
       items: [
-        { title: t('navigation.doctors'), url: "/doctors", icon: Stethoscope, permissions: ["doctors.view"] },
-        { title: "طلبات الأطباء", url: "/doctor-applications", icon: UserCheck, permissions: ["doctor_applications.view"] },
-        { title: t('sidebar.doctorAssistants'), url: "/doctor-assistants", icon: UserCog, permissions: ["assistants.view"] },
-        { title: t('sidebar.secretaries'), url: "/secretaries", icon: User, permissions: ["secretaries.view"] }
+        { title: t('navigation.doctors'), url: "/doctors", icon: Stethoscope, permissions: [] },
+        { title: "طلبات الأطباء", url: "/doctor-applications", icon: UserCheck, permissions: [] },
+        { title: t('sidebar.doctorAssistants'), url: "/doctor-assistants", icon: UserCog, permissions: [] },
+        { title: t('sidebar.secretaries'), url: "/secretaries", icon: User, permissions: [] }
       ]
     },
     {
       groupTitle: t('sidebar.financialManagement'),
       items: [
-        { title: t('navigation.invoices'), url: "/invoices", icon: Receipt, permissions: ["invoices.view"] },
-        { title: t('payments.title'), url: "/payments", icon: DollarSign, permissions: ["payments.view"] }
+        { title: t('navigation.invoices'), url: "/invoices", icon: Receipt, permissions: [] },
+        { title: t('payments.title'), url: "/payments", icon: DollarSign, permissions: [] }
       ]
     },
     {
       groupTitle: "إدارة المخزون",
       items: [
-        { title: "المخزون", url: "/inventory", icon: Package, permissions: ["inventory.view"] },
-        { title: "الأدوية", url: "/medications", icon: Pill, permissions: ["medications.view"] },
-        { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText, permissions: ["prescriptions.view"] },
-        { title: "حركة المخزون", url: "/stock-movements", icon: Truck, permissions: ["stock.view"] },
-        { title: "أوامر الشراء", url: "/purchase-orders", icon: PackageCheck, permissions: ["purchase_orders.view"] }
+        { title: "المخزون", url: "/inventory", icon: Package, permissions: [] },
+        { title: "الأدوية", url: "/medications", icon: Pill, permissions: [] },
+        { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText, permissions: [] },
+        { title: "حركة المخزون", url: "/stock-movements", icon: Truck, permissions: [] },
+        { title: "أوامر الشراء", url: "/purchase-orders", icon: PackageCheck, permissions: [] }
       ]
     },
     {
       groupTitle: t('sidebar.systemManagement'),
       items: [
-        { title: "الإشعارات", url: "/notifications", icon: Bell, permissions: ["notifications.view"] },
-        { title: "قوالب الإشعارات", url: "/notification-templates", icon: Mail, permissions: ["notification_templates.view"] },
-        { title: "التقارير", url: "/reports", icon: FileSpreadsheet, permissions: ["reports.view"] },
-        { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: ["settings.view"] },
+        { title: "الإشعارات", url: "/notifications", icon: Bell, permissions: [] },
+        { title: "قوالب الإشعارات", url: "/notification-templates", icon: Mail, permissions: [] },
+        { title: "التقارير", url: "/reports", icon: FileSpreadsheet, permissions: [] },
+        { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: [] },
         { title: "رابط حجز المرضى", url: "/book", icon: ExternalLink, permissions: [], external: true }
       ]
     },
     {
       groupTitle: "الميزات المتقدمة",
       items: [
-        { title: "العلاجات", url: "/treatments", icon: TreatmentIcon, permissions: ["treatments.view"] },
-        { title: "أسعار الخدمات", url: "/service-prices", icon: Calculator, permissions: ["service_prices.view"] },
-        { title: "3D للأسنان المتقدم", url: "/advanced-3d-dental", icon: Box, permissions: ["advanced_3d.view"] }
+        { title: "العلاجات", url: "/treatments", icon: TreatmentIcon, permissions: [] },
+        { title: "أسعار الخدمات", url: "/service-prices", icon: Calculator, permissions: [] },
+        { title: "3D للأسنان المتقدم", url: "/advanced-3d-dental", icon: Box, permissions: [] }
       ]
     }
   ];
