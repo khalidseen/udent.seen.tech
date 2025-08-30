@@ -25,7 +25,17 @@ import {
   Brain,
   Pill,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  PackageCheck,
+  Truck,
+  FileSpreadsheet,
+  Megaphone,
+  Mail,
+  Box,
+  UserCheck,
+  Briefcase,
+  Activity as TreatmentIcon,
+  Calculator
 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -83,6 +93,7 @@ export function AppSidebar() {
       groupTitle: t('sidebar.staffManagement'),
       items: [
         { title: t('navigation.doctors'), url: "/doctors", icon: Stethoscope, permissions: ["doctors.view"] },
+        { title: "طلبات الأطباء", url: "/doctor-applications", icon: UserCheck, permissions: ["doctor_applications.view"] },
         { title: t('sidebar.doctorAssistants'), url: "/doctor-assistants", icon: UserCog, permissions: ["assistants.view"] },
         { title: t('sidebar.secretaries'), url: "/secretaries", icon: User, permissions: ["secretaries.view"] }
       ]
@@ -95,9 +106,31 @@ export function AppSidebar() {
       ]
     },
     {
+      groupTitle: "إدارة المخزون",
+      items: [
+        { title: "المخزون", url: "/inventory", icon: Package, permissions: ["inventory.view"] },
+        { title: "الأدوية", url: "/medications", icon: Pill, permissions: ["medications.view"] },
+        { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText, permissions: ["prescriptions.view"] },
+        { title: "حركة المخزون", url: "/stock-movements", icon: Truck, permissions: ["stock.view"] },
+        { title: "أوامر الشراء", url: "/purchase-orders", icon: PackageCheck, permissions: ["purchase_orders.view"] }
+      ]
+    },
+    {
       groupTitle: t('sidebar.systemManagement'),
       items: [
-        { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: ["settings.view"] }
+        { title: "الإشعارات", url: "/notifications", icon: Bell, permissions: ["notifications.view"] },
+        { title: "قوالب الإشعارات", url: "/notification-templates", icon: Mail, permissions: ["notification_templates.view"] },
+        { title: "التقارير", url: "/reports", icon: FileSpreadsheet, permissions: ["reports.view"] },
+        { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: ["settings.view"] },
+        { title: "رابط حجز المرضى", url: "/book", icon: ExternalLink, permissions: [], external: true }
+      ]
+    },
+    {
+      groupTitle: "الميزات المتقدمة",
+      items: [
+        { title: "العلاجات", url: "/treatments", icon: TreatmentIcon, permissions: ["treatments.view"] },
+        { title: "أسعار الخدمات", url: "/service-prices", icon: Calculator, permissions: ["service_prices.view"] },
+        { title: "3D للأسنان المتقدم", url: "/advanced-3d-dental", icon: Box, permissions: ["advanced_3d.view"] }
       ]
     }
   ];
@@ -279,7 +312,7 @@ export function AppSidebar() {
                       collapsed={isCollapsed}
                       iconSize={getIconSize()}
                       isActive={isActive(item.url)}
-                      external={false}
+                      external={item.external || false}
                     />
                   ))}
                 </div>
