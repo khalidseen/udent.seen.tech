@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle, CalendarDays, List } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Link } from "react-router-dom";
+import AddAppointmentDialog from "./AddAppointmentDialog";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import EditAppointmentDialog from "./EditAppointmentDialog";
@@ -176,12 +176,7 @@ const AppointmentList = () => {
         title={t('navigation.appointments')} 
         description={t('appointments.description')}
         action={
-          <Link to="/appointments/new">
-            <Button>
-              <Plus className="w-4 h-4 ml-2" />
-              {t('actions.addAppointment')}
-            </Button>
-          </Link>
+          <AddAppointmentDialog onAppointmentAdded={fetchAppointments} />
         }
       />
 
