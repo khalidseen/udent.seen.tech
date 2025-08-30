@@ -51,22 +51,41 @@ interface ActionCard {
 }
 
 const availableRoutes = [
-  { route: "/patients", name: "المرضى", icon: UserPlus, color: "bg-blue-500" },
-  { route: "/appointments", name: "المواعيد", icon: Calendar, color: "bg-green-500" },
-  { route: "/appointments/new", name: "موعد جديد", icon: Calendar, color: "bg-green-600" },
-  { route: "/public-booking", name: "حجز عام", icon: LinkIcon, color: "bg-lime-600" },
-  { route: "/medical-records", name: "السجلات الطبية", icon: FileText, color: "bg-purple-500" },
-  { route: "/invoices", name: "الفواتير", icon: DollarSign, color: "bg-yellow-500" },
-  { route: "/inventory", name: "المخزون", icon: Package, color: "bg-orange-500" },
-  { route: "/treatments", name: "العلاجات", icon: Stethoscope, color: "bg-red-500" },
-  { route: "/ai-insights", name: "الذكاء الاصطناعي", icon: Brain, color: "bg-indigo-500" },
-  { route: "/settings", name: "الإعدادات", icon: Settings, color: "bg-gray-500" },
-  { route: "/reports", name: "التقارير", icon: BarChart3, color: "bg-teal-500" },
-  { route: "/notifications", name: "الإشعارات", icon: Bell, color: "bg-pink-500" },
-  { route: "/payments", name: "المدفوعات", icon: DollarSign, color: "bg-emerald-500" },
-  { route: "/doctors", name: "الأطباء", icon: Activity, color: "bg-cyan-500" },
-  { route: "/prescriptions", name: "الوصفات", icon: FileText, color: "bg-violet-500" },
+  { route: "/patients", name: "المرضى", iconName: "UserPlus", color: "bg-blue-500" },
+  { route: "/appointments", name: "المواعيد", iconName: "Calendar", color: "bg-green-500" },
+  { route: "/appointments/new", name: "موعد جديد", iconName: "Calendar", color: "bg-green-600" },
+  { route: "/public-booking", name: "حجز عام", iconName: "LinkIcon", color: "bg-lime-600" },
+  { route: "/medical-records", name: "السجلات الطبية", iconName: "FileText", color: "bg-purple-500" },
+  { route: "/invoices", name: "الفواتير", iconName: "DollarSign", color: "bg-yellow-500" },
+  { route: "/inventory", name: "المخزون", iconName: "Package", color: "bg-orange-500" },
+  { route: "/treatments", name: "العلاجات", iconName: "Stethoscope", color: "bg-red-500" },
+  { route: "/ai-insights", name: "الذكاء الاصطناعي", iconName: "Brain", color: "bg-indigo-500" },
+  { route: "/settings", name: "الإعدادات", iconName: "Settings", color: "bg-gray-500" },
+  { route: "/reports", name: "التقارير", iconName: "BarChart3", color: "bg-teal-500" },
+  { route: "/notifications", name: "الإشعارات", iconName: "Bell", color: "bg-pink-500" },
+  { route: "/payments", name: "المدفوعات", iconName: "DollarSign", color: "bg-emerald-500" },
+  { route: "/doctors", name: "الأطباء", iconName: "Activity", color: "bg-cyan-500" },
+  { route: "/prescriptions", name: "الوصفات", iconName: "FileText", color: "bg-violet-500" },
 ];
+
+// Helper function to get icon component
+const getIconComponent = (iconName: string) => {
+  const iconMap: Record<string, any> = {
+    UserPlus,
+    Calendar,
+    FileText,
+    DollarSign,
+    Package,
+    Stethoscope,
+    Brain,
+    Settings,
+    BarChart3,
+    Bell,
+    Activity,
+    LinkIcon,
+  };
+  return iconMap[iconName] || Settings;
+};
 
 export function DashboardCardsSettings() {
   const { toast } = useToast();
@@ -130,7 +149,7 @@ export function DashboardCardsSettings() {
       if (routeData) {
         updatedCards.forEach(card => {
           if (card.id === id) {
-            card.icon = routeData.icon;
+            card.icon = getIconComponent(routeData.iconName);
             card.color = routeData.color;
           }
         });
@@ -156,7 +175,7 @@ export function DashboardCardsSettings() {
       title: newCard.title,
       description: newCard.description,
       route: newCard.route,
-      icon: routeData?.icon || Settings,
+      icon: routeData ? getIconComponent(routeData.iconName) : Settings,
       color: routeData?.color || "bg-gray-500",
       order_index: cards.length + 1,
     };
@@ -196,9 +215,9 @@ export function DashboardCardsSettings() {
     return routeData ? routeData.name : route;
   };
 
-  const getRouteIcon = (route: string) => {
+  const getRouteIconName = (route: string) => {
     const routeData = availableRoutes.find(r => r.route === route);
-    return routeData?.icon || Settings;
+    return routeData?.iconName || "Settings";
   };
 
   const getRouteColor = (route: string) => {
@@ -308,17 +327,20 @@ export function DashboardCardsSettings() {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {availableRoutes.map((route) => (
-                                <SelectItem key={route.route} value={route.route}>
-                                  <div className="flex items-center gap-2">
-                                    <route.icon className="w-4 h-4" />
-                                    <span>{route.name}</span>
-                                    <Badge variant="outline" className="text-xs">
-                                      {route.route}
-                                    </Badge>
-                                  </div>
-                                </SelectItem>
-                              ))}
+                              {availableRoutes.map((route) => {
+                                const IconComp = getIconComponent(route.iconName);
+                                return (
+                                  <SelectItem key={route.route} value={route.route}>
+                                    <div className="flex items-center gap-2">
+                                      <IconComp className="w-4 h-4" />
+                                      <span>{route.name}</span>
+                                      <Badge variant="outline" className="text-xs">
+                                        {route.route}
+                                      </Badge>
+                                    </div>
+                                  </SelectItem>
+                                );
+                              })}
                             </SelectContent>
                           </Select>
                         ) : (
@@ -416,19 +438,22 @@ export function DashboardCardsSettings() {
                       <SelectValue placeholder="اختر القسم أو الصفحة" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableRoutes.map((route) => (
-                        <SelectItem key={route.route} value={route.route}>
-                          <div className="flex items-center gap-2">
-                            <div className={`p-1 rounded ${route.color} text-white`}>
-                              <route.icon className="w-3 h-3" />
+                      {availableRoutes.map((route) => {
+                        const IconComp = getIconComponent(route.iconName);
+                        return (
+                          <SelectItem key={route.route} value={route.route}>
+                            <div className="flex items-center gap-2">
+                              <div className={`p-1 rounded ${route.color} text-white`}>
+                                <IconComp className="w-3 h-3" />
+                              </div>
+                              <span>{route.name}</span>
+                              <Badge variant="outline" className="text-xs">
+                                {route.route}
+                              </Badge>
                             </div>
-                            <span>{route.name}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {route.route}
-                            </Badge>
-                          </div>
-                        </SelectItem>
-                      ))}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>
