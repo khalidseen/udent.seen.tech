@@ -121,6 +121,12 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
     try {
       setLoading(true);
 
+      console.log('Submitting user creation with:', { 
+        email: formData.email, 
+        fullName: formData.fullName, 
+        role: selectedRole 
+      });
+
       // استخدام Edge Function لإنشاء المستخدم
       const { data, error } = await supabase.functions.invoke('create-user', {
         body: {
@@ -133,16 +139,23 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
         }
       });
 
+      console.log('Function response:', { data, error });
+
       if (error) {
-        throw error;
+        console.error('Function invocation error:', error);
+        throw new Error(error.message || 'خطأ في استدعاء الدالة');
       }
 
-      if (!data.success) {
-        throw new Error(data.error || 'فشل في إنشاء المستخدم');
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      if (!data?.success) {
+        throw new Error(data?.error || 'فشل في إنشاء المستخدم');
       }
 
       toast({
-        title: 'تم إنشاء المستخدم بنجاح',
+        title: 'تم إنشاء المستخدم بنجاح ✅',
         description: `تم إنشاء حساب ${formData.fullName} بصلاحية ${roles.find(r => r.role_name === selectedRole)?.role_name_ar}`,
       });
 
@@ -156,27 +169,34 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
       });
       setSelectedRole('');
       
-      onSuccess?.();
+      // تحديث قائمة المستخدمين
+      setTimeout(() => {
+        onSuccess?.();
+      }, 1000); // انتظار قصير للتأكد من حفظ البيانات
+      
       onOpenChange(false);
 
     } catch (error: any) {
       console.error('Error creating user:', error);
+      
       let errorMessage = 'حدث خطأ أثناء إنشاء المستخدم';
       
       if (error.message) {
-        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+        if (error.message.includes('already registered') || error.message.includes('already been registered')) {
           errorMessage = 'هذا البريد الإلكتروني مسجل مسبقاً';
-        } else if (error.message.includes('email')) {
-          errorMessage = 'خطأ في البريد الإلكتروني';
-        } else if (error.message.includes('password')) {
-          errorMessage = 'كلمة المرور غير قوية بما فيه الكفاية';
+        } else if (error.message.includes('Missing required fields')) {
+          errorMessage = 'البيانات المطلوبة ناقصة';
+        } else if (error.message.includes('Invalid email')) {
+          errorMessage = 'البريد الإلكتروني غير صالح';
+        } else if (error.message.includes('password') || error.message.includes('Password')) {
+          errorMessage = 'كلمة المرور غير قوية بما فيه الكفاية (يجب أن تحتوي على 8 أحرف على الأقل)';
         } else {
           errorMessage = error.message;
         }
       }
       
       toast({
-        title: 'خطأ في إنشاء المستخدم',
+        title: 'خطأ في إنشاء المستخدم ❌',
         description: errorMessage,
         variant: 'destructive'
       });
