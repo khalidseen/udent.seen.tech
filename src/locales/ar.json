@@ -25,7 +25,12 @@
     "clear": "مسح",
     "total": "المجموع",
     "new": "جديد",
-    "all": "جميع"
+    "all": "جميع",
+    "quickSearch": "البحث السريع",
+    "cards": "مربعات",
+    "table": "جدول",
+    "advancedFilter": "الفلتر المتقدم",
+    "searchPlaceholder": "البحث..."
   },
   "navigation": {
     "dashboard": "لوحة التحكم",
@@ -168,7 +173,10 @@
     "confirmDelete": "هل أنت متأكد من الحذف؟",
     "operationSuccess": "تمت العملية بنجاح",
     "operationFailed": "فشلت العملية",
-    "offlineMode": "وضع عدم الاتصال بالإنترنت"
+    "offlineMode": "وضع عدم الاتصال بالإنترنت",
+    "managePatients": "إدارة بيانات المرضى",
+    "noResults": "لا توجد نتائج",
+    "noPatientsMatchFilter": "لا توجد مرضى تطابق معايير الفلتر"
   },
   "patients": {
     "title": "المرضى",
@@ -181,7 +189,8 @@
     "medicalHistory": "التاريخ الطبي",
     "noPatients": "لا يوجد مرضى",
     "searchPatients": "البحث عن مرضى",
-    "filterPatients": "تصفية المرضى"
+    "filterPatients": "تصفية المرضى",
+    "searchPlaceholder": "البحث في المرضى..."
   },
   "doctors": {
     "title": "الأطباء",
