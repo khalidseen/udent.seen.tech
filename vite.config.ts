@@ -2,13 +2,16 @@ import path from "path"
 import reactSWC from "@vitejs/plugin-react-swc"
 import { defineConfig } from "vite"
 import { VitePWA } from 'vite-plugin-pwa'
+import { componentTagger } from "lovable-tagger"
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   server: {
+    host: "::",
     port: 8080
   },
   plugins: [
     reactSWC(),
+    mode === 'development' && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
@@ -55,10 +58,10 @@ export default defineConfig({
         ]
       }
     })
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-})
+}))
