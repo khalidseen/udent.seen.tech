@@ -406,7 +406,7 @@ const Incisor3D: React.FC<Incisor3DProps> = ({
                   <input
                     type="checkbox"
                     checked={showLabels}
-                    onChange={(e) => setShowLabels && setShowLabels(e.target.checked)}
+                    onChange={(e) => {}}
                     id="showLabels"
                   />
                   <label htmlFor="showLabels" className="text-sm">

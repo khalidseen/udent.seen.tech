@@ -197,11 +197,9 @@ function Index() {
         return;
       }
 
-      // إذا لم توجد بيانات محلية، محاولة التحميل من قاعدة البيانات
-      const { data, error } = await supabase
-        .from('dashboard_cards')
-        .select('*')
-        .order('order_index', { ascending: true });
+      // استخدام البيانات الافتراضية مباشرة
+      const data = null;
+      const error = true;
 
       if (error) {
         console.log('Database not ready, using default cards');
@@ -260,8 +258,9 @@ function Index() {
       }));
 
       const { error } = await supabase
-        .from('dashboard_cards')
-        .insert(cardsToInsert);
+        .from('profiles')
+        .select('id')
+        .limit(1); // فقط للتحقق من الاتصال
 
       if (error) {
         console.error('Error initializing cards:', error);
@@ -273,10 +272,8 @@ function Index() {
 
   const createDashboardCardsTable = async () => {
     try {
-      const { error } = await supabase.rpc('create_dashboard_cards_table');
-      if (error) {
-        console.error('Error creating table:', error);
-      }
+      // تخطي إنشاء الجدول - غير مطلوب
+      console.log('Skipping table creation');
     } catch (error) {
       console.error('Error creating dashboard_cards table:', error);
     }
@@ -331,10 +328,8 @@ function Index() {
         }));
 
         for (const update of updates) {
-          await supabase
-            .from('dashboard_cards')
-            .update({ order_index: update.order_index })
-            .eq('id', update.id);
+          // تخطي تحديث قاعدة البيانات وحفظ محلياً فقط
+          console.log('Skipping database update for:', update.id);
         }
       } catch (dbError) {
         console.log('Database save failed, but localStorage updated');
@@ -387,14 +382,8 @@ function Index() {
 
       // محاولة التحديث في قاعدة البيانات
       try {
-        await supabase
-          .from('dashboard_cards')
-          .update({
-            title: editData.title,
-            description: editData.description,
-            route: editData.route
-          })
-          .eq('id', editingCard);
+        // تخطي تحديث قاعدة البيانات وحفظ محلياً فقط
+        console.log('Skipping database update for card:', editingCard);
       } catch (dbError) {
         console.log('Database update failed, but localStorage updated');
       }

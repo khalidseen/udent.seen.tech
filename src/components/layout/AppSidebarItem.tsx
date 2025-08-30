@@ -38,7 +38,7 @@ export const AppSidebarItem = ({ item, collapsed, getIconSize }: AppSidebarItemP
             className={`${getNavClasses(item.url, false)} text-blue-600 hover:text-blue-700`}
           >
             <div className="flex items-center w-full">
-              <Icon className={`${getIconSize(collapsed)} text-primary group-hover:text-primary-700 transition-colors duration-150 flex-shrink-0 ml-auto`} />
+              <Icon />
               {!collapsed && (
                 <span className="flex-1 text-right mr-3">
                   {item.title}
@@ -50,7 +50,7 @@ export const AppSidebarItem = ({ item, collapsed, getIconSize }: AppSidebarItemP
         ) : (
           <NavLink to={item.url} className={({ isActive }) => getNavClasses(item.url, isActive)}>
             <div className="flex items-center w-full">
-              <Icon className={`${getIconSize(collapsed)} text-primary group-hover:text-primary-700 transition-colors duration-150 flex-shrink-0 ml-auto`} />
+              <Icon />
               {!collapsed && (
                 <span className="flex-1 text-right mr-3">{item.title}</span>
               )}
