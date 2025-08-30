@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageToolbar } from "@/components/layout/PageToolbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -140,10 +140,11 @@ export default function Invoices() {
 
   return (
     <PageContainer>
-      <PageHeader 
+      <PageToolbar
         title="الفواتير والمدفوعات"
-        description="إدارة الفواتير والمدفوعات للعيادة"
-        action={
+        showViewToggle={false}
+        showAdvancedFilter={false}
+        actions={
           <Button onClick={() => setIsCreateDialogOpen(true)}>
             <Plus className="w-4 h-4 ml-2" />
             فاتورة جديدة

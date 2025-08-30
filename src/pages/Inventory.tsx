@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageToolbar } from "@/components/layout/PageToolbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -126,10 +126,32 @@ export default function Inventory() {
 
   return (
     <PageContainer>
-      <PageHeader 
+      <PageToolbar
         title="إدارة المخزون"
-        description="تتبع المستلزمات والأدوات الطبية"
-        action={
+        searchQuery={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="البحث في المستلزمات..."
+        showViewToggle={false}
+        filterContent={
+          <div className="p-4">
+            <label className="text-sm font-medium mb-2 block">تصفية حسب الفئة</label>
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="اختر الفئة" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">جميع الفئات</SelectItem>
+                <SelectItem value="instruments">أدوات</SelectItem>
+                <SelectItem value="materials">مواد</SelectItem>
+                <SelectItem value="medications">أدوية</SelectItem>
+                <SelectItem value="disposables">مستهلكات</SelectItem>
+                <SelectItem value="equipment">معدات</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        }
+        activeFiltersCount={categoryFilter !== "all" ? 1 : 0}
+        actions={
           <div className="flex gap-2">
             <Button onClick={() => setIsCreateOrderOpen(true)} variant="outline">
               <Truck className="w-4 h-4 ml-2" />
@@ -196,36 +218,6 @@ export default function Inventory() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="البحث في المستلزمات..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="تصفية حسب الفئة" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">جميع الفئات</SelectItem>
-                <SelectItem value="instruments">أدوات</SelectItem>
-                <SelectItem value="materials">مواد</SelectItem>
-                <SelectItem value="medications">أدوية</SelectItem>
-                <SelectItem value="disposables">مستهلكات</SelectItem>
-                <SelectItem value="equipment">معدات</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Supplies Table */}
       <Card>

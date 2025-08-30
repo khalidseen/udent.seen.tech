@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageToolbar } from "@/components/layout/PageToolbar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -173,10 +173,14 @@ export default function MedicalRecords() {
 
   return (
     <PageContainer>
-      <PageHeader 
+      <PageToolbar
         title="السجلات الطبية"
-        description="إدارة السجلات الطبية والأشعة"
-        action={
+        searchQuery={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder="البحث في السجلات الطبية..."
+        showViewToggle={false}
+        showAdvancedFilter={false}
+        actions={
           <div className="flex gap-2">
             <Button 
               onClick={() => window.open('/smart-diagnosis', '_blank')}

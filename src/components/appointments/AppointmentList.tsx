@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import AddAppointmentDialog from "./AddAppointmentDialog";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { PageToolbar } from "@/components/layout/PageToolbar";
 import { PageHeader } from "@/components/layout/PageHeader";
 import EditAppointmentDialog from "./EditAppointmentDialog";
 import PostAppointmentActions from "./PostAppointmentActions";
@@ -163,7 +164,15 @@ const AppointmentList = () => {
       </PageContainer>;
   }
   return <PageContainer>
-      <PageHeader title={t('navigation.appointments')} description={t('appointments.description')} action={<AddAppointmentDialog onAppointmentAdded={fetchAppointments} />} />
+      <PageToolbar
+        title={t('navigation.appointments')}
+        searchQuery={searchTerm}
+        onSearchChange={setSearchTerm}
+        searchPlaceholder={t('filters.searchByName')}
+        showViewToggle={false}
+        showAdvancedFilter={false}
+        actions={<AddAppointmentDialog onAppointmentAdded={fetchAppointments} />}
+      />
 
       {/* Tabs for Calendar and List View */}
       <Tabs defaultValue="calendar" className="space-y-6">

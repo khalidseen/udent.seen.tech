@@ -11,14 +11,13 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { PageToolbar } from "@/components/layout/PageToolbar";
 import AddTreatmentDialog from "./AddTreatmentDialog";
-import { PageHeader } from "@/components/layout/PageHeader";
 import AddPatientDrawer from "./AddPatientDrawer";
 import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { PatientToolbar } from "./PatientToolbar";
 interface Patient {
   id: string;
   full_name: string;
@@ -230,7 +229,11 @@ const PatientList = () => {
   };
   if (loading) {
     return <PageContainer>
-        <PageHeader title={t('navigation.patients')} description={t('messages.loadingData')} />
+        <PageToolbar
+          title={t('navigation.patients')}
+          showViewToggle={false}
+          showAdvancedFilter={false}
+        />
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-center gap-2">
@@ -243,10 +246,22 @@ const PatientList = () => {
       </PageContainer>;
   }
   return <PageContainer>
-      <PageHeader title={t('navigation.patients')} description={t('messages.managePatients')} />
-      
-      {/* شريط الأدوات الجديد - محدث */}
-      <PatientToolbar searchQuery={searchQuery} onSearchChange={setSearchQuery} viewMode={viewMode} onViewModeChange={setViewMode} filters={filters} onFiltersChange={setFilters} onPatientAdded={handlePatientAdded} activeFiltersCount={getActiveFiltersCount(filters)} />
+      <PageToolbar
+        title={t('navigation.patients')}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder={t('patients.searchPlaceholder')}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        filterContent={
+          <PatientFilters 
+            filters={filters} 
+            onFiltersChange={setFilters} 
+          />
+        }
+        activeFiltersCount={getActiveFiltersCount(filters)}
+        actions={<AddPatientDrawer onPatientAdded={handlePatientAdded} />}
+      />
 
       {/* Patient Stats */}
       

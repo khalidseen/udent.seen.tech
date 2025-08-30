@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { PageHeader } from "@/components/layout/PageHeader";
+import { PageToolbar } from "@/components/layout/PageToolbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AddDoctorDialog from "@/components/doctors/AddDoctorDialog";
@@ -98,10 +98,14 @@ const Doctors = () => {
 
   return (
     <PageContainer>
-      <PageHeader 
+      <PageToolbar
         title="إدارة الأطباء"
-        description="إدارة الأطباء والموظفين الطبيين"
-        action={
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="البحث في الأطباء..."
+        showViewToggle={false}
+        showAdvancedFilter={false}
+        actions={
           <Button onClick={handleCreate}>
             <Plus className="w-4 h-4 ml-2" />
             إضافة طبيب جديد
