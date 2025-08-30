@@ -189,8 +189,8 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="w-4 h-4 ml-2" />
+        <Button className="flex items-center gap-2 bg-primary hover:bg-primary/90">
+          <Plus className="w-4 h-4" />
           إضافة مريض جديد
         </Button>
       </DialogTrigger>

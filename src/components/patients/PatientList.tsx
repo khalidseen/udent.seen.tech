@@ -18,6 +18,7 @@ import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { PatientToolbar } from "./PatientToolbar";
 
 interface Patient {
   id: string;
@@ -48,6 +49,7 @@ interface Patient {
 const PatientList = () => {
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [searchQuery, setSearchQuery] = useState('');
   const [filters, setFilters] = useState<PatientFilter>({
     gender: 'all',
     ageRange: 'all',
@@ -152,6 +154,13 @@ const PatientList = () => {
   };
 
   const filteredPatients = patients.filter(patient => {
+    // Search query filter
+    const matchesSearch = !searchQuery || 
+      patient.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.phone?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.national_id?.toLowerCase().includes(searchQuery.toLowerCase());
+
     // Gender filter
     const matchesGender = !filters.gender || filters.gender === 'all' || patient.gender === filters.gender;
 
@@ -200,7 +209,7 @@ const PatientList = () => {
       }
     }
 
-    return matchesGender && matchesAge && matchesEmail && matchesPhone && matchesDateRange;
+    return matchesSearch && matchesGender && matchesAge && matchesEmail && matchesPhone && matchesDateRange;
   });
 
   const getGenderBadge = (gender: string) => {
@@ -252,10 +261,16 @@ const PatientList = () => {
 
   return (
     <PageContainer>
-      <PageHeader 
-        title={t('patients.title')} 
-        description={t('patients.description')}
-        action={<AddPatientDrawer onPatientAdded={handlePatientAdded} />}
+      {/* شريط الأدوات الجديد */}
+      <PatientToolbar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        filters={filters}
+        onFiltersChange={setFilters}
+        onPatientAdded={handlePatientAdded}
+        activeFiltersCount={getActiveFiltersCount(filters)}
       />
 
       {/* Patient Stats */}
@@ -289,64 +304,6 @@ const PatientList = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* Floating Filters Button */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className="fixed top-20 right-4 z-50 bg-white/90 dark:bg-card/90 backdrop-blur-sm border-border/60 shadow-lg hover:shadow-xl transition-all duration-200"
-            size="sm"
-          >
-            <Filter className="w-4 h-4 ml-1" />
-            {t('actions.advancedFilter')}
-            {Object.values(filters).some(v => v !== '' && v !== 'all') && (
-              <Badge variant="destructive" className="mr-2 h-5 w-5 p-0 text-xs">
-                {getActiveFiltersCount(filters)}
-              </Badge>
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 p-0" align="start">
-          <PatientFilters filters={filters} onFiltersChange={setFilters} />
-        </PopoverContent>
-      </Popover>
-
-      {/* Floating View Mode Button */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className="fixed top-32 right-4 z-50 bg-white/90 dark:bg-card/90 backdrop-blur-sm border-border/60 shadow-lg hover:shadow-xl transition-all duration-200"
-            size="sm"
-          >
-            {viewMode === 'cards' ? <Grid3X3 className="w-4 h-4 ml-1" /> : <List className="w-4 h-4 ml-1" />}
-            {viewMode === 'cards' ? t('actions.cardsView') : t('actions.tableView')}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-48 p-2" align="start">
-          <div className="space-y-1">
-            <Button
-              variant={viewMode === 'cards' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('cards')}
-              className="w-full justify-start gap-2"
-            >
-              <Grid3X3 className="w-4 h-4" />
-              {t('actions.cardsView')}
-            </Button>
-            <Button
-              variant={viewMode === 'table' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setViewMode('table')}
-              className="w-full justify-start gap-2"
-            >
-              <List className="w-4 h-4" />
-              {t('actions.tableView')}
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
 
       {/* Patients Display */}
       {filteredPatients.length === 0 ? (
