@@ -121,51 +121,29 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
     try {
       setLoading(true);
 
-      // إنشاء المستخدم باستخدام supabase.auth.signUp بدلاً من admin API
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            role: selectedRole,
-            phone: formData.phone || '',
-            notes: formData.notes || ''
-          }
+      // استخدام Edge Function لإنشاء المستخدم
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: formData.email,
+          password: formData.password,
+          fullName: formData.fullName,
+          role: selectedRole,
+          phone: formData.phone || '',
+          notes: formData.notes || ''
         }
       });
 
-      if (authError) {
-        throw authError;
+      if (error) {
+        throw error;
       }
 
-      if (!authData.user) {
-        throw new Error('لم يتم إنشاء المستخدم بشكل صحيح');
-      }
-
-      // المستخدم سيتم إنشاء ملفه الشخصي تلقائياً عبر trigger handle_new_user
-      // لكن سنتأكد من التحديث اليدوي إذا لزم الأمر
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert([
-          {
-            user_id: authData.user.id,
-            full_name: formData.fullName,
-            role: selectedRole,
-            status: 'approved'
-          }
-        ], { 
-          onConflict: 'user_id'
-        });
-
-      if (profileError) {
-        console.warn('Profile creation warning:', profileError);
-        // لا نرمي خطأ هنا لأن الـ trigger قد يكون تعامل مع الموضوع
+      if (!data.success) {
+        throw new Error(data.error || 'فشل في إنشاء المستخدم');
       }
 
       toast({
         title: 'تم إنشاء المستخدم بنجاح',
-        description: `تم إنشاء حساب ${formData.fullName} بصلاحية ${roles.find(r => r.role_name === selectedRole)?.role_name_ar}. يرجى التحقق من البريد الإلكتروني لتأكيد الحساب.`,
+        description: `تم إنشاء حساب ${formData.fullName} بصلاحية ${roles.find(r => r.role_name === selectedRole)?.role_name_ar}`,
       });
 
       // إعادة تعيين النموذج
@@ -185,12 +163,16 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
       console.error('Error creating user:', error);
       let errorMessage = 'حدث خطأ أثناء إنشاء المستخدم';
       
-      if (error.message.includes('already registered')) {
-        errorMessage = 'هذا البريد الإلكتروني مسجل مسبقاً';
-      } else if (error.message.includes('email')) {
-        errorMessage = 'خطأ في البريد الإلكتروني';
-      } else if (error.message.includes('password')) {
-        errorMessage = 'كلمة المرور غير قوية بما فيه الكفاية';
+      if (error.message) {
+        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
+          errorMessage = 'هذا البريد الإلكتروني مسجل مسبقاً';
+        } else if (error.message.includes('email')) {
+          errorMessage = 'خطأ في البريد الإلكتروني';
+        } else if (error.message.includes('password')) {
+          errorMessage = 'كلمة المرور غير قوية بما فيه الكفاية';
+        } else {
+          errorMessage = error.message;
+        }
       }
       
       toast({
