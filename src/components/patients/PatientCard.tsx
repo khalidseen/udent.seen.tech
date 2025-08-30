@@ -66,11 +66,11 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
               <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
                 {patient.full_name}
               </h3>
-              <div className="flex space-x-1 space-x-reverse opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="flex space-x-1 space-x-reverse transition-opacity">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-muted/50 hover:bg-primary/10 hover:text-primary"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -84,7 +84,7 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-muted/50 hover:bg-primary/10 hover:text-primary"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -96,7 +96,7 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 bg-muted/50 hover:bg-primary/10 hover:text-primary"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
