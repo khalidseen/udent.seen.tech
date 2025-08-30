@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import PatientFilters, { PatientFilter } from "./PatientFilters";
 import AddPatientDrawer from "./AddPatientDrawer";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PatientToolbarProps {
   searchQuery: string;
@@ -39,6 +40,7 @@ export function PatientToolbar({
   onPatientAdded,
   activeFiltersCount
 }: PatientToolbarProps) {
+  const { t } = useLanguage();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   const clearSearch = () => {
@@ -48,10 +50,15 @@ export function PatientToolbar({
 
   return (
     <div className="bg-background border-b border-border/40 sticky top-0 z-40 backdrop-blur-sm">
-      <div className="flex items-center justify-between gap-3 px-4 py-3">
+      <div className="flex items-center justify-between gap-4 px-4 py-3">
+        
+        {/* عنوان المرضى */}
+        <div className="flex-shrink-0">
+          <h1 className="text-2xl font-bold text-foreground">{t('navigation.patients')}</h1>
+        </div>
         
         {/* البحث السريع */}
-        <div className="flex items-center gap-2 flex-1 max-w-md">
+        <div className="flex items-center gap-2 flex-1 max-w-sm">
           {!isSearchExpanded ? (
             <Button
               variant="outline"
@@ -59,13 +66,13 @@ export function PatientToolbar({
               className="flex items-center gap-2 min-w-[120px]"
             >
               <Search className="w-4 h-4" />
-              البحث السريع
+              {t('common.quickSearch')}
             </Button>
           ) : (
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="ابحث عن مريض..."
+                placeholder={t('patients.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="pl-9 pr-8"
@@ -95,7 +102,7 @@ export function PatientToolbar({
             className="flex items-center gap-2"
           >
             <Grid3X3 className="w-4 h-4" />
-            مربعات
+            {t('common.cards')}
           </Button>
 
           {/* زر الجدول */}
@@ -105,7 +112,7 @@ export function PatientToolbar({
             className="flex items-center gap-2"
           >
             <List className="w-4 h-4" />
-            جدول
+            {t('common.table')}
           </Button>
 
           {/* الفلتر المتقدم */}
@@ -116,7 +123,7 @@ export function PatientToolbar({
                 className="flex items-center gap-2 relative"
               >
                 <Filter className="w-4 h-4" />
-                الفلتر المتقدم
+                {t('common.advancedFilter')}
                 {activeFiltersCount > 0 && (
                   <Badge 
                     variant="destructive" 
