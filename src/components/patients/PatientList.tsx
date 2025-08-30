@@ -261,6 +261,8 @@ const PatientList = () => {
 
   return (
     <PageContainer>
+      <PageHeader title={t('navigation.patients')} description={t('messages.managePatients')} />
+      
       {/* شريط الأدوات الجديد - محدث */}
       <PatientToolbar
         searchQuery={searchQuery}
