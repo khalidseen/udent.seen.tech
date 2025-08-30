@@ -38,6 +38,9 @@ All colors MUST be HSL.
 
     --radius: 0.75rem;
 
+    /* Font weight variable */
+    --font-weight-global: 400;
+
   /* Enhanced Sidebar Colors */
     --sidebar-background: 215 100% 97%;
     --sidebar-foreground: 215 25% 25%;
@@ -97,8 +100,6 @@ All colors MUST be HSL.
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
-  /* Font weight variable */
-  --font-weight-global: 400;
 }
 
 @layer base {
