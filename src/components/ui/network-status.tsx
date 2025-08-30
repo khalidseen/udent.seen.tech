@@ -6,20 +6,20 @@ import { offlineSyncService } from '@/lib/offline-sync';
 import { offlineDB } from '@/lib/offline-db';
 import { toast } from 'sonner';
 import { useState, useEffect } from 'react';
-
 export function NetworkStatusIndicator() {
-  const { isOnline, isOffline } = useNetworkStatus();
+  const {
+    isOnline,
+    isOffline
+  } = useNetworkStatus();
   const [pendingCount, setPendingCount] = useState(0);
   const [loading, setLoading] = useState(false);
-
   useEffect(() => {
     updatePendingCount();
-    
+
     // Update pending count periodically
     const interval = setInterval(updatePendingCount, 5000);
     return () => clearInterval(interval);
   }, []);
-
   const updatePendingCount = async () => {
     try {
       const queue = await offlineDB.getQueue();
@@ -28,16 +28,13 @@ export function NetworkStatusIndicator() {
       console.error('Error getting pending count:', error);
     }
   };
-
   const handleSync = async () => {
     if (!isOnline) {
       toast.error('لا يوجد اتصال بالإنترنت');
       return;
     }
-    
     setLoading(true);
     toast.info('جاري مزامنة البيانات...');
-    
     try {
       await offlineSyncService.forcSync();
       await updatePendingCount();
@@ -47,37 +44,22 @@ export function NetworkStatusIndicator() {
       setLoading(false);
     }
   };
-
   if (isOnline) {
-    return (
-      <div className="flex items-center gap-2 text-sm">
+    return <div className="flex items-center gap-2 text-sm">
         <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
-          <Wifi className="h-4 w-4" />
-          <span>متصل</span>
+          
+          
         </div>
         
-        {pendingCount > 0 && (
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+        {pendingCount > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
             <Database className="h-3 w-3 ml-1" />
             {pendingCount} عملية منتظرة
-          </Badge>
-        )}
+          </Badge>}
         
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSync}
-          disabled={loading}
-          className="h-6 px-2"
-        >
-          <RefreshCw className={`h-3 w-3 ${loading ? 'animate-spin' : ''}`} />
-        </Button>
-      </div>
-    );
+        
+      </div>;
   }
-
-  return (
-    <div className="flex items-center gap-2 text-sm">
+  return <div className="flex items-center gap-2 text-sm">
       <div className="flex items-center gap-1 text-orange-600 dark:text-orange-400">
         <WifiOff className="h-4 w-4" />
         <span>غير متصل</span>
@@ -87,12 +69,9 @@ export function NetworkStatusIndicator() {
         وضع offline
       </Badge>
       
-      {pendingCount > 0 && (
-        <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+      {pendingCount > 0 && <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
           <Database className="h-3 w-3 ml-1" />
           {pendingCount} محفوظ محلياً
-        </Badge>
-      )}
-    </div>
-  );
+        </Badge>}
+    </div>;
 }
