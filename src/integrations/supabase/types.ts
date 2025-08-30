@@ -2056,6 +2056,16 @@ export type Database = {
           user_id: string
         }
       }
+      get_user_effective_permissions: {
+        Args: { user_id_param?: string }
+        Returns: {
+          category: string
+          permission_key: string
+          permission_name: string
+          permission_name_ar: string
+          source: string
+        }[]
+      }
       get_user_permissions: {
         Args: { user_id_param?: string }
         Returns: {

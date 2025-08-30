@@ -25,14 +25,22 @@ export const usePermissions = () => {
     try {
       setLoading(true);
       
-      // Fetch user permissions
+      // استخدام الدالة الجديدة للحصول على جميع الصلاحيات الفعلية
       const { data: permissionsData, error: permissionsError } = await supabase
-        .rpc('get_user_permissions');
+        .rpc('get_user_effective_permissions');
 
       if (permissionsError) {
         console.error('Error fetching permissions:', permissionsError);
         throw permissionsError;
       }
+
+      // استخدام البيانات الجديدة مع البنية المحدثة
+      const formattedPermissions = permissionsData?.map((p: any) => ({
+        permission_key: p.permission_key,
+        permission_name: p.permission_name,
+        permission_name_ar: p.permission_name_ar,
+        category: p.category
+      })) || [];
 
       // Fetch user roles
       const { data: rolesData, error: rolesError } = await supabase
@@ -43,7 +51,7 @@ export const usePermissions = () => {
         throw rolesError;
       }
 
-      setPermissions(permissionsData || []);
+      setPermissions(formattedPermissions);
       setUserRoles(rolesData || []);
     } catch (error) {
       console.error('Error in fetchUserPermissions:', error);

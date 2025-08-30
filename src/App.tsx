@@ -50,6 +50,8 @@ import SplashCursorDemo from "@/pages/SplashCursorDemo";
 import NoiseDemo from "@/pages/NoiseDemo";
 import SecurityAudit from "@/pages/SecurityAudit";
 import Permissions from "@/pages/Permissions";
+import Profile from "@/pages/Profile";
+import Users from "@/pages/Users";
 
 // Initialize the offline database
 import { offlineDB } from "@/lib/offline-db";
@@ -145,6 +147,9 @@ function App() {
                     <Route path="medications" element={<Medications />} />
                     <Route path="prescriptions" element={<Prescriptions />} />
                     <Route path="permissions" element={<Permissions />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="profile/:userId" element={<Profile />} />
+                    <Route path="users" element={<Users />} />
                     <Route path="security-audit" element={<SecurityAudit />} />
                     <Route path="splash-cursor-demo" element={<SplashCursorDemo />} />
                   </Route>

@@ -123,6 +123,7 @@ export function AppSidebar() {
         { title: "قوالب الإشعارات", url: "/notification-templates", icon: Mail, permissions: [] },
         { title: "التقارير", url: "/reports", icon: FileSpreadsheet, permissions: [] },
         { title: "إدارة الصلاحيات", url: "/permissions", icon: UserCog, permissions: ['permissions.manage'] },
+        { title: "إدارة المستخدمين", url: "/users", icon: Users, permissions: ['profiles.view_all'] },
         { title: "التدقيق الأمني", url: "/security-audit", icon: Shield, permissions: ['audit.view'] },
         { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: [] },
         { title: "رابط حجز المرضى", url: "/book", icon: ExternalLink, permissions: [], external: true }
@@ -344,18 +345,31 @@ export function AppSidebar() {
             </div>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size={isCollapsed ? "icon" : "default"}
-          className={cn(
-            "w-full mt-2",
-            !isCollapsed && "justify-start gap-2"
+        <div className="space-y-2 mt-3">
+          {!isCollapsed && (
+            <Button
+              variant="ghost"
+              size="default"
+              className="w-full justify-start gap-2"
+              onClick={() => window.location.href = '/profile'}
+            >
+              <User className="w-4 h-4" />
+              الملف الشخصي
+            </Button>
           )}
-          onClick={signOut}
-        >
-          <LogOut className="w-4 h-4" />
-          {!isCollapsed && t('common.logout')}
-        </Button>
+          <Button
+            variant="ghost"
+            size={isCollapsed ? "icon" : "default"}
+            className={cn(
+              "w-full",
+              !isCollapsed && "justify-start gap-2"
+            )}
+            onClick={signOut}
+          >
+            <LogOut className="w-4 h-4" />
+            {!isCollapsed && t('common.logout')}
+          </Button>
+        </div>
       </div>
     </aside>
   );
