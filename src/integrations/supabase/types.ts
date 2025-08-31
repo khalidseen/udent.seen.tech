@@ -214,6 +214,98 @@ export type Database = {
         }
         Relationships: []
       }
+      clinic_memberships: {
+        Row: {
+          clinic_id: string
+          id: string
+          is_active: boolean
+          joined_at: string
+          role: Database["public"]["Enums"]["user_role_type"]
+          user_id: string
+        }
+        Insert: {
+          clinic_id: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          role: Database["public"]["Enums"]["user_role_type"]
+          user_id: string
+        }
+        Update: {
+          clinic_id?: string
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          role?: Database["public"]["Enums"]["user_role_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_memberships_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinics: {
+        Row: {
+          address: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          license_number: string | null
+          logo_url: string | null
+          max_patients: number | null
+          max_users: number | null
+          name: string
+          phone: string | null
+          subscription_plan: string | null
+          subscription_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          license_number?: string | null
+          logo_url?: string | null
+          max_patients?: number | null
+          max_users?: number | null
+          name: string
+          phone?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          license_number?: string | null
+          logo_url?: string | null
+          max_patients?: number | null
+          max_users?: number | null
+          name?: string
+          phone?: string | null
+          subscription_plan?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dental_treatments: {
         Row: {
           assigned_doctor_id: string | null
@@ -1267,6 +1359,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          clinic_id: string | null
           created_at: string
           full_name: string
           id: string
@@ -1276,6 +1369,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          clinic_id?: string | null
           created_at?: string
           full_name: string
           id?: string
@@ -1285,6 +1379,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          clinic_id?: string | null
           created_at?: string
           full_name?: string
           id?: string
@@ -1293,7 +1388,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchase_order_items: {
         Row: {
@@ -2047,6 +2150,7 @@ export type Database = {
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
         Returns: {
+          clinic_id: string | null
           created_at: string
           full_name: string
           id: string
@@ -2055,6 +2159,10 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+      }
+      get_user_current_clinic: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       get_user_effective_permissions: {
         Args: { user_id_param?: string }
@@ -2106,6 +2214,12 @@ export type Database = {
         | "financial"
         | "medical_record"
       operation_sensitivity: "normal" | "sensitive" | "critical"
+      user_role_type:
+        | "super_admin"
+        | "clinic_manager"
+        | "dentist"
+        | "assistant"
+        | "accountant"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2243,6 +2357,13 @@ export const Constants = {
         "medical_record",
       ],
       operation_sensitivity: ["normal", "sensitive", "critical"],
+      user_role_type: [
+        "super_admin",
+        "clinic_manager",
+        "dentist",
+        "assistant",
+        "accountant",
+      ],
     },
   },
 } as const

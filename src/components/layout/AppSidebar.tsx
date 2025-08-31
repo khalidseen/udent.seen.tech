@@ -36,7 +36,9 @@ import {
   Briefcase,
   Activity as TreatmentIcon,
   Calculator,
-  Shield
+  Shield,
+  Crown,
+  Building
 } from "lucide-react";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -69,6 +71,16 @@ export function AppSidebar() {
   };
 
   const isActive = (path: string) => currentPath === path;
+
+  const canAccessMenuItem = (item: MenuItem): boolean => {
+    if (!item.permissions || item.permissions.length === 0) return true;
+    return hasAnyPermission(item.permissions);
+  };
+
+  const primaryRole = getPrimaryRole();
+  
+  // Get current user role for role-based menu
+  const userRole = primaryRole?.role_name;
 
   const menuConfig = [
     {
@@ -116,15 +128,26 @@ export function AppSidebar() {
         { title: "أوامر الشراء", url: "/purchase-orders", icon: PackageCheck, permissions: [] }
       ]
     },
+    // Super Admin section - only visible to super admins
+    ...(userRole === 'super_admin' ? [{
+      groupTitle: "إدارة النظام الشامل",
+      items: [
+        { title: "لوحة تحكم مدير النظام", url: "/super-admin", icon: Crown, permissions: ['system.manage_all_clinics'] },
+        { title: "إدارة العيادات", url: "/super-admin", icon: Building, permissions: ['system.manage_all_clinics'] }
+      ]
+    }] : []),
     {
       groupTitle: t('sidebar.systemManagement'),
       items: [
         { title: "الإشعارات", url: "/notifications", icon: Bell, permissions: [] },
         { title: "قوالب الإشعارات", url: "/notification-templates", icon: Mail, permissions: [] },
         { title: "التقارير", url: "/reports", icon: FileSpreadsheet, permissions: [] },
-        { title: "إدارة الصلاحيات", url: "/permissions", icon: UserCog, permissions: ['permissions.manage'] },
-        { title: "إدارة المستخدمين", url: "/users", icon: Users, permissions: ['users.view_all'] },
-        { title: "التدقيق الأمني", url: "/security-audit", icon: Shield, permissions: ['audit.view'] },
+        // Role-based system management items
+        ...(userRole === 'super_admin' || userRole === 'clinic_manager' ? [
+          { title: "إدارة الصلاحيات", url: "/permissions", icon: UserCog, permissions: ['permissions.manage'] },
+          { title: "إدارة المستخدمين", url: "/users", icon: Users, permissions: ['users.view_all'] },
+          { title: "التدقيق الأمني", url: "/security-audit", icon: Shield, permissions: ['audit.view'] }
+        ] : []),
         { title: t('navigation.settings'), url: "/settings", icon: Settings, permissions: [] },
         { title: "رابط حجز المرضى", url: "/book", icon: ExternalLink, permissions: [], external: true }
       ]
@@ -193,13 +216,6 @@ export function AppSidebar() {
       </NavLink>
     );
   }
-
-  const canAccessMenuItem = (item: MenuItem): boolean => {
-    if (!item.permissions || item.permissions.length === 0) return true;
-    return hasAnyPermission(item.permissions);
-  };
-
-  const primaryRole = getPrimaryRole();
 
   // إضافة متغير CSS لمشاركة حالة القائمة مع المكونات الأخرى
   React.useEffect(() => {
