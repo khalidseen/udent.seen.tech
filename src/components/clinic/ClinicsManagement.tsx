@@ -7,8 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { CreateClinicDialog } from './CreateClinicDialog';
-import { ViewClinicDialog } from './ViewClinicDialog';
 import { ClinicMembersManagement } from './ClinicMembersManagement';
+import { ViewClinicDialog } from './ViewClinicDialog';
+import { ClinicSubscriptionManager } from '../subscription/ClinicSubscriptionManager';
 import { usePermissions } from '@/hooks/usePermissions';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 
@@ -267,6 +268,7 @@ export function ClinicsManagement() {
                 <TabsList>
                   <TabsTrigger value="details">تفاصيل العيادة</TabsTrigger>
                   <TabsTrigger value="members">إدارة الأعضاء</TabsTrigger>
+                  <TabsTrigger value="subscription">الاشتراك</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="details" className="space-y-4">
@@ -283,6 +285,10 @@ export function ClinicsManagement() {
                     clinicId={selectedClinic.id} 
                     clinicName={selectedClinic.name}
                   />
+                </TabsContent>
+                
+                <TabsContent value="subscription">
+                  <ClinicSubscriptionManager clinicId={selectedClinic.id} />
                 </TabsContent>
               </Tabs>
             </CardContent>

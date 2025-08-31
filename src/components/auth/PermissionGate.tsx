@@ -1,25 +1,64 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState, useEffect } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PermissionGateProps {
   permissions?: string[];
   roles?: string[];
+  features?: string[];
   requireAll?: boolean;
   children: ReactNode;
   fallback?: ReactNode;
+  checkSubscription?: boolean;
 }
 
 export const PermissionGate = ({ 
   permissions = [], 
   roles = [], 
+  features = [],
   requireAll = false,
   children, 
-  fallback = null 
+  fallback = null,
+  checkSubscription = true
 }: PermissionGateProps) => {
   const { hasPermission, hasRole, loading } = usePermissions();
+  const [hasFeatureAccess, setHasFeatureAccess] = useState(true);
+  const [featureLoading, setFeatureLoading] = useState(features.length > 0);
+
+  // Check plan features
+  useEffect(() => {
+    const checkPlanFeatures = async () => {
+      if (features.length === 0 || !checkSubscription) {
+        setHasFeatureAccess(true);
+        setFeatureLoading(false);
+        return;
+      }
+
+      try {
+        const featureChecks = await Promise.all(
+          features.map(feature => 
+            supabase.rpc('has_plan_feature', { feature_key_param: feature })
+          )
+        );
+
+        const hasAllFeatures = requireAll 
+          ? featureChecks.every(result => result.data === true)
+          : featureChecks.some(result => result.data === true);
+
+        setHasFeatureAccess(hasAllFeatures);
+      } catch (error) {
+        console.error('Error checking plan features:', error);
+        setHasFeatureAccess(false);
+      } finally {
+        setFeatureLoading(false);
+      }
+    };
+
+    checkPlanFeatures();
+  }, [features, requireAll, checkSubscription]);
 
   // Show loading state if needed
-  if (loading) {
+  if (loading || featureLoading) {
     return fallback;
   }
 
@@ -37,8 +76,8 @@ export const PermissionGate = ({
       : roles.some(role => hasRole(role))
   );
 
-  // Both conditions must be met if both are specified
-  const hasAccess = hasRequiredPermissions && hasRequiredRoles;
+  // All conditions must be met
+  const hasAccess = hasRequiredPermissions && hasRequiredRoles && hasFeatureAccess;
 
   return hasAccess ? <>{children}</> : <>{fallback}</>;
 };
