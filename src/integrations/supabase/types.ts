@@ -2404,6 +2404,20 @@ export type Database = {
         Args: { clinic_id_param?: string; metric_type_param: string }
         Returns: boolean
       }
+      create_clinic_with_owner: {
+        Args: {
+          address?: string
+          city?: string
+          clinic_name: string
+          email?: string
+          license_number?: string
+          max_patients?: number
+          max_users?: number
+          phone?: string
+          subscription_plan_name?: string
+        }
+        Returns: Json
+      }
       detect_suspicious_activities: {
         Args: Record<PropertyKey, never>
         Returns: undefined

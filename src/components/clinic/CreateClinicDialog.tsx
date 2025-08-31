@@ -45,70 +45,25 @@ export function CreateClinicDialog({ open, onOpenChange, onSuccess }: CreateClin
     setLoading(true);
     
     try {
-      // الحصول على المستخدم الحالي
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        throw new Error('يجب تسجيل الدخول لإنشاء عيادة');
+      // استخدام الدالة المحسنة لإنشاء العيادة
+      const { data, error } = await supabase.rpc('create_clinic_with_owner', {
+        clinic_name: formData.name.trim(),
+        license_number: formData.license_number.trim() || null,
+        phone: formData.phone.trim() || null,
+        email: formData.email.trim() || null,
+        address: formData.address.trim() || null,
+        city: formData.city.trim() || null,
+        subscription_plan_name: formData.subscription_plan,
+        max_users: parseInt(formData.max_users),
+        max_patients: parseInt(formData.max_patients)
+      });
+
+      if (error) {
+        console.error('Clinic creation error:', error);
+        throw new Error(error.message || 'فشل في إنشاء العيادة');
       }
 
-      // إنشاء العيادة
-      const { data: clinicData, error: clinicError } = await supabase
-        .from('clinics')
-        .insert({
-          name: formData.name.trim(),
-          license_number: formData.license_number.trim() || null,
-          phone: formData.phone.trim() || null,
-          email: formData.email.trim() || null,
-          address: formData.address.trim() || null,
-          city: formData.city.trim() || null,
-          subscription_plan: formData.subscription_plan,
-          max_users: parseInt(formData.max_users),
-          max_patients: parseInt(formData.max_patients),
-          is_active: true
-        })
-        .select()
-        .single();
-
-      if (clinicError) {
-        console.error('Clinic creation error:', clinicError);
-        throw clinicError;
-      }
-
-      console.log('Created clinic:', clinicData);
-
-      // إضافة المنشئ كمالك للعيادة
-      const { error: membershipError } = await supabase
-        .from('clinic_memberships')
-        .insert({
-          clinic_id: clinicData.id,
-          user_id: user.id,
-          role: 'owner' as any,
-          is_active: true
-        });
-
-      if (membershipError) {
-        console.error('Membership creation error:', membershipError);
-        
-        // حذف العيادة في حالة فشل إضافة العضوية
-        await supabase.from('clinics').delete().eq('id', clinicData.id);
-        
-        throw new Error(`فشل في إضافة العضوية للعيادة: ${membershipError.message}`);
-      }
-
-      // تحديث الملف الشخصي للمستخدم ليشير للعيادة الجديدة
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          clinic_id: clinicData.id,
-          current_clinic_role: 'owner' as any
-        })
-        .eq('user_id', user.id);
-
-      if (profileError) {
-        console.error('Profile update error:', profileError);
-        // لا نحذف العيادة هنا لأن العضوية تم إنشاؤها بنجاح
-      }
+      console.log('Created clinic successfully:', data);
 
       toast({
         title: "تم الإنشاء بنجاح",
