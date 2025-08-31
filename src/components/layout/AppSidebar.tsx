@@ -47,6 +47,10 @@ export function AppSidebar() {
   };
   const isActive = (path: string) => currentPath === path;
   const canAccessMenuItem = (item: MenuItem): boolean => {
+    // إعطاء صلاحيات كاملة لمدير النظام
+    if (user?.email === 'eng.khalid.work@gmail.com') {
+      return true;
+    }
     if (!item.permissions || item.permissions.length === 0) return true;
     return hasAnyPermission(item.permissions);
   };
@@ -170,8 +174,8 @@ export function AppSidebar() {
       permissions: []
     }]
   },
-  // Super Admin section - only visible to super admins
-  ...(userRole === 'super_admin' ? [{
+  // Super Admin section - visible to super admins and system admin
+  ...((userRole === 'super_admin' || user?.email === 'eng.khalid.work@gmail.com') ? [{
     groupTitle: "إدارة النظام الشامل",
     items: [{
       title: "لوحة تحكم مدير النظام",
@@ -207,8 +211,8 @@ export function AppSidebar() {
       icon: FileSpreadsheet,
       permissions: []
     },
-    // Role-based system management items
-    ...(userRole === 'super_admin' || userRole === 'clinic_manager' ? [{
+    // Role-based system management items - always show for system admin
+    ...(userRole === 'super_admin' || userRole === 'clinic_manager' || user?.email === 'eng.khalid.work@gmail.com' ? [{
       title: "إدارة الصلاحيات",
       url: "/permissions",
       icon: UserCog,
