@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { ClinicSwitcher } from "../clinic/ClinicSwitcher";
 
 interface UpcomingAppointment {
   id: string;
@@ -121,6 +122,8 @@ export function TopNavbar() {
 
       {/* Right side actions */}
       <div className="flex items-center gap-2">
+        <ClinicSwitcher />
+        
         {/* Upcoming Appointments Notifications */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

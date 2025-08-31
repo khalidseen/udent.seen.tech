@@ -27,9 +27,10 @@ interface ViewClinicDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   clinic: Clinic | null;
+  embedded?: boolean;
 }
 
-export function ViewClinicDialog({ open, onOpenChange, clinic }: ViewClinicDialogProps) {
+export function ViewClinicDialog({ open, onOpenChange, clinic, embedded = false }: ViewClinicDialogProps) {
   if (!clinic) return null;
 
   const getSubscriptionPlanName = (plan: string) => {
@@ -50,6 +51,147 @@ export function ViewClinicDialog({ open, onOpenChange, clinic }: ViewClinicDialo
     }
   };
 
+  const content = (
+    <div className="space-y-6">
+      {/* Basic Information */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">المعلومات الأساسية</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">اسم العيادة</label>
+              <p className="text-sm">{clinic.name}</p>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium text-muted-foreground">رقم الترخيص</label>
+              <p className="text-sm">{clinic.license_number || 'غير محدد'}</p>
+            </div>
+            
+            <div className="flex items-center space-x-2 space-x-reverse">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">الهاتف</label>
+                <p className="text-sm">{clinic.phone || 'غير محدد'}</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2 space-x-reverse">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <div>
+                <label className="text-sm font-medium text-muted-foreground">البريد الإلكتروني</label>
+                <p className="text-sm">{clinic.email || 'غير محدد'}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center space-x-2 space-x-reverse">
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <div className="flex-1">
+              <label className="text-sm font-medium text-muted-foreground">العنوان</label>
+              <p className="text-sm">{clinic.address || 'غير محدد'}</p>
+              {clinic.city && (
+                <p className="text-xs text-muted-foreground">{clinic.city}</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Subscription & Limits */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center space-x-2 space-x-reverse">
+            <CreditCard className="h-5 w-5" />
+            <span>الاشتراك والحدود</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">خطة الاشتراك</span>
+            <Badge 
+              variant={getSubscriptionColor(clinic.subscription_plan, clinic.subscription_status)}
+            >
+              {getSubscriptionPlanName(clinic.subscription_plan)}
+            </Badge>
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">حالة الاشتراك</span>
+            <Badge variant={clinic.subscription_status === 'active' ? 'default' : 'destructive'}>
+              {clinic.subscription_status === 'active' ? 'نشط' : 'معطل'}
+            </Badge>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="text-2xl font-bold text-primary">{clinic.max_users}</div>
+              <div className="text-xs text-muted-foreground">الحد الأقصى للمستخدمين</div>
+            </div>
+            
+            <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="text-2xl font-bold text-primary">{clinic.max_patients}</div>
+              <div className="text-xs text-muted-foreground">الحد الأقصى للمرضى</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Usage Statistics */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center space-x-2 space-x-reverse">
+            <Users className="h-5 w-5" />
+            <span>إحصائيات الاستخدام</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-3 border rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">{clinic.user_count || 0}</div>
+              <div className="text-xs text-muted-foreground">المستخدمين الحاليين</div>
+              <div className="text-xs text-muted-foreground">
+                من أصل {clinic.max_users}
+              </div>
+            </div>
+            
+            <div className="text-center p-3 border rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{clinic.patient_count || 0}</div>
+              <div className="text-xs text-muted-foreground">المرضى الحاليين</div>
+              <div className="text-xs text-muted-foreground">
+                من أصل {clinic.max_patients}
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Creation Date */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center space-x-2 space-x-reverse">
+            <Calendar className="h-5 w-5" />
+            <span>معلومات إضافية</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium">تاريخ الإنشاء</span>
+            <span className="text-sm text-muted-foreground">
+              {format(new Date(clinic.created_at), 'dd MMMM yyyy', { locale: ar })}
+            </span>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
+  if (embedded) {
+    return content;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
@@ -68,141 +210,7 @@ export function ViewClinicDialog({ open, onOpenChange, clinic }: ViewClinicDialo
             تفاصيل العيادة ومعلومات الاشتراك
           </DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Basic Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">المعلومات الأساسية</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">اسم العيادة</label>
-                  <p className="text-sm">{clinic.name}</p>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium text-muted-foreground">رقم الترخيص</label>
-                  <p className="text-sm">{clinic.license_number || 'غير محدد'}</p>
-                </div>
-                
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">الهاتف</label>
-                    <p className="text-sm">{clinic.phone || 'غير محدد'}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-2 space-x-reverse">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <label className="text-sm font-medium text-muted-foreground">البريد الإلكتروني</label>
-                    <p className="text-sm">{clinic.email || 'غير محدد'}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2 space-x-reverse">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <div className="flex-1">
-                  <label className="text-sm font-medium text-muted-foreground">العنوان</label>
-                  <p className="text-sm">{clinic.address || 'غير محدد'}</p>
-                  {clinic.city && (
-                    <p className="text-xs text-muted-foreground">{clinic.city}</p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Subscription & Limits */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center space-x-2 space-x-reverse">
-                <CreditCard className="h-5 w-5" />
-                <span>الاشتراك والحدود</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">خطة الاشتراك</span>
-                <Badge 
-                  variant={getSubscriptionColor(clinic.subscription_plan, clinic.subscription_status)}
-                >
-                  {getSubscriptionPlanName(clinic.subscription_plan)}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">حالة الاشتراك</span>
-                <Badge variant={clinic.subscription_status === 'active' ? 'default' : 'destructive'}>
-                  {clinic.subscription_status === 'active' ? 'نشط' : 'معطل'}
-                </Badge>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{clinic.max_users}</div>
-                  <div className="text-xs text-muted-foreground">الحد الأقصى للمستخدمين</div>
-                </div>
-                
-                <div className="text-center p-3 bg-muted rounded-lg">
-                  <div className="text-2xl font-bold text-primary">{clinic.max_patients}</div>
-                  <div className="text-xs text-muted-foreground">الحد الأقصى للمرضى</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Usage Statistics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center space-x-2 space-x-reverse">
-                <Users className="h-5 w-5" />
-                <span>إحصائيات الاستخدام</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-3 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{clinic.user_count || 0}</div>
-                  <div className="text-xs text-muted-foreground">المستخدمين الحاليين</div>
-                  <div className="text-xs text-muted-foreground">
-                    من أصل {clinic.max_users}
-                  </div>
-                </div>
-                
-                <div className="text-center p-3 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{clinic.patient_count || 0}</div>
-                  <div className="text-xs text-muted-foreground">المرضى الحاليين</div>
-                  <div className="text-xs text-muted-foreground">
-                    من أصل {clinic.max_patients}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Creation Date */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center space-x-2 space-x-reverse">
-                <Calendar className="h-5 w-5" />
-                <span>معلومات إضافية</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">تاريخ الإنشاء</span>
-                <span className="text-sm text-muted-foreground">
-                  {format(new Date(clinic.created_at), 'dd MMMM yyyy', { locale: ar })}
-                </span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {content}
       </DialogContent>
     </Dialog>
   );

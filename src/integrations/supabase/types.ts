@@ -2160,6 +2160,15 @@ export type Database = {
           user_id: string
         }
       }
+      get_user_accessible_clinics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          access_type: string
+          clinic_id: string
+          clinic_name: string
+          is_current: boolean
+        }[]
+      }
       get_user_current_clinic: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -2202,6 +2211,10 @@ export type Database = {
       log_security_event: {
         Args: { details: Json; event_type: string }
         Returns: undefined
+      }
+      switch_user_clinic: {
+        Args: { new_clinic_id: string }
+        Returns: boolean
       }
     }
     Enums: {
