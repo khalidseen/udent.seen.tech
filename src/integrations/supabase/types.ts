@@ -249,6 +249,39 @@ export type Database = {
           },
         ]
       }
+      clinic_role_hierarchy: {
+        Row: {
+          can_manage: Database["public"]["Enums"]["user_role_type"][]
+          created_at: string | null
+          description: string | null
+          description_ar: string | null
+          id: string
+          level: number
+          permissions: Json | null
+          role_name: Database["public"]["Enums"]["user_role_type"]
+        }
+        Insert: {
+          can_manage?: Database["public"]["Enums"]["user_role_type"][]
+          created_at?: string | null
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          level: number
+          permissions?: Json | null
+          role_name: Database["public"]["Enums"]["user_role_type"]
+        }
+        Update: {
+          can_manage?: Database["public"]["Enums"]["user_role_type"][]
+          created_at?: string | null
+          description?: string | null
+          description_ar?: string | null
+          id?: string
+          level?: number
+          permissions?: Json | null
+          role_name?: Database["public"]["Enums"]["user_role_type"]
+        }
+        Relationships: []
+      }
       clinics: {
         Row: {
           address: string | null
@@ -1457,6 +1490,9 @@ export type Database = {
         Row: {
           clinic_id: string | null
           created_at: string
+          current_clinic_role:
+            | Database["public"]["Enums"]["user_role_type"]
+            | null
           full_name: string
           id: string
           role: string
@@ -1467,6 +1503,9 @@ export type Database = {
         Insert: {
           clinic_id?: string | null
           created_at?: string
+          current_clinic_role?:
+            | Database["public"]["Enums"]["user_role_type"]
+            | null
           full_name: string
           id?: string
           role?: string
@@ -1477,6 +1516,9 @@ export type Database = {
         Update: {
           clinic_id?: string | null
           created_at?: string
+          current_clinic_role?:
+            | Database["public"]["Enums"]["user_role_type"]
+            | null
           full_name?: string
           id?: string
           role?: string
@@ -2343,6 +2385,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage_role: {
+        Args: {
+          manager_role: Database["public"]["Enums"]["user_role_type"]
+          target_role: Database["public"]["Enums"]["user_role_type"]
+        }
+        Returns: boolean
+      }
       check_appointment_request_rate_limit: {
         Args: { ip_address: unknown }
         Returns: boolean
@@ -2389,6 +2438,9 @@ export type Database = {
         Returns: {
           clinic_id: string | null
           created_at: string
+          current_clinic_role:
+            | Database["public"]["Enums"]["user_role_type"]
+            | null
           full_name: string
           id: string
           role: string
@@ -2405,6 +2457,10 @@ export type Database = {
           clinic_name: string
           is_current: boolean
         }[]
+      }
+      get_user_clinic_role: {
+        Args: { user_id_param?: string }
+        Returns: Database["public"]["Enums"]["user_role_type"]
       }
       get_user_current_clinic: {
         Args: Record<PropertyKey, never>
@@ -2436,6 +2492,10 @@ export type Database = {
           role_name: string
           role_name_ar: string
         }[]
+      }
+      has_clinic_permission: {
+        Args: { permission_key: string; user_id_param?: string }
+        Returns: boolean
       }
       has_permission: {
         Args: { permission_key_param: string; user_id_param?: string }

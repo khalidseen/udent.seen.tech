@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Plus, Search, UserMinus, Crown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { AddClinicMemberDialog } from './AddClinicMemberDialog';
+import { useClinicPermissions, ClinicRole } from '@/hooks/useClinicPermissions';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,16 +18,25 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Trash2, UserPlus, Search, Users, Crown, Shield, Stethoscope, Calculator, User, Edit } from 'lucide-react';
+import { AddClinicMemberDialog } from './AddClinicMemberDialog';
 
 interface ClinicMember {
   id: string;
   user_id: string;
   clinic_id: string;
-  role: string;
+  role: ClinicRole;
   joined_at: string;
   is_active: boolean;
-  full_name: string;
-  email: string;
+  full_name?: string;
+  email?: string;
 }
 
 interface ClinicMembersManagementProps {
@@ -40,7 +49,16 @@ export function ClinicMembersManagement({ clinicId, clinicName }: ClinicMembersM
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [editingMember, setEditingMember] = useState<string | null>(null);
   const { toast } = useToast();
+  const { 
+    userRole, 
+    canManageRole, 
+    hasClinicPermission, 
+    getRoleInfo, 
+    getAvailableRoles,
+    isHigherRole 
+  } = useClinicPermissions();
 
   const fetchMembers = async () => {
     try {
@@ -133,7 +151,7 @@ export function ClinicMembersManagement({ clinicId, clinicName }: ClinicMembersM
           </p>
         </div>
         <Button onClick={() => setShowAddDialog(true)}>
-          <Plus className="h-4 w-4 ml-2" />
+          <UserPlus className="h-4 w-4 ml-2" />
           إضافة عضو
         </Button>
       </div>
@@ -177,14 +195,28 @@ export function ClinicMembersManagement({ clinicId, clinicName }: ClinicMembersM
                           {member.role === 'owner' ? (
                             <>
                               <Crown className="h-3 w-3 ml-1" />
-                              مالك
+                              مالك العيادة
                             </>
-                          ) : member.role === 'admin' ? (
-                            'مدير'
-                          ) : member.role === 'doctor' ? (
-                            'طبيب'
+                          ) : member.role === 'clinic_manager' ? (
+                            <>
+                              <Shield className="h-3 w-3 ml-1" />
+                              مدير العيادة
+                            </>
+                          ) : member.role === 'dentist' ? (
+                            <>
+                              <Stethoscope className="h-3 w-3 ml-1" />
+                              طبيب أسنان
+                            </>
+                          ) : member.role === 'accountant' ? (
+                            <>
+                              <Calculator className="h-3 w-3 ml-1" />
+                              محاسب
+                            </>
                           ) : (
-                            'عضو'
+                            <>
+                              <User className="h-3 w-3 ml-1" />
+                              مساعد
+                            </>
                           )}
                         </Badge>
                       </div>
@@ -199,7 +231,7 @@ export function ClinicMembersManagement({ clinicId, clinicName }: ClinicMembersM
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="outline" size="sm">
-                          <UserMinus className="h-4 w-4 ml-2" />
+                          <Trash2 className="h-4 w-4 ml-2" />
                           إزالة
                         </Button>
                       </AlertDialogTrigger>
