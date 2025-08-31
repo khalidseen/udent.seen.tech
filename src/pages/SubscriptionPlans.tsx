@@ -14,7 +14,8 @@ export default function SubscriptionPlans() {
       />
       
       <PermissionGate 
-        roles={['admin']}
+        roles={['admin', 'super_admin']}
+        checkSubscription={false}
         fallback={
           <Card>
             <CardHeader>

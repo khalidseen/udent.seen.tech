@@ -17,6 +17,8 @@ export default function Permissions() {
       
       <PermissionGate 
         permissions={['permissions.manage']}
+        roles={['admin', 'super_admin']}
+        checkSubscription={false}
         fallback={
           <Card>
             <CardHeader>

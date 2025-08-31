@@ -21,10 +21,42 @@ export const usePermissions = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // إعطاء صلاحيات كاملة لمدير النظام
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
   const fetchUserPermissions = async () => {
     try {
       setLoading(true);
       
+      // إعطاء صلاحيات كاملة لمدير النظام
+      if (user?.email === 'eng.khalid.work@gmail.com') {
+        // إعطاء جميع الصلاحيات
+        const { data: allPermissions } = await supabase
+          .from('permissions')
+          .select('*')
+          .eq('is_active', true);
+        
+        const formattedPermissions = allPermissions?.map((p: any) => ({
+          permission_key: p.permission_key,
+          permission_name: p.permission_name,
+          permission_name_ar: p.permission_name_ar,
+          category: p.category
+        })) || [];
+        
+        setPermissions(formattedPermissions);
+        setUserRoles([{ role_name: 'admin', role_name_ar: 'مدير النظام', is_primary: true }]);
+        setLoading(false);
+        return;
+      }
+
       // استخدام الدالة الجديدة للحصول على جميع الصلاحيات الفعلية
       const { data: permissionsData, error: permissionsError } = await supabase
         .rpc('get_user_effective_permissions');
@@ -66,10 +98,18 @@ export const usePermissions = () => {
   };
 
   const hasPermission = (permissionKey: string): boolean => {
+    // إعطاء جميع الصلاحيات لمدير النظام
+    if (user?.email === 'eng.khalid.work@gmail.com') {
+      return true;
+    }
     return permissions.some(permission => permission.permission_key === permissionKey);
   };
 
   const hasAnyPermission = (permissionKeys: string[]): boolean => {
+    // إعطاء جميع الصلاحيات لمدير النظام
+    if (user?.email === 'eng.khalid.work@gmail.com') {
+      return true;
+    }
     return permissionKeys.some(key => hasPermission(key));
   };
 
@@ -82,12 +122,16 @@ export const usePermissions = () => {
   };
 
   const hasRole = (roleName: string): boolean => {
+    // إعطاء جميع الأدوار لمدير النظام
+    if (user?.email === 'eng.khalid.work@gmail.com') {
+      return true;
+    }
     return userRoles.some(role => role.role_name === roleName);
   };
 
   useEffect(() => {
     fetchUserPermissions();
-  }, []);
+  }, [user]);
 
   return {
     permissions,

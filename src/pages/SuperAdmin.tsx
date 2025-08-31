@@ -16,7 +16,8 @@ export default function SuperAdmin() {
       
       <PermissionGate 
         permissions={['system.manage_all_clinics']}
-        roles={['super_admin']}
+        roles={['super_admin', 'admin']}
+        checkSubscription={false}
         fallback={
           <Card>
             <CardHeader>

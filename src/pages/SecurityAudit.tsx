@@ -11,6 +11,8 @@ export default function SecurityAudit() {
     <PageContainer>
       <PermissionGate 
         permissions={['audit.view']}
+        roles={['admin', 'super_admin']}
+        checkSubscription={false}
         fallback={
           <Card>
             <CardHeader>

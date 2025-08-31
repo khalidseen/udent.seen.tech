@@ -24,6 +24,21 @@ export const PermissionGate = ({
   const { hasPermission, hasRole, loading } = usePermissions();
   const [hasFeatureAccess, setHasFeatureAccess] = useState(true);
   const [featureLoading, setFeatureLoading] = useState(features.length > 0);
+  const [user, setUser] = useState<any>(null);
+
+  // Get current user
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+  }, []);
+
+  // إعطاء صلاحيات كاملة لمدير النظام
+  if (user?.email === 'eng.khalid.work@gmail.com') {
+    return <>{children}</>;
+  }
 
   // Check plan features
   useEffect(() => {

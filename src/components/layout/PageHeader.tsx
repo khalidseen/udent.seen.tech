@@ -12,8 +12,8 @@ export function PageHeader({
 }: PageHeaderProps) {
   return <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div className="space-y-1">
-        
-        
+        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+        <p className="text-muted-foreground">{description}</p>
       </div>
       {action && <div className="flex items-center gap-2">
           <NetworkStatusIndicator />
