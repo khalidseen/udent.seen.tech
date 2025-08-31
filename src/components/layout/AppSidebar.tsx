@@ -193,6 +193,16 @@ export function AppSidebar() {
       icon: Package,
       permissions: ['system.manage_all_clinics']
     }]
+  }] : []), 
+  // Subscription Management - Only for owners
+  ...((userRole === 'owner' || user?.email === 'eng.khalid.work@gmail.com') ? [{
+    groupTitle: "إدارة الاشتراك",
+    items: [{
+      title: "تفاصيل الاشتراك",
+      url: "/subscription",
+      icon: Crown,
+      permissions: []
+    }]
   }] : []), {
     groupTitle: t('sidebar.systemManagement'),
     items: [{
