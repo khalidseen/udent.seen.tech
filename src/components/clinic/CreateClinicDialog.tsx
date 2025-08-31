@@ -45,7 +45,15 @@ export function CreateClinicDialog({ open, onOpenChange, onSuccess }: CreateClin
     setLoading(true);
     
     try {
-      const { error } = await supabase
+      // الحصول على المستخدم الحالي
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        throw new Error('يجب تسجيل الدخول لإنشاء عيادة');
+      }
+
+      // إنشاء العيادة
+      const { data: clinicData, error: clinicError } = await supabase
         .from('clinics')
         .insert({
           name: formData.name.trim(),
@@ -56,17 +64,58 @@ export function CreateClinicDialog({ open, onOpenChange, onSuccess }: CreateClin
           city: formData.city.trim() || null,
           subscription_plan: formData.subscription_plan,
           max_users: parseInt(formData.max_users),
-          max_patients: parseInt(formData.max_patients)
+          max_patients: parseInt(formData.max_patients),
+          is_active: true
+        })
+        .select()
+        .single();
+
+      if (clinicError) {
+        console.error('Clinic creation error:', clinicError);
+        throw clinicError;
+      }
+
+      console.log('Created clinic:', clinicData);
+
+      // إضافة المنشئ كمالك للعيادة
+      const { error: membershipError } = await supabase
+        .from('clinic_memberships')
+        .insert({
+          clinic_id: clinicData.id,
+          user_id: user.id,
+          role: 'owner',
+          is_active: true
         });
 
-      if (error) throw error;
+      if (membershipError) {
+        console.error('Membership creation error:', membershipError);
+        
+        // حذف العيادة في حالة فشل إضافة العضوية
+        await supabase.from('clinics').delete().eq('id', clinicData.id);
+        
+        throw new Error('فشل في إضافة العضوية للعيادة');
+      }
+
+      // تحديث الملف الشخصي للمستخدم ليشير للعيادة الجديدة
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          clinic_id: clinicData.id,
+          current_clinic_role: 'owner'
+        })
+        .eq('user_id', user.id);
+
+      if (profileError) {
+        console.error('Profile update error:', profileError);
+        // لا نحذف العيادة هنا لأن العضوية تم إنشاؤها بنجاح
+      }
 
       toast({
-        title: "تم الحفظ",
-        description: "تم إنشاء العيادة الجديدة بنجاح",
+        title: "تم الإنشاء بنجاح",
+        description: `تم إنشاء عيادة "${formData.name}" وإضافتك كمالك لها`,
       });
 
-      // Reset form
+      // إعادة تعيين النموذج
       setFormData({
         name: '',
         license_number: '',
@@ -79,12 +128,19 @@ export function CreateClinicDialog({ open, onOpenChange, onSuccess }: CreateClin
         max_patients: '1000'
       });
 
+      onOpenChange(false);
       onSuccess();
-    } catch (error) {
+      
+      // إعادة تحميل الصفحة لتحديث السياق
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+      
+    } catch (error: any) {
       console.error('Error creating clinic:', error);
       toast({
-        title: "خطأ",
-        description: "فشل في إنشاء العيادة الجديدة",
+        title: "خطأ في إنشاء العيادة",
+        description: error.message || "حدث خطأ أثناء إنشاء العيادة الجديدة",
         variant: "destructive",
       });
     } finally {
