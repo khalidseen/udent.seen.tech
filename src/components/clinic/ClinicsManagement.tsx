@@ -171,7 +171,22 @@ export function ClinicsManagement() {
 
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {clinics.map((clinic) => (
+        {clinics.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium text-foreground mb-2">لا توجد عيادات مسجلة</h3>
+            <p className="text-muted-foreground mb-4">
+              لم يتم العثور على أي عيادات في النظام بعد
+            </p>
+            <PermissionGate permissions={['clinic.create', 'system.manage_all_clinics']}>
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="ml-2 h-4 w-4" />
+                إضافة أول عيادة
+              </Button>
+            </PermissionGate>
+          </div>
+        ) : (
+          clinics.map((clinic) => (
             <Card key={clinic.id} className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <div className="flex items-start justify-between">
@@ -244,7 +259,8 @@ export function ClinicsManagement() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          ))
+        )}
         </div>
 
         {selectedClinic && (

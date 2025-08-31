@@ -83,7 +83,7 @@ export function CreateClinicDialog({ open, onOpenChange, onSuccess }: CreateClin
         .insert({
           clinic_id: clinicData.id,
           user_id: user.id,
-          role: 'owner',
+          role: 'owner' as any,
           is_active: true
         });
 
@@ -93,7 +93,7 @@ export function CreateClinicDialog({ open, onOpenChange, onSuccess }: CreateClin
         // حذف العيادة في حالة فشل إضافة العضوية
         await supabase.from('clinics').delete().eq('id', clinicData.id);
         
-        throw new Error('فشل في إضافة العضوية للعيادة');
+        throw new Error(`فشل في إضافة العضوية للعيادة: ${membershipError.message}`);
       }
 
       // تحديث الملف الشخصي للمستخدم ليشير للعيادة الجديدة
@@ -101,7 +101,7 @@ export function CreateClinicDialog({ open, onOpenChange, onSuccess }: CreateClin
         .from('profiles')
         .update({
           clinic_id: clinicData.id,
-          current_clinic_role: 'owner'
+          current_clinic_role: 'owner' as any
         })
         .eq('user_id', user.id);
 
