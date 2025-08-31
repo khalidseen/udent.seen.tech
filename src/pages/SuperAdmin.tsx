@@ -1,5 +1,6 @@
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { SuperAdminDashboard } from '@/components/super-admin/SuperAdminDashboard';
+import { SubscriptionNotifications } from '@/components/subscription/SubscriptionNotifications';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
 import { AlertTriangle } from 'lucide-react';
@@ -35,7 +36,10 @@ export default function SuperAdmin() {
           </Card>
         }
       >
-        <SuperAdminDashboard />
+        <div className="space-y-6">
+          <SubscriptionNotifications />
+          <SuperAdminDashboard />
+        </div>
       </PermissionGate>
     </PageContainer>
   );

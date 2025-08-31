@@ -133,7 +133,8 @@ export function AppSidebar() {
       groupTitle: "إدارة النظام الشامل",
       items: [
         { title: "لوحة تحكم مدير النظام", url: "/super-admin", icon: Crown, permissions: ['system.manage_all_clinics'] },
-        { title: "إدارة العيادات", url: "/super-admin", icon: Building, permissions: ['system.manage_all_clinics'] }
+        { title: "إدارة العيادات", url: "/super-admin", icon: Building, permissions: ['system.manage_all_clinics'] },
+        { title: "خطط الاشتراك", url: "/subscription-plans", icon: Package, permissions: ['system.manage_all_clinics'] }
       ]
     }] : []),
     {

@@ -53,6 +53,7 @@ import Permissions from "@/pages/Permissions";
 import Profile from "@/pages/Profile";
 import Users from "@/pages/Users";
 import SuperAdmin from "@/pages/SuperAdmin";
+import SubscriptionPlans from "@/pages/SubscriptionPlans";
 
 // Initialize the offline database
 import { offlineDB } from "@/lib/offline-db";
@@ -153,6 +154,7 @@ function App() {
                     <Route path="users" element={<Users />} />
                     <Route path="security-audit" element={<SecurityAudit />} />
                     <Route path="super-admin" element={<SuperAdmin />} />
+                    <Route path="subscription-plans" element={<SubscriptionPlans />} />
                     <Route path="splash-cursor-demo" element={<SplashCursorDemo />} />
                   </Route>
 

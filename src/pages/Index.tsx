@@ -1,5 +1,6 @@
 import { PageContainer } from "@/components/layout/PageContainer";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { SubscriptionCard } from "@/components/subscription/SubscriptionCard";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -538,16 +539,22 @@ function Index() {
 
   return (
     <PageContainer>
-      {settings.showDashboardBoxes && (
-        <div 
-          className="grid gap-4 p-4"
-          style={{
-            gridTemplateColumns: `repeat(${settings.boxesPerRow}, minmax(0, 1fr))`
-          }}
-        >
-          {actionCards.map(renderCard)}
-        </div>
-      )}
+      <div className="space-y-6">
+        {/* Subscription Card */}
+        <SubscriptionCard compact={true} />
+        
+        {/* Dashboard Action Cards */}
+        {settings.showDashboardBoxes && (
+          <div 
+            className="grid gap-4"
+            style={{
+              gridTemplateColumns: `repeat(${settings.boxesPerRow}, minmax(0, 1fr))`
+            }}
+          >
+            {actionCards.map(renderCard)}
+          </div>
+        )}
+      </div>
     </PageContainer>
   );
 }
