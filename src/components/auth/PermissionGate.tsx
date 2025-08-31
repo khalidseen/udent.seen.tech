@@ -35,11 +35,6 @@ export const PermissionGate = ({
     getUser();
   }, []);
 
-  // إعطاء صلاحيات كاملة لمدير النظام
-  if (user?.email === 'eng.khalid.work@gmail.com') {
-    return <>{children}</>;
-  }
-
   // Check plan features
   useEffect(() => {
     const checkPlanFeatures = async () => {
@@ -91,8 +86,9 @@ export const PermissionGate = ({
       : roles.some(role => hasRole(role))
   );
 
-  // All conditions must be met
-  const hasAccess = hasRequiredPermissions && hasRequiredRoles && hasFeatureAccess;
+  // All conditions must be met - إعطاء صلاحيات كاملة لمدير النظام
+  const isSystemAdmin = user?.email === 'eng.khalid.work@gmail.com';
+  const hasAccess = isSystemAdmin || (hasRequiredPermissions && hasRequiredRoles && hasFeatureAccess);
 
   return hasAccess ? <>{children}</> : <>{fallback}</>;
 };
