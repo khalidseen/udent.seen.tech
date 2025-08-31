@@ -255,6 +255,7 @@ export type Database = {
           city: string | null
           country: string | null
           created_at: string
+          custom_plan_config: Json | null
           email: string | null
           id: string
           is_active: boolean
@@ -264,15 +265,22 @@ export type Database = {
           max_users: number | null
           name: string
           phone: string | null
+          subscription_end_date: string | null
+          subscription_notes: string | null
           subscription_plan: string | null
+          subscription_plan_id: string | null
+          subscription_start_date: string | null
           subscription_status: string | null
+          trial_end_date: string | null
           updated_at: string
+          usage_metrics: Json | null
         }
         Insert: {
           address?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
+          custom_plan_config?: Json | null
           email?: string | null
           id?: string
           is_active?: boolean
@@ -282,15 +290,22 @@ export type Database = {
           max_users?: number | null
           name: string
           phone?: string | null
+          subscription_end_date?: string | null
+          subscription_notes?: string | null
           subscription_plan?: string | null
+          subscription_plan_id?: string | null
+          subscription_start_date?: string | null
           subscription_status?: string | null
+          trial_end_date?: string | null
           updated_at?: string
+          usage_metrics?: Json | null
         }
         Update: {
           address?: string | null
           city?: string | null
           country?: string | null
           created_at?: string
+          custom_plan_config?: Json | null
           email?: string | null
           id?: string
           is_active?: boolean
@@ -300,11 +315,25 @@ export type Database = {
           max_users?: number | null
           name?: string
           phone?: string | null
+          subscription_end_date?: string | null
+          subscription_notes?: string | null
           subscription_plan?: string | null
+          subscription_plan_id?: string | null
+          subscription_start_date?: string | null
           subscription_status?: string | null
+          trial_end_date?: string | null
           updated_at?: string
+          usage_metrics?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clinics_subscription_plan_id_fkey"
+            columns: ["subscription_plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       dental_treatments: {
         Row: {
@@ -1247,6 +1276,73 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_features: {
+        Row: {
+          created_at: string
+          custom_limit: number | null
+          feature_key: string
+          id: string
+          is_enabled: boolean
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_limit?: number | null
+          feature_key: string
+          id?: string
+          is_enabled?: boolean
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_limit?: number | null
+          feature_key?: string
+          id?: string
+          is_enabled?: boolean
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_features_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plan_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          is_enabled: boolean
+          permission_key: string
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          permission_key: string
+          plan_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_enabled?: boolean
+          permission_key?: string
+          plan_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_permissions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       prescription_medications: {
         Row: {
           created_at: string
@@ -1791,6 +1887,108 @@ export type Database = {
           },
         ]
       }
+      subscription_features: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          description_ar: string | null
+          feature_key: string
+          feature_name: string
+          feature_name_ar: string
+          id: string
+          is_active: boolean
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          feature_key: string
+          feature_name: string
+          feature_name_ar: string
+          id?: string
+          is_active?: boolean
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          description_ar?: string | null
+          feature_key?: string
+          feature_name?: string
+          feature_name_ar?: string
+          id?: string
+          is_active?: boolean
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          description_ar: string | null
+          display_order: number
+          duration_months: number
+          id: string
+          is_active: boolean
+          is_customizable: boolean
+          is_trial: boolean
+          max_monthly_appointments: number
+          max_patients: number
+          max_storage_gb: number
+          max_users: number
+          name: string
+          name_ar: string
+          price: number
+          trial_duration_days: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          description_ar?: string | null
+          display_order?: number
+          duration_months?: number
+          id?: string
+          is_active?: boolean
+          is_customizable?: boolean
+          is_trial?: boolean
+          max_monthly_appointments?: number
+          max_patients?: number
+          max_storage_gb?: number
+          max_users?: number
+          name: string
+          name_ar: string
+          price?: number
+          trial_duration_days?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          description_ar?: string | null
+          display_order?: number
+          duration_months?: number
+          id?: string
+          is_active?: boolean
+          is_customizable?: boolean
+          is_trial?: boolean
+          max_monthly_appointments?: number
+          max_patients?: number
+          max_storage_gb?: number
+          max_users?: number
+          name?: string
+          name_ar?: string
+          price?: number
+          trial_duration_days?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       temporary_permissions: {
         Row: {
           created_at: string | null
@@ -2034,6 +2232,41 @@ export type Database = {
         }
         Relationships: []
       }
+      usage_tracking: {
+        Row: {
+          clinic_id: string
+          current_count: number
+          id: string
+          last_updated: string
+          max_count: number
+          metric_type: string
+        }
+        Insert: {
+          clinic_id: string
+          current_count?: number
+          id?: string
+          last_updated?: string
+          max_count?: number
+          metric_type: string
+        }
+        Update: {
+          clinic_id?: string
+          current_count?: number
+          id?: string
+          last_updated?: string
+          max_count?: number
+          metric_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_tracking_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_role_assignments: {
         Row: {
           assigned_at: string
@@ -2116,6 +2349,10 @@ export type Database = {
       }
       check_doctor_application_rate_limit: {
         Args: { ip_address: unknown }
+        Returns: boolean
+      }
+      check_usage_limit: {
+        Args: { clinic_id_param?: string; metric_type_param: string }
         Returns: boolean
       }
       detect_suspicious_activities: {
@@ -2204,6 +2441,14 @@ export type Database = {
         Args: { permission_key_param: string; user_id_param?: string }
         Returns: boolean
       }
+      has_plan_feature: {
+        Args: { clinic_id_param?: string; feature_key_param: string }
+        Returns: boolean
+      }
+      has_plan_permission: {
+        Args: { permission_key_param: string; user_id_param?: string }
+        Returns: boolean
+      }
       has_temporary_permission: {
         Args: { permission_key_param: string; user_id_param: string }
         Returns: boolean
@@ -2215,6 +2460,14 @@ export type Database = {
       switch_user_clinic: {
         Args: { new_clinic_id: string }
         Returns: boolean
+      }
+      update_usage_metric: {
+        Args: {
+          clinic_id_param: string
+          metric_type_param: string
+          new_count: number
+        }
+        Returns: undefined
       }
     }
     Enums: {
