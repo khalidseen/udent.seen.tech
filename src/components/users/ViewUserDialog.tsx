@@ -28,6 +28,7 @@ export const ViewUserDialog = ({ open, onOpenChange, user }: ViewUserDialogProps
     const roleNames: Record<string, string> = {
       'super_admin': 'مدير النظام',
       'clinic_owner': 'مالك العيادة',
+      'clinic_manager': 'مدير العيادة',
       'doctor': 'طبيب',
       'receptionist': 'موظف استقبال',
       'financial_manager': 'مدير مالي',
@@ -41,6 +42,7 @@ export const ViewUserDialog = ({ open, onOpenChange, user }: ViewUserDialogProps
     const colors: Record<string, string> = {
       'super_admin': 'bg-red-100 text-red-800',
       'clinic_owner': 'bg-purple-100 text-purple-800',
+      'clinic_manager': 'bg-indigo-100 text-indigo-800',
       'doctor': 'bg-green-100 text-green-800',
       'receptionist': 'bg-blue-100 text-blue-800',
       'financial_manager': 'bg-yellow-100 text-yellow-800',

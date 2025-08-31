@@ -108,6 +108,7 @@ export const EditUserDialog = ({ open, onOpenChange, user, onSuccess }: EditUser
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="doctor">طبيب</SelectItem>
+                <SelectItem value="clinic_manager">مدير العيادة</SelectItem>
                 <SelectItem value="receptionist">موظف استقبال</SelectItem>
                 <SelectItem value="financial_manager">مدير مالي</SelectItem>
                 <SelectItem value="medical_assistant">مساعد طبي</SelectItem>
