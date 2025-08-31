@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { usePermissions } from '@/hooks/usePermissions';
 import { useRoles } from '@/hooks/useRoles';
+import { CreateRoleDialog } from '@/components/settings/CreateRoleDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +60,7 @@ export const AdvancedPermissionsManagement = () => {
   const [expiryHours, setExpiryHours] = useState<number>(24);
   const [reason, setReason] = useState<string>('');
   const [isGrantingTemp, setIsGrantingTemp] = useState(false);
+  const [createRoleDialogOpen, setCreateRoleDialogOpen] = useState(false);
 
   // تحميل المستخدمين
   const fetchUsers = async () => {
@@ -182,6 +184,11 @@ export const AdvancedPermissionsManagement = () => {
     fetchTemporaryPermissions();
   }, []);
 
+  const handleRoleCreated = () => {
+    // Refresh roles after creation
+    window.location.reload(); // Simple refresh for now
+  };
+
   // تجميع الصلاحيات حسب الفئة مع تحسين الأسماء
   const categoryNames = {
     'main_menu': 'القائمة الرئيسية',
@@ -279,6 +286,22 @@ export const AdvancedPermissionsManagement = () => {
 
         {/* تبويب الأدوار */}
         <TabsContent value="roles" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-medium">إدارة الأدوار</h3>
+              <p className="text-sm text-muted-foreground">
+                عرض وإدارة أدوار النظام والصلاحيات المرتبطة
+              </p>
+            </div>
+            <Button 
+              onClick={() => setCreateRoleDialogOpen(true)}
+              className="gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              إنشاء دور جديد
+            </Button>
+          </div>
+          
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {roles.map((role) => (
               <Card key={role.id} className="relative">
@@ -287,12 +310,17 @@ export const AdvancedPermissionsManagement = () => {
                     <Badge className={getRoleColor(role.role_name)}>
                       {role.role_name_ar}
                     </Badge>
-                    {role.is_system_role && (
-                      <Badge variant="outline" className="text-xs">
-                        <Settings className="w-3 h-3 mr-1" />
-                        نظام
-                      </Badge>
-                    )}
+                    <div className="flex gap-1">
+                      {role.is_system_role && (
+                        <Badge variant="outline" className="text-xs">
+                          <Settings className="w-3 h-3 mr-1" />
+                          نظام
+                        </Badge>
+                      )}
+                      <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                        <Edit className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
                   <CardTitle className="text-lg">{role.role_name}</CardTitle>
                   <CardDescription className="text-right">
@@ -315,6 +343,13 @@ export const AdvancedPermissionsManagement = () => {
                 </CardContent>
               </Card>
             ))}
+            
+            {roles.length === 0 && (
+              <div className="col-span-full text-center py-8">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground">لا توجد أدوار متاحة</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 
@@ -581,6 +616,14 @@ export const AdvancedPermissionsManagement = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* حوار إنشاء دور جديد */}
+      <CreateRoleDialog
+        open={createRoleDialogOpen}
+        onOpenChange={setCreateRoleDialogOpen}
+        permissions={permissions}
+        onSuccess={handleRoleCreated}
+      />
     </div>
   );
 };

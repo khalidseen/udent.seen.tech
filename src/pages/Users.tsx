@@ -12,6 +12,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { PermissionGate } from '@/components/auth/PermissionGate';
 import { AddUserDialog } from '@/components/users/AddUserDialog';
+import { ViewUserDialog } from '@/components/users/ViewUserDialog';
+import { EditUserDialog } from '@/components/users/EditUserDialog';
 import { 
   Users as UsersIcon, 
   Search, 
@@ -20,7 +22,8 @@ import {
   Shield,
   Calendar,
   AlertTriangle,
-  UserPlus
+  UserPlus,
+  UserX
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -42,6 +45,9 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [addUserDialogOpen, setAddUserDialogOpen] = useState(false);
+  const [viewUserDialogOpen, setViewUserDialogOpen] = useState(false);
+  const [editUserDialogOpen, setEditUserDialogOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -96,6 +102,48 @@ export default function Users() {
       'financial_manager': 'مدير مالي',
     };
     return roleNames[role] || role;
+  };
+
+  const handleViewUser = (user: UserProfile) => {
+    setSelectedUser(user);
+    setViewUserDialogOpen(true);
+  };
+
+  const handleEditUser = (user: UserProfile) => {
+    setSelectedUser(user);
+    setEditUserDialogOpen(true);
+  };
+
+  const handleDeactivateUser = async (user: UserProfile) => {
+    if (!confirm(`هل أنت متأكد من إلغاء تفعيل المستخدم "${user.full_name}"؟`)) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ 
+          status: user.status === 'approved' ? 'suspended' : 'approved',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'تم التحديث',
+        description: `تم ${user.status === 'approved' ? 'إلغاء تفعيل' : 'تفعيل'} المستخدم بنجاح`,
+      });
+
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      toast({
+        title: 'خطأ في التحديث',
+        description: 'حدث خطأ أثناء تحديث حالة المستخدم',
+        variant: 'destructive',
+      });
+    }
   };
 
   if (loading) {
@@ -267,26 +315,30 @@ export default function Users() {
                         {format(new Date(user.created_at), 'dd/MM/yyyy')}
                       </TableCell>
                       <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
+                        <div className="flex items-center justify-center gap-1">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => navigate(`/profile/${user.user_id}`)}
+                            onClick={() => handleViewUser(user)}
+                            title="عرض الملف"
                           >
                             <Eye className="w-4 h-4" />
                           </Button>
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => {
-                              // TODO: إضافة وظيفة التعديل
-                              toast({
-                                title: 'قريباً',
-                                description: 'ستتوفر وظيفة التعديل قريباً',
-                              });
-                            }}
+                            onClick={() => handleEditUser(user)}
+                            title="تعديل المستخدم"
                           >
                             <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant={user.status === 'approved' ? 'destructive' : 'default'}
+                            size="sm"
+                            onClick={() => handleDeactivateUser(user)}
+                            title={user.status === 'approved' ? 'إلغاء التفعيل' : 'تفعيل المستخدم'}
+                          >
+                            <UserX className="w-4 h-4" />
                           </Button>
                         </div>
                       </TableCell>
@@ -307,10 +359,23 @@ export default function Users() {
           </Card>
         </div>
 
-        {/* حوار إضافة مستخدم جديد */}
+        {/* الحوارات */}
         <AddUserDialog 
           open={addUserDialogOpen}
           onOpenChange={setAddUserDialogOpen}
+          onSuccess={fetchUsers}
+        />
+
+        <ViewUserDialog
+          open={viewUserDialogOpen}
+          onOpenChange={setViewUserDialogOpen}
+          user={selectedUser}
+        />
+
+        <EditUserDialog
+          open={editUserDialogOpen}
+          onOpenChange={setEditUserDialogOpen}
+          user={selectedUser}
           onSuccess={fetchUsers}
         />
       </PageContainer>
