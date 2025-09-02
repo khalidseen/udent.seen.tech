@@ -266,6 +266,11 @@ export function AppSidebar() {
       url: "/advanced-3d-dental",
       icon: Box,
       permissions: []
+    }, {
+      title: "إدارة النماذج ثلاثية الأبعاد",
+      url: "/dental-models-admin",
+      icon: Package,
+      permissions: []
     }]
   }];
   interface MenuItem {
