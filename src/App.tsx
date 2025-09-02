@@ -37,6 +37,7 @@ import StockMovements from "@/pages/StockMovements";
 import DentalTreatments from "@/pages/DentalTreatments";
 import Treatments from "@/pages/Treatments";
 import Advanced3DDental from "@/pages/Advanced3DDental";
+import DentalModelsAdmin from "@/pages/DentalModelsAdmin";
 import Notifications from "@/pages/Notifications";
 import NotificationTemplates from "@/pages/NotificationTemplates";
 import Reports from "@/pages/Reports";
@@ -142,8 +143,9 @@ function App() {
                     <Route path="stock-movements" element={<StockMovements />} />
                     <Route path="dental-treatments" element={<DentalTreatments />} />
                     <Route path="treatments" element={<Treatments />} />
-                    <Route path="advanced-3d-dental" element={<Advanced3DDental />} />
-                    <Route path="notifications" element={<Notifications />} />
+                     <Route path="advanced-3d-dental" element={<Advanced3DDental />} />
+                     <Route path="dental-models-admin" element={<DentalModelsAdmin />} />
+                     <Route path="notifications" element={<Notifications />} />
                     <Route path="notification-templates" element={<NotificationTemplates />} />
                     <Route path="reports" element={<Reports />} />
                     <Route path="doctor-applications" element={<DoctorApplications />} />
