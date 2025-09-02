@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import ToothChart from './ToothChart';
-import Tooth3DManager from './Tooth3DManager';
+import { Enhanced3DToothViewer } from './Enhanced3DToothViewer';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -280,18 +280,26 @@ const Enhanced3DToothChart = ({
 
       {/* 3D Tooth Dialog */}
       <Dialog open={is3DDialogOpen} onOpenChange={setIs3DDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-auto">
+        <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
           <DialogHeader>
-            <DialogTitle>نموذج السن ثلاثي الأبعاد</DialogTitle>
+            <DialogTitle>عارض السن ثلاثي الأبعاد - السن {selected3DTooth}</DialogTitle>
+            <DialogDescription>
+              عرض وتحرير النموذج ثلاثي الأبعاد للسن مع إمكانية إضافة التعليقات والملاحظات
+            </DialogDescription>
           </DialogHeader>
-          {selected3DTooth && patientId && (
-            <Tooth3DManager
-              patientId={patientId}
-              toothNumber={selected3DTooth}
-              numberingSystem={numberingSystem}
-              onClose={() => setIs3DDialogOpen(false)}
-            />
-          )}
+          
+          <div className="flex-1 overflow-hidden">
+            {selected3DTooth && patientId && (
+              <Enhanced3DToothViewer
+                toothNumber={selected3DTooth}
+                patientId={patientId}
+                onSave={(data) => {
+                  console.log('Saving tooth data:', data);
+                  // يمكن إضافة منطق الحفظ هنا
+                }}
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>

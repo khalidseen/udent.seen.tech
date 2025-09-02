@@ -1,0 +1,353 @@
+import React, { useState, useRef, useEffect, Suspense } from 'react';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { OrbitControls, useGLTF, Html, Text, PerspectiveCamera } from '@react-three/drei';
+import { Mesh, Vector3, Color } from 'three';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { 
+  RotateCcw, 
+  Save, 
+  Palette, 
+  Plus, 
+  Eye, 
+  EyeOff,
+  Maximize2,
+  Settings,
+  Download
+} from 'lucide-react';
+import { toast } from 'sonner';
+
+interface ToothAnnotation {
+  id: string;
+  position: [number, number, number];
+  color: string;
+  title: string;
+  description?: string;
+  type: 'cavity' | 'restoration' | 'fracture' | 'note';
+  severity?: 'low' | 'medium' | 'high' | 'critical';
+  visible: boolean;
+}
+
+interface Enhanced3DToothViewerProps {
+  toothNumber: string;
+  patientId: string;
+  modelUrl?: string;
+  annotations?: ToothAnnotation[];
+  onAnnotationAdd?: (annotation: Omit<ToothAnnotation, 'id'>) => void;
+  onAnnotationUpdate?: (id: string, annotation: Partial<ToothAnnotation>) => void;
+  onAnnotationDelete?: (id: string) => void;
+  onSave?: (data: { annotations: ToothAnnotation[]; modelModifications: any }) => void;
+  editable?: boolean;
+}
+
+// مكون النموذج ثلاثي الأبعاد
+const ToothModel: React.FC<{
+  modelUrl: string;
+  annotations: ToothAnnotation[];
+  onModelClick: (point: Vector3) => void;
+  editable: boolean;
+}> = ({ modelUrl, annotations, onModelClick, editable }) => {
+  const meshRef = useRef<Mesh>(null);
+  const { scene } = useGLTF(modelUrl);
+  const { camera, raycaster, mouse, gl } = useThree();
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += 0.005;
+    }
+  });
+
+  const handleClick = (event: any) => {
+    if (!editable) return;
+    
+    event.stopPropagation();
+    const point = event.point as Vector3;
+    onModelClick(point);
+  };
+
+  return (
+    <group>
+      <primitive 
+        ref={meshRef}
+        object={scene} 
+        scale={[2, 2, 2]}
+        onClick={handleClick}
+        position={[0, 0, 0]}
+      />
+      
+      {/* عرض التعليقات */}
+      {annotations.map((annotation) => (
+        annotation.visible && (
+          <AnnotationMarker
+            key={annotation.id}
+            annotation={annotation}
+            onClick={() => {/* handle annotation click */}}
+          />
+        )
+      ))}
+    </group>
+  );
+};
+
+// مكون علامة التعليق
+const AnnotationMarker: React.FC<{
+  annotation: ToothAnnotation;
+  onClick: () => void;
+}> = ({ annotation, onClick }) => {
+  const meshRef = useRef<Mesh>(null);
+  const [hovered, setHovered] = useState(false);
+
+  useFrame((state) => {
+    if (meshRef.current && hovered) {
+      meshRef.current.scale.setScalar(1.2 + Math.sin(state.clock.elapsedTime * 4) * 0.1);
+    }
+  });
+
+  const getSeverityColor = (severity?: string) => {
+    switch (severity) {
+      case 'critical': return '#ef4444';
+      case 'high': return '#f97316';
+      case 'medium': return '#eab308';
+      case 'low': return '#10b981';
+      default: return '#3b82f6';
+    }
+  };
+
+  return (
+    <group position={annotation.position}>
+      <mesh
+        ref={meshRef}
+        onClick={onClick}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+      >
+        <sphereGeometry args={[0.1, 16, 16]} />
+        <meshStandardMaterial 
+          color={new Color(getSeverityColor(annotation.severity))}
+          emissive={new Color(getSeverityColor(annotation.severity)).multiplyScalar(0.2)}
+        />
+      </mesh>
+      
+      {hovered && (
+        <Html distanceFactor={10}>
+          <div className="bg-popover text-popover-foreground p-3 rounded-lg shadow-lg border max-w-xs">
+            <h4 className="font-semibold text-sm mb-1">{annotation.title}</h4>
+            {annotation.description && (
+              <p className="text-xs text-muted-foreground mb-2">{annotation.description}</p>
+            )}
+            <div className="flex gap-1">
+              <Badge variant="secondary" className="text-xs">
+                {annotation.type}
+              </Badge>
+              {annotation.severity && (
+                <Badge variant="outline" className="text-xs">
+                  {annotation.severity}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </Html>
+      )}
+    </group>
+  );
+};
+
+// المكون الرئيسي
+export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
+  toothNumber,
+  patientId,
+  modelUrl = '/src/assets/models/maxillary-canine.glb',
+  annotations = [],
+  onAnnotationAdd,
+  onAnnotationUpdate,
+  onAnnotationDelete,
+  onSave,
+  editable = true
+}) => {
+  const [currentAnnotations, setCurrentAnnotations] = useState<ToothAnnotation[]>(annotations);
+  const [isAddingAnnotation, setIsAddingAnnotation] = useState(false);
+  const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'normal' | 'transparent' | 'wireframe'>('normal');
+
+  const handleModelClick = (point: Vector3) => {
+    if (isAddingAnnotation) {
+      const newAnnotation: Omit<ToothAnnotation, 'id'> = {
+        position: [point.x, point.y, point.z],
+        color: '#3b82f6',
+        title: 'تعليق جديد',
+        description: '',
+        type: 'note',
+        severity: 'medium',
+        visible: true
+      };
+      
+      const annotationWithId = {
+        ...newAnnotation,
+        id: `annotation-${Date.now()}`
+      };
+      
+      setCurrentAnnotations(prev => [...prev, annotationWithId]);
+      onAnnotationAdd?.(newAnnotation);
+      setIsAddingAnnotation(false);
+      toast.success('تم إضافة التعليق');
+    }
+  };
+
+  const toggleAnnotationVisibility = (id: string) => {
+    setCurrentAnnotations(prev => 
+      prev.map(ann => 
+        ann.id === id ? { ...ann, visible: !ann.visible } : ann
+      )
+    );
+  };
+
+  const handleSave = () => {
+    onSave?.({
+      annotations: currentAnnotations,
+      modelModifications: {}
+    });
+    toast.success('تم حفظ التغييرات');
+  };
+
+  const resetView = () => {
+    // إعادة تعيين الكاميرا والعرض
+    toast.info('تم إعادة تعيين العرض');
+  };
+
+  return (
+    <Card className="w-full h-[600px] flex flex-col">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            عارض السن ثلاثي الأبعاد - السن {toothNumber}
+          </CardTitle>
+          
+          <div className="flex items-center gap-2">
+            <Badge variant="outline">
+              {currentAnnotations.length} تعليق
+            </Badge>
+            <Badge variant="secondary">
+              {patientId.slice(0, 8)}...
+            </Badge>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="flex-1 flex flex-col">
+        {/* شريط الأدوات */}
+        {editable && (
+          <div className="flex items-center gap-2 mb-4 p-2 bg-muted/50 rounded-lg">
+            <Button
+              size="sm"
+              variant={isAddingAnnotation ? "default" : "outline"}
+              onClick={() => setIsAddingAnnotation(!isAddingAnnotation)}
+            >
+              <Plus className="h-4 w-4 ml-1" />
+              إضافة تعليق
+            </Button>
+            
+            <Button size="sm" variant="outline" onClick={resetView}>
+              <RotateCcw className="h-4 w-4 ml-1" />
+              إعادة تعيين
+            </Button>
+            
+            <Button size="sm" variant="outline" onClick={handleSave}>
+              <Save className="h-4 w-4 ml-1" />
+              حفظ
+            </Button>
+            
+            <div className="flex-1" />
+            
+            <Button size="sm" variant="outline">
+              <Download className="h-4 w-4 ml-1" />
+              تصدير
+            </Button>
+          </div>
+        )}
+
+        {/* العارض ثلاثي الأبعاد */}
+        <div className="flex-1 relative bg-gradient-to-br from-background to-muted/20 rounded-lg overflow-hidden">
+          <Canvas className="w-full h-full">
+            <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+            
+            {/* الإضاءة */}
+            <ambientLight intensity={0.4} />
+            <directionalLight 
+              position={[10, 10, 5]} 
+              intensity={1}
+              castShadow
+            />
+            <pointLight position={[-10, -10, -5]} intensity={0.5} />
+            
+            {/* التحكم بالكاميرا */}
+            <OrbitControls 
+              enablePan={true}
+              enableZoom={true}
+              enableRotate={true}
+              minDistance={2}
+              maxDistance={10}
+            />
+            
+            {/* النموذج */}
+            <Suspense fallback={
+              <Html center>
+                <div className="text-center p-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                  <p className="text-sm text-muted-foreground">جاري تحميل النموذج...</p>
+                </div>
+              </Html>
+            }>
+              <ToothModel
+                modelUrl={modelUrl}
+                annotations={currentAnnotations}
+                onModelClick={handleModelClick}
+                editable={editable}
+              />
+            </Suspense>
+            
+            {/* خلفية */}
+            <mesh position={[0, 0, -5]}>
+              <planeGeometry args={[20, 20]} />
+              <meshBasicMaterial color="#f8fafc" transparent opacity={0.1} />
+            </mesh>
+          </Canvas>
+          
+          {/* رسالة التعليمات */}
+          {isAddingAnnotation && (
+            <div className="absolute bottom-4 left-4 bg-primary text-primary-foreground px-4 py-2 rounded-lg shadow-lg">
+              اضغط على السن لإضافة تعليق
+            </div>
+          )}
+        </div>
+
+        {/* قائمة التعليقات */}
+        {currentAnnotations.length > 0 && (
+          <div className="mt-4 space-y-2 max-h-32 overflow-y-auto">
+            <h4 className="text-sm font-medium text-muted-foreground">التعليقات:</h4>
+            {currentAnnotations.map((annotation) => (
+              <div key={annotation.id} className="flex items-center gap-2 p-2 bg-muted/30 rounded text-sm">
+                <div 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: annotation.color }}
+                />
+                <span className="flex-1">{annotation.title}</span>
+                <Badge variant="outline" className="text-xs">
+                  {annotation.type}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => toggleAnnotationVisibility(annotation.id)}
+                >
+                  {annotation.visible ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
