@@ -134,7 +134,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient, stats }) 
           {/* Stats Section */}
           {stats && (
             <div className="flex-shrink-0">
-              <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 lg:w-48">
+              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="bg-white/80 dark:bg-background/80 rounded-xl p-4 border shadow-sm text-center">
                   <div className="text-2xl font-bold text-blue-600">{stats.totalAppointments}</div>
                   <div className="text-xs text-muted-foreground">إجمالي المواعيد</div>
