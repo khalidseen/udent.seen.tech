@@ -232,62 +232,99 @@ const PatientProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/30 dark:from-background dark:via-background dark:to-background">
-      {/* Premium Header */}
-      <div className="bg-white/80 dark:bg-background/80 backdrop-blur-sm border-b border-primary/10 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+      {/* Enhanced Patient Header */}
+      <div className="bg-white/90 dark:bg-background/90 backdrop-blur-xl border-b border-primary/20 sticky top-0 z-50 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
+            {/* Patient Avatar & Basic Info */}
             <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="hover:bg-primary/10">
+              <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="hover:bg-primary/10 mb-4 lg:mb-0">
                 ← المرضى
               </Button>
-              <div className="h-8 w-px bg-border"></div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold">
-                  {patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+              <div className="hidden lg:block h-8 w-px bg-border"></div>
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center text-white font-bold text-xl shadow-xl">
+                    {patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 text-2xl">
+                    {patient.gender === 'male' ? '👨‍⚕️' : patient.gender === 'female' ? '👩‍⚕️' : '👤'}
+                  </div>
                 </div>
-                <div>
-                  <h1 className="text-xl font-bold text-foreground">{patient.full_name}</h1>
-                  <p className="text-sm text-muted-foreground">معرف المريض: #{patient.id.slice(0, 8)}</p>
+                <div className="space-y-1">
+                  <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                    {patient.full_name}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm text-muted-foreground">#{patient.id.slice(0, 8)}</p>
+                    {patient.gender && (
+                      <Badge variant="outline" className="text-xs">
+                        {patient.gender === 'male' ? 'ذكر' : 'أنثى'}
+                      </Badge>
+                    )}
+                    {patient.date_of_birth && (
+                      <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
+                        {getAge(patient.date_of_birth)} سنة
+                      </Badge>
+                    )}
+                    <Badge variant="outline" className="text-xs">
+                      مريض منذ {format(new Date(patient.created_at), 'MMMM yyyy', { locale: ar })}
+                    </Badge>
+                  </div>
+                  {/* Contact Info Row */}
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-2">
+                    {patient.phone && (
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {patient.phone}
+                      </div>
+                    )}
+                    {patient.email && (
+                      <div className="flex items-center gap-1">
+                        <Heart className="h-3 w-3" />
+                        {patient.email}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
-            
-            <div className="flex items-center gap-6">
-              {/* Patient Stats */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-white/80 dark:bg-background/80 rounded-lg p-3 border shadow-sm text-center min-w-[100px]">
-                  <div className="text-xl font-bold text-blue-600">{patientStats.totalAppointments}</div>
-                  <div className="text-xs text-muted-foreground">إجمالي المواعيد</div>
+
+            {/* Patient Stats & Actions */}
+            <div className="flex-1 flex flex-col lg:flex-row items-start lg:items-center justify-end gap-6">
+              {/* Statistics Cards */}
+              <div className="grid grid-cols-3 gap-3 w-full lg:w-auto">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 rounded-xl p-4 border border-blue-200/50 dark:border-blue-800/50 text-center min-w-[90px] hover:shadow-lg transition-all duration-300">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{patientStats.totalAppointments}</div>
+                  <div className="text-xs text-blue-700 dark:text-blue-300 font-medium">إجمالي المواعيد</div>
                 </div>
                 
-                <div className="bg-white/80 dark:bg-background/80 rounded-lg p-3 border shadow-sm text-center min-w-[100px]">
-                  <div className="text-xl font-bold text-green-600">{patientStats.completedTreatments}</div>
-                  <div className="text-xs text-muted-foreground">العلاجات المكتملة</div>
+                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 rounded-xl p-4 border border-green-200/50 dark:border-green-800/50 text-center min-w-[90px] hover:shadow-lg transition-all duration-300">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{patientStats.completedTreatments}</div>
+                  <div className="text-xs text-green-700 dark:text-green-300 font-medium">العلاجات المكتملة</div>
                 </div>
                 
-                <div className="bg-white/80 dark:bg-background/80 rounded-lg p-3 border shadow-sm text-center min-w-[100px]">
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/50 dark:to-emerald-900/50 rounded-xl p-4 border border-emerald-200/50 dark:border-emerald-800/50 text-center min-w-[90px] hover:shadow-lg transition-all duration-300">
                   <div className="flex items-center justify-center gap-1 mb-1">
-                    <Heart className="h-4 w-4 text-green-600" />
-                    <span className="text-xl font-bold text-green-600">{patientStats.healthPercentage}%</span>
+                    <Heart className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{patientStats.healthPercentage}%</span>
                   </div>
-                  <div className="text-xs text-green-700 font-medium">جيد</div>
-                  <div className="text-xs text-muted-foreground">صحة الفم</div>
+                  <div className="text-xs text-emerald-700 dark:text-emerald-300 font-medium">جيد</div>
+                  <div className="text-xs text-emerald-600 dark:text-emerald-400">صحة الفم</div>
                 </div>
               </div>
-
-              <div className="h-8 w-px bg-border mx-4"></div>
               
               {/* Action Buttons */}
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-200">
+              <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+                <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-300 flex-1 lg:flex-none">
                   <Printer className="w-4 h-4 ml-2" />
                   طباعة التقرير
                 </Button>
-                <Button variant="outline" size="sm" onClick={handleEditPatient} className="hover:bg-orange-50 hover:border-orange-200">
+                <Button variant="outline" size="sm" onClick={handleEditPatient} className="hover:bg-orange-50 hover:border-orange-300 flex-1 lg:flex-none">
                   <Edit className="w-4 h-4 ml-2" />
                   تعديل البيانات
                 </Button>
-                <Button size="sm" onClick={() => setTreatmentDialogOpen(true)} className="bg-gradient-to-r from-primary to-secondary shadow-lg hover:shadow-xl transition-all duration-300">
+                <Button size="sm" onClick={() => setTreatmentDialogOpen(true)} className="bg-gradient-to-r from-primary to-secondary shadow-lg hover:shadow-xl transition-all duration-300 flex-1 lg:flex-none">
                   <Plus className="w-4 h-4 ml-2" />
                   إضافة علاج جديد
                 </Button>
@@ -297,15 +334,12 @@ const PatientProfile = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Premium Patient Header Card */}
-        <PatientHeader patient={patient} />
-
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
         {/* Main Content Layout */}
         <Tabs defaultValue="dental-chart" className="w-full">
-          <div className="grid grid-cols-12 gap-8">
-            {/* Left Column - Navigation Sidebar */}
-            <div className="col-span-3">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Right Column - Navigation Sidebar (Medical File) */}
+            <div className="lg:col-span-3 lg:order-2">
               <Card className="bg-white/90 dark:bg-card/90 backdrop-blur-sm shadow-xl border-0 sticky top-24">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -344,8 +378,8 @@ const PatientProfile = () => {
               </Card>
             </div>
 
-            {/* Right Column - Main Content Area */}
-            <div className="col-span-9">
+            {/* Left Column - Main Content Area */}
+            <div className="lg:col-span-9 lg:order-1">
               <TabsContent value="dental-chart" className="mt-0">
                 <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-t-lg">
