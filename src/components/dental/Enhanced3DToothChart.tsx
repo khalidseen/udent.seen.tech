@@ -60,6 +60,30 @@ const Enhanced3DToothChart = ({
     enabled: !!patientId
   });
 
+  // Fetch uploaded 3D models for each tooth
+  const { data: uploadedModels } = useQuery({
+    queryKey: ['uploaded-models', patientId, numberingSystem],
+    queryFn: async () => {
+      if (!patientId) return {};
+      
+      const { data, error } = await supabase
+        .from('patient_dental_models')
+        .select('tooth_number, model_path')
+        .eq('patient_id', patientId)
+        .eq('numbering_system', numberingSystem);
+
+      if (error) throw error;
+      
+      const models: Record<string, boolean> = {};
+      data.forEach(model => {
+        models[model.tooth_number] = true;
+      });
+      
+      return models;
+    },
+    enabled: !!patientId
+  });
+
   const handleToothClick = (toothNumber: string, system: string) => {
     onToothSelect(toothNumber, system);
     if (viewMode === '3d' && patientId) {
@@ -74,6 +98,7 @@ const Enhanced3DToothChart = ({
     const hasAnnotations = annotationData && annotationData.total > 0;
     const hasCritical = annotationData && annotationData.critical > 0;
     const hasHigh = annotationData && annotationData.high > 0;
+    const hasUploadedModel = uploadedModels?.[toothNumber] || false;
     
     // Determine tooth shape based on position
     const isMolar = index < 3 || index > 12;
@@ -104,7 +129,7 @@ const Enhanced3DToothChart = ({
                     : "bg-yellow-100 border-yellow-500 text-yellow-800 hover:bg-yellow-200"
                 : "bg-background border-border hover:bg-accent hover:text-accent-foreground"
           )}
-          title={`السن رقم ${toothNumber}${hasAnnotations ? ` - ${annotationData.total} تعليق` : ''}`}
+          title={`السن رقم ${toothNumber}${hasAnnotations ? ` - ${annotationData.total} تعليق` : ''}${hasUploadedModel ? ' - نموذج مرفوع' : ''}`}
         >
           {toothNumber}
           
@@ -112,6 +137,13 @@ const Enhanced3DToothChart = ({
           {viewMode === '3d' && (
             <div className="absolute -top-1 -right-1">
               <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+            </div>
+          )}
+          
+          {/* Uploaded Model Indicator */}
+          {hasUploadedModel && (
+            <div className="absolute -top-1 -left-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full" title="نموذج مرفوع" />
             </div>
           )}
         </button>
@@ -256,6 +288,10 @@ const Enhanced3DToothChart = ({
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                     <span>نشط ثلاثي الأبعاد</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>نموذج مرفوع</span>
                   </div>
                 </div>
               </div>

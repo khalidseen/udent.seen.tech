@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, Suspense } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, useGLTF, Html, Text, PerspectiveCamera } from '@react-three/drei';
 import { Mesh, Vector3, Color } from 'three';
@@ -289,7 +291,7 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
   onSave,
   editable = true
 }) => {
-  const [currentAnnotations, setCurrentAnnotations] = useState<ToothAnnotation[]>(annotations);
+  const [currentAnnotations, setCurrentAnnotations] = useState<ToothAnnotation[]>([]);
   const [isAddingAnnotation, setIsAddingAnnotation] = useState(false);
   const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'normal' | 'transparent' | 'wireframe'>('normal');
@@ -303,8 +305,45 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
 
   const effectiveModelUrl = modelUrl || modelData?.modelUrl;
   const effectiveAnnotations = modelData?.annotations || annotations;
+  
+  // جلب التعليقات من قاعدة البيانات
+  const { data: dbAnnotations } = useQuery({
+    queryKey: ['tooth-annotations', patientId, toothNumber, numberingSystem],
+    queryFn: async () => {
+      if (!patientId) return [];
+      
+      const { data, error } = await supabase
+        .from('tooth_3d_annotations')
+        .select('*')
+        .eq('patient_id', patientId)
+        .eq('tooth_number', toothNumber)
+        .eq('numbering_system', numberingSystem);
+        
+      if (error) throw error;
+      
+      return data.map(annotation => ({
+        id: annotation.id,
+        position: [annotation.position_x, annotation.position_y, annotation.position_z] as [number, number, number],
+        color: annotation.color,
+        title: annotation.title,
+        description: annotation.description || undefined,
+        type: annotation.annotation_type as 'cavity' | 'restoration' | 'fracture' | 'note',
+        severity: annotation.severity as 'low' | 'medium' | 'high' | 'critical' | undefined,
+        visible: true
+      }));
+    },
+    enabled: !!patientId
+  });
 
-  const handleModelClick = (point: Vector3) => {
+  // دمج التعليقات من قاعدة البيانات مع التعليقات المرسلة
+  const finalAnnotations = [...(dbAnnotations || []), ...annotations];
+
+  // تحديث التعليقات المحلية عند تغيير البيانات
+  useEffect(() => {
+    setCurrentAnnotations(finalAnnotations);
+  }, [JSON.stringify(finalAnnotations)]);
+
+  const handleModelClick = async (point: Vector3) => {
     if (isAddingAnnotation) {
       const newAnnotation: Omit<ToothAnnotation, 'id'> = {
         position: [point.x, point.y, point.z],
@@ -323,8 +362,35 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
       
       setCurrentAnnotations(prev => [...prev, annotationWithId]);
       onAnnotationAdd?.(newAnnotation);
-      setIsAddingAnnotation(false);
-      toast.success('تم إضافة التعليق');
+      
+      // حفظ التعليق في قاعدة البيانات
+      try {
+        const { error } = await supabase
+          .from('tooth_3d_annotations')
+          .insert({
+            patient_id: patientId,
+            tooth_number: toothNumber,
+            numbering_system: numberingSystem,
+            position_x: point.x,
+            position_y: point.y,
+            position_z: point.z,
+            color: newAnnotation.color,
+            title: newAnnotation.title,
+            description: newAnnotation.description,
+            annotation_type: newAnnotation.type,
+            severity: newAnnotation.severity,
+            status: 'active'
+          });
+
+        if (error) throw error;
+        
+        setIsAddingAnnotation(false);
+        toast.success('تم إضافة التعليق وحفظه');
+      } catch (error) {
+        console.error('Error saving annotation:', error);
+        toast.error('تم إضافة التعليق ولكن فشل الحفظ');
+        setIsAddingAnnotation(false);
+      }
     }
   };
 
