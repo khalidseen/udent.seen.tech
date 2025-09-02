@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,14 +11,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Activity, Calendar, FileText, Edit, Plus, Smile, DollarSign } from "lucide-react";
+import { Edit, Plus, FileText, Printer, Stethoscope, Heart, Calendar, Image, CreditCard, Activity } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import PatientMedicalHistory from "@/components/patients/PatientMedicalHistory";
+import { PatientHeader } from "@/components/patients/PatientHeader";
+import { OralHealthDashboard } from "@/components/dental/OralHealthDashboard";
+import Enhanced3DToothChart from "@/components/dental/Enhanced3DToothChart";
 import PatientTimeline from "@/components/patients/PatientTimeline";
 import AddTreatmentDialog from "@/components/patients/AddTreatmentDialog";
-import PalmerDentalChart from "@/components/dental/PalmerDentalChart";
 import { PatientImageGallery } from "@/components/medical-records/PatientImageGallery";
+import { PatientAppointmentCalendar } from "@/components/patients/PatientAppointmentCalendar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import PatientPrescriptionSection from "@/components/patients/PatientPrescriptionSection";
@@ -45,12 +46,20 @@ const PatientProfile = () => {
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Patient | null>(null);
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
+  const [selectedTooth, setSelectedTooth] = useState<string>("");
+  const [selectedToothSystem, setSelectedToothSystem] = useState<'universal' | 'palmer' | 'fdi'>('universal');
+  const [patientStats, setPatientStats] = useState({
+    totalAppointments: 0,
+    completedTreatments: 0,
+    healthPercentage: 85
+  });
   const { toast } = useToast();
   const { user } = useAuth();
 
   useEffect(() => {
     if (patientId && user) {
       fetchPatient();
+      fetchPatientStats();
     }
   }, [patientId, user]);
 
@@ -93,6 +102,57 @@ const PatientProfile = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchPatientStats = async () => {
+    if (!patientId) return;
+
+    try {
+      // Fetch appointments count
+      const { data: appointments } = await supabase
+        .from('appointments')
+        .select('id, status')
+        .eq('patient_id', patientId);
+
+      // Fetch treatments count
+      const { data: treatments } = await supabase
+        .from('dental_treatments')
+        .select('id, status')
+        .eq('patient_id', patientId);
+
+      // Fetch tooth conditions for health percentage
+      const { data: conditions } = await supabase
+        .from('tooth_conditions')
+        .select('condition_type')
+        .eq('patient_id', patientId);
+
+      const totalAppointments = appointments?.length || 0;
+      const completedTreatments = treatments?.filter(t => t.status === 'completed').length || 0;
+      
+      // Calculate health percentage based on healthy teeth
+      let healthyTeeth = 0;
+      let treatedTeeth = 0;
+      conditions?.forEach(condition => {
+        if (condition.condition_type === 'healthy') healthyTeeth++;
+        if (['filled', 'crown', 'root_canal'].includes(condition.condition_type)) treatedTeeth++;
+      });
+      
+      const totalHealthyTeeth = healthyTeeth + treatedTeeth;
+      const healthPercentage = Math.round((totalHealthyTeeth / 32) * 100);
+
+      setPatientStats({
+        totalAppointments,
+        completedTreatments,
+        healthPercentage: healthPercentage || 85
+      });
+    } catch (error) {
+      console.error('Error fetching patient stats:', error);
+    }
+  };
+
+  const handleToothSelect = (toothNumber: string, system: 'universal' | 'palmer' | 'fdi') => {
+    setSelectedTooth(toothNumber);
+    setSelectedToothSystem(system);
   };
 
   const getGenderBadge = (gender: string) => {
@@ -172,151 +232,86 @@ const PatientProfile = () => {
 
   return (
     <PageContainer>
-      <PageHeader 
-        title={`ملف المريض: ${patient.full_name}`}
-        description="عرض تفاصيل المريض وتاريخه الطبي"
-        action={
-          <div className="flex space-x-2 space-x-reverse">
-            <Button variant="outline">
-              <FileText className="w-4 h-4 ml-2" />
-              طباعة التقرير
-            </Button>
-            <Button variant="default" onClick={handleEditPatient}>
-              <Edit className="w-4 h-4 ml-2" />
-              تعديل ملف المريض
-            </Button>
-            <Sheet open={treatmentDialogOpen} onOpenChange={setTreatmentDialogOpen}>
-              <SheetTrigger asChild>
-                <Button variant="secondary">
-                  <Plus className="w-4 h-4 ml-2" />
-                  إضافة علاج
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle className="text-xl font-semibold text-center mb-6">
-                    إضافة علاج للمريض ({patient.full_name})
-                  </SheetTitle>
-                </SheetHeader>
-                <AddTreatmentDialog
-                  open={true}
-                  onOpenChange={() => {}}
-                  patientId={patient.id}
-                  patientName={patient.full_name}
-                  onTreatmentAdded={() => setTreatmentDialogOpen(false)}
-                />
-              </SheetContent>
-            </Sheet>
-          </div>
-        }
-      />
+      <div className="space-y-8">
+      {/* Modern Patient Header */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="sm" onClick={() => window.history.back()}>
+            ← العودة
+          </Button>
+          <h1 className="text-2xl font-bold text-primary">ملف المريض الشامل</h1>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm">
+            <Printer className="w-4 h-4 ml-1" />
+            طباعة
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleEditPatient}>
+            <Edit className="w-4 h-4 ml-1" />
+            تعديل
+          </Button>
+          <Sheet open={treatmentDialogOpen} onOpenChange={setTreatmentDialogOpen}>
+            <SheetTrigger asChild>
+              <Button size="sm">
+                <Plus className="w-4 h-4 ml-1" />
+                إضافة علاج
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle className="text-xl font-semibold text-center mb-6">
+                  إضافة علاج للمريض ({patient.full_name})
+                </SheetTitle>
+              </SheetHeader>
+              <AddTreatmentDialog
+                open={true}
+                onOpenChange={() => {}}
+                patientId={patient.id}
+                patientName={patient.full_name}
+                onTreatmentAdded={() => setTreatmentDialogOpen(false)}
+              />
+            </SheetContent>
+          </Sheet>
+        </div>
+      </div>
 
-      {/* Patient Basic Info */}
-      <Card className="border border-border/60 bg-white/90 dark:bg-card/90 backdrop-blur-sm">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center">
-              <User className="w-5 h-5 ml-2" />
-              المعلومات الأساسية
-            </CardTitle>
-            <div className="flex items-center space-x-2 space-x-reverse">
-              {getGenderBadge(patient.gender)}
-              {patient.date_of_birth && (
-                <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-                  {getAge(patient.date_of_birth)} سنة
-                </Badge>
-              )}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {patient.phone && (
-              <div>
-                <p className="text-sm text-muted-foreground">رقم الهاتف</p>
-                <p className="font-medium">{patient.phone}</p>
-              </div>
-            )}
-            {patient.email && (
-              <div>
-                <p className="text-sm text-muted-foreground">البريد الإلكتروني</p>
-                <p className="font-medium">{patient.email}</p>
-              </div>
-            )}
-            {patient.date_of_birth && (
-              <div>
-                <p className="text-sm text-muted-foreground">تاريخ الميلاد</p>
-                <p className="font-medium">
-                  {format(new Date(patient.date_of_birth), 'yyyy/MM/dd', { locale: ar })}
-                </p>
-              </div>
-            )}
-            {patient.address && (
-              <div className="md:col-span-2 lg:col-span-3">
-                <p className="text-sm text-muted-foreground">العنوان</p>
-                <p className="font-medium">{patient.address}</p>
-              </div>
-            )}
-            {patient.medical_history && (
-              <div className="md:col-span-2 lg:col-span-3">
-                <p className="text-sm text-muted-foreground">التاريخ المرضي</p>
-                <p className="font-medium">{patient.medical_history}</p>
-              </div>
-            )}
-            {patient.notes && (
-              <div className="md:col-span-2 lg:col-span-3">
-                <p className="text-sm text-muted-foreground">ملاحظات إضافية</p>
-                <p className="font-medium">{patient.notes}</p>
-              </div>
-            )}
-            <div>
-              <p className="text-sm text-muted-foreground">تاريخ التسجيل</p>
-              <p className="font-medium">
-                {format(new Date(patient.created_at), 'yyyy/MM/dd', { locale: ar })}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Enhanced Patient Header */}
+      <PatientHeader patient={patient} stats={patientStats} />
 
-      {/* Patient Details Tabs */}
-      <Tabs defaultValue="treatments" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="treatments" className="flex items-center">
-            <Activity className="w-4 h-4 ml-1" />
-            العلاجات
-          </TabsTrigger>
-          <TabsTrigger value="prescriptions" className="flex items-center">
-            <FileText className="w-4 h-4 ml-1" />
+      {/* Health Overview Dashboard */}
+      <OralHealthDashboard patientId={patient.id} onStatUpdate={fetchPatientStats} />
+
+      {/* Enhanced Patient Details Tabs */}
+      <Tabs defaultValue="prescriptions" className="w-full">
+        <TabsList className="grid w-full grid-cols-6 h-12">
+          <TabsTrigger value="prescriptions" className="flex items-center gap-2 text-sm">
+            <Stethoscope className="w-4 h-4" />
             الوصفات الطبية
           </TabsTrigger>
-          <TabsTrigger value="financial-status" className="flex items-center">
-            <DollarSign className="w-4 h-4 ml-1" />
+          <TabsTrigger value="financial-status" className="flex items-center gap-2 text-sm">
+            <CreditCard className="w-4 h-4" />
             الحالة المالية
           </TabsTrigger>
-          <TabsTrigger value="dental-status" className="flex items-center">
-            <Smile className="w-4 h-4 ml-1" />
-            حالة السنان
+          <TabsTrigger value="dental-status" className="flex items-center gap-2 text-sm">
+            <Heart className="w-4 h-4" />
+            حالة الأسنان
           </TabsTrigger>
-          <TabsTrigger value="images" className="flex items-center">
-            <FileText className="w-4 h-4 ml-1" />
+          <TabsTrigger value="images" className="flex items-center gap-2 text-sm">
+            <Image className="w-4 h-4" />
             الصور الطبية
           </TabsTrigger>
-          <TabsTrigger value="appointments" className="flex items-center">
-            <Calendar className="w-4 h-4 ml-1" />
+          <TabsTrigger value="appointments" className="flex items-center gap-2 text-sm">
+            <Calendar className="w-4 h-4" />
             المواعيد
           </TabsTrigger>
-          <TabsTrigger value="timeline" className="flex items-center">
-            <FileText className="w-4 h-4 ml-1" />
+          <TabsTrigger value="timeline" className="flex items-center gap-2 text-sm">
+            <Activity className="w-4 h-4" />
             الخط الزمني
           </TabsTrigger>
         </TabsList>
         
-        <TabsContent value="treatments" className="mt-6">
-          <PatientMedicalHistory patientId={patient.id} />
-        </TabsContent>
-        
-        <TabsContent value="prescriptions" className="mt-6">
+        <TabsContent value="prescriptions" className="mt-8">
           <PatientPrescriptionSection 
             patientId={patient.id} 
             patientData={{
@@ -327,36 +322,34 @@ const PatientProfile = () => {
           />
         </TabsContent>
         
-        <TabsContent value="financial-status" className="mt-6">
+        <TabsContent value="financial-status" className="mt-8">
           <PatientFinancialStatus 
             patientId={patient.id} 
             patientName={patient.full_name}
           />
         </TabsContent>
         
-        <TabsContent value="dental-status" className="mt-6">
-          <PalmerDentalChart 
+        <TabsContent value="dental-status" className="mt-8">
+          <Enhanced3DToothChart 
             patientId={patient.id} 
-            patientAge={patient.date_of_birth ? getAge(patient.date_of_birth) : 25}
+            onToothSelect={handleToothSelect}
+            selectedTooth={selectedTooth}
+            numberingSystem={selectedToothSystem}
           />
         </TabsContent>
         
-        <TabsContent value="images" className="mt-6">
+        <TabsContent value="images" className="mt-8">
           <PatientImageGallery patientId={patient.id} />
         </TabsContent>
         
-        <TabsContent value="appointments" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>مواعيد المريض</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">سيتم إضافة قائمة المواعيد هنا</p>
-            </CardContent>
-          </Card>
+        <TabsContent value="appointments" className="mt-8">
+          <PatientAppointmentCalendar 
+            patientId={patient.id} 
+            patientName={patient.full_name}
+          />
         </TabsContent>
         
-        <TabsContent value="timeline" className="mt-6">
+        <TabsContent value="timeline" className="mt-8">
           <PatientTimeline patientId={patient.id} />
         </TabsContent>
       </Tabs>
@@ -469,6 +462,7 @@ const PatientProfile = () => {
           )}
         </SheetContent>
       </Sheet>
+      </div>
     </PageContainer>
   );
 };
