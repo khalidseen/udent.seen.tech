@@ -17,6 +17,7 @@ import {
   Download
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useDentalModel } from '@/hooks/useDentalModel';
 
 interface ToothAnnotation {
   id: string;
@@ -32,6 +33,7 @@ interface ToothAnnotation {
 interface Enhanced3DToothViewerProps {
   toothNumber: string;
   patientId: string;
+  numberingSystem?: string;
   modelUrl?: string;
   annotations?: ToothAnnotation[];
   onAnnotationAdd?: (annotation: Omit<ToothAnnotation, 'id'>) => void;
@@ -43,14 +45,44 @@ interface Enhanced3DToothViewerProps {
 
 // مكون النموذج ثلاثي الأبعاد
 const ToothModel: React.FC<{
-  modelUrl: string;
+  modelUrl?: string;
   annotations: ToothAnnotation[];
   onModelClick: (point: Vector3) => void;
   editable: boolean;
 }> = ({ modelUrl, annotations, onModelClick, editable }) => {
-  const meshRef = useRef<Mesh>(null);
-  const { scene } = useGLTF(modelUrl);
+  const meshRef = useRef<any>(null);
   const { camera, raycaster, mouse, gl } = useThree();
+  
+  // إنشاء نموذج افتراضي إذا لم يكن هناك GLB
+  const createDefaultToothGeometry = () => {
+    // إنشاء شكل سن افتراضي باستخدام الأشكال الأساسية
+    return (
+      <group ref={meshRef}>
+        {/* تاج السن */}
+        <mesh position={[0, 0.5, 0]}>
+          <coneGeometry args={[0.8, 1.5, 8]} />
+          <meshStandardMaterial color="#f8f9fa" />
+        </mesh>
+        {/* جذر السن */}
+        <mesh position={[0, -0.5, 0]}>
+          <cylinderGeometry args={[0.3, 0.5, 1, 8]} />
+          <meshStandardMaterial color="#e9ecef" />
+        </mesh>
+      </group>
+    );
+  };
+
+  // تحميل النموذج GLB إذا كان متوفراً
+  let gltfScene = null;
+  try {
+    if (modelUrl) {
+      const gltf = useGLTF(modelUrl);
+      gltfScene = gltf.scene;
+    }
+  } catch (error) {
+    console.warn('Failed to load GLB model:', error);
+    gltfScene = null;
+  }
 
   useFrame((state) => {
     if (meshRef.current) {
@@ -67,14 +99,17 @@ const ToothModel: React.FC<{
   };
 
   return (
-    <group>
-      <primitive 
-        ref={meshRef}
-        object={scene} 
-        scale={[2, 2, 2]}
-        onClick={handleClick}
-        position={[0, 0, 0]}
-      />
+    <group onClick={handleClick}>
+      {gltfScene ? (
+        <primitive 
+          ref={meshRef}
+          object={gltfScene} 
+          scale={[2, 2, 2]}
+          position={[0, 0, 0]}
+        />
+      ) : (
+        createDefaultToothGeometry()
+      )}
       
       {/* عرض التعليقات */}
       {annotations.map((annotation) => (
@@ -157,7 +192,8 @@ const AnnotationMarker: React.FC<{
 export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
   toothNumber,
   patientId,
-  modelUrl = '/src/assets/models/maxillary-canine.glb',
+  numberingSystem = 'universal',
+  modelUrl,
   annotations = [],
   onAnnotationAdd,
   onAnnotationUpdate,
@@ -169,6 +205,16 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
   const [isAddingAnnotation, setIsAddingAnnotation] = useState(false);
   const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'normal' | 'transparent' | 'wireframe'>('normal');
+
+  // جلب النموذج من قاعدة البيانات أو استخدام النموذج المرسل
+  const { data: modelData, isLoading: modelLoading, error: modelError } = useDentalModel({
+    patientId,
+    toothNumber,
+    numberingSystem
+  });
+
+  const effectiveModelUrl = modelUrl || modelData?.modelUrl;
+  const effectiveAnnotations = modelData?.annotations || annotations;
 
   const handleModelClick = (point: Vector3) => {
     if (isAddingAnnotation) {
@@ -269,50 +315,66 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
 
         {/* العارض ثلاثي الأبعاد */}
         <div className="flex-1 relative bg-gradient-to-br from-background to-muted/20 rounded-lg overflow-hidden">
-          <Canvas className="w-full h-full">
-            <PerspectiveCamera makeDefault position={[0, 0, 5]} />
-            
-            {/* الإضاءة */}
-            <ambientLight intensity={0.4} />
-            <directionalLight 
-              position={[10, 10, 5]} 
-              intensity={1}
-              castShadow
-            />
-            <pointLight position={[-10, -10, -5]} intensity={0.5} />
-            
-            {/* التحكم بالكاميرا */}
-            <OrbitControls 
-              enablePan={true}
-              enableZoom={true}
-              enableRotate={true}
-              minDistance={2}
-              maxDistance={10}
-            />
-            
-            {/* النموذج */}
-            <Suspense fallback={
-              <Html center>
-                <div className="text-center p-4">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
-                  <p className="text-sm text-muted-foreground">جاري تحميل النموذج...</p>
-                </div>
-              </Html>
-            }>
-              <ToothModel
-                modelUrl={modelUrl}
-                annotations={currentAnnotations}
-                onModelClick={handleModelClick}
-                editable={editable}
+          {modelLoading ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="text-center p-4">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                <p className="text-sm text-muted-foreground">جاري تحميل النموذج...</p>
+              </div>
+            </div>
+          ) : modelError ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <div className="text-center p-4">
+                <p className="text-sm text-destructive mb-2">خطأ في تحميل النموذج</p>
+                <p className="text-xs text-muted-foreground">سيتم استخدام النموذج الافتراضي</p>
+              </div>
+            </div>
+          ) : (
+            <Canvas className="w-full h-full">
+              <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+              
+              {/* الإضاءة */}
+              <ambientLight intensity={0.4} />
+              <directionalLight 
+                position={[10, 10, 5]} 
+                intensity={1}
+                castShadow
               />
-            </Suspense>
-            
-            {/* خلفية */}
-            <mesh position={[0, 0, -5]}>
-              <planeGeometry args={[20, 20]} />
-              <meshBasicMaterial color="#f8fafc" transparent opacity={0.1} />
-            </mesh>
-          </Canvas>
+              <pointLight position={[-10, -10, -5]} intensity={0.5} />
+              
+              {/* التحكم بالكاميرا */}
+              <OrbitControls 
+                enablePan={true}
+                enableZoom={true}
+                enableRotate={true}
+                minDistance={2}
+                maxDistance={10}
+              />
+              
+              {/* النموذج */}
+              <Suspense fallback={
+                <Html center>
+                  <div className="text-center p-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p className="text-sm text-muted-foreground">جاري تحميل النموذج...</p>
+                  </div>
+                </Html>
+              }>
+                <ToothModel
+                  modelUrl={effectiveModelUrl}
+                  annotations={currentAnnotations}
+                  onModelClick={handleModelClick}
+                  editable={editable}
+                />
+              </Suspense>
+              
+              {/* خلفية */}
+              <mesh position={[0, 0, -5]}>
+                <planeGeometry args={[20, 20]} />
+                <meshBasicMaterial color="#f8fafc" transparent opacity={0.1} />
+              </mesh>
+            </Canvas>
+          )}
           
           {/* رسالة التعليمات */}
           {isAddingAnnotation && (

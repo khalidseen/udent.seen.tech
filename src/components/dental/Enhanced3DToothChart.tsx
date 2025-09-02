@@ -293,6 +293,7 @@ const Enhanced3DToothChart = ({
               <Enhanced3DToothViewer
                 toothNumber={selected3DTooth}
                 patientId={patientId}
+                numberingSystem={numberingSystem}
                 onSave={(data) => {
                   console.log('Saving tooth data:', data);
                   // يمكن إضافة منطق الحفظ هنا
