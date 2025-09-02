@@ -43,33 +43,123 @@ interface Enhanced3DToothViewerProps {
   editable?: boolean;
 }
 
+// مكونات النماذج الافتراضية للأسنان
+const IncisorModel = () => (
+  <group>
+    {/* تاج القاطعة - مسطح ورفيع */}
+    <mesh position={[0, 0.3, 0]}>
+      <boxGeometry args={[0.8, 1.2, 0.4]} />
+      <meshStandardMaterial color="#f8f9fa" />
+    </mesh>
+    {/* جذر القاطعة - طويل ورفيع */}
+    <mesh position={[0, -0.8, 0]}>
+      <cylinderGeometry args={[0.2, 0.35, 1.6, 8]} />
+      <meshStandardMaterial color="#e9ecef" />
+    </mesh>
+  </group>
+);
+
+const CanineModel = () => (
+  <group>
+    {/* تاج الناب - مدبب */}
+    <mesh position={[0, 0.4, 0]}>
+      <coneGeometry args={[0.6, 1.4, 8]} />
+      <meshStandardMaterial color="#f8f9fa" />
+    </mesh>
+    {/* جذر الناب - قوي وطويل */}
+    <mesh position={[0, -0.9, 0]}>
+      <cylinderGeometry args={[0.25, 0.4, 1.8, 8]} />
+      <meshStandardMaterial color="#e9ecef" />
+    </mesh>
+  </group>
+);
+
+const PremolarModel = () => (
+  <group>
+    {/* تاج الضرس الصغير - له حدبتان */}
+    <mesh position={[0, 0.2, 0.15]}>
+      <sphereGeometry args={[0.35, 8, 8]} />
+      <meshStandardMaterial color="#f8f9fa" />
+    </mesh>
+    <mesh position={[0, 0.2, -0.15]}>
+      <sphereGeometry args={[0.35, 8, 8]} />
+      <meshStandardMaterial color="#f8f9fa" />
+    </mesh>
+    {/* جذر الضرس الصغير */}
+    <mesh position={[0, -0.6, 0]}>
+      <cylinderGeometry args={[0.3, 0.45, 1.6, 8]} />
+      <meshStandardMaterial color="#e9ecef" />
+    </mesh>
+  </group>
+);
+
+const MolarModel = () => (
+  <group>
+    {/* تاج الضرس الكبير - له أربع حدبات */}
+    <mesh position={[0.2, 0.2, 0.2]}>
+      <sphereGeometry args={[0.3, 8, 8]} />
+      <meshStandardMaterial color="#f8f9fa" />
+    </mesh>
+    <mesh position={[-0.2, 0.2, 0.2]}>
+      <sphereGeometry args={[0.3, 8, 8]} />
+      <meshStandardMaterial color="#f8f9fa" />
+    </mesh>
+    <mesh position={[0.2, 0.2, -0.2]}>
+      <sphereGeometry args={[0.3, 8, 8]} />
+      <meshStandardMaterial color="#f8f9fa" />
+    </mesh>
+    <mesh position={[-0.2, 0.2, -0.2]}>
+      <sphereGeometry args={[0.3, 8, 8]} />
+      <meshStandardMaterial color="#f8f9fa" />
+    </mesh>
+    {/* جذور الضرس الكبير - متعددة */}
+    <mesh position={[0.15, -0.7, 0.15]}>
+      <cylinderGeometry args={[0.15, 0.25, 1.4, 6]} />
+      <meshStandardMaterial color="#e9ecef" />
+    </mesh>
+    <mesh position={[-0.15, -0.7, 0.15]}>
+      <cylinderGeometry args={[0.15, 0.25, 1.4, 6]} />
+      <meshStandardMaterial color="#e9ecef" />
+    </mesh>
+    <mesh position={[0, -0.7, -0.2]}>
+      <cylinderGeometry args={[0.15, 0.25, 1.4, 6]} />
+      <meshStandardMaterial color="#e9ecef" />
+    </mesh>
+  </group>
+);
+
 // مكون النموذج ثلاثي الأبعاد
 const ToothModel: React.FC<{
+  toothNumber: string;
   modelUrl?: string;
   annotations: ToothAnnotation[];
   onModelClick: (point: Vector3) => void;
   editable: boolean;
-}> = ({ modelUrl, annotations, onModelClick, editable }) => {
+}> = ({ toothNumber, modelUrl, annotations, onModelClick, editable }) => {
   const meshRef = useRef<any>(null);
   const { camera, raycaster, mouse, gl } = useThree();
   
-  // إنشاء نموذج افتراضي إذا لم يكن هناك GLB
+  // إنشاء نموذج افتراضي واقعي للسن
   const createDefaultToothGeometry = () => {
-    // إنشاء شكل سن افتراضي باستخدام الأشكال الأساسية
+    const toothType = getToothType(toothNumber);
+    
     return (
       <group ref={meshRef}>
-        {/* تاج السن */}
-        <mesh position={[0, 0.5, 0]}>
-          <coneGeometry args={[0.8, 1.5, 8]} />
-          <meshStandardMaterial color="#f8f9fa" />
-        </mesh>
-        {/* جذر السن */}
-        <mesh position={[0, -0.5, 0]}>
-          <cylinderGeometry args={[0.3, 0.5, 1, 8]} />
-          <meshStandardMaterial color="#e9ecef" />
-        </mesh>
+        {toothType === 'incisor' && <IncisorModel />}
+        {toothType === 'canine' && <CanineModel />}
+        {toothType === 'premolar' && <PremolarModel />}
+        {toothType === 'molar' && <MolarModel />}
       </group>
     );
+  };
+
+  // تحديد نوع السن بناءً على الرقم
+  const getToothType = (toothNum: string) => {
+    const num = parseInt(toothNum);
+    if ([1, 2, 7, 8, 9, 10, 15, 16, 23, 24, 25, 26, 31, 32].includes(num)) return 'incisor';
+    if ([3, 6, 11, 14, 19, 22, 27, 30].includes(num)) return 'canine';
+    if ([4, 5, 12, 13, 20, 21, 28, 29].includes(num)) return 'premolar';
+    return 'molar';
   };
 
   // تحميل النموذج GLB إذا كان متوفراً
@@ -379,6 +469,7 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
                 </Html>
               }>
                 <ToothModel
+                  toothNumber={toothNumber}
                   modelUrl={effectiveModelUrl}
                   annotations={currentAnnotations}
                   onModelClick={handleModelClick}
