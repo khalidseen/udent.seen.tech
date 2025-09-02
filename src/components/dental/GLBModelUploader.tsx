@@ -326,23 +326,16 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
           )}
         </Button>
         
-        {/* زر تشخيص للتحقق من الصلاحيات */}
+         {/* زر تشخيص للتحقق من الصلاحيات */}
         <Button
           variant="outline"
           onClick={async () => {
             try {
               const { data: { user }, error: authError } = await supabase.auth.getUser();
-              if (authError) {
-                toast.error(`خطأ في المصادقة: ${authError.message}`);
-                return;
-              }
-              
-              if (!user) {
+              if (authError || !user) {
                 toast.error('المستخدم غير مصادق عليه');
                 return;
               }
-              
-              console.log('Current user:', user);
               
               // التحقق من بيانات الملف الشخصي
               const { data: profile, error: profileError } = await supabase
@@ -352,13 +345,30 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
                 .single();
                 
               if (profileError) {
-                console.error('Profile error:', profileError);
                 toast.error(`خطأ في جلب الملف الشخصي: ${profileError.message}`);
                 return;
               }
               
-              console.log('User profile:', profile);
-              toast.success(`المستخدم: ${user.email}, الدور: ${profile?.role || 'غير محدد'}`);
+              // اختبار الوصول لـ Storage
+              const { data: storageTest, error: storageError } = await supabase.storage
+                .from('dental-3d-models')
+                .list('default-models', { limit: 1 });
+              
+              const storageAccess = storageError ? 'مرفوض' : 'مسموح';
+              
+              console.log('=== تشخيص شامل ===');
+              console.log('المستخدم:', user);
+              console.log('الملف الشخصي:', profile);
+              console.log('وصول التخزين:', storageAccess);
+              console.log('خطأ التخزين:', storageError);
+              
+              toast.success(`✅ ${profile?.full_name || user.email}
+📧 البريد: ${user.email}
+👑 الدور: ${profile?.role}
+🏥 دور العيادة: ${profile?.current_clinic_role}
+💾 وصول التخزين: ${storageAccess}`, {
+                duration: 8000
+              });
               
             } catch (error: any) {
               console.error('Debug error:', error);
@@ -367,7 +377,7 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
           }}
           className="w-full"
         >
-          تحقق من الصلاحيات
+          🔍 تشخيص شامل
         </Button>
       </CardContent>
     </Card>
