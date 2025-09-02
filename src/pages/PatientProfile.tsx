@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -251,28 +252,18 @@ const PatientProfile = () => {
             <Edit className="w-4 h-4 ml-1" />
             تعديل
           </Button>
-          <Sheet open={treatmentDialogOpen} onOpenChange={setTreatmentDialogOpen}>
-            <SheetTrigger asChild>
-              <Button size="sm">
-                <Plus className="w-4 h-4 ml-1" />
-                إضافة علاج
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle className="text-xl font-semibold text-center mb-6">
-                  إضافة علاج للمريض ({patient.full_name})
-                </SheetTitle>
-              </SheetHeader>
-              <AddTreatmentDialog
-                open={true}
-                onOpenChange={() => {}}
-                patientId={patient.id}
-                patientName={patient.full_name}
-                onTreatmentAdded={() => setTreatmentDialogOpen(false)}
-              />
-            </SheetContent>
-          </Sheet>
+          <Button size="sm" onClick={() => setTreatmentDialogOpen(true)}>
+            <Plus className="w-4 h-4 ml-1" />
+            إضافة علاج
+          </Button>
+          
+          <AddTreatmentDialog
+            open={treatmentDialogOpen}
+            onOpenChange={setTreatmentDialogOpen}
+            patientId={patient.id}
+            patientName={patient.full_name}
+            onTreatmentAdded={() => setTreatmentDialogOpen(false)}
+          />
         </div>
       </div>
 
@@ -355,11 +346,11 @@ const PatientProfile = () => {
       </Tabs>
 
       {/* Edit Patient Dialog */}
-      <Sheet open={editMode} onOpenChange={setEditMode}>
-        <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle>تعديل بيانات المريض</SheetTitle>
-          </SheetHeader>
+      <Dialog open={editMode} onOpenChange={setEditMode}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>تعديل بيانات المريض</DialogTitle>
+          </DialogHeader>
           
           {editData && (
             <div className="space-y-6 mt-6">
@@ -460,8 +451,8 @@ const PatientProfile = () => {
               </div>
             </div>
           )}
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
       </div>
     </PageContainer>
   );
