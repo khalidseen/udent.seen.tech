@@ -84,11 +84,8 @@ const ToothModel: React.FC<{
     gltfScene = null;
   }
 
-  useFrame((state) => {
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.005;
-    }
-  });
+  // إزالة الحركة التلقائية - النموذج ثابت الآن
+  // يمكن للمستخدم التحكم به يدوياً عبر OrbitControls
 
   const handleClick = (event: any) => {
     if (!editable) return;
@@ -104,8 +101,9 @@ const ToothModel: React.FC<{
         <primitive 
           ref={meshRef}
           object={gltfScene} 
-          scale={[2, 2, 2]}
+          scale={[1.5, 1.5, 1.5]}
           position={[0, 0, 0]}
+          rotation={[0, 0, 0]}
         />
       ) : (
         createDefaultToothGeometry()
@@ -257,7 +255,12 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
   };
 
   const resetView = () => {
-    // إعادة تعيين الكاميرا والعرض
+    // إعادة تعيين الكاميرا إلى الموضع الافتراضي
+    const controls = document.querySelector('canvas')?.parentElement?.querySelector('canvas');
+    if (controls) {
+      // محاولة إعادة تعيين الكاميرا
+      window.location.reload();
+    }
     toast.info('تم إعادة تعيين العرض');
   };
 
@@ -330,25 +333,40 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
               </div>
             </div>
           ) : (
-            <Canvas className="w-full h-full">
-              <PerspectiveCamera makeDefault position={[0, 0, 5]} />
+            <Canvas className="w-full h-full" camera={{ position: [0, 0, 4], fov: 50 }}>
               
-              {/* الإضاءة */}
-              <ambientLight intensity={0.4} />
+              {/* إضاءة محسنة لعرض أفضل */}
+              <ambientLight intensity={0.6} />
               <directionalLight 
-                position={[10, 10, 5]} 
-                intensity={1}
+                position={[5, 5, 5]} 
+                intensity={0.8}
                 castShadow
+                shadow-mapSize-width={2048}
+                shadow-mapSize-height={2048}
               />
-              <pointLight position={[-10, -10, -5]} intensity={0.5} />
+              <directionalLight 
+                position={[-5, 5, 5]} 
+                intensity={0.4}
+              />
+              <pointLight position={[0, 0, 2]} intensity={0.3} />
               
-              {/* التحكم بالكاميرا */}
+              {/* تحكم محسن بالكاميرا - ثابت ومتمركز */}
               <OrbitControls 
+                target={[0, 0, 0]}
                 enablePan={true}
                 enableZoom={true}
                 enableRotate={true}
-                minDistance={2}
-                maxDistance={10}
+                enableDamping={true}
+                dampingFactor={0.05}
+                minDistance={1.5}
+                maxDistance={8}
+                minPolarAngle={0}
+                maxPolarAngle={Math.PI}
+                autoRotate={false}
+                autoRotateSpeed={0}
+                zoomSpeed={0.6}
+                panSpeed={0.5}
+                rotateSpeed={0.5}
               />
               
               {/* النموذج */}
