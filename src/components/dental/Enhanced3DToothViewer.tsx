@@ -130,17 +130,68 @@ const MolarModel = () => (
   </group>
 );
 
+// GLB Model Loader Component
+const GLBModelLoader = ({ modelUrl, onLoad }: { modelUrl: string; onLoad?: () => void }) => {
+  try {
+    const { scene } = useGLTF(modelUrl);
+    
+    useEffect(() => {
+      if (scene && onLoad) {
+        onLoad();
+      }
+    }, [scene, onLoad]);
+
+    if (!scene) {
+      return (
+        <Text
+          position={[0, 0, 0]}
+          fontSize={0.15}
+          color="gray"
+          anchorX="center"
+          anchorY="middle"
+        >
+          جاري التحميل...
+        </Text>
+      );
+    }
+
+    return <primitive object={scene.clone()} scale={[1.5, 1.5, 1.5]} position={[0, 0, 0]} />;
+  } catch (error) {
+    console.error('Error loading GLB model:', error);
+    return (
+      <Text
+        position={[0, 0, 0]}
+        fontSize={0.2}
+        color="red"
+        anchorX="center"
+        anchorY="middle"
+      >
+        خطأ في تحميل النموذج
+      </Text>
+    );
+  }
+};
+
 // مكون النموذج ثلاثي الأبعاد
 const ToothModel: React.FC<{
   toothNumber: string;
   modelUrl?: string;
   annotations: ToothAnnotation[];
-  onModelClick: (point: Vector3) => void;
+  onModelClick: (point: [number, number, number]) => void;
   editable: boolean;
 }> = ({ toothNumber, modelUrl, annotations, onModelClick, editable }) => {
   const meshRef = useRef<any>(null);
   const { camera, raycaster, mouse, gl } = useThree();
   
+  // تحديد نوع السن بناءً على الرقم
+  const getToothType = (toothNum: string) => {
+    const num = parseInt(toothNum);
+    if ([1, 2, 7, 8, 9, 10, 15, 16, 23, 24, 25, 26, 31, 32].includes(num)) return 'incisor';
+    if ([3, 6, 11, 14, 19, 22, 27, 30].includes(num)) return 'canine';
+    if ([4, 5, 12, 13, 20, 21, 28, 29].includes(num)) return 'premolar';
+    return 'molar';
+  };
+
   // إنشاء نموذج افتراضي واقعي للسن
   const createDefaultToothGeometry = () => {
     const toothType = getToothType(toothNumber);
@@ -155,47 +206,34 @@ const ToothModel: React.FC<{
     );
   };
 
-  // تحديد نوع السن بناءً على الرقم
-  const getToothType = (toothNum: string) => {
-    const num = parseInt(toothNum);
-    if ([1, 2, 7, 8, 9, 10, 15, 16, 23, 24, 25, 26, 31, 32].includes(num)) return 'incisor';
-    if ([3, 6, 11, 14, 19, 22, 27, 30].includes(num)) return 'canine';
-    if ([4, 5, 12, 13, 20, 21, 28, 29].includes(num)) return 'premolar';
-    return 'molar';
-  };
-
-  // تحميل النموذج GLB إذا كان متوفراً
-  let gltfScene = null;
-  try {
-    if (modelUrl) {
-      const gltf = useGLTF(modelUrl);
-      gltfScene = gltf.scene;
-    }
-  } catch (error) {
-    console.warn('Failed to load GLB model:', error);
-    gltfScene = null;
-  }
-
-  // إزالة الحركة التلقائية - النموذج ثابت الآن
-  // يمكن للمستخدم التحكم به يدوياً عبر OrbitControls
-
   const handleClick = (event: any) => {
     if (!editable) return;
     
     event.stopPropagation();
-    const point = event.point as Vector3;
-    onModelClick(point);
+    
+    // تحويل إحداثيات النقر إلى إحداثيات ثلاثية الأبعاد
+    const rect = gl.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+    
+    raycaster.setFromCamera(mouse, camera);
+    
+    if (meshRef.current) {
+      const intersects = raycaster.intersectObject(meshRef.current, true);
+      if (intersects.length > 0) {
+        const point = intersects[0].point;
+        onModelClick([point.x, point.y, point.z]);
+      }
+    }
   };
 
   return (
     <group onClick={handleClick}>
-      {gltfScene ? (
-        <primitive 
-          ref={meshRef}
-          object={gltfScene} 
-          scale={[1.5, 1.5, 1.5]}
-          position={[0, 0, 0]}
-          rotation={[0, 0, 0]}
+      {/* عرض النموذج المرفوع GLB أو النموذج الافتراضي */}
+      {modelUrl ? (
+        <GLBModelLoader 
+          modelUrl={modelUrl}
+          onLoad={() => console.log('GLB model loaded successfully')}
         />
       ) : (
         createDefaultToothGeometry()
@@ -296,15 +334,16 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
   const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'normal' | 'transparent' | 'wireframe'>('normal');
 
-  // جلب النموذج من قاعدة البيانات أو استخدام النموذج المرسل
+  // جلب بيانات النموذج الخاص بالسن
   const { data: modelData, isLoading: modelLoading, error: modelError } = useDentalModel({
     patientId,
     toothNumber,
-    numberingSystem
+    numberingSystem: numberingSystem || 'universal'
   });
 
-  const effectiveModelUrl = modelUrl || modelData?.modelUrl;
-  const effectiveAnnotations = modelData?.annotations || annotations;
+  // تحديد النموذج المستخدم
+  const currentModelUrl = modelData?.modelUrl || modelUrl;
+  const hasCustomModel = modelData?.type === 'patient' || (modelData?.type === 'default' && modelData?.modelUrl);
   
   // جلب التعليقات من قاعدة البيانات
   const { data: dbAnnotations } = useQuery({
@@ -343,10 +382,10 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
     setCurrentAnnotations(finalAnnotations);
   }, [JSON.stringify(finalAnnotations)]);
 
-  const handleModelClick = async (point: Vector3) => {
+  const handleModelClick = async (point: [number, number, number]) => {
     if (isAddingAnnotation) {
       const newAnnotation: Omit<ToothAnnotation, 'id'> = {
-        position: [point.x, point.y, point.z],
+        position: point,
         color: '#3b82f6',
         title: 'تعليق جديد',
         description: '',
@@ -371,9 +410,9 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
             patient_id: patientId,
             tooth_number: toothNumber,
             numbering_system: numberingSystem,
-            position_x: point.x,
-            position_y: point.y,
-            position_z: point.z,
+            position_x: point[0],
+            position_y: point[1],
+            position_z: point[2],
             color: newAnnotation.color,
             title: newAnnotation.title,
             description: newAnnotation.description,
@@ -412,32 +451,39 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
 
   const resetView = () => {
     // إعادة تعيين الكاميرا إلى الموضع الافتراضي
-    const controls = document.querySelector('canvas')?.parentElement?.querySelector('canvas');
-    if (controls) {
-      // محاولة إعادة تعيين الكاميرا
-      window.location.reload();
-    }
     toast.info('تم إعادة تعيين العرض');
   };
 
   return (
     <Card className="w-full h-[600px] flex flex-col">
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <Eye className="h-5 w-5" />
-            عارض السن ثلاثي الأبعاد - السن {toothNumber}
-          </CardTitle>
-          
-          <div className="flex items-center gap-2">
+        <CardTitle className="flex items-center justify-between">
+          <span>عارض السن ثلاثي الأبعاد - السن {toothNumber}</span>
+          <div className="flex gap-2">
+            <Badge variant="secondary">
+              {numberingSystem === 'universal' ? 'Universal' : 
+               numberingSystem === 'palmer' ? 'Palmer' : 'FDI'}
+            </Badge>
             <Badge variant="outline">
               {currentAnnotations.length} تعليق
             </Badge>
-            <Badge variant="secondary">
-              {patientId.slice(0, 8)}...
-            </Badge>
+            {hasCustomModel && (
+              <Badge variant="default" className="bg-green-100 text-green-800">
+                نموذج مرفوع
+              </Badge>
+            )}
+            {modelLoading && (
+              <Badge variant="secondary">
+                جاري التحميل...
+              </Badge>
+            )}
+            {modelError && (
+              <Badge variant="destructive">
+                خطأ في التحميل
+              </Badge>
+            )}
           </div>
-        </div>
+        </CardTitle>
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col">
@@ -445,13 +491,31 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
         {editable && (
           <div className="flex items-center gap-2 mb-4 p-2 bg-muted/50 rounded-lg">
             <Button
+              variant="outline"
               size="sm"
-              variant={isAddingAnnotation ? "default" : "outline"}
               onClick={() => setIsAddingAnnotation(!isAddingAnnotation)}
+              className={isAddingAnnotation ? 'bg-primary text-primary-foreground' : ''}
+              disabled={!editable}
             >
-              <Plus className="h-4 w-4 ml-1" />
+              <Plus className="h-4 w-4 ml-2" />
               إضافة تعليق
             </Button>
+            
+            {hasCustomModel && currentModelUrl && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = currentModelUrl;
+                  link.download = `tooth-${toothNumber}-model.glb`;
+                  link.click();
+                }}
+              >
+                <Download className="h-4 w-4 ml-2" />
+                تحميل النموذج
+              </Button>
+            )}
             
             <Button size="sm" variant="outline" onClick={resetView}>
               <RotateCcw className="h-4 w-4 ml-1" />
@@ -461,13 +525,6 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
             <Button size="sm" variant="outline" onClick={handleSave}>
               <Save className="h-4 w-4 ml-1" />
               حفظ
-            </Button>
-            
-            <div className="flex-1" />
-            
-            <Button size="sm" variant="outline">
-              <Download className="h-4 w-4 ml-1" />
-              تصدير
             </Button>
           </div>
         )}
@@ -481,51 +538,8 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
                 <p className="text-sm text-muted-foreground">جاري تحميل النموذج...</p>
               </div>
             </div>
-          ) : modelError ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <div className="text-center p-4">
-                <p className="text-sm text-destructive mb-2">خطأ في تحميل النموذج</p>
-                <p className="text-xs text-muted-foreground">سيتم استخدام النموذج الافتراضي</p>
-              </div>
-            </div>
           ) : (
             <Canvas className="w-full h-full" camera={{ position: [0, 0, 4], fov: 50 }}>
-              
-              {/* إضاءة محسنة لعرض أفضل */}
-              <ambientLight intensity={0.6} />
-              <directionalLight 
-                position={[5, 5, 5]} 
-                intensity={0.8}
-                castShadow
-                shadow-mapSize-width={2048}
-                shadow-mapSize-height={2048}
-              />
-              <directionalLight 
-                position={[-5, 5, 5]} 
-                intensity={0.4}
-              />
-              <pointLight position={[0, 0, 2]} intensity={0.3} />
-              
-              {/* تحكم محسن بالكاميرا - ثابت ومتمركز */}
-              <OrbitControls 
-                target={[0, 0, 0]}
-                enablePan={true}
-                enableZoom={true}
-                enableRotate={true}
-                enableDamping={true}
-                dampingFactor={0.05}
-                minDistance={1.5}
-                maxDistance={8}
-                minPolarAngle={0}
-                maxPolarAngle={Math.PI}
-                autoRotate={false}
-                autoRotateSpeed={0}
-                zoomSpeed={0.6}
-                panSpeed={0.5}
-                rotateSpeed={0.5}
-              />
-              
-              {/* النموذج */}
               <Suspense fallback={
                 <Html center>
                   <div className="text-center p-4">
@@ -534,20 +548,49 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
                   </div>
                 </Html>
               }>
+                {/* إضاءة محسنة لعرض أفضل */}
+                <ambientLight intensity={0.6} />
+                <directionalLight 
+                  position={[5, 5, 5]} 
+                  intensity={0.8}
+                  castShadow
+                />
+                <directionalLight 
+                  position={[-5, 5, 5]} 
+                  intensity={0.4}
+                />
+                <pointLight position={[0, 0, 2]} intensity={0.3} />
+                
+                {/* تحكم محسن بالكاميرا */}
+                <OrbitControls 
+                  target={[0, 0, 0]}
+                  enablePan={true}
+                  enableZoom={true}
+                  enableRotate={true}
+                  enableDamping={true}
+                  dampingFactor={0.05}
+                  minDistance={1.5}
+                  maxDistance={8}
+                  minPolarAngle={0}
+                  maxPolarAngle={Math.PI}
+                  autoRotate={false}
+                />
+                
+                {/* النموذج */}
                 <ToothModel
                   toothNumber={toothNumber}
-                  modelUrl={effectiveModelUrl}
+                  modelUrl={currentModelUrl}
                   annotations={currentAnnotations}
                   onModelClick={handleModelClick}
                   editable={editable}
                 />
+                
+                {/* خلفية */}
+                <mesh position={[0, 0, -5]}>
+                  <planeGeometry args={[20, 20]} />
+                  <meshBasicMaterial color="#f8fafc" transparent opacity={0.1} />
+                </mesh>
               </Suspense>
-              
-              {/* خلفية */}
-              <mesh position={[0, 0, -5]}>
-                <planeGeometry args={[20, 20]} />
-                <meshBasicMaterial color="#f8fafc" transparent opacity={0.1} />
-              </mesh>
             </Canvas>
           )}
           
