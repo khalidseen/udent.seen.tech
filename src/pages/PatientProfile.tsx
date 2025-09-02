@@ -252,19 +252,46 @@ const PatientProfile = () => {
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-200">
-                <Printer className="w-4 h-4 ml-2" />
-                طباعة التقرير
-              </Button>
-              <Button variant="outline" size="sm" onClick={handleEditPatient} className="hover:bg-orange-50 hover:border-orange-200">
-                <Edit className="w-4 h-4 ml-2" />
-                تعديل البيانات
-              </Button>
-              <Button size="sm" onClick={() => setTreatmentDialogOpen(true)} className="bg-gradient-to-r from-primary to-secondary shadow-lg hover:shadow-xl transition-all duration-300">
-                <Plus className="w-4 h-4 ml-2" />
-                إضافة علاج جديد
-              </Button>
+            <div className="flex items-center gap-6">
+              {/* Patient Stats */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-white/80 dark:bg-background/80 rounded-lg p-3 border shadow-sm text-center min-w-[100px]">
+                  <div className="text-xl font-bold text-blue-600">{patientStats.totalAppointments}</div>
+                  <div className="text-xs text-muted-foreground">إجمالي المواعيد</div>
+                </div>
+                
+                <div className="bg-white/80 dark:bg-background/80 rounded-lg p-3 border shadow-sm text-center min-w-[100px]">
+                  <div className="text-xl font-bold text-green-600">{patientStats.completedTreatments}</div>
+                  <div className="text-xs text-muted-foreground">العلاجات المكتملة</div>
+                </div>
+                
+                <div className="bg-white/80 dark:bg-background/80 rounded-lg p-3 border shadow-sm text-center min-w-[100px]">
+                  <div className="flex items-center justify-center gap-1 mb-1">
+                    <Heart className="h-4 w-4 text-green-600" />
+                    <span className="text-xl font-bold text-green-600">{patientStats.healthPercentage}%</span>
+                  </div>
+                  <div className="text-xs text-green-700 font-medium">جيد</div>
+                  <div className="text-xs text-muted-foreground">صحة الفم</div>
+                </div>
+              </div>
+
+              <div className="h-8 w-px bg-border mx-4"></div>
+              
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3">
+                <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-200">
+                  <Printer className="w-4 h-4 ml-2" />
+                  طباعة التقرير
+                </Button>
+                <Button variant="outline" size="sm" onClick={handleEditPatient} className="hover:bg-orange-50 hover:border-orange-200">
+                  <Edit className="w-4 h-4 ml-2" />
+                  تعديل البيانات
+                </Button>
+                <Button size="sm" onClick={() => setTreatmentDialogOpen(true)} className="bg-gradient-to-r from-primary to-secondary shadow-lg hover:shadow-xl transition-all duration-300">
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة علاج جديد
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -272,7 +299,7 @@ const PatientProfile = () => {
 
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
         {/* Premium Patient Header Card */}
-        <PatientHeader patient={patient} stats={patientStats} />
+        <PatientHeader patient={patient} />
 
         {/* Main Content Layout */}
         <Tabs defaultValue="dental-chart" className="w-full">

@@ -130,36 +130,6 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({ patient, stats }) 
               </div>
             )}
           </div>
-
-          {/* Stats Section */}
-          {stats && (
-            <div className="flex-shrink-0">
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-white/80 dark:bg-background/80 rounded-xl p-4 border shadow-sm text-center">
-                  <div className="text-2xl font-bold text-blue-600">{stats.totalAppointments}</div>
-                  <div className="text-xs text-muted-foreground">إجمالي المواعيد</div>
-                </div>
-                
-                <div className="bg-white/80 dark:bg-background/80 rounded-xl p-4 border shadow-sm text-center">
-                  <div className="text-2xl font-bold text-green-600">{stats.completedTreatments}</div>
-                  <div className="text-xs text-muted-foreground">العلاجات المكتملة</div>
-                </div>
-                
-                {healthStatus && (
-                  <div className="bg-white/80 dark:bg-background/80 rounded-xl p-4 border shadow-sm text-center lg:col-span-1 col-span-2">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Heart className={`h-5 w-5 ${healthStatus.textColor}`} />
-                      <span className="text-lg font-bold">{stats.healthPercentage}%</span>
-                    </div>
-                    <Badge variant="outline" className={`text-xs ${healthStatus.textColor} border-current`}>
-                      {healthStatus.label}
-                    </Badge>
-                    <div className="text-xs text-muted-foreground mt-1">صحة الفم</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Medical History Alert */}
