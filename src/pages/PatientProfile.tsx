@@ -231,118 +231,226 @@ const PatientProfile = () => {
   }
 
   return (
-    <PageContainer>
-      <div className="space-y-8">
-      {/* Modern Patient Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => window.history.back()}>
-            ← العودة
-          </Button>
-          <h1 className="text-2xl font-bold text-primary">ملف المريض الشامل</h1>
-        </div>
-        
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <Printer className="w-4 h-4 ml-1" />
-            طباعة
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleEditPatient}>
-            <Edit className="w-4 h-4 ml-1" />
-            تعديل
-          </Button>
-          <Button size="sm" onClick={() => setTreatmentDialogOpen(true)}>
-            <Plus className="w-4 h-4 ml-1" />
-            إضافة علاج
-          </Button>
-          
-          <AddTreatmentDialog
-            open={treatmentDialogOpen}
-            onOpenChange={setTreatmentDialogOpen}
-            patientId={patient.id}
-            patientName={patient.full_name}
-            onTreatmentAdded={() => setTreatmentDialogOpen(false)}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/30 dark:from-background dark:via-background dark:to-background">
+      {/* Premium Header */}
+      <div className="bg-white/80 dark:bg-background/80 backdrop-blur-sm border-b border-primary/10 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="hover:bg-primary/10">
+                ← المرضى
+              </Button>
+              <div className="h-8 w-px bg-border"></div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center text-white font-bold">
+                  {patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-foreground">{patient.full_name}</h1>
+                  <p className="text-sm text-muted-foreground">معرف المريض: #{patient.id.slice(0, 8)}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-200">
+                <Printer className="w-4 h-4 ml-2" />
+                طباعة التقرير
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleEditPatient} className="hover:bg-orange-50 hover:border-orange-200">
+                <Edit className="w-4 h-4 ml-2" />
+                تعديل البيانات
+              </Button>
+              <Button size="sm" onClick={() => setTreatmentDialogOpen(true)} className="bg-gradient-to-r from-primary to-secondary shadow-lg hover:shadow-xl transition-all duration-300">
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة علاج جديد
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Enhanced Patient Header */}
-      <PatientHeader patient={patient} stats={patientStats} />
+      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+        {/* Premium Patient Header Card */}
+        <PatientHeader patient={patient} stats={patientStats} />
 
-      {/* Health Overview Dashboard */}
-      <OralHealthDashboard patientId={patient.id} onStatUpdate={fetchPatientStats} />
+        {/* Main Content Layout */}
+        <Tabs defaultValue="dental-chart" className="w-full">
+          <div className="grid grid-cols-12 gap-8">
+            {/* Left Column - Navigation Sidebar */}
+            <div className="col-span-3">
+              <Card className="bg-white/90 dark:bg-card/90 backdrop-blur-sm shadow-xl border-0 sticky top-24">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Heart className="w-5 h-5 text-primary" />
+                    أقسام الملف الطبي
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <TabsList className="grid w-full grid-cols-1 h-auto bg-transparent space-y-2">
+                    <TabsTrigger value="dental-chart" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white hover:bg-primary/10 transition-all duration-200">
+                      <Heart className="w-4 h-4" />
+                      مخطط الأسنان التفاعلي
+                    </TabsTrigger>
+                    <TabsTrigger value="overview" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-blue-500 data-[state=active]:text-white hover:bg-green-500/10 transition-all duration-200">
+                      <Activity className="w-4 h-4" />
+                      نظرة عامة على الصحة
+                    </TabsTrigger>
+                    <TabsTrigger value="prescriptions" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white hover:bg-purple-500/10 transition-all duration-200">
+                      <Stethoscope className="w-4 h-4" />
+                      الوصفات الطبية
+                    </TabsTrigger>
+                    <TabsTrigger value="images" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white hover:bg-indigo-500/10 transition-all duration-200">
+                      <Image className="w-4 h-4" />
+                      الأشعة والصور
+                    </TabsTrigger>
+                    <TabsTrigger value="appointments" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white hover:bg-orange-500/10 transition-all duration-200">
+                      <Calendar className="w-4 h-4" />
+                      تقويم المواعيد
+                    </TabsTrigger>
+                    <TabsTrigger value="financial" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white hover:bg-emerald-500/10 transition-all duration-200">
+                      <CreditCard className="w-4 h-4" />
+                      الحالة المالية
+                    </TabsTrigger>
+                  </TabsList>
+                </CardContent>
+              </Card>
+            </div>
 
-      {/* Enhanced Patient Details Tabs */}
-      <Tabs defaultValue="prescriptions" className="w-full">
-        <TabsList className="grid w-full grid-cols-6 h-12">
-          <TabsTrigger value="prescriptions" className="flex items-center gap-2 text-sm">
-            <Stethoscope className="w-4 h-4" />
-            الوصفات الطبية
-          </TabsTrigger>
-          <TabsTrigger value="financial-status" className="flex items-center gap-2 text-sm">
-            <CreditCard className="w-4 h-4" />
-            الحالة المالية
-          </TabsTrigger>
-          <TabsTrigger value="dental-status" className="flex items-center gap-2 text-sm">
-            <Heart className="w-4 h-4" />
-            حالة الأسنان
-          </TabsTrigger>
-          <TabsTrigger value="images" className="flex items-center gap-2 text-sm">
-            <Image className="w-4 h-4" />
-            الصور الطبية
-          </TabsTrigger>
-          <TabsTrigger value="appointments" className="flex items-center gap-2 text-sm">
-            <Calendar className="w-4 h-4" />
-            المواعيد
-          </TabsTrigger>
-          <TabsTrigger value="timeline" className="flex items-center gap-2 text-sm">
-            <Activity className="w-4 h-4" />
-            الخط الزمني
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="prescriptions" className="mt-8">
-          <PatientPrescriptionSection 
-            patientId={patient.id} 
-            patientData={{
-              full_name: patient.full_name,
-              date_of_birth: patient.date_of_birth,
-              phone: patient.phone
-            }}
-          />
-        </TabsContent>
-        
-        <TabsContent value="financial-status" className="mt-8">
-          <PatientFinancialStatus 
-            patientId={patient.id} 
-            patientName={patient.full_name}
-          />
-        </TabsContent>
-        
-        <TabsContent value="dental-status" className="mt-8">
-          <Enhanced3DToothChart 
-            patientId={patient.id} 
-            onToothSelect={handleToothSelect}
-            selectedTooth={selectedTooth}
-            numberingSystem={selectedToothSystem}
-          />
-        </TabsContent>
-        
-        <TabsContent value="images" className="mt-8">
-          <PatientImageGallery patientId={patient.id} />
-        </TabsContent>
-        
-        <TabsContent value="appointments" className="mt-8">
-          <PatientAppointmentCalendar 
-            patientId={patient.id} 
-            patientName={patient.full_name}
-          />
-        </TabsContent>
-        
-        <TabsContent value="timeline" className="mt-8">
-          <PatientTimeline patientId={patient.id} />
-        </TabsContent>
-      </Tabs>
+            {/* Right Column - Main Content Area */}
+            <div className="col-span-9">
+              <TabsContent value="dental-chart" className="mt-0">
+                <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-t-lg">
+                    <CardTitle className="text-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                        <Heart className="w-4 h-4 text-primary" />
+                      </div>
+                      مخطط الأسنان التفاعلي ثلاثي الأبعاد
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <Enhanced3DToothChart 
+                      patientId={patient.id} 
+                      onToothSelect={handleToothSelect}
+                      selectedTooth={selectedTooth}
+                      numberingSystem={selectedToothSystem}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="overview" className="mt-0">
+                <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-t-lg">
+                    <CardTitle className="text-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
+                        <Activity className="w-4 h-4 text-green-600" />
+                      </div>
+                      لوحة معلومات الصحة الفموية الشاملة
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <OralHealthDashboard patientId={patient.id} onStatUpdate={fetchPatientStats} />
+                    <div className="mt-8 pt-8 border-t border-border/50">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Activity className="w-5 h-5 text-primary" />
+                        الخط الزمني للعلاجات
+                      </h3>
+                      <PatientTimeline patientId={patient.id} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="prescriptions" className="mt-0">
+                <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-t-lg">
+                    <CardTitle className="text-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                        <Stethoscope className="w-4 h-4 text-purple-600" />
+                      </div>
+                      الوصفات الطبية والأدوية
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <PatientPrescriptionSection 
+                      patientId={patient.id} 
+                      patientData={{
+                        full_name: patient.full_name,
+                        date_of_birth: patient.date_of_birth,
+                        phone: patient.phone
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="images" className="mt-0">
+                <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 rounded-t-lg">
+                    <CardTitle className="text-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
+                        <Image className="w-4 h-4 text-indigo-600" />
+                      </div>
+                      معرض الصور الطبية والأشعة
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <PatientImageGallery patientId={patient.id} />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="appointments" className="mt-0">
+                <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-t-lg">
+                    <CardTitle className="text-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-orange-600" />
+                      </div>
+                      تقويم المواعيد والجلسات
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <PatientAppointmentCalendar 
+                      patientId={patient.id} 
+                      patientName={patient.full_name}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="financial" className="mt-0">
+                <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-t-lg">
+                    <CardTitle className="text-xl flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                        <CreditCard className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      الحالة المالية والفواتير
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <PatientFinancialStatus 
+                      patientId={patient.id} 
+                      patientName={patient.full_name}
+                    />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </div>
+          </div>
+        </Tabs>
+      </div>
+
+      <AddTreatmentDialog
+        open={treatmentDialogOpen}
+        onOpenChange={setTreatmentDialogOpen}
+        patientId={patient.id}
+        patientName={patient.full_name}
+        onTreatmentAdded={() => setTreatmentDialogOpen(false)}
+      />
 
       {/* Edit Patient Dialog */}
       <Dialog open={editMode} onOpenChange={setEditMode}>
@@ -452,8 +560,7 @@ const PatientProfile = () => {
           )}
         </DialogContent>
       </Dialog>
-      </div>
-    </PageContainer>
+    </div>
   );
 };
 
