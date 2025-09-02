@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Bell, Moon, Sun, User, ChevronDown } from "lucide-react";
+import { Bell, Moon, Sun, User, ChevronDown, Plus, Minus, RotateCcw } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,29 @@ export function TopNavbar() {
   const { user, signOut } = useAuth();
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [zoomLevel, setZoomLevel] = useState(100);
+
+  // Zoom control functions
+  const handleZoomIn = () => {
+    const newZoom = Math.min(zoomLevel + 10, 200);
+    setZoomLevel(newZoom);
+    document.body.style.zoom = `${newZoom}%`;
+  };
+
+  const handleZoomOut = () => {
+    const newZoom = Math.max(zoomLevel - 10, 50);
+    setZoomLevel(newZoom);
+    document.body.style.zoom = `${newZoom}%`;
+  };
+
+  const handleZoomReset = () => {
+    setZoomLevel(100);
+    document.body.style.zoom = "100%";
+  };
+
+  const handleRefresh = () => {
+    window.location.reload();
+  };
 
   // Fetch user profile
   useEffect(() => {
@@ -123,6 +146,49 @@ export function TopNavbar() {
       {/* Right side actions */}
       <div className="flex items-center gap-2">
         <ClinicSwitcher />
+        
+        {/* Zoom Controls */}
+        <div className="flex items-center gap-1 bg-secondary/50 rounded-md p-1">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleZoomIn}
+            className="h-7 w-7 hover:bg-background"
+            title="تكبير"
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={handleZoomReset}
+            className="h-7 px-2 text-xs hover:bg-background"
+            title="إعادة تعيين التكبير"
+          >
+            عادي
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleZoomOut}
+            className="h-7 w-7 hover:bg-background"
+            title="تصغير"
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+          
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleRefresh}
+            className="h-7 w-7 hover:bg-background"
+            title="تحديث الصفحة"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
+        </div>
         
         {/* Upcoming Appointments Notifications */}
         <DropdownMenu>
