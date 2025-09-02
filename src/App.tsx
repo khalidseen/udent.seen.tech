@@ -39,6 +39,7 @@ import Treatments from "@/pages/Treatments";
 import Advanced3DDental from "@/pages/Advanced3DDental";
 import DentalModelsAdmin from "@/pages/DentalModelsAdmin";
 import Advanced3DDentalEditor from "@/pages/Advanced3DDentalEditor";
+import AdvancedToothEditor from "@/pages/AdvancedToothEditor";
 import Notifications from "@/pages/Notifications";
 import NotificationTemplates from "@/pages/NotificationTemplates";
 import Reports from "@/pages/Reports";
@@ -147,6 +148,7 @@ function App() {
                      <Route path="advanced-3d-dental" element={<Advanced3DDental />} />
                      <Route path="dental-models-admin" element={<DentalModelsAdmin />} />
                      <Route path="advanced-3d-dental-editor/:patientId/:toothNumber" element={<Advanced3DDentalEditor />} />
+                     <Route path="advanced-tooth-editor/:patientId/:toothNumber" element={<AdvancedToothEditor />} />
                      <Route path="notifications" element={<Notifications />} />
                     <Route path="notification-templates" element={<NotificationTemplates />} />
                     <Route path="reports" element={<Reports />} />

@@ -9,6 +9,7 @@ import ToothChart from './ToothChart';
 import { Enhanced3DToothViewer } from './Enhanced3DToothViewer';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { Eye, Maximize2 } from 'lucide-react';
 
 interface Enhanced3DToothChartProps {
   patientId?: string;
@@ -298,19 +299,44 @@ const Enhanced3DToothChart = ({
             </div>
           )}
 
-          {/* Selected Tooth Info */}
-          {selectedTooth && (
-            <div className="mt-4 text-center">
-              <Badge variant="secondary" className="text-sm">
-                السن المحدد: {selectedTooth}
-                {annotationsCounts?.[selectedTooth] && (
-                  <span className="ml-2">
-                    ({annotationsCounts[selectedTooth].total} تعليق)
-                  </span>
+            {/* Selected Tooth Info */}
+            {selectedTooth && (
+              <div className="mt-4 text-center space-y-2">
+                <Badge variant="secondary" className="text-sm">
+                  السن المحدد: {selectedTooth}
+                  {annotationsCounts?.[selectedTooth] && (
+                    <span className="ml-2">
+                      ({annotationsCounts[selectedTooth].total} تعليق)
+                    </span>
+                  )}
+                </Badge>
+                
+                {/* زر فتح المحرر المتطور */}
+                {patientId && (
+                  <div className="flex justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIs3DDialogOpen(true)}
+                    >
+                      <Eye className="h-4 w-4 ml-2" />
+                      عرض سريع
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        // فتح في نفس التبويب للحصول على تجربة ملء الشاشة الكاملة
+                        window.location.href = `/advanced-tooth-editor/${patientId}/${selectedTooth}`;
+                      }}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      <Maximize2 className="h-4 w-4 ml-2" />
+                      محرر عالمي متطور
+                    </Button>
+                  </div>
                 )}
-              </Badge>
-            </div>
-          )}
+              </div>
+            )}
         </CardContent>
       </Card>
 
