@@ -325,6 +325,50 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
             </>
           )}
         </Button>
+        
+        {/* زر تشخيص للتحقق من الصلاحيات */}
+        <Button
+          variant="outline"
+          onClick={async () => {
+            try {
+              const { data: { user }, error: authError } = await supabase.auth.getUser();
+              if (authError) {
+                toast.error(`خطأ في المصادقة: ${authError.message}`);
+                return;
+              }
+              
+              if (!user) {
+                toast.error('المستخدم غير مصادق عليه');
+                return;
+              }
+              
+              console.log('Current user:', user);
+              
+              // التحقق من بيانات الملف الشخصي
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+                
+              if (profileError) {
+                console.error('Profile error:', profileError);
+                toast.error(`خطأ في جلب الملف الشخصي: ${profileError.message}`);
+                return;
+              }
+              
+              console.log('User profile:', profile);
+              toast.success(`المستخدم: ${user.email}, الدور: ${profile?.role || 'غير محدد'}`);
+              
+            } catch (error: any) {
+              console.error('Debug error:', error);
+              toast.error(`خطأ في التشخيص: ${error.message}`);
+            }
+          }}
+          className="w-full"
+        >
+          تحقق من الصلاحيات
+        </Button>
       </CardContent>
     </Card>
   );
