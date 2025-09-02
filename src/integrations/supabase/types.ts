@@ -368,6 +368,45 @@ export type Database = {
           },
         ]
       }
+      dental_3d_models: {
+        Row: {
+          created_at: string
+          file_size: number | null
+          id: string
+          is_active: boolean
+          model_name: string
+          model_path: string
+          model_type: string
+          numbering_system: string
+          tooth_number: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          file_size?: number | null
+          id?: string
+          is_active?: boolean
+          model_name: string
+          model_path: string
+          model_type?: string
+          numbering_system?: string
+          tooth_number: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          file_size?: number | null
+          id?: string
+          is_active?: boolean
+          model_name?: string
+          model_path?: string
+          model_type?: string
+          numbering_system?: string
+          tooth_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       dental_treatments: {
         Row: {
           assigned_doctor_id: string | null
@@ -1123,6 +1162,45 @@ export type Database = {
           status?: string
           title?: string
           type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      patient_dental_models: {
+        Row: {
+          annotations: Json | null
+          created_at: string
+          created_by: string | null
+          id: string
+          model_path: string
+          modifications: Json | null
+          numbering_system: string
+          patient_id: string
+          tooth_number: string
+          updated_at: string
+        }
+        Insert: {
+          annotations?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          model_path: string
+          modifications?: Json | null
+          numbering_system?: string
+          patient_id: string
+          tooth_number: string
+          updated_at?: string
+        }
+        Update: {
+          annotations?: Json | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          model_path?: string
+          modifications?: Json | null
+          numbering_system?: string
+          patient_id?: string
+          tooth_number?: string
           updated_at?: string
         }
         Relationships: []
