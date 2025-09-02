@@ -7,9 +7,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import ToothChart from './ToothChart';
 import { Enhanced3DToothViewer } from './Enhanced3DToothViewer';
+import { Advanced3DToothEditorModal } from './Advanced3DToothEditorModal';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Eye, Maximize2 } from 'lucide-react';
+import { Eye, Maximize2, Edit3 } from 'lucide-react';
 
 interface Enhanced3DToothChartProps {
   patientId?: string;
@@ -27,6 +28,7 @@ const Enhanced3DToothChart = ({
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('2d');
   const [selected3DTooth, setSelected3DTooth] = useState<string | null>(null);
   const [is3DDialogOpen, setIs3DDialogOpen] = useState(false);
+  const [isAdvancedEditorOpen, setIsAdvancedEditorOpen] = useState(false);
 
   // Fetch annotations count for each tooth
   const { data: annotationsCounts } = useQuery({
@@ -323,6 +325,15 @@ const Enhanced3DToothChart = ({
                       عرض سريع
                     </Button>
                     <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsAdvancedEditorOpen(true)}
+                      className="border-blue-200 text-blue-700 hover:bg-blue-50"
+                    >
+                      <Edit3 className="h-4 w-4 ml-2" />
+                      محرر متقدم
+                    </Button>
+                    <Button
                       size="sm"
                       onClick={() => {
                         // فتح في نفس التبويب للحصول على تجربة ملء الشاشة الكاملة
@@ -331,7 +342,7 @@ const Enhanced3DToothChart = ({
                       className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       <Maximize2 className="h-4 w-4 ml-2" />
-                      محرر عالمي متطور
+                      ملء الشاشة
                     </Button>
                   </div>
                 )}
@@ -365,6 +376,21 @@ const Enhanced3DToothChart = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Advanced 3D Tooth Editor Modal */}
+      {selectedTooth && (
+        <Advanced3DToothEditorModal
+          isOpen={isAdvancedEditorOpen}
+          onClose={() => setIsAdvancedEditorOpen(false)}
+          toothNumber={selectedTooth}
+          patientId={patientId || ''}
+          numberingSystem={numberingSystem}
+          onSave={(data) => {
+            console.log('Saving advanced editor data:', data);
+            // يمكن إضافة منطق الحفظ هنا
+          }}
+        />
+      )}
     </div>
   );
 };

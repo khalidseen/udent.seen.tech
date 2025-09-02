@@ -130,18 +130,49 @@ const MolarModel = () => (
   </group>
 );
 
-// GLB Model Loader Component
-const GLBModelLoader = ({ modelUrl, onLoad }: { modelUrl: string; onLoad?: () => void }) => {
+// GLB Model Loader Component with proper error handling
+const GLBModelLoader = ({ modelUrl, onLoad, onError }: { 
+  modelUrl: string; 
+  onLoad?: () => void;
+  onError?: (error: any) => void;
+}) => {
+  const [loadError, setLoadError] = useState<string | null>(null);
+  
   try {
-    const { scene } = useGLTF(modelUrl);
+    const gltf = useGLTF(modelUrl);
     
     useEffect(() => {
-      if (scene && onLoad) {
+      if (gltf?.scene && onLoad && !loadError) {
         onLoad();
       }
-    }, [scene, onLoad]);
+    }, [gltf, onLoad, loadError]);
 
-    if (!scene) {
+    if (loadError) {
+      return (
+        <group>
+          <Text
+            position={[0, 0.5, 0]}
+            fontSize={0.15}
+            color="red"
+            anchorX="center"
+            anchorY="middle"
+          >
+            {loadError}
+          </Text>
+          <Text
+            position={[0, 0, 0]}
+            fontSize={0.1}
+            color="gray"
+            anchorX="center"
+            anchorY="middle"
+          >
+            سيتم عرض النموذج الافتراضي
+          </Text>
+        </group>
+      );
+    }
+
+    if (!gltf?.scene) {
       return (
         <Text
           position={[0, 0, 0]}
@@ -155,13 +186,20 @@ const GLBModelLoader = ({ modelUrl, onLoad }: { modelUrl: string; onLoad?: () =>
       );
     }
 
-    return <primitive object={scene.clone()} scale={[1.5, 1.5, 1.5]} position={[0, 0, 0]} />;
+    return (
+      <primitive 
+        object={gltf.scene.clone()} 
+        scale={[1.5, 1.5, 1.5]} 
+        position={[0, 0, 0]} 
+      />
+    );
   } catch (error) {
     console.error('Error loading GLB model:', error);
+    onError?.(error);
     return (
       <Text
         position={[0, 0, 0]}
-        fontSize={0.2}
+        fontSize={0.15}
         color="red"
         anchorX="center"
         anchorY="middle"
@@ -182,6 +220,8 @@ const ToothModel: React.FC<{
 }> = ({ toothNumber, modelUrl, annotations, onModelClick, editable }) => {
   const meshRef = useRef<any>(null);
   const { camera, raycaster, mouse, gl } = useThree();
+  const [modelLoadError, setModelLoadError] = useState(false);
+  const [showFallback, setShowFallback] = useState(false);
   
   // تحديد نوع السن بناءً على الرقم
   const getToothType = (toothNum: string) => {
@@ -230,10 +270,18 @@ const ToothModel: React.FC<{
   return (
     <group onClick={handleClick}>
       {/* عرض النموذج المرفوع GLB أو النموذج الافتراضي */}
-      {modelUrl ? (
+      {modelUrl && !modelLoadError && !showFallback ? (
         <GLBModelLoader 
           modelUrl={modelUrl}
-          onLoad={() => console.log('GLB model loaded successfully')}
+          onLoad={() => {
+            console.log('GLB model loaded successfully');
+            setModelLoadError(false);
+          }}
+          onError={(error) => {
+            console.error('GLB model failed to load:', error);
+            setModelLoadError(true);
+            setShowFallback(true);
+          }}
         />
       ) : (
         createDefaultToothGeometry()
@@ -333,6 +381,7 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
   const [isAddingAnnotation, setIsAddingAnnotation] = useState(false);
   const [selectedAnnotation, setSelectedAnnotation] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'normal' | 'transparent' | 'wireframe'>('normal');
+  const [modelLoadError, setModelLoadError] = useState(false);
 
   // جلب بيانات النموذج الخاص بالسن
   const { data: modelData, isLoading: modelLoading, error: modelError } = useDentalModel({
@@ -469,7 +518,7 @@ export const Enhanced3DToothViewer: React.FC<Enhanced3DToothViewerProps> = ({
             </Badge>
             {hasCustomModel && (
               <Badge variant="default" className="bg-green-100 text-green-800">
-                نموذج مرفوع
+                {modelLoadError ? 'نموذج مرفوع (خطأ)' : 'نموذج مرفوع'}
               </Badge>
             )}
             {modelLoading && (
