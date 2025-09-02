@@ -56,6 +56,14 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
     setUploadProgress(0);
 
     try {
+      // التحقق من حالة المصادقة
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        throw new Error('المستخدم غير مصادق عليه. يرجى تسجيل الدخول مرة أخرى');
+      }
+
+      console.log('User authenticated:', user.id);
+      
       // تحديد مسار الملف
       const folderPath = uploadType === 'default' 
         ? `default-models/${numberingSystem}`
@@ -63,6 +71,8 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
       
       const fileName = `tooth-${toothNumber}.glb`;
       const filePath = `${folderPath}/${fileName}`;
+
+      console.log('Uploading to path:', filePath);
 
       // رفع الملف إلى Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -73,9 +83,11 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
         });
 
       if (uploadError) {
+        console.error('Storage upload error:', uploadError);
         throw uploadError;
       }
 
+      console.log('File uploaded successfully:', uploadData);
       setUploadProgress(50);
 
       // الحصول على URL العام
@@ -83,6 +95,7 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
         .from('dental-3d-models')
         .getPublicUrl(filePath);
 
+      console.log('Public URL generated:', publicUrl);
       setUploadProgress(75);
 
       // إدراج البيانات في قاعدة البيانات
@@ -100,7 +113,11 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
             onConflict: 'tooth_number,numbering_system,model_type'
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Database insert error:', error);
+          throw error;
+        }
+        console.log('Database record created:', data);
       } else {
         const { data, error } = await supabase
           .from('patient_dental_models')
@@ -113,7 +130,11 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
             onConflict: 'patient_id,tooth_number,numbering_system'
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Database insert error:', error);
+          throw error;
+        }
+        console.log('Patient model record created:', data);
       }
 
       setUploadProgress(100);
@@ -134,7 +155,19 @@ export const GLBModelUploader: React.FC<GLBModelUploaderProps> = ({
 
     } catch (error: any) {
       console.error('Error uploading model:', error);
-      toast.error(`خطأ في رفع النموذج: ${error.message}`);
+      
+      // تحديد نوع الخطأ وإظهار رسالة مناسبة
+      let errorMessage = 'خطأ في رفع النموذج';
+      
+      if (error.message?.includes('row-level security')) {
+        errorMessage = 'خطأ في الصلاحيات. يرجى التأكد من تسجيل الدخول والمحاولة مرة أخرى';
+      } else if (error.message?.includes('not authenticated')) {
+        errorMessage = 'غير مصادق عليه. يرجى تسجيل الدخول مرة أخرى';
+      } else if (error.message) {
+        errorMessage = `خطأ في رفع النموذج: ${error.message}`;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
       setUploadProgress(0);
