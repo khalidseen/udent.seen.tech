@@ -44,10 +44,10 @@ export function PatientMedicalSectionsDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-7xl w-[95vw] h-[90vh] p-0 overflow-hidden">
-        <DialogHeader className="px-6 py-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5">
+      <DialogContent className="w-[100vw] h-[100vh] max-w-none max-h-none p-0 overflow-hidden rounded-none border-0 m-0">
+        <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b bg-gradient-to-r from-primary/5 to-secondary/5 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+            <DialogTitle className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
               الملف الطبي - {patientName}
             </DialogTitle>
             <Button
@@ -63,34 +63,40 @@ export function PatientMedicalSectionsDialog({
 
         <div className="flex-1 overflow-hidden">
           <Tabs defaultValue={initialSection} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-6 mx-6 mt-4 mb-0 bg-muted/50">
-              <TabsTrigger value="overview" className="flex items-center gap-2">
-                <Heart className="h-4 w-4" />
-                نظرة عامة
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 mx-2 sm:mx-6 mt-2 sm:mt-4 mb-0 bg-muted/50 gap-1">
+              <TabsTrigger value="overview" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
+                <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">نظرة عامة</span>
+                <span className="sm:hidden">نظرة</span>
               </TabsTrigger>
-              <TabsTrigger value="dental" className="flex items-center gap-2">
-                <Smile className="h-4 w-4" />
-                مخطط الأسنان
+              <TabsTrigger value="dental" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
+                <Smile className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">مخطط الأسنان</span>
+                <span className="sm:hidden">أسنان</span>
               </TabsTrigger>
-              <TabsTrigger value="prescriptions" className="flex items-center gap-2">
-                <Pill className="h-4 w-4" />
-                الوصفات
+              <TabsTrigger value="prescriptions" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
+                <Pill className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">الوصفات</span>
+                <span className="sm:hidden">وصفات</span>
               </TabsTrigger>
-              <TabsTrigger value="images" className="flex items-center gap-2">
-                <Camera className="h-4 w-4" />
-                الأشعة والصور
+              <TabsTrigger value="images" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
+                <Camera className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">الأشعة والصور</span>
+                <span className="sm:hidden">أشعة</span>
               </TabsTrigger>
-              <TabsTrigger value="appointments" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                المواعيد
+              <TabsTrigger value="appointments" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">المواعيد</span>
+                <span className="sm:hidden">مواعيد</span>
               </TabsTrigger>
-              <TabsTrigger value="financial" className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                الحالة المالية
+              <TabsTrigger value="financial" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
+                <DollarSign className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">الحالة المالية</span>
+                <span className="sm:hidden">مالية</span>
               </TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 overflow-auto p-6">
+            <div className="flex-1 overflow-auto p-2 sm:p-4 lg:p-6">
               <TabsContent value="overview" className="h-full m-0">
                 <OralHealthDashboard patientId={patientId} />
               </TabsContent>
