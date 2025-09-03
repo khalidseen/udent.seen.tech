@@ -56,6 +56,12 @@ export function TopNavbar() {
     document.body.style.zoom = "100%";
   };
 
+  const getZoomText = () => {
+    if (zoomLevel < 90) return "صغير";
+    if (zoomLevel > 110) return "كبير";
+    return "عادي";
+  };
+
   const handleRefresh = () => {
     window.location.reload();
   };
@@ -166,7 +172,7 @@ export function TopNavbar() {
             className="h-7 px-2 text-xs hover:bg-background"
             title="إعادة تعيين التكبير"
           >
-            عادي
+            {getZoomText()}
           </Button>
           
           <Button 
