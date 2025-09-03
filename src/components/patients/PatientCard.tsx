@@ -1,8 +1,22 @@
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Eye, Activity, Edit, MessageCircle, Phone, DollarSign } from "lucide-react";
+import { 
+  Eye, 
+  Activity, 
+  Edit, 
+  MessageCircle, 
+  Phone, 
+  DollarSign,
+  Smile,
+  Heart,
+  Pill,
+  Camera,
+  Calendar
+} from "lucide-react";
 import { Link } from "react-router-dom";
+import PatientMedicalSectionsDialog from "./PatientMedicalSectionsDialog";
 
 interface PatientCardProps {
   patient: {
@@ -20,6 +34,8 @@ interface PatientCardProps {
 }
 
 const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProps) => {
+  const [medicalDialogOpen, setMedicalDialogOpen] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<'dental' | 'overview' | 'prescriptions' | 'images' | 'appointments' | 'financial'>('overview');
   const getFinancialStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
@@ -51,6 +67,11 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
       const encodedMessage = encodeURIComponent(message);
       window.open(`https://wa.me/${cleanPhone}?text=${encodedMessage}`, '_blank');
     }
+  };
+
+  const handleSectionClick = (section: 'dental' | 'overview' | 'prescriptions' | 'images' | 'appointments' | 'financial') => {
+    setSelectedSection(section);
+    setMedicalDialogOpen(true);
   };
 
   return (
@@ -131,6 +152,104 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
             )}
           </div>
 
+          {/* Medical File Sections Icons */}
+          <div className="space-y-3 pt-4 border-t border-border/40">
+            <p className="text-xs text-muted-foreground font-medium">أقسام الملف الطبي</p>
+            <div className="grid grid-cols-3 gap-2">
+              {/* Row 1 */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10 hover:text-primary group"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSectionClick('dental');
+                }}
+                title="مخطط الأسنان التفاعلي"
+              >
+                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="text-xs">الأسنان</span>
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-green-500/10 hover:text-green-600 group"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSectionClick('overview');
+                }}
+                title="نظرة عامة على الصحة"
+              >
+                <Heart className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="text-xs">الصحة</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-blue-500/10 hover:text-blue-600 group"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSectionClick('prescriptions');
+                }}
+                title="الوصفات الطبية"
+              >
+                <Pill className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="text-xs">الوصفات</span>
+              </Button>
+
+              {/* Row 2 */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-purple-500/10 hover:text-purple-600 group"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSectionClick('images');
+                }}
+                title="الأشعة والصور"
+              >
+                <Camera className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="text-xs">الأشعة</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-orange-500/10 hover:text-orange-600 group"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSectionClick('appointments');
+                }}
+                title="تقويم المواعيد"
+              >
+                <Calendar className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="text-xs">المواعيد</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-yellow-500/10 hover:text-yellow-600 group"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSectionClick('financial');
+                }}
+                title="الحالة المالية"
+              >
+                <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span className="text-xs">المالية</span>
+              </Button>
+            </div>
+          </div>
+
           {/* Footer Section */}
           <div className="pt-4 border-t border-border/40 mt-auto">
             {patient.phone && (
@@ -151,6 +270,15 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
           </div>
         </CardContent>
       </Link>
+
+      {/* Medical Sections Dialog */}
+      <PatientMedicalSectionsDialog
+        open={medicalDialogOpen}
+        onOpenChange={setMedicalDialogOpen}
+        patientId={patient.id}
+        patientName={patient.full_name}
+        initialSection={selectedSection}
+      />
     </Card>
   );
 };
