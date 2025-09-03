@@ -335,51 +335,42 @@ const PatientProfile = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-        {/* Main Content Layout */}
+        {/* Medical File Sections Tabs */}
         <Tabs defaultValue="dental-chart" className="w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-            {/* Right Column - Navigation Sidebar (Medical File) */}
-            <div className="lg:col-span-3 lg:order-2">
-              <Card className="bg-white/90 dark:bg-card/90 backdrop-blur-sm shadow-xl border-0 sticky top-24">
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-primary" />
-                    أقسام الملف الطبي
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <TabsList className="grid w-full grid-cols-1 h-auto bg-transparent space-y-2">
-                    <TabsTrigger value="dental-chart" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white hover:bg-primary/10 transition-all duration-200">
-                      <Heart className="w-4 h-4" />
-                      مخطط الأسنان التفاعلي
-                    </TabsTrigger>
-                    <TabsTrigger value="overview" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-blue-500 data-[state=active]:text-white hover:bg-green-500/10 transition-all duration-200">
-                      <Activity className="w-4 h-4" />
-                      نظرة عامة على الصحة
-                    </TabsTrigger>
-                    <TabsTrigger value="prescriptions" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white hover:bg-purple-500/10 transition-all duration-200">
-                      <Stethoscope className="w-4 h-4" />
-                      الوصفات الطبية
-                    </TabsTrigger>
-                    <TabsTrigger value="images" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white hover:bg-indigo-500/10 transition-all duration-200">
-                      <Image className="w-4 h-4" />
-                      الأشعة والصور
-                    </TabsTrigger>
-                    <TabsTrigger value="appointments" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white hover:bg-orange-500/10 transition-all duration-200">
-                      <Calendar className="w-4 h-4" />
-                      تقويم المواعيد
-                    </TabsTrigger>
-                    <TabsTrigger value="financial" className="w-full justify-start gap-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white hover:bg-emerald-500/10 transition-all duration-200">
-                      <CreditCard className="w-4 h-4" />
-                      الحالة المالية
-                    </TabsTrigger>
-                  </TabsList>
-                </CardContent>
-              </Card>
+          {/* Responsive Tabs Navigation */}
+          <div className="mb-8">
+            <div className="bg-white/90 dark:bg-card/90 backdrop-blur-sm shadow-xl border-0 rounded-2xl p-2">
+              <TabsList className="grid w-full h-auto bg-transparent p-0 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                <TabsTrigger value="dental-chart" className="flex flex-col sm:flex-row items-center gap-2 p-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white hover:bg-primary/10 transition-all duration-200 rounded-xl">
+                  <Heart className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-center">مخطط الأسنان</span>
+                </TabsTrigger>
+                <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center gap-2 p-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-blue-500 data-[state=active]:text-white hover:bg-green-500/10 transition-all duration-200 rounded-xl">
+                  <Activity className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-center">نظرة عامة</span>
+                </TabsTrigger>
+                <TabsTrigger value="prescriptions" className="flex flex-col sm:flex-row items-center gap-2 p-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white hover:bg-purple-500/10 transition-all duration-200 rounded-xl">
+                  <Stethoscope className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-center">الوصفات</span>
+                </TabsTrigger>
+                <TabsTrigger value="images" className="flex flex-col sm:flex-row items-center gap-2 p-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white hover:bg-indigo-500/10 transition-all duration-200 rounded-xl">
+                  <Image className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-center">الأشعة</span>
+                </TabsTrigger>
+                <TabsTrigger value="appointments" className="flex flex-col sm:flex-row items-center gap-2 p-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white hover:bg-orange-500/10 transition-all duration-200 rounded-xl">
+                  <Calendar className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-center">المواعيد</span>
+                </TabsTrigger>
+                <TabsTrigger value="financial" className="flex flex-col sm:flex-row items-center gap-2 p-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white hover:bg-emerald-500/10 transition-all duration-200 rounded-xl">
+                  <CreditCard className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm font-medium text-center">الحالة المالية</span>
+                </TabsTrigger>
+              </TabsList>
             </div>
+          </div>
 
-            {/* Left Column - Main Content Area */}
-            <div className="lg:col-span-9 lg:order-1">
+          {/* Main Content Area */}
+          <div className="w-full">
               <TabsContent value="dental-chart" className="mt-0">
                 <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-t-lg">
@@ -501,8 +492,7 @@ const PatientProfile = () => {
                 </Card>
               </TabsContent>
             </div>
-          </div>
-        </Tabs>
+          </Tabs>
       </div>
 
       <AddTreatmentDialog
