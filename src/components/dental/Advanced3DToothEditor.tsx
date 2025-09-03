@@ -10,10 +10,11 @@ import {
   Grid,
   Environment,
   ContactShadows,
-  Sphere,
   Box,
-  Cylinder
+  Cylinder,
+  Sphere
 } from '@react-three/drei';
+import * as THREE from 'three';
 import { Vector3, Mesh, Group, Color, MeshStandardMaterial } from 'three';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

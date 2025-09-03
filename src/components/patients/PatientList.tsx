@@ -8,12 +8,11 @@ import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
 import VirtualizedPatientList from "./VirtualizedPatientList";
 import { usePatients, useClinicId } from "@/hooks/usePatients";
-import { useOptimizedSearch } from "@/lib/performance-optimizations";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Wifi, WifiOff, BarChart3 } from "lucide-react";
+import { AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { withErrorBoundary } from "@/components/ui/error-boundary";
-// Remove interface as it's now in usePatients hook
+import { Alert, AlertDescription } from "@/components/ui/alert";
 const PatientList = () => {
   const { t } = useLanguage();
   
@@ -164,12 +163,30 @@ const PatientList = () => {
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-center gap-2">
-              {isError ? <WifiOff className="w-5 h-5 text-orange-500" /> : <Wifi className="w-5 h-5 text-blue-500" />}
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
               <span>{t('common.loading')}</span>
-              {isError && <span className="text-sm text-orange-600">({t('messages.offlineMode')})</span>}
             </div>
           </CardContent>
         </Card>
+      </PageContainer>
+    );
+  }
+
+  // Error state  
+  if (isError) {
+    return (
+      <PageContainer>
+        <PageToolbar
+          title={t('navigation.patients')}
+          showViewToggle={false}
+          showAdvancedFilter={false}
+        />
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            حدث خطأ في تحميل بيانات المرضى. يرجى المحاولة مرة أخرى.
+          </AlertDescription>
+        </Alert>
       </PageContainer>
     );
   }

@@ -12,7 +12,7 @@ import { toast } from "sonner";
 
 // Layout components
 import { MainLayout } from "@/components/layout/MainLayout";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { SimpleProtectedRoute } from "@/components/auth/SimpleProtectedRoute";
 
 // Page components
 import Index from "@/pages/Index";
@@ -122,9 +122,9 @@ function App() {
                   
                   {/* Protected routes with main layout */}
                   <Route path="/" element={
-                    <ProtectedRoute>
+                    <SimpleProtectedRoute>
                       <MainLayout />
-                    </ProtectedRoute>
+                    </SimpleProtectedRoute>
                   }>
                     <Route index element={<Index />} />
                     <Route path="patients" element={<Patients />} />

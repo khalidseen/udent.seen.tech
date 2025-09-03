@@ -2,48 +2,34 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
 import { toast } from '@/hooks/use-toast';
-import { offlineAuth } from '@/lib/offline-auth';
-import { useNetworkStatus } from './useNetworkStatus';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const { isOnline } = useNetworkStatus();
 
   useEffect(() => {
     let subscription: any = null;
     
     const initAuth = async () => {
       try {
-        if (isOnline) {
-          // Set up auth state listener for online mode
-          const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
-            (event, session) => {
-              setSession(session);
-              setUser(session?.user ?? null);
-              setLoading(false);
-            }
-          );
-          subscription = sub;
-
-          // Check for existing online session
-          try {
-            const { data: { session } } = await supabase.auth.getSession();
+        // Set up auth state listener
+        const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
+          (event, session) => {
             setSession(session);
             setUser(session?.user ?? null);
-          } catch (error) {
-            console.warn('Failed to get session:', error);
+            setLoading(false);
           }
-        } else {
-          // Check for offline session
-          try {
-            const { data: { session } } = await offlineAuth.getCurrentSession();
-            setSession(session as Session);
-            setUser(session?.user as User ?? null);
-          } catch (error) {
-            console.warn('Failed to get offline session:', error);
-          }
+        );
+        subscription = sub;
+
+        // Check for existing session
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          setSession(session);
+          setUser(session?.user ?? null);
+        } catch (error) {
+          console.warn('Failed to get session:', error);
         }
       } catch (error) {
         console.warn('Auth initialization error:', error);
@@ -60,36 +46,35 @@ export const useAuth = () => {
         subscription.unsubscribe();
       }
     };
-  }, [isOnline]);
+  }, []);
 
   const signIn = async (email: string, password: string) => {
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      const { data, error } = await offlineAuth.signIn(email, password);
-
-      if (error) {
-        toast({
-          title: 'خطأ في تسجيل الدخول',
-          description: error.message,
-          variant: 'destructive'
-        });
-        return { error };
-      }
-
-      setSession(data.session as Session);
-      setUser(data.user as User);
-
-      toast({
-        title: 'تم تسجيل الدخول بنجاح',
-        description: `مرحباً بك في نظام إدارة العيادة ${isOnline ? '' : '(وضع offline)'}`
+      const result = await supabase.auth.signInWithPassword({ 
+        email, 
+        password
       });
 
-      return { data, error: null };
+      if (result.error) {
+        toast({
+          title: "فشل تسجيل الدخول",
+          description: result.error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "تم تسجيل الدخول بنجاح",
+          description: "أهلاً وسهلاً بك"
+        });
+      }
+      return result;
     } catch (error: any) {
       toast({
-        title: 'خطأ',
-        description: error.message,
-        variant: 'destructive'
+        title: "خطأ في الاتصال",
+        description: "تحقق من اتصال الإنترنت وحاول مرة أخرى",
+        variant: "destructive"
       });
       return { error };
     } finally {
@@ -98,33 +83,37 @@ export const useAuth = () => {
   };
 
   const signUp = async (email: string, password: string, fullName: string) => {
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      const { data, error } = await offlineAuth.signUp(email, password, fullName);
-
-      if (error) {
-        toast({
-          title: 'خطأ في إنشاء الحساب',
-          description: error.message,
-          variant: 'destructive'
-        });
-        return { error };
-      }
-
-      setSession(data.session as Session);
-      setUser(data.user as User);
-
-      toast({
-        title: 'تم إنشاء الحساب بنجاح',
-        description: `تم تسجيل الدخول بنجاح ${isOnline ? '' : '(وضع offline)'}`
+      const result = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
       });
 
-      return { data, error: null };
+      if (result.error) {
+        toast({
+          title: "فشل إنشاء الحساب",
+          description: result.error.message,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "تم إنشاء الحساب بنجاح",
+          description: "تحقق من بريدك الإلكتروني لتأكيد الحساب"
+        });
+      }
+      return result;
     } catch (error: any) {
       toast({
-        title: 'خطأ',
-        description: error.message,
-        variant: 'destructive'
+        title: "خطأ في الاتصال",
+        description: "تحقق من اتصال الإنترنت وحاول مرة أخرى",
+        variant: "destructive"
       });
       return { error };
     } finally {
@@ -133,33 +122,33 @@ export const useAuth = () => {
   };
 
   const signInDemo = async () => {
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      const { data, error } = await offlineAuth.signInDemo();
-
-      if (error) {
-        toast({
-          title: 'خطأ في تسجيل الدخول التجريبي',
-          description: error.message,
-          variant: 'destructive'
-        });
-        return { error };
-      }
-
-      setSession(data.session as Session);
-      setUser(data.user as User);
-
-      toast({
-        title: 'تم تسجيل الدخول بنجاح',
-        description: `مرحباً بك في النظام التجريبي ${isOnline ? '' : '(وضع offline)'}`
+      // Use predefined demo credentials
+      const result = await supabase.auth.signInWithPassword({
+        email: 'demo@clinic.com',
+        password: 'DemoPassword123!'
       });
 
-      return { data, error: null };
+      if (result.error) {
+        toast({
+          title: "فشل تسجيل الدخول التجريبي",
+          description: "حدث خطأ في تسجيل الدخول التجريبي",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "تم تسجيل الدخول التجريبي",
+          description: "مرحباً بك في النسخة التجريبية"
+        });
+      }
+      return result;
     } catch (error: any) {
       toast({
-        title: 'خطأ',
-        description: error.message,
-        variant: 'destructive'
+        title: "خطأ في تسجيل الدخول التجريبي",
+        description: error.message || "حدث خطأ غير متوقع",
+        variant: "destructive"
       });
       return { error };
     } finally {
@@ -168,40 +157,25 @@ export const useAuth = () => {
   };
 
   const signOut = async () => {
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      const { error } = await offlineAuth.signOut();
+      await supabase.auth.signOut();
       
-      // Clear user state immediately
+      // Clear local state
       setUser(null);
       setSession(null);
       
-      if (error) {
-        toast({
-          title: 'خطأ في تسجيل الخروج',
-          description: error.message,
-          variant: 'destructive'
-        });
-      } else {
-        toast({
-          title: 'تم تسجيل الخروج',
-          description: 'نراك قريباً'
-        });
-      }
-      
-      // Force redirect to auth page after logout
-      setTimeout(() => {
-        window.location.href = '/auth';
-      }, 1000);
-      
-      return { error };
+      toast({
+        title: "تم تسجيل الخروج",
+        description: "تم تسجيل الخروج بنجاح"
+      });
     } catch (error: any) {
       toast({
-        title: 'خطأ في تسجيل الخروج',
-        description: error.message || 'حدث خطأ غير متوقع',
-        variant: 'destructive'
+        title: "خطأ في تسجيل الخروج",
+        description: error.message || "حدث خطأ أثناء تسجيل الخروج",
+        variant: "destructive"
       });
-      return { error };
     } finally {
       setLoading(false);
     }
