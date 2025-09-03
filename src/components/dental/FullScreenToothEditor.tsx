@@ -225,7 +225,7 @@ const CameraController = ({
   maxDistance?: number;
   minDistance?: number;
 }) => {
-  const controlsRef = useRef<any>();
+  const controlsRef = useRef<any>(null);
   
   useEffect(() => {
     if (controlsRef.current) {
