@@ -363,7 +363,7 @@ const PatientProfile = () => {
               <TabsContent value="dental-chart" className="mt-0">
                 <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 rounded-t-none rounded-b-2xl animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-t-lg">
-                    <CardTitle className="text-xl flex items-center gap-3">
+                    <CardTitle className="text-xl flex items-center justify-center gap-3 text-center">
                       <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
                         <Heart className="w-4 h-4 text-primary" />
                       </div>
@@ -384,7 +384,7 @@ const PatientProfile = () => {
               <TabsContent value="overview" className="mt-0">
                 <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-t-lg">
-                    <CardTitle className="text-xl flex items-center gap-3">
+                    <CardTitle className="text-xl flex items-center justify-center gap-3 text-center">
                       <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center">
                         <Activity className="w-4 h-4 text-green-600" />
                       </div>
@@ -394,7 +394,7 @@ const PatientProfile = () => {
                   <CardContent className="p-8">
                     <OralHealthDashboard patientId={patient.id} onStatUpdate={fetchPatientStats} />
                     <div className="mt-8 pt-8 border-t border-border/50">
-                      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <h3 className="text-lg font-semibold mb-4 flex items-center justify-center gap-2 text-center">
                         <Activity className="w-5 h-5 text-primary" />
                         الخط الزمني للعلاجات
                       </h3>
@@ -407,7 +407,7 @@ const PatientProfile = () => {
               <TabsContent value="prescriptions" className="mt-0">
                 <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 rounded-t-lg">
-                    <CardTitle className="text-xl flex items-center gap-3">
+                    <CardTitle className="text-xl flex items-center justify-center gap-3 text-center">
                       <div className="w-8 h-8 rounded-lg bg-purple-500/20 flex items-center justify-center">
                         <Stethoscope className="w-4 h-4 text-purple-600" />
                       </div>
@@ -430,7 +430,7 @@ const PatientProfile = () => {
               <TabsContent value="images" className="mt-0">
                 <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-indigo-500/10 to-cyan-500/10 rounded-t-lg">
-                    <CardTitle className="text-xl flex items-center gap-3">
+                    <CardTitle className="text-xl flex items-center justify-center gap-3 text-center">
                       <div className="w-8 h-8 rounded-lg bg-indigo-500/20 flex items-center justify-center">
                         <Image className="w-4 h-4 text-indigo-600" />
                       </div>
@@ -446,7 +446,7 @@ const PatientProfile = () => {
               <TabsContent value="appointments" className="mt-0">
                 <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-t-lg">
-                    <CardTitle className="text-xl flex items-center gap-3">
+                    <CardTitle className="text-xl flex items-center justify-center gap-3 text-center">
                       <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
                         <Calendar className="w-4 h-4 text-orange-600" />
                       </div>
@@ -465,7 +465,7 @@ const PatientProfile = () => {
               <TabsContent value="financial" className="mt-0">
                 <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
                   <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-t-lg">
-                    <CardTitle className="text-xl flex items-center gap-3">
+                    <CardTitle className="text-xl flex items-center justify-center gap-3 text-center">
                       <div className="w-8 h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
                         <CreditCard className="w-4 h-4 text-emerald-600" />
                       </div>
