@@ -16,7 +16,7 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { PatientHeader } from "@/components/patients/PatientHeader";
 import { OralHealthDashboard } from "@/components/dental/OralHealthDashboard";
-import Enhanced3DToothChart from "@/components/dental/Enhanced3DToothChart";
+import Enhanced2DToothChart from "@/components/dental/Enhanced2DToothChart";
 import PatientTimeline from "@/components/patients/PatientTimeline";
 import AddTreatmentDialog from "@/components/patients/AddTreatmentDialog";
 import { PatientImageGallery } from "@/components/medical-records/PatientImageGallery";
@@ -367,11 +367,11 @@ const PatientProfile = () => {
                       <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
                         <Heart className="w-4 h-4 text-primary" />
                       </div>
-                      مخطط الأسنان التفاعلي ثلاثي الأبعاد
+                      مخطط الأسنان ثنائي الأبعاد المحسن
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <Enhanced3DToothChart 
+                    <Enhanced2DToothChart 
                       patientId={patient.id} 
                       onToothSelect={handleToothSelect}
                       selectedTooth={selectedTooth}
