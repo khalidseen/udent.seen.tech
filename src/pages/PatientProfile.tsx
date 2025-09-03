@@ -334,11 +334,11 @@ const PatientProfile = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 space-y-2">
         {/* Medical File Sections Tabs */}
         <Tabs defaultValue="dental-chart" className="w-full">
           {/* Responsive Tabs Navigation */}
-          <div className="mb-8">
+          <div className="mb-3">
             <div className="bg-white/90 dark:bg-card/90 backdrop-blur-sm shadow-xl border-0 rounded-2xl p-2">
               <TabsList className="grid w-full h-auto bg-transparent p-0 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
                 <TabsTrigger value="dental-chart" className="flex flex-col sm:flex-row items-center gap-2 p-3 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white hover:bg-primary/10 transition-all duration-200 rounded-xl">
