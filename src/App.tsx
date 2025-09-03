@@ -1,5 +1,4 @@
-// App configuration and setup
-import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +6,7 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { PermissionsProvider } from "@/contexts/PermissionsContext";
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -65,19 +65,20 @@ import { offlineDB } from "@/lib/offline-db";
 // Initialize the database when the app starts
 offlineDB.init().catch(console.error);
 
-// Create a client for React Query with optimized settings
+// Create a client for React Query with optimized performance settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 10 * 60 * 1000, // 10 minutes
-      gcTime: 30 * 60 * 1000, // 30 minutes
+      staleTime: 1000 * 60 * 3, // 3 minutes - reduced for better data freshness
+      gcTime: 1000 * 60 * 15, // 15 minutes - increased for better caching
       retry: 2,
       refetchOnWindowFocus: false,
       refetchOnReconnect: true,
-      refetchInterval: false, // Disable automatic refetching
+      networkMode: 'offlineFirst', // Better offline support
     },
     mutations: {
       retry: 1,
+      networkMode: 'offlineFirst',
       onSuccess: () => {
         // Invalidate related queries after successful mutations
         queryClient.invalidateQueries();
@@ -110,10 +111,11 @@ function App() {
         <SettingsProvider>
           <SidebarProvider>
             <ThemeProvider>
-              <TooltipProvider>
-              <BrowserRouter>
-                <div className="min-h-screen bg-background">
-                <Routes>
+              <PermissionsProvider>
+                <TooltipProvider>
+                <BrowserRouter>
+                  <div className="min-h-screen bg-background">
+                  <Routes>
                   {/* Public routes */}
                   <Route path="/book" element={<PublicBooking />} />
                   <Route path="/auth" element={<Auth />} />
@@ -171,11 +173,12 @@ function App() {
                   
                   {/* 404 route */}
                   <Route path="*" element={<NotFound />} />
-                </Routes>
-                <Toaster />
-              </div>
-            </BrowserRouter>
-          </TooltipProvider>
+                  </Routes>
+                  <Toaster />
+                </div>
+              </BrowserRouter>
+            </TooltipProvider>
+          </PermissionsProvider>
         </ThemeProvider>
         </SidebarProvider>
       </SettingsProvider>

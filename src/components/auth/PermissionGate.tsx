@@ -1,6 +1,7 @@
-import { ReactNode, useState, useEffect } from 'react';
-import { usePermissions } from '@/hooks/usePermissions';
+import { ReactNode, useState, useEffect, memo } from 'react';
+import { usePermissions } from '@/contexts/PermissionsContext';
 import { supabase } from '@/integrations/supabase/client';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface PermissionGateProps {
   permissions?: string[];
@@ -10,32 +11,25 @@ interface PermissionGateProps {
   children: ReactNode;
   fallback?: ReactNode;
   checkSubscription?: boolean;
+  showLoadingSkeleton?: boolean;
 }
 
-export const PermissionGate = ({ 
+export const PermissionGate = memo(({ 
   permissions = [], 
   roles = [], 
   features = [],
   requireAll = false,
   children, 
   fallback = null,
-  checkSubscription = true
+  checkSubscription = true,
+  showLoadingSkeleton = true
 }: PermissionGateProps) => {
-  const { hasPermission, hasRole, loading } = usePermissions();
+  const { hasPermission, hasRole, loading, user } = usePermissions();
   const [hasFeatureAccess, setHasFeatureAccess] = useState(true);
   const [featureLoading, setFeatureLoading] = useState(features.length > 0);
-  const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Get current user
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-    };
-    getUser();
-  }, []);
-
-  // Check plan features
+  // Check plan features with improved error handling
   useEffect(() => {
     const checkPlanFeatures = async () => {
       if (features.length === 0 || !checkSubscription) {
@@ -45,19 +39,29 @@ export const PermissionGate = ({
       }
 
       try {
+        setError(null);
         const featureChecks = await Promise.all(
-          features.map(feature => 
-            supabase.rpc('has_plan_feature', { feature_key_param: feature })
-          )
+          features.map(async (feature) => {
+            try {
+              const result = await supabase.rpc('has_plan_feature', { 
+                feature_key_param: feature 
+              });
+              return result.data === true;
+            } catch (error) {
+              console.warn(`Failed to check feature ${feature}:`, error);
+              return false; // Default to false on error
+            }
+          })
         );
 
         const hasAllFeatures = requireAll 
-          ? featureChecks.every(result => result.data === true)
-          : featureChecks.some(result => result.data === true);
+          ? featureChecks.every(result => result === true)
+          : featureChecks.some(result => result === true);
 
         setHasFeatureAccess(hasAllFeatures);
       } catch (error) {
         console.error('Error checking plan features:', error);
+        setError('خطأ في التحقق من ميزات الاشتراك');
         setHasFeatureAccess(false);
       } finally {
         setFeatureLoading(false);
@@ -67,9 +71,21 @@ export const PermissionGate = ({
     checkPlanFeatures();
   }, [features, requireAll, checkSubscription]);
 
-  // Show loading state if needed
+  // Show loading skeleton or fallback
   if (loading || featureLoading) {
+    if (showLoadingSkeleton && !fallback) {
+      return <Skeleton className="h-32 w-full" />;
+    }
     return fallback;
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-4 border border-destructive/20 rounded-lg bg-destructive/10">
+        <p className="text-sm text-destructive">{error}</p>
+      </div>
+    );
   }
 
   // Check permissions
@@ -91,4 +107,4 @@ export const PermissionGate = ({
   const hasAccess = isSystemAdmin || (hasRequiredPermissions && hasRequiredRoles && hasFeatureAccess);
 
   return hasAccess ? <>{children}</> : <>{fallback}</>;
-};
+});
