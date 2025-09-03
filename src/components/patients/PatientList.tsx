@@ -19,7 +19,7 @@ const PatientList = () => {
   // State management
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(20); // Optimize for performance
+  const [itemsPerPage] = useState(12); // 12 patients per page as requested
   const [filters, setFilters] = useState<PatientFilter>({
     gender: 'all',
     ageRange: 'all',

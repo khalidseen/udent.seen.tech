@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Patient } from "@/hooks/usePatients";
+import PatientMedicalSectionsDialog from "./PatientMedicalSectionsDialog";
 
 interface OptimizedPatientCardProps {
   patient: Patient;
@@ -30,6 +31,8 @@ const OptimizedPatientCard = memo(({
   onEditPatient 
 }: OptimizedPatientCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [medicalDialogOpen, setMedicalDialogOpen] = useState(false);
+  const [selectedSection, setSelectedSection] = useState<'dental' | 'overview' | 'prescriptions' | 'images' | 'appointments' | 'financial'>('overview');
 
   const getFinancialStatusBadge = useCallback((status: string) => {
     const baseClasses = "text-xs font-medium transition-colors";
@@ -79,6 +82,13 @@ const OptimizedPatientCard = memo(({
     e.stopPropagation();
     onEditPatient(patient.id);
   }, [patient.id, onEditPatient]);
+
+  const handleSectionClick = useCallback((e: React.MouseEvent, section: 'dental' | 'overview' | 'prescriptions' | 'images' | 'appointments' | 'financial') => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedSection(section);
+    setMedicalDialogOpen(true);
+  }, []);
 
   return (
     <Card 
@@ -159,15 +169,12 @@ const OptimizedPatientCard = memo(({
           {/* Quick Access Icons - Optimized */}
           <div className="space-y-2 pt-3 border-t border-border/40">
             <p className="text-xs text-muted-foreground font-medium">أقسام سريعة</p>
-            <div className="grid grid-cols-4 gap-1">
+            <div className="grid grid-cols-6 gap-1">
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-8 flex flex-col items-center justify-center p-1 hover:bg-primary/10 hover:text-primary group/icon"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
+                onClick={(e) => handleSectionClick(e, 'dental')}
                 title="مخطط الأسنان"
               >
                 <Smile className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
@@ -177,11 +184,8 @@ const OptimizedPatientCard = memo(({
                 variant="ghost"
                 size="sm"
                 className="h-8 flex flex-col items-center justify-center p-1 hover:bg-green-500/10 hover:text-green-600 group/icon"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
-                title="الصحة العامة"
+                onClick={(e) => handleSectionClick(e, 'overview')}
+                title="نظرة عامة"
               >
                 <Heart className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
               </Button>
@@ -190,10 +194,7 @@ const OptimizedPatientCard = memo(({
                 variant="ghost"
                 size="sm"
                 className="h-8 flex flex-col items-center justify-center p-1 hover:bg-blue-500/10 hover:text-blue-600 group/icon"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
+                onClick={(e) => handleSectionClick(e, 'prescriptions')}
                 title="الوصفات"
               >
                 <Pill className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
@@ -203,13 +204,30 @@ const OptimizedPatientCard = memo(({
                 variant="ghost"
                 size="sm"
                 className="h-8 flex flex-col items-center justify-center p-1 hover:bg-purple-500/10 hover:text-purple-600 group/icon"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                }}
+                onClick={(e) => handleSectionClick(e, 'images')}
                 title="الأشعة"
               >
                 <Camera className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 flex flex-col items-center justify-center p-1 hover:bg-orange-500/10 hover:text-orange-600 group/icon"
+                onClick={(e) => handleSectionClick(e, 'appointments')}
+                title="المواعيد"
+              >
+                <Calendar className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 flex flex-col items-center justify-center p-1 hover:bg-emerald-500/10 hover:text-emerald-600 group/icon"
+                onClick={(e) => handleSectionClick(e, 'financial')}
+                title="الحالة المالية"
+              >
+                <DollarSign className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
               </Button>
             </div>
           </div>
@@ -230,6 +248,15 @@ const OptimizedPatientCard = memo(({
           )}
         </CardContent>
       </Link>
+
+      {/* Medical Sections Dialog */}
+      <PatientMedicalSectionsDialog
+        open={medicalDialogOpen}
+        onOpenChange={setMedicalDialogOpen}
+        patientId={patient.id}
+        patientName={patient.full_name}
+        initialSection={selectedSection}
+      />
     </Card>
   );
 });

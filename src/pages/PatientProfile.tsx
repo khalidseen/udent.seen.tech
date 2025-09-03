@@ -239,7 +239,7 @@ const PatientProfile = () => {
             {/* Patient Avatar & Basic Info */}
             <div className="flex items-center gap-4">
               <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="hover:bg-primary/10 mb-4 lg:mb-0">
-                ← المرضى
+                المرضى ←
               </Button>
               <div className="hidden lg:block h-8 w-px bg-border"></div>
               <div className="flex items-center gap-4">
@@ -317,15 +317,15 @@ const PatientProfile = () => {
               {/* Action Buttons */}
               <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
                 <Button variant="outline" size="sm" className="hover:bg-blue-50 hover:border-blue-300 flex-1 lg:flex-none">
-                  <Printer className="w-4 h-4 ml-2" />
+                  <Printer className="w-4 h-4 mr-2" />
                   طباعة التقرير
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleEditPatient} className="hover:bg-orange-50 hover:border-orange-300 flex-1 lg:flex-none">
-                  <Edit className="w-4 h-4 ml-2" />
+                  <Edit className="w-4 h-4 mr-2" />
                   تعديل البيانات
                 </Button>
                 <Button size="sm" onClick={() => setTreatmentDialogOpen(true)} className="bg-gradient-to-r from-primary to-secondary shadow-lg hover:shadow-xl transition-all duration-300 flex-1 lg:flex-none">
-                  <Plus className="w-4 h-4 ml-2" />
+                  <Plus className="w-4 h-4 mr-2" />
                   إضافة علاج جديد
                 </Button>
               </div>
