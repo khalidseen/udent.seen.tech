@@ -328,31 +328,31 @@ const PatientProfile = () => {
         <Tabs defaultValue="dental-chart" className="w-full">
           {/* Responsive Tabs Navigation */}
           <div className="mb-0">
-            <div className="bg-white/90 dark:bg-card/90 backdrop-blur-sm shadow-lg border-0 rounded-t-2xl">
-              <TabsList className="grid w-full h-auto bg-transparent p-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1">
-                <TabsTrigger value="dental-chart" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-white hover:bg-primary/10 transition-all duration-200 rounded-lg text-center">
-                  <Heart className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">مخطط الأسنان</span>
+            <div className="bg-background/90 backdrop-blur-sm shadow-lg border rounded-t-2xl" dir="rtl">
+              <TabsList className="grid w-full h-auto bg-transparent p-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1" dir="rtl">
+                <TabsTrigger value="financial" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-primary-foreground hover:bg-emerald-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <CreditCard className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">الحالة المالية</span>
                 </TabsTrigger>
-                <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-blue-500 data-[state=active]:text-white hover:bg-green-500/10 transition-all duration-200 rounded-lg text-center">
-                  <Activity className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">نظرة عامة</span>
-                </TabsTrigger>
-                <TabsTrigger value="prescriptions" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white hover:bg-purple-500/10 transition-all duration-200 rounded-lg text-center">
-                  <Stethoscope className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">الوصفات</span>
-                </TabsTrigger>
-                <TabsTrigger value="images" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-cyan-500 data-[state=active]:text-white hover:bg-indigo-500/10 transition-all duration-200 rounded-lg text-center">
-                  <Image className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">الأشعة</span>
-                </TabsTrigger>
-                <TabsTrigger value="appointments" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white hover:bg-orange-500/10 transition-all duration-200 rounded-lg text-center">
+                <TabsTrigger value="appointments" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-primary-foreground hover:bg-orange-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
                   <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="text-xs font-medium">المواعيد</span>
                 </TabsTrigger>
-                <TabsTrigger value="financial" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-white hover:bg-emerald-500/10 transition-all duration-200 rounded-lg text-center">
-                  <CreditCard className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">الحالة المالية</span>
+                <TabsTrigger value="images" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-cyan-500 data-[state=active]:text-primary-foreground hover:bg-indigo-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Image className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">الأشعة</span>
+                </TabsTrigger>
+                <TabsTrigger value="prescriptions" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-primary-foreground hover:bg-purple-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Stethoscope className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">الوصفات</span>
+                </TabsTrigger>
+                <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-blue-500 data-[state=active]:text-primary-foreground hover:bg-green-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Activity className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">نظرة عامة</span>
+                </TabsTrigger>
+                <TabsTrigger value="dental-chart" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground hover:bg-primary/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Heart className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">مخطط الأسنان</span>
                 </TabsTrigger>
               </TabsList>
             </div>

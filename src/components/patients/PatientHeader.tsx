@@ -63,112 +63,99 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
   const healthStatus = stats ? getHealthStatus(stats.healthPercentage) : null;
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 via-white to-green-50 dark:from-blue-950 dark:via-background dark:to-green-950 border-2 border-primary/20 shadow-lg">
-      <CardContent className="p-4">
-        <div className="flex items-center gap-4 min-h-[80px]">
-          {/* Avatar Section */}
+    <Card className="bg-gradient-to-r from-background to-secondary/5 border border-border/50 shadow-sm">
+      <CardContent className="p-2">
+        <div className="flex items-center gap-3 min-h-[60px]">
+          {/* Avatar Section - Smaller */}
           <div className="flex-shrink-0">
-            <div className="relative">
-              <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-sm">
-                <AvatarImage src="/placeholder-patient.png" alt={patient.full_name} />
-                <AvatarFallback className="text-lg bg-gradient-to-br from-primary to-primary-foreground text-white">
-                  {patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-1 -right-1 text-lg">
-                {getGenderIcon(patient.gender || '')}
-              </div>
-            </div>
+            <Avatar className="h-12 w-12 border border-border">
+              <AvatarImage src="/placeholder-patient.png" alt={patient.full_name} />
+              <AvatarFallback className="text-sm bg-primary text-primary-foreground">
+                {patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+              </AvatarFallback>
+            </Avatar>
           </div>
 
-          {/* Patient Main Info */}
+          {/* Patient Info - Single Row */}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-xl font-bold text-primary truncate">{patient.full_name}</h1>
+              <h1 className="text-lg font-semibold text-foreground truncate" dir="rtl">{patient.full_name}</h1>
               {patient.gender && (
-                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                   {patient.gender === 'male' ? 'ذكر' : 'أنثى'}
                 </Badge>
               )}
               {patient.date_of_birth && (
-                <Badge variant="secondary" className="text-xs px-2 py-0.5 bg-primary/10 text-primary">
+                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
                   {getAge(patient.date_of_birth)} سنة
                 </Badge>
               )}
             </div>
             
-            <div className="flex items-center gap-1 text-xs text-muted-foreground mb-2">
-              <IdCard className="h-3 w-3" />
-              <span>مريض منذ {format(new Date(patient.created_at), 'MMMM yyyy', { locale: ar })}</span>
-            </div>
-
-            {/* Contact Info - Horizontal Layout */}
-            <div className="flex items-center gap-4 flex-wrap text-xs">
+            {/* Contact Info - Single Compact Row */}
+            <div className="flex items-center gap-3 text-xs text-muted-foreground" dir="rtl">
               {patient.phone && (
                 <div className="flex items-center gap-1">
-                  <Phone className="h-3 w-3 text-green-600" />
+                  <Phone className="h-3 w-3" />
                   <span>{patient.phone}</span>
                 </div>
               )}
               
               {patient.email && (
                 <div className="flex items-center gap-1">
-                  <Mail className="h-3 w-3 text-blue-600" />
-                  <span className="truncate max-w-[150px]">{patient.email}</span>
+                  <Mail className="h-3 w-3" />
+                  <span className="truncate max-w-[120px]">{patient.email}</span>
                 </div>
               )}
               
               {patient.date_of_birth && (
                 <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3 text-purple-600" />
+                  <Calendar className="h-3 w-3" />
                   <span>{format(new Date(patient.date_of_birth), 'dd/MM/yyyy')}</span>
                 </div>
               )}
 
-              {patient.address && (
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-3 w-3 text-orange-600" />
-                  <span className="truncate max-w-[200px]">{patient.address}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-1">
+                <IdCard className="h-3 w-3" />
+                <span>منذ {format(new Date(patient.created_at), 'MM/yyyy', { locale: ar })}</span>
+              </div>
             </div>
           </div>
 
-          {/* Stats Section - Horizontal */}
+          {/* Stats - Compact Horizontal */}
           {stats && (
-            <div className="flex-shrink-0 flex items-center gap-3">
-              <div className="text-center bg-white/60 dark:bg-background/60 rounded-lg px-3 py-2 border">
-                <div className="text-lg font-bold text-blue-600">{stats.totalAppointments}</div>
-                <div className="text-xs text-muted-foreground">المواعيد</div>
+            <div className="flex-shrink-0 flex items-center gap-2">
+              <div className="text-center px-2 py-1">
+                <div className="text-sm font-semibold text-primary">{stats.totalAppointments}</div>
+                <div className="text-xs text-muted-foreground" dir="rtl">المواعيد</div>
               </div>
               
-              <div className="text-center bg-white/60 dark:bg-background/60 rounded-lg px-3 py-2 border">
-                <div className="text-lg font-bold text-green-600">{stats.completedTreatments}</div>
-                <div className="text-xs text-muted-foreground">العلاجات</div>
+              <div className="text-center px-2 py-1">
+                <div className="text-sm font-semibold text-secondary">{stats.completedTreatments}</div>
+                <div className="text-xs text-muted-foreground" dir="rtl">العلاجات</div>
               </div>
               
               {healthStatus && (
-                <div className="text-center bg-white/60 dark:bg-background/60 rounded-lg px-3 py-2 border">
-                  <div className="flex items-center justify-center gap-1 mb-1">
-                    <Heart className={`h-3 w-3 ${healthStatus.textColor}`} />
-                    <span className="text-lg font-bold">{stats.healthPercentage}%</span>
+                <div className="text-center px-2 py-1">
+                  <div className="flex items-center justify-center gap-1">
+                    <Heart className="h-3 w-3 text-destructive" />
+                    <span className="text-sm font-semibold">{stats.healthPercentage}%</span>
                   </div>
-                  <div className="text-xs text-muted-foreground">صحة الفم</div>
+                  <div className="text-xs text-muted-foreground" dir="rtl">صحة الفم</div>
                 </div>
               )}
             </div>
           )}
         </div>
 
-        {/* Medical History Alert - Compact */}
+        {/* Medical History - Ultra Compact */}
         {patient.medical_history && (
-          <div className="mt-3 p-2 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-lg">
-            <div className="flex items-center gap-2">
-              <Heart className="h-4 w-4 text-amber-600" />
-              <div>
-                <span className="text-xs font-medium text-amber-800 dark:text-amber-200 ml-1">التاريخ المرضي:</span>
-                <span className="text-xs text-amber-700 dark:text-amber-300">{patient.medical_history}</span>
-              </div>
+          <div className="mt-2 p-1.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded">
+            <div className="flex items-center gap-1">
+              <Heart className="h-3 w-3 text-amber-600 flex-shrink-0" />
+              <span className="text-xs text-amber-800 dark:text-amber-200" dir="rtl">
+                <span className="font-medium">التاريخ المرضي:</span> {patient.medical_history}
+              </span>
             </div>
           </div>
         )}
