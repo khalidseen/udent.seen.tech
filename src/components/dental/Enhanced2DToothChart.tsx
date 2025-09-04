@@ -255,97 +255,46 @@ const Enhanced2DToothChart = ({
     if (isIncisor) toothShape = "rounded-sm h-8 w-5";
     // Create tooltip content for hover
     const tooltipContent = `السن رقم ${toothNumber} (Universal)${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? `\nالملاحظات:\n${notes.map(n => `• ${n.title}: ${n.content.substring(0, 50)}${n.content.length > 50 ? '...' : ''}`).join('\n')}` : ''}`;
-
-    return (
-      <div key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} className="relative">
-        <button
-          onClick={() => handleToothClick(toothNumber)}
-          className={cn(
-            toothShape,
-            "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative group",
-            getToothColorClasses(colorType, isSelected)
-          )}
-          title={tooltipContent}
-        >
+    return <div key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} className="relative">
+        <button onClick={() => handleToothClick(toothNumber)} className={cn(toothShape, "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative group", getToothColorClasses(colorType, isSelected))} title={tooltipContent}>
           {toothNumber}
           
           {/* Notes indicator */}
-          {notes.length > 0 && (
-            <div className="absolute -top-1 -right-1">
-              <Badge
-                variant={notes.some(n => n.priority === 'high') ? "destructive" : "secondary"}
-                className="text-xs h-4 w-4 p-0 flex items-center justify-center rounded-full"
-              >
+          {notes.length > 0 && <div className="absolute -top-1 -right-1">
+              <Badge variant={notes.some(n => n.priority === 'high') ? "destructive" : "secondary"} className="text-xs h-4 w-4 p-0 flex items-center justify-center rounded-full">
                 {notes.length}
               </Badge>
-            </div>
-          )}
+            </div>}
           
           {/* Condition indicator */}
-          {condition && condition.condition_type === 'decay' && (
-            <div className="absolute -top-1 -left-1">
+          {condition && condition.condition_type === 'decay' && <div className="absolute -top-1 -left-1">
               <AlertTriangle className="h-3 w-3 text-red-600" />
-            </div>
-          )}
+            </div>}
           
           {/* Hover tooltip for notes */}
-          {notes.length > 0 && (
-            <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none">
+          {notes.length > 0 && <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none">
               <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3 max-w-xs whitespace-pre-line text-right text-xs">
                 <div className="font-medium mb-2">ملاحظات السن {toothNumber}:</div>
-                {notes.slice(0, 3).map((note, idx) => (
-                  <div key={note.id} className="mb-1 last:mb-0">
+                {notes.slice(0, 3).map((note, idx) => <div key={note.id} className="mb-1 last:mb-0">
                     <div className="font-medium text-primary">{note.title}</div>
                     <div className="text-muted-foreground">
                       {note.content.length > 80 ? note.content.substring(0, 80) + '...' : note.content}
                     </div>
-                    {note.priority === 'high' && (
-                      <Badge variant="destructive" className="text-xs mt-1">
+                    {note.priority === 'high' && <Badge variant="destructive" className="text-xs mt-1">
                         أولوية عالية
-                      </Badge>
-                    )}
-                  </div>
-                ))}
-                {notes.length > 3 && (
-                  <div className="text-muted-foreground text-xs mt-1">
+                      </Badge>}
+                  </div>)}
+                {notes.length > 3 && <div className="text-muted-foreground text-xs mt-1">
                     و {notes.length - 3} ملاحظات أخرى...
-                  </div>
-                )}
+                  </div>}
               </div>
-            </div>
-          )}
+            </div>}
         </button>
-      </div>
-    );
+      </div>;
   };
-  
   return <div className="space-y-4">
       <Card className="w-full max-w-6xl mx-auto">
-        <CardHeader>
-          <CardTitle className="text-center">مخطط الأسنان ثنائي الأبعاد المحسن (Universal System)</CardTitle>
-
-          {selectedTooth && <div className="text-center space-y-2">
-              <Badge variant="secondary" className="text-sm">
-                السن المحدد: {selectedTooth}
-                {getToothNotes(selectedTooth).length > 0 && <span className="ml-2">
-                    ({getToothNotes(selectedTooth).length} ملاحظة)
-                  </span>}
-              </Badge>
-              
-              {patientId && (
-                <div className="flex justify-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setNoteDialogOpen(true)}>
-                    <Plus className="h-4 w-4 ml-2" />
-                    إضافة ملاحظة طبية
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => setConditionDialogOpen(true)}>
-                    <Edit className="h-4 w-4 ml-2" />
-                    تحديث الحالة
-                  </Button>
-                </div>
-              )}
-            </div>}
-        </CardHeader>
+        
 
         <CardContent className="space-y-8">
           {/* Upper Teeth */}
@@ -432,18 +381,11 @@ const Enhanced2DToothChart = ({
         </CardContent>
       </Card>
 
-      {patientId && selectedTooth && (
-        <ToothNoteDialog
-          isOpen={noteDialogOpen}
-          onOpenChange={setNoteDialogOpen}
-          patientId={patientId}
-          toothNumber={selectedTooth}
-          numberingSystem="universal"
-          onNoteUpdate={() => {
-            queryClient.invalidateQueries({ queryKey: ['advanced-tooth-notes'] });
-          }}
-        />
-      )}
+      {patientId && selectedTooth && <ToothNoteDialog isOpen={noteDialogOpen} onOpenChange={setNoteDialogOpen} patientId={patientId} toothNumber={selectedTooth} numberingSystem="universal" onNoteUpdate={() => {
+      queryClient.invalidateQueries({
+        queryKey: ['advanced-tooth-notes']
+      });
+    }} />}
 
       {/* Add Condition Dialog */}
       <Dialog open={conditionDialogOpen} onOpenChange={setConditionDialogOpen}>
