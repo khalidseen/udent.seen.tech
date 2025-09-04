@@ -215,7 +215,7 @@ const PatientProfile = () => {
           {/* Responsive Tabs Navigation */}
           <div className="mb-0">
             <div className="bg-background/90 backdrop-blur-sm shadow-lg border rounded-t-2xl" dir="rtl">
-              <TabsList className="grid w-full h-auto bg-transparent p-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1" dir="rtl">
+              <TabsList className="grid w-full h-auto bg-transparent p-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-1" dir="rtl">
                 <TabsTrigger value="dental-chart" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground hover:bg-primary/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
                   <Heart className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="text-xs font-medium">مخطط الأسنان</span>
@@ -223,6 +223,10 @@ const PatientProfile = () => {
                 <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-blue-500 data-[state=active]:text-primary-foreground hover:bg-green-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
                   <Activity className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="text-xs font-medium">نظرة عامة</span>
+                </TabsTrigger>
+                <TabsTrigger value="treatments" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-primary-foreground hover:bg-orange-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Stethoscope className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">العلاجات</span>
                 </TabsTrigger>
                 <TabsTrigger value="prescriptions" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-primary-foreground hover:bg-purple-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
                   <Stethoscope className="w-3.5 h-3.5 flex-shrink-0" />
@@ -232,7 +236,7 @@ const PatientProfile = () => {
                   <Image className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="text-xs font-medium">الأشعة</span>
                 </TabsTrigger>
-                <TabsTrigger value="appointments" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-primary-foreground hover:bg-orange-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                <TabsTrigger value="appointments" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-cyan-500 data-[state=active]:text-primary-foreground hover:bg-blue-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
                   <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="text-xs font-medium">المواعيد</span>
                 </TabsTrigger>
@@ -280,6 +284,33 @@ const PatientProfile = () => {
                         الخط الزمني للعلاجات
                       </h3>
                       <PatientTimeline patientId={patient.id} />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="treatments" className="mt-0">
+                <Card className="bg-white/95 dark:bg-card/95 backdrop-blur-sm shadow-2xl border-0 animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-t-lg">
+                    <CardTitle className="text-xl flex items-center justify-center gap-3 text-center">
+                      <div className="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                        <Stethoscope className="w-4 h-4 text-orange-600" />
+                      </div>
+                      العلاجات والإجراءات الطبية
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8">
+                    <div className="text-center p-8">
+                      <Stethoscope className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                      <h3 className="text-lg font-semibold mb-2">العلاجات</h3>
+                      <p className="text-muted-foreground">سيتم إضافة قسم العلاجات قريباً</p>
+                      <Button 
+                        onClick={() => setTreatmentDialogOpen(true)}
+                        className="mt-4"
+                      >
+                        <Plus className="h-4 w-4 ml-2" />
+                        إضافة علاج جديد
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -348,7 +379,7 @@ const PatientProfile = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <PatientFinancialStatus patientId={patient.id} patientName={patient.full_name} />
+                    <PatientFinancialStatus patientId={patient.id} patientName={patient.full_name} patientPhone={patient.phone} />
                   </CardContent>
                 </Card>
               </TabsContent>

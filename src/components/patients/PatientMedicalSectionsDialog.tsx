@@ -9,7 +9,8 @@ import {
   Camera, 
   Calendar, 
   DollarSign,
-  X 
+  X,
+  Stethoscope 
 } from "lucide-react";
 
 // Import existing components
@@ -24,7 +25,7 @@ interface PatientMedicalSectionsDialogProps {
   onOpenChange: (open: boolean) => void;
   patientId: string;
   patientName: string;
-  initialSection?: 'dental' | 'overview' | 'prescriptions' | 'images' | 'appointments' | 'financial';
+  initialSection?: 'dental' | 'overview' | 'treatments' | 'prescriptions' | 'images' | 'appointments' | 'financial';
 }
 
 export function PatientMedicalSectionsDialog({ 
@@ -63,7 +64,7 @@ export function PatientMedicalSectionsDialog({
 
         <div className="flex-1 overflow-hidden">
           <Tabs defaultValue={initialSection} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 mx-2 sm:mx-6 mt-2 sm:mt-4 mb-0 bg-muted/50 gap-1">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 mx-2 sm:mx-6 mt-2 sm:mt-4 mb-0 bg-muted/50 gap-1">
               <TabsTrigger value="overview" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
                 <Heart className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">نظرة عامة</span>
@@ -73,6 +74,11 @@ export function PatientMedicalSectionsDialog({
                 <Smile className="h-3 w-3 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">مخطط الأسنان</span>
                 <span className="sm:hidden">أسنان</span>
+              </TabsTrigger>
+              <TabsTrigger value="treatments" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
+                <Stethoscope className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden sm:inline">العلاجات</span>
+                <span className="sm:hidden">علاج</span>
               </TabsTrigger>
               <TabsTrigger value="prescriptions" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm p-2">
                 <Pill className="h-3 w-3 sm:h-4 sm:w-4" />
@@ -109,6 +115,14 @@ export function PatientMedicalSectionsDialog({
                 />
               </TabsContent>
 
+              <TabsContent value="treatments" className="h-full m-0">
+                <div className="text-center p-8">
+                  <Stethoscope className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                  <h3 className="text-lg font-semibold mb-2">العلاجات</h3>
+                  <p className="text-muted-foreground">سيتم إضافة قسم العلاجات قريباً</p>
+                </div>
+              </TabsContent>
+
               <TabsContent value="prescriptions" className="h-full m-0">
                 <div className="text-center p-8">
                   <Pill className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -132,6 +146,7 @@ export function PatientMedicalSectionsDialog({
                 <PatientFinancialStatus 
                   patientId={patientId}
                   patientName={patientName}
+                  patientPhone=""
                 />
               </TabsContent>
             </div>

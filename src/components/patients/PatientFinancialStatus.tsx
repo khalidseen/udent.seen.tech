@@ -12,12 +12,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, DollarSign, FileText, Send, Download } from "lucide-react";
+import { WhatsAppReminderDialog } from "./WhatsAppReminderDialog";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 
 interface PatientFinancialStatusProps {
   patientId: string;
   patientName: string;
+  patientPhone?: string;
 }
 
 interface TreatmentPlan {
@@ -41,11 +43,12 @@ interface Payment {
   notes: string;
 }
 
-const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStatusProps) => {
+const PatientFinancialStatus = ({ patientId, patientName, patientPhone }: PatientFinancialStatusProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [addPlanDialog, setAddPlanDialog] = useState(false);
   const [addPaymentDialog, setAddPaymentDialog] = useState(false);
+  const [whatsappReminderDialog, setWhatsappReminderDialog] = useState(false);
 
   const [newPlan, setNewPlan] = useState({
     title: "",
@@ -184,21 +187,6 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
     }
   };
 
-  const generateWhatsAppReminder = () => {
-    const message = `السلام عليكم ${patientName}،
-
-هذا تذكير بالمبلغ المتبقي عليك:
-💰 إجمالي التكلفة: ${totalCost.toLocaleString()} ريال
-✅ المدفوع: ${totalPaid.toLocaleString()} ريال  
-⏰ المتبقي: ${remaining.toLocaleString()} ريال
-
-يرجى التواصل معنا لتحديد موعد الدفع.
-شكراً لك 🙏`;
-
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
   if (plansLoading || paymentsLoading) {
     return <div className="text-center p-8">جاري التحميل...</div>;
   }
@@ -212,7 +200,7 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-orange-600">إجمالي التكلفة</p>
-                <p className="text-2xl font-bold text-orange-700">{totalCost.toLocaleString()} ريال</p>
+                <p className="text-2xl font-bold text-orange-700">{totalCost.toLocaleString()} د.ع</p>
               </div>
               <DollarSign className="h-8 w-8 text-orange-600" />
             </div>
@@ -224,7 +212,7 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-green-600">المدفوع</p>
-                <p className="text-2xl font-bold text-green-700">{totalPaid.toLocaleString()} ريال</p>
+                <p className="text-2xl font-bold text-green-700">{totalPaid.toLocaleString()} د.ع</p>
               </div>
               <DollarSign className="h-8 w-8 text-green-600" />
             </div>
@@ -236,7 +224,7 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-red-600">المتبقي</p>
-                <p className="text-2xl font-bold text-red-700">{remaining.toLocaleString()} ريال</p>
+                <p className="text-2xl font-bold text-red-700">{remaining.toLocaleString()} د.ع</p>
               </div>
               <DollarSign className="h-8 w-8 text-red-600" />
             </div>
@@ -265,7 +253,7 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
         </Dialog>
 
         {remaining > 0 && (
-          <Button variant="outline" onClick={generateWhatsAppReminder}>
+          <Button variant="outline" onClick={() => setWhatsappReminderDialog(true)}>
             <Send className="w-4 h-4 ml-1" />
             تذكير واتساب
           </Button>
@@ -305,7 +293,7 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
-                    <p><strong>التكلفة المتوقعة:</strong> {plan.estimated_cost.toLocaleString()} ريال</p>
+                    <p><strong>التكلفة المتوقعة:</strong> {plan.estimated_cost.toLocaleString()} د.ع</p>
                     {plan.description && <p><strong>الوصف:</strong> {plan.description}</p>}
                     {plan.start_date && (
                       <p><strong>تاريخ البداية:</strong> {format(new Date(plan.start_date), 'yyyy/MM/dd', { locale: ar })}</p>
@@ -334,7 +322,7 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div className="space-y-1">
-                      <p className="font-medium">{payment.amount.toLocaleString()} ريال</p>
+                      <p className="font-medium">{payment.amount.toLocaleString()} د.ع</p>
                       <p className="text-sm text-muted-foreground">
                         {format(new Date(payment.payment_date), 'yyyy/MM/dd', { locale: ar })}
                       </p>
@@ -387,7 +375,7 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
               />
             </div>
             <div>
-              <Label htmlFor="cost">التكلفة المتوقعة (ريال)</Label>
+              <Label htmlFor="cost">التكلفة المتوقعة (دينار عراقي)</Label>
               <Input
                 id="cost"
                 type="number"
@@ -443,7 +431,7 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="amount">المبلغ (ريال)</Label>
+              <Label htmlFor="amount">المبلغ (دينار عراقي)</Label>
               <Input
                 id="amount"
                 type="number"
@@ -503,6 +491,17 @@ const PatientFinancialStatus = ({ patientId, patientName }: PatientFinancialStat
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* WhatsApp Reminder Dialog */}
+      <WhatsAppReminderDialog
+        open={whatsappReminderDialog}
+        onOpenChange={setWhatsappReminderDialog}
+        patientName={patientName}
+        patientPhone={patientPhone}
+        totalCost={totalCost}
+        totalPaid={totalPaid}
+        remaining={remaining}
+      />
     </div>
   );
 };

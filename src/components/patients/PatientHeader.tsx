@@ -111,12 +111,14 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
               </div>
 
               {/* Action Icons */}
-              <div className="flex items-center gap-1">
-                {onEditPatient && <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-primary/10" onClick={onEditPatient}>
-                    <Edit className="h-3 w-3" />
+              <div className="flex items-center gap-2">
+                {onEditPatient && <Button variant="ghost" className="h-7 px-2 py-1 text-xs hover:bg-primary/10" onClick={onEditPatient}>
+                    <Edit className="h-3 w-3 ml-1" />
+                    تعديل الملف
                   </Button>}
-                {onAddTreatment && <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-secondary/10" onClick={onAddTreatment}>
-                    <Plus className="h-3 w-3" />
+                {onAddTreatment && <Button variant="ghost" className="h-7 px-2 py-1 text-xs hover:bg-secondary/10" onClick={onAddTreatment}>
+                    <Plus className="h-3 w-3 ml-1" />
+                    إضافة علاج
                   </Button>}
               </div>
             </div>
@@ -125,7 +127,7 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
           {/* Stats - Icon Only */}
           {stats && <div className="flex-shrink-0 flex items-center gap-2">
               <div className="flex items-center justify-center px-2 py-1">
-                <Calendar className="h-4 w-4 text-primary mr-1" />
+                <Calendar className="h-5 w-5 text-primary mr-1" />
                 <span className="text-sm font-semibold text-primary">{stats.totalAppointments}</span>
               </div>
               
@@ -133,11 +135,6 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
                 <Stethoscope className="h-4 w-4 text-secondary mr-1" />
                 <span className="text-sm font-semibold text-secondary">{stats.completedTreatments}</span>
               </div>
-              
-              {healthStatus && <div className="flex items-center justify-center px-2 py-1">
-                <Heart className="h-4 w-4 text-red-500 mr-1" />
-                <span className="text-sm font-semibold text-foreground">{stats.healthPercentage}%</span>
-              </div>}
             </div>}
         </div>
 
