@@ -134,7 +134,10 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
                 <span className="text-sm font-semibold text-secondary">{stats.completedTreatments}</span>
               </div>
               
-              {healthStatus}
+              {healthStatus && <div className="flex items-center justify-center px-2 py-1">
+                <Heart className="h-4 w-4 text-red-500 mr-1" />
+                <span className="text-sm font-semibold text-foreground">{stats.healthPercentage}%</span>
+              </div>}
             </div>}
         </div>
 
