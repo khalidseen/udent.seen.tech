@@ -9,16 +9,14 @@ import html2canvas from "html2canvas";
 
 interface ZoomableToothChartProps {
   patientId?: string;
-  onToothSelect?: (toothNumber: string, numberingSystem: string) => void;
+  onToothSelect?: (toothNumber: string) => void;
   selectedTooth?: string;
-  numberingSystem?: 'universal' | 'palmer' | 'fdi';
 }
 
 export default function ZoomableToothChart({
   patientId,
   onToothSelect,
   selectedTooth,
-  numberingSystem = 'fdi'
 }: ZoomableToothChartProps) {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
@@ -76,6 +74,10 @@ export default function ZoomableToothChart({
       const delta = e.deltaY > 0 ? -0.1 : 0.1;
       setZoomLevel(prev => Math.max(0.5, Math.min(3, prev + delta)));
     }
+  };
+
+  const handleToothSelect = (toothNumber: string) => {
+    onToothSelect?.(toothNumber);
   };
 
   const handlePrintChart = async () => {
@@ -252,9 +254,8 @@ export default function ZoomableToothChart({
             <div className="p-8 flex items-center justify-center min-h-full">
               <RealisticToothChart
                 patientId={patientId}
-                onToothSelect={onToothSelect}
+                onToothSelect={handleToothSelect}
                 selectedTooth={selectedTooth}
-                numberingSystem={numberingSystem}
               />
             </div>
           </div>

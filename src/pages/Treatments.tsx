@@ -53,8 +53,7 @@ const Treatments = () => {
           <RealisticToothChart
             patientId={patientId}
             selectedTooth={selectedTooth}
-            numberingSystem={numberingSystem}
-            onToothSelect={handleToothSelect}
+            onToothSelect={(toothNumber) => handleToothSelect(toothNumber, 'universal')}
           />
           
           {selectedTooth && (
@@ -94,7 +93,7 @@ const Treatments = () => {
         <TabsContent value="interactive" className="space-y-6">
           <ZoomableToothChart
             patientId={patientId}
-            onToothSelect={handleToothSelect}
+            onToothSelect={(toothNumber) => handleToothSelect(toothNumber, 'universal')}
             selectedTooth={selectedTooth}
             numberingSystem={numberingSystem}
           />

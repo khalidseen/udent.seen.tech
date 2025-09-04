@@ -270,7 +270,7 @@ const PatientProfile = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <Enhanced2DToothChart patientId={patient.id} onToothSelect={handleToothSelect} selectedTooth={selectedTooth} numberingSystem={selectedToothSystem} />
+                    <Enhanced2DToothChart patientId={patient.id} onToothSelect={(toothNumber) => handleToothSelect(toothNumber, 'universal')} selectedTooth={selectedTooth} />
                   </CardContent>
                 </Card>
               </TabsContent>

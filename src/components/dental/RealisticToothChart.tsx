@@ -9,9 +9,8 @@ import ToothConditionDialog from "./ToothConditionDialog";
 
 interface RealisticToothChartProps {
   patientId?: string;
-  onToothSelect?: (toothNumber: string, numberingSystem: string) => void;
+  onToothSelect?: (toothNumber: string) => void;
   selectedTooth?: string;
-  numberingSystem?: 'universal' | 'palmer' | 'fdi';
 }
 
 interface ToothCondition {
@@ -33,10 +32,8 @@ interface ToothNote {
 const RealisticToothChart = ({
   patientId,
   onToothSelect,
-  selectedTooth,
-  numberingSystem = 'fdi'
+  selectedTooth
 }: RealisticToothChartProps) => {
-  const [activeSystem, setActiveSystem] = useState<'universal' | 'palmer' | 'fdi'>(numberingSystem);
   const [toothConditions, setToothConditions] = useState<ToothCondition[]>([]);
   const [toothNotes, setToothNotes] = useState<ToothNote[]>([]);
   const [selectedToothForNote, setSelectedToothForNote] = useState<string>('');
@@ -44,31 +41,10 @@ const RealisticToothChart = ({
   const [selectedToothForCondition, setSelectedToothForCondition] = useState<string>('');
   const [isConditionDialogOpen, setIsConditionDialogOpen] = useState(false);
 
-  // FDI numbering system (most commonly used internationally)
-  const fdiNumbers = {
-    upper: ['18', '17', '16', '15', '14', '13', '12', '11', '21', '22', '23', '24', '25', '26', '27', '28'],
-    lower: ['48', '47', '46', '45', '44', '43', '42', '41', '31', '32', '33', '34', '35', '36', '37', '38']
-  };
-
-  const universalNumbers = {
+  // Universal numbering system only
+  const toothNumbers = {
     upper: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'],
     lower: ['32', '31', '30', '29', '28', '27', '26', '25', '24', '23', '22', '21', '20', '19', '18', '17']
-  };
-
-  const palmerNumbers = {
-    upper: ['8', '7', '6', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '6', '7', '8'],
-    lower: ['8', '7', '6', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '6', '7', '8']
-  };
-
-  const getToothNumbers = () => {
-    switch (activeSystem) {
-      case 'palmer':
-        return palmerNumbers;
-      case 'universal':
-        return universalNumbers;
-      default:
-        return fdiNumbers;
-    }
   };
 
   useEffect(() => {
@@ -124,7 +100,7 @@ const RealisticToothChart = ({
 
   const handleToothClick = (toothNumber: string) => {
     if (onToothSelect) {
-      onToothSelect(toothNumber, activeSystem);
+      onToothSelect(toothNumber);
     } else {
       // Open note dialog
       setSelectedToothForNote(toothNumber);
@@ -132,7 +108,7 @@ const RealisticToothChart = ({
     }
   };
 
-  const toothNumbers = getToothNumbers();
+  
 
   // Realistic SVG tooth component
   const RealisticTooth = ({ 
@@ -184,7 +160,7 @@ const RealisticToothChart = ({
           "relative transition-all duration-200 hover:scale-110 p-2 group",
           isSelected && "ring-2 ring-primary ring-offset-2"
         )}
-        title={`السن رقم ${toothNumber} (${activeSystem.toUpperCase()}) - انقر مرتين لتغيير الحالة`}
+        title={`السن رقم ${toothNumber} (Universal) - انقر مرتين لتغيير الحالة`}
       >
         <svg 
           width="24" 
@@ -236,31 +212,7 @@ const RealisticToothChart = ({
     <>
       <Card className="w-full max-w-5xl mx-auto">
         <CardHeader>
-          <CardTitle className="text-center">مخطط الأسنان الواقعي</CardTitle>
-          
-          <div className="flex justify-center gap-2">
-            <Button 
-              variant={activeSystem === 'fdi' ? 'default' : 'outline'} 
-              size="sm" 
-              onClick={() => setActiveSystem('fdi')}
-            >
-              FDI
-            </Button>
-            <Button 
-              variant={activeSystem === 'universal' ? 'default' : 'outline'} 
-              size="sm" 
-              onClick={() => setActiveSystem('universal')}
-            >
-              Universal
-            </Button>
-            <Button 
-              variant={activeSystem === 'palmer' ? 'default' : 'outline'} 
-              size="sm" 
-              onClick={() => setActiveSystem('palmer')}
-            >
-              Palmer
-            </Button>
-          </div>
+          <CardTitle className="text-center">مخطط الأسنان الواقعي (Universal System)</CardTitle>
 
           {selectedTooth && (
             <div className="text-center">
@@ -355,7 +307,7 @@ const RealisticToothChart = ({
         onOpenChange={setIsNoteDialogOpen}
         patientId={patientId || ''}
         toothNumber={selectedToothForNote}
-        numberingSystem={activeSystem}
+        numberingSystem="universal"
         onNoteUpdate={fetchToothData}
       />
 
@@ -365,7 +317,7 @@ const RealisticToothChart = ({
         onOpenChange={setIsConditionDialogOpen}
         patientId={patientId || ''}
         toothNumber={selectedToothForCondition}
-        numberingSystem={activeSystem}
+        numberingSystem="universal"
         onConditionUpdate={fetchToothData}
       />
     </>

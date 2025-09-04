@@ -14,9 +14,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Heart, AlertTriangle, Plus, Edit, FileText, Calendar, Trash2, Save, X } from 'lucide-react';
 interface Enhanced2DToothChartProps {
   patientId?: string;
-  onToothSelect: (toothNumber: string, numberingSystem: string) => void;
+  onToothSelect: (toothNumber: string) => void;
   selectedTooth?: string;
-  numberingSystem?: 'universal' | 'palmer' | 'fdi';
 }
 interface ToothCondition {
   id: string;
@@ -43,10 +42,8 @@ interface ToothNote {
 const Enhanced2DToothChart = ({
   patientId,
   onToothSelect,
-  selectedTooth,
-  numberingSystem = 'universal'
+  selectedTooth
 }: Enhanced2DToothChartProps) => {
-  const [activeSystem, setActiveSystem] = useState<'universal' | 'palmer' | 'fdi'>(numberingSystem);
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [conditionDialogOpen, setConditionDialogOpen] = useState(false);
   const [newNote, setNewNote] = useState({
@@ -65,41 +62,23 @@ const Enhanced2DToothChart = ({
   } = useToast();
   const queryClient = useQueryClient();
 
-  // Define tooth mappings for different numbering systems
-  const universalNumbers = {
+  // Universal numbering system only
+  const toothNumbers = {
     upper: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'],
     lower: ['32', '31', '30', '29', '28', '27', '26', '25', '24', '23', '22', '21', '20', '19', '18', '17']
-  };
-  const palmerNumbers = {
-    upper: ['8', '7', '6', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '6', '7', '8'],
-    lower: ['8', '7', '6', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '6', '7', '8']
-  };
-  const fdiNumbers = {
-    upper: ['18', '17', '16', '15', '14', '13', '12', '11', '21', '22', '23', '24', '25', '26', '27', '28'],
-    lower: ['48', '47', '46', '45', '44', '43', '42', '41', '31', '32', '33', '34', '35', '36', '37', '38']
-  };
-  const getToothNumbers = () => {
-    switch (activeSystem) {
-      case 'palmer':
-        return palmerNumbers;
-      case 'fdi':
-        return fdiNumbers;
-      default:
-        return universalNumbers;
-    }
   };
 
   // Fetch teeth conditions
   const {
     data: toothConditions
   } = useQuery({
-    queryKey: ['tooth-conditions', patientId, activeSystem],
+    queryKey: ['tooth-conditions', patientId],
     queryFn: async () => {
       if (!patientId) return [];
       const {
         data,
         error
-      } = await supabase.from('tooth_conditions').select('*').eq('patient_id', patientId).eq('numbering_system', activeSystem);
+      } = await supabase.from('tooth_conditions').select('*').eq('patient_id', patientId).eq('numbering_system', 'universal');
       if (error) throw error;
       return data as ToothCondition[];
     },
@@ -110,13 +89,13 @@ const Enhanced2DToothChart = ({
   const {
     data: toothNotes
   } = useQuery({
-    queryKey: ['tooth-notes', patientId, activeSystem],
+    queryKey: ['tooth-notes', patientId],
     queryFn: async () => {
       if (!patientId) return [];
       const {
         data,
         error
-      } = await supabase.from('tooth_notes').select('*').eq('patient_id', patientId).eq('numbering_system', activeSystem);
+      } = await supabase.from('tooth_notes').select('*').eq('patient_id', patientId).eq('numbering_system', 'universal');
       if (error) throw error;
       return data as ToothNote[];
     },
@@ -137,7 +116,7 @@ const Enhanced2DToothChart = ({
         patient_id: patientId,
         clinic_id: profile?.id,
         tooth_number: selectedTooth,
-        numbering_system: activeSystem
+        numbering_system: 'universal'
       }).select().single();
       if (error) throw error;
       return data;
@@ -174,7 +153,7 @@ const Enhanced2DToothChart = ({
         patient_id: patientId,
         clinic_id: profile?.id,
         tooth_number: selectedTooth,
-        numbering_system: activeSystem,
+        numbering_system: 'universal',
         treatment_date: new Date().toISOString().split('T')[0]
       }).select().single();
       if (error) throw error;
@@ -197,7 +176,7 @@ const Enhanced2DToothChart = ({
     }
   });
   const handleToothClick = (toothNumber: string) => {
-    onToothSelect(toothNumber, activeSystem);
+    onToothSelect(toothNumber);
   };
   const getToothCondition = (toothNumber: string) => {
     return toothConditions?.find(c => c.tooth_number === toothNumber);
@@ -274,7 +253,7 @@ const Enhanced2DToothChart = ({
     if (isCanine) toothShape = "rounded-full h-10 w-6";
     if (isIncisor) toothShape = "rounded-sm h-8 w-5";
     return <div key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} className="relative">
-        <button onClick={() => handleToothClick(toothNumber)} className={cn(toothShape, "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative", getToothColorClasses(colorType, isSelected))} title={`السن رقم ${toothNumber} (${activeSystem.toUpperCase()})${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? ` - ${notes.length} ملاحظة` : ''}`}>
+        <button onClick={() => handleToothClick(toothNumber)} className={cn(toothShape, "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative", getToothColorClasses(colorType, isSelected))} title={`السن رقم ${toothNumber} (Universal)${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? ` - ${notes.length} ملاحظة` : ''}`}>
           {toothNumber}
           
           {/* Notes indicator */}
@@ -291,23 +270,11 @@ const Enhanced2DToothChart = ({
         </button>
       </div>;
   };
-  const toothNumbers = getToothNumbers();
+  
   return <div className="space-y-4">
       <Card className="w-full max-w-6xl mx-auto">
         <CardHeader>
-          
-          
-          <div className="flex justify-center gap-2">
-            <Button variant={activeSystem === 'universal' ? 'default' : 'outline'} size="sm" onClick={() => setActiveSystem('universal')}>
-              Universal
-            </Button>
-            <Button variant={activeSystem === 'palmer' ? 'default' : 'outline'} size="sm" onClick={() => setActiveSystem('palmer')}>
-              Palmer
-            </Button>
-            <Button variant={activeSystem === 'fdi' ? 'default' : 'outline'} size="sm" onClick={() => setActiveSystem('fdi')}>
-              FDI
-            </Button>
-          </div>
+          <CardTitle className="text-center">مخطط الأسنان ثنائي الأبعاد المحسن (Universal System)</CardTitle>
 
           {selectedTooth && <div className="text-center space-y-2">
               <Badge variant="secondary" className="text-sm">

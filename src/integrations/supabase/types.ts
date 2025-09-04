@@ -14,6 +14,216 @@ export type Database = {
   }
   public: {
     Tables: {
+      advanced_note_templates: {
+        Row: {
+          category: string
+          clinic_id: string
+          content_template: string
+          created_at: string
+          created_by: string
+          default_note_type: string | null
+          default_priority: string | null
+          default_status: string | null
+          description: string | null
+          field_validations: Json | null
+          id: string
+          is_active: boolean | null
+          is_public: boolean | null
+          name: string
+          optional_fields: string[] | null
+          required_fields: string[] | null
+          title_template: string
+          updated_at: string
+          usage_count: number | null
+        }
+        Insert: {
+          category: string
+          clinic_id: string
+          content_template: string
+          created_at?: string
+          created_by: string
+          default_note_type?: string | null
+          default_priority?: string | null
+          default_status?: string | null
+          description?: string | null
+          field_validations?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_public?: boolean | null
+          name: string
+          optional_fields?: string[] | null
+          required_fields?: string[] | null
+          title_template: string
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Update: {
+          category?: string
+          clinic_id?: string
+          content_template?: string
+          created_at?: string
+          created_by?: string
+          default_note_type?: string | null
+          default_priority?: string | null
+          default_status?: string | null
+          description?: string | null
+          field_validations?: Json | null
+          id?: string
+          is_active?: boolean | null
+          is_public?: boolean | null
+          name?: string
+          optional_fields?: string[] | null
+          required_fields?: string[] | null
+          title_template?: string
+          updated_at?: string
+          usage_count?: number | null
+        }
+        Relationships: []
+      }
+      advanced_tooth_notes: {
+        Row: {
+          assisting_staff: string[] | null
+          attachments: Json | null
+          clinic_id: string
+          clinical_findings: string | null
+          color_code: string | null
+          complications: string | null
+          content: string
+          created_at: string
+          created_by: string | null
+          diagnosis: string | null
+          differential_diagnosis: string[] | null
+          examination_date: string | null
+          follow_up_date: string | null
+          id: string
+          is_template: boolean | null
+          last_modified_by: string | null
+          materials_used: string[] | null
+          next_appointment_date: string | null
+          note_type: string
+          numbering_system: string
+          patient_id: string
+          patient_response: string | null
+          peer_reviewed: boolean | null
+          priority: string
+          quality_score: number | null
+          radiographic_findings: string | null
+          reference_links: string[] | null
+          related_notes: string[] | null
+          review_comments: string | null
+          review_date: string | null
+          reviewed_by: string | null
+          severity: string | null
+          status: string
+          symptoms: string[] | null
+          tags: string[] | null
+          template_id: string | null
+          title: string
+          tooth_number: string
+          treating_doctor: string | null
+          treatment_completion_date: string | null
+          treatment_outcome: string | null
+          treatment_performed: string | null
+          treatment_plan: string | null
+          treatment_start_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          assisting_staff?: string[] | null
+          attachments?: Json | null
+          clinic_id: string
+          clinical_findings?: string | null
+          color_code?: string | null
+          complications?: string | null
+          content: string
+          created_at?: string
+          created_by?: string | null
+          diagnosis?: string | null
+          differential_diagnosis?: string[] | null
+          examination_date?: string | null
+          follow_up_date?: string | null
+          id?: string
+          is_template?: boolean | null
+          last_modified_by?: string | null
+          materials_used?: string[] | null
+          next_appointment_date?: string | null
+          note_type?: string
+          numbering_system?: string
+          patient_id: string
+          patient_response?: string | null
+          peer_reviewed?: boolean | null
+          priority?: string
+          quality_score?: number | null
+          radiographic_findings?: string | null
+          reference_links?: string[] | null
+          related_notes?: string[] | null
+          review_comments?: string | null
+          review_date?: string | null
+          reviewed_by?: string | null
+          severity?: string | null
+          status?: string
+          symptoms?: string[] | null
+          tags?: string[] | null
+          template_id?: string | null
+          title: string
+          tooth_number: string
+          treating_doctor?: string | null
+          treatment_completion_date?: string | null
+          treatment_outcome?: string | null
+          treatment_performed?: string | null
+          treatment_plan?: string | null
+          treatment_start_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          assisting_staff?: string[] | null
+          attachments?: Json | null
+          clinic_id?: string
+          clinical_findings?: string | null
+          color_code?: string | null
+          complications?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string | null
+          diagnosis?: string | null
+          differential_diagnosis?: string[] | null
+          examination_date?: string | null
+          follow_up_date?: string | null
+          id?: string
+          is_template?: boolean | null
+          last_modified_by?: string | null
+          materials_used?: string[] | null
+          next_appointment_date?: string | null
+          note_type?: string
+          numbering_system?: string
+          patient_id?: string
+          patient_response?: string | null
+          peer_reviewed?: boolean | null
+          priority?: string
+          quality_score?: number | null
+          radiographic_findings?: string | null
+          reference_links?: string[] | null
+          related_notes?: string[] | null
+          review_comments?: string | null
+          review_date?: string | null
+          reviewed_by?: string | null
+          severity?: string | null
+          status?: string
+          symptoms?: string[] | null
+          tags?: string[] | null
+          template_id?: string | null
+          title?: string
+          tooth_number?: string
+          treating_doctor?: string | null
+          treatment_completion_date?: string | null
+          treatment_outcome?: string | null
+          treatment_performed?: string | null
+          treatment_plan?: string | null
+          treatment_start_date?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_analysis_results: {
         Row: {
           ai_model: string
@@ -281,6 +491,56 @@ export type Database = {
           role_name?: Database["public"]["Enums"]["user_role_type"]
         }
         Relationships: []
+      }
+      clinical_attachments: {
+        Row: {
+          category: string | null
+          clinic_id: string
+          description: string | null
+          file_name: string
+          file_path: string
+          file_size: number | null
+          file_type: string
+          id: string
+          note_id: string
+          uploaded_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          category?: string | null
+          clinic_id: string
+          description?: string | null
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          file_type: string
+          id?: string
+          note_id: string
+          uploaded_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          category?: string | null
+          clinic_id?: string
+          description?: string | null
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          file_type?: string
+          id?: string
+          note_id?: string
+          uploaded_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_attachments_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "advanced_tooth_notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       clinics: {
         Row: {
@@ -2306,6 +2566,104 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      tooth_treatment_history: {
+        Row: {
+          anesthesia_used: string[] | null
+          appointment_id: string | null
+          assisting_doctors: string[] | null
+          clinic_id: string
+          complications: string | null
+          cost: number | null
+          created_at: string
+          created_by: string
+          description: string | null
+          duration_minutes: number | null
+          end_time: string | null
+          equipment_used: string[] | null
+          id: string
+          insurance_amount: number | null
+          insurance_covered: boolean | null
+          materials_used: Json | null
+          numbering_system: string
+          patient_id: string
+          patient_satisfaction: number | null
+          primary_doctor: string | null
+          related_note_id: string | null
+          start_time: string | null
+          success_rate: number | null
+          tooth_number: string
+          treatment_date: string
+          treatment_name: string
+          treatment_type: string
+        }
+        Insert: {
+          anesthesia_used?: string[] | null
+          appointment_id?: string | null
+          assisting_doctors?: string[] | null
+          clinic_id: string
+          complications?: string | null
+          cost?: number | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          equipment_used?: string[] | null
+          id?: string
+          insurance_amount?: number | null
+          insurance_covered?: boolean | null
+          materials_used?: Json | null
+          numbering_system?: string
+          patient_id: string
+          patient_satisfaction?: number | null
+          primary_doctor?: string | null
+          related_note_id?: string | null
+          start_time?: string | null
+          success_rate?: number | null
+          tooth_number: string
+          treatment_date: string
+          treatment_name: string
+          treatment_type: string
+        }
+        Update: {
+          anesthesia_used?: string[] | null
+          appointment_id?: string | null
+          assisting_doctors?: string[] | null
+          clinic_id?: string
+          complications?: string | null
+          cost?: number | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          duration_minutes?: number | null
+          end_time?: string | null
+          equipment_used?: string[] | null
+          id?: string
+          insurance_amount?: number | null
+          insurance_covered?: boolean | null
+          materials_used?: Json | null
+          numbering_system?: string
+          patient_id?: string
+          patient_satisfaction?: number | null
+          primary_doctor?: string | null
+          related_note_id?: string | null
+          start_time?: string | null
+          success_rate?: number | null
+          tooth_number?: string
+          treatment_date?: string
+          treatment_name?: string
+          treatment_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tooth_treatment_history_related_note_id_fkey"
+            columns: ["related_note_id"]
+            isOneToOne: false
+            referencedRelation: "advanced_tooth_notes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       treatment_plans: {
         Row: {
