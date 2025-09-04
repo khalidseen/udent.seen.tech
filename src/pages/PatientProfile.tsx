@@ -47,6 +47,7 @@ const PatientProfile = () => {
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState<Patient | null>(null);
+  const [saving, setSaving] = useState(false);
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
   const [selectedTooth, setSelectedTooth] = useState<string>("");
   const [selectedToothSystem, setSelectedToothSystem] = useState<'universal' | 'palmer' | 'fdi'>('universal');
@@ -155,6 +156,8 @@ const PatientProfile = () => {
   };
   const handleSaveEdit = async () => {
     if (!editData || !user) return;
+    
+    setSaving(true);
     try {
       const {
         error
@@ -168,8 +171,12 @@ const PatientProfile = () => {
         medical_history: editData.medical_history || null,
         notes: editData.notes || null
       }).eq('id', patientId);
+      
       if (error) throw error;
-      setPatient(editData);
+      
+      // Re-fetch patient data and stats to ensure UI reflects latest changes
+      await Promise.all([fetchPatient(), fetchPatientStats()]);
+      
       setEditMode(false);
       toast({
         title: "تم بنجاح",
@@ -182,6 +189,8 @@ const PatientProfile = () => {
         description: "حدث خطأ أثناء تحديث البيانات",
         variant: "destructive"
       });
+    } finally {
+      setSaving(false);
     }
   };
   const handleEditChange = (field: string, value: string) => {
@@ -457,8 +466,8 @@ const PatientProfile = () => {
                 <Button variant="outline" onClick={() => setEditMode(false)}>
                   إلغاء
                 </Button>
-                <Button onClick={handleSaveEdit}>
-                  حفظ التغييرات
+                <Button onClick={handleSaveEdit} disabled={saving}>
+                  {saving ? "جاري الحفظ..." : "حفظ التغييرات"}
                 </Button>
               </div>
             </div>}
