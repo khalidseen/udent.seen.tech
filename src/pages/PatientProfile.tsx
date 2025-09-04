@@ -247,7 +247,12 @@ const PatientProfile = () => {
             إضافة علاج
           </Button>
         </div>
-        <PatientHeader patient={patient} stats={patientStats} />
+        <PatientHeader 
+          patient={patient} 
+          stats={patientStats}
+          onEditPatient={handleEditPatient}
+          onAddTreatment={() => setTreatmentDialogOpen(true)}
+        />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-0">
