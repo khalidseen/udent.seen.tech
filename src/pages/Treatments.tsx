@@ -95,7 +95,6 @@ const Treatments = () => {
             patientId={patientId}
             onToothSelect={(toothNumber) => handleToothSelect(toothNumber, 'universal')}
             selectedTooth={selectedTooth}
-            numberingSystem={numberingSystem}
           />
         </TabsContent>
 
