@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-
 interface PatientHeaderProps {
   patient: {
     id: string;
@@ -27,7 +26,6 @@ interface PatientHeaderProps {
   onEditPatient?: () => void;
   onAddTreatment?: () => void;
 }
-
 export const PatientHeader: React.FC<PatientHeaderProps> = ({
   patient,
   stats,
@@ -37,11 +35,9 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
   const getAge = (dateOfBirth: string) => {
     return new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
   };
-
   const getGenderIcon = (gender: string) => {
     return gender === 'male' ? '👨‍⚕️' : gender === 'female' ? '👩‍⚕️' : '👤';
   };
-
   const getHealthStatus = (percentage: number) => {
     if (percentage >= 90) return {
       label: 'ممتاز',
@@ -64,11 +60,8 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
       textColor: 'text-red-700'
     };
   };
-
   const healthStatus = stats ? getHealthStatus(stats.healthPercentage) : null;
-
-  return (
-    <Card className="bg-gradient-to-r from-background to-secondary/5 border border-border/50 shadow-sm">
+  return <Card className="bg-gradient-to-r from-background to-secondary/5 border border-border/50 shadow-sm">
       <CardContent className="p-2">
         <div className="flex items-center gap-3 min-h-[60px]">
           {/* Avatar Section - Smaller */}
@@ -85,75 +78,52 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <h1 className="text-lg font-semibold text-foreground truncate" dir="rtl">{patient.full_name}</h1>
-              {patient.gender && (
-                <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+              {patient.gender && <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
                   {patient.gender === 'male' ? 'ذكر' : 'أنثى'}
-                </Badge>
-              )}
-              {patient.date_of_birth && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0.5">
+                </Badge>}
+              {patient.date_of_birth && <Badge variant="outline" className="text-xs px-1.5 py-0.5">
                   {getAge(patient.date_of_birth)} سنة
-                </Badge>
-              )}
+                </Badge>}
             </div>
             
             {/* Contact Info - Single Compact Row */}
             <div className="flex items-center gap-3 text-xs text-muted-foreground" dir="rtl">
-              {patient.phone && (
-                <div className="flex items-center gap-1">
+              {patient.phone && <div className="flex items-center gap-1">
                   <Phone className="h-3 w-3" />
                   <span>{patient.phone}</span>
-                </div>
-              )}
+                </div>}
               
-              {patient.email && (
-                <div className="flex items-center gap-1">
+              {patient.email && <div className="flex items-center gap-1">
                   <Mail className="h-3 w-3" />
                   <span className="truncate max-w-[120px]">{patient.email}</span>
-                </div>
-              )}
+                </div>}
               
-              {patient.date_of_birth && (
-                <div className="flex items-center gap-1">
+              {patient.date_of_birth && <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />
                   <span>{format(new Date(patient.date_of_birth), 'dd/MM/yyyy')}</span>
-                </div>
-              )}
+                </div>}
 
               <div className="flex items-center gap-1">
                 <IdCard className="h-3 w-3" />
-                <span>منذ {format(new Date(patient.created_at), 'MM/yyyy', { locale: ar })}</span>
+                <span>منذ {format(new Date(patient.created_at), 'MM/yyyy', {
+                  locale: ar
+                })}</span>
               </div>
 
               {/* Action Icons */}
               <div className="flex items-center gap-1">
-                {onEditPatient && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 hover:bg-primary/10"
-                    onClick={onEditPatient}
-                  >
+                {onEditPatient && <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-primary/10" onClick={onEditPatient}>
                     <Edit className="h-3 w-3" />
-                  </Button>
-                )}
-                {onAddTreatment && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 hover:bg-secondary/10"
-                    onClick={onAddTreatment}
-                  >
+                  </Button>}
+                {onAddTreatment && <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-secondary/10" onClick={onAddTreatment}>
                     <Plus className="h-3 w-3" />
-                  </Button>
-                )}
+                  </Button>}
               </div>
             </div>
           </div>
 
           {/* Stats - Icon Only */}
-          {stats && (
-            <div className="flex-shrink-0 flex items-center gap-2">
+          {stats && <div className="flex-shrink-0 flex items-center gap-2">
               <div className="flex items-center justify-center px-2 py-1">
                 <Calendar className="h-4 w-4 text-primary mr-1" />
                 <span className="text-sm font-semibold text-primary">{stats.totalAppointments}</span>
@@ -164,28 +134,19 @@ export const PatientHeader: React.FC<PatientHeaderProps> = ({
                 <span className="text-sm font-semibold text-secondary">{stats.completedTreatments}</span>
               </div>
               
-              {healthStatus && (
-                <div className="flex items-center justify-center px-2 py-1">
-                  <Heart className="h-4 w-4 text-destructive mr-1" />
-                  <span className="text-sm font-semibold">{stats.healthPercentage}%</span>
-                </div>
-              )}
-            </div>
-          )}
+              {healthStatus}
+            </div>}
         </div>
 
         {/* Medical History - Ultra Compact */}
-        {patient.medical_history && (
-          <div className="mt-2 p-1.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded">
+        {patient.medical_history && <div className="mt-2 p-1.5 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded">
             <div className="flex items-center gap-1">
               <Heart className="h-3 w-3 text-amber-600 flex-shrink-0" />
               <span className="text-xs text-amber-800 dark:text-amber-200" dir="rtl">
                 <span className="font-medium">التاريخ المرضي:</span> {patient.medical_history}
               </span>
             </div>
-          </div>
-        )}
+          </div>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
