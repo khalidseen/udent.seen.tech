@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
-import ToothNoteDialog from "./ToothNoteDialog";
+import { EnhancedToothNotesButton } from "./EnhancedToothNotesButton";
 import ToothConditionDialog from "./ToothConditionDialog";
 
 interface RealisticToothChartProps {
@@ -36,8 +36,6 @@ const RealisticToothChart = ({
 }: RealisticToothChartProps) => {
   const [toothConditions, setToothConditions] = useState<ToothCondition[]>([]);
   const [toothNotes, setToothNotes] = useState<ToothNote[]>([]);
-  const [selectedToothForNote, setSelectedToothForNote] = useState<string>('');
-  const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
   const [selectedToothForCondition, setSelectedToothForCondition] = useState<string>('');
   const [isConditionDialogOpen, setIsConditionDialogOpen] = useState(false);
 
@@ -63,9 +61,9 @@ const RealisticToothChart = ({
         .select('tooth_number, condition_type, condition_color, notes')
         .eq('patient_id', patientId);
 
-      // Fetch tooth notes
+      // Fetch advanced tooth notes
       const { data: notes } = await supabase
-        .from('tooth_notes')
+        .from('advanced_tooth_notes')
         .select('id, tooth_number, title, status, priority, color_code')
         .eq('patient_id', patientId);
 
@@ -101,10 +99,6 @@ const RealisticToothChart = ({
   const handleToothClick = (toothNumber: string) => {
     if (onToothSelect) {
       onToothSelect(toothNumber);
-    } else {
-      // Open note dialog
-      setSelectedToothForNote(toothNumber);
-      setIsNoteDialogOpen(true);
     }
   };
 
@@ -225,15 +219,23 @@ const RealisticToothChart = ({
           {/* Upper Teeth */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-center text-muted-foreground">الفك العلوي</h3>
-            <div className="flex justify-center items-end gap-1 bg-gradient-to-b from-pink-50 to-pink-100 dark:from-pink-950 dark:to-pink-900 p-4 rounded-lg">
+            <div className="flex justify-center items-end gap-2 bg-gradient-to-b from-pink-50 to-pink-100 dark:from-pink-950 dark:to-pink-900 p-4 rounded-lg">
               {toothNumbers.upper.map((tooth, index) => (
-                <RealisticTooth
-                  key={`upper-${tooth}`}
-                  toothNumber={tooth}
-                  isUpper={true}
-                  index={index}
-                  toothType={getToothType(index)}
-                />
+                <div key={`upper-${tooth}`} className="flex flex-col items-center gap-1">
+                  <RealisticTooth
+                    toothNumber={tooth}
+                    isUpper={true}
+                    index={index}
+                    toothType={getToothType(index)}
+                  />
+                  {patientId && (
+                    <EnhancedToothNotesButton
+                      patientId={patientId}
+                      toothNumber={tooth}
+                      className="scale-75"
+                    />
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -248,15 +250,23 @@ const RealisticToothChart = ({
 
           {/* Lower Teeth */}
           <div className="space-y-4">
-            <div className="flex justify-center items-start gap-1 bg-gradient-to-t from-pink-50 to-pink-100 dark:from-pink-950 dark:to-pink-900 p-4 rounded-lg">
+            <div className="flex justify-center items-start gap-2 bg-gradient-to-t from-pink-50 to-pink-100 dark:from-pink-950 dark:to-pink-900 p-4 rounded-lg">
               {toothNumbers.lower.map((tooth, index) => (
-                <RealisticTooth
-                  key={`lower-${tooth}`}
-                  toothNumber={tooth}
-                  isUpper={false}
-                  index={index}
-                  toothType={getToothType(index)}
-                />
+                <div key={`lower-${tooth}`} className="flex flex-col items-center gap-1">
+                  {patientId && (
+                    <EnhancedToothNotesButton
+                      patientId={patientId}
+                      toothNumber={tooth}
+                      className="scale-75"
+                    />
+                  )}
+                  <RealisticTooth
+                    toothNumber={tooth}
+                    isUpper={false}
+                    index={index}
+                    toothType={getToothType(index)}
+                  />
+                </div>
               ))}
             </div>
             <h3 className="text-sm font-medium text-center text-muted-foreground">الفك السفلي</h3>
@@ -300,16 +310,6 @@ const RealisticToothChart = ({
           </div>
         </CardContent>
       </Card>
-
-      {/* Tooth Note Dialog */}
-      <ToothNoteDialog
-        isOpen={isNoteDialogOpen}
-        onOpenChange={setIsNoteDialogOpen}
-        patientId={patientId || ''}
-        toothNumber={selectedToothForNote}
-        numberingSystem="universal"
-        onNoteUpdate={fetchToothData}
-      />
 
       {/* Tooth Condition Dialog */}
       <ToothConditionDialog
