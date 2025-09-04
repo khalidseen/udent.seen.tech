@@ -12,6 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, AlertTriangle, Plus, Edit, FileText, Calendar, Trash2, Save, X } from 'lucide-react';
+import { EnhancedToothNotesButton } from './EnhancedToothNotesButton';
 interface Enhanced2DToothChartProps {
   patientId?: string;
   onToothSelect: (toothNumber: string) => void;
@@ -89,13 +90,13 @@ const Enhanced2DToothChart = ({
   const {
     data: toothNotes
   } = useQuery({
-    queryKey: ['tooth-notes', patientId],
+    queryKey: ['advanced-tooth-notes', patientId],
     queryFn: async () => {
       if (!patientId) return [];
       const {
         data,
         error
-      } = await supabase.from('tooth_notes').select('*').eq('patient_id', patientId).eq('numbering_system', 'universal');
+      } = await supabase.from('advanced_tooth_notes').select('*').eq('patient_id', patientId).eq('numbering_system', 'universal');
       if (error) throw error;
       return data as ToothNote[];
     },
@@ -252,23 +253,49 @@ const Enhanced2DToothChart = ({
     if (isPremolar) toothShape = "rounded-md h-9 w-7";
     if (isCanine) toothShape = "rounded-full h-10 w-6";
     if (isIncisor) toothShape = "rounded-sm h-8 w-5";
-    return <div key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} className="relative">
-        <button onClick={() => handleToothClick(toothNumber)} className={cn(toothShape, "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative", getToothColorClasses(colorType, isSelected))} title={`السن رقم ${toothNumber} (Universal)${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? ` - ${notes.length} ملاحظة` : ''}`}>
+    return (
+      <div key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} className="relative flex flex-col items-center gap-1">
+        <button
+          onClick={() => handleToothClick(toothNumber)}
+          className={cn(
+            toothShape,
+            "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative",
+            getToothColorClasses(colorType, isSelected)
+          )}
+          title={`السن رقم ${toothNumber} (Universal)${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? ` - ${notes.length} ملاحظة` : ''}`}
+        >
           {toothNumber}
           
           {/* Notes indicator */}
-          {notes.length > 0 && <div className="absolute -top-1 -right-1">
-              <Badge variant={notes.some(n => n.priority === 'high') ? "destructive" : "secondary"} className="text-xs h-4 w-4 p-0 flex items-center justify-center rounded-full">
+          {notes.length > 0 && (
+            <div className="absolute -top-1 -right-1">
+              <Badge
+                variant={notes.some(n => n.priority === 'high') ? "destructive" : "secondary"}
+                className="text-xs h-4 w-4 p-0 flex items-center justify-center rounded-full"
+              >
                 {notes.length}
               </Badge>
-            </div>}
+            </div>
+          )}
           
           {/* Condition indicator */}
-          {condition && condition.condition_type === 'decay' && <div className="absolute -top-1 -left-1">
+          {condition && condition.condition_type === 'decay' && (
+            <div className="absolute -top-1 -left-1">
               <AlertTriangle className="h-3 w-3 text-red-600" />
-            </div>}
+            </div>
+          )}
         </button>
-      </div>;
+        
+        {/* Enhanced Notes Button */}
+        {patientId && (
+          <EnhancedToothNotesButton
+            patientId={patientId}
+            toothNumber={toothNumber}
+            className="scale-75"
+          />
+        )}
+      </div>
+    );
   };
   
   return <div className="space-y-4">
@@ -301,7 +328,7 @@ const Enhanced2DToothChart = ({
           {/* Upper Teeth */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-center text-muted-foreground">الفك العلوي</h3>
-            <div className="flex justify-center gap-1 flex-wrap">
+            <div className="flex justify-center gap-2 flex-wrap">
               {toothNumbers.upper.map((tooth, index) => renderTooth(tooth, true, index))}
             </div>
           </div>
@@ -311,7 +338,7 @@ const Enhanced2DToothChart = ({
 
           {/* Lower Teeth */}
           <div className="space-y-2">
-            <div className="flex justify-center gap-1 flex-wrap">
+            <div className="flex justify-center gap-2 flex-wrap">
               {toothNumbers.lower.map((tooth, index) => renderTooth(tooth, false, index))}
             </div>
             <h3 className="text-sm font-medium text-center text-muted-foreground">الفك السفلي</h3>
