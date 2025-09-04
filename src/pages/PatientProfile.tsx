@@ -25,7 +25,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import PatientPrescriptionSection from "@/components/patients/PatientPrescriptionSection";
 import PatientFinancialStatus from "@/components/patients/PatientFinancialStatus";
-
 interface Patient {
   id: string;
   full_name: string;
@@ -38,9 +37,12 @@ interface Patient {
   notes: string;
   created_at: string;
 }
-
 const PatientProfile = () => {
-  const { id: patientId } = useParams<{ id: string }>();
+  const {
+    id: patientId
+  } = useParams<{
+    id: string;
+  }>();
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -53,43 +55,37 @@ const PatientProfile = () => {
     completedTreatments: 0,
     healthPercentage: 85
   });
-  const { toast } = useToast();
-  const { user } = useAuth();
-
+  const {
+    toast
+  } = useToast();
+  const {
+    user
+  } = useAuth();
   useEffect(() => {
     if (patientId && user) {
       fetchPatient();
       fetchPatientStats();
     }
   }, [patientId, user]);
-
   const fetchPatient = async () => {
     if (!user) {
       setLoading(false);
       return;
     }
-
     try {
       // Get the clinic_id from user profile first
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
+      const {
+        data: profile
+      } = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
       if (!profile) {
         console.error('No profile found for user');
         setLoading(false);
         return;
       }
-
-      const { data, error } = await supabase
-        .from('patients')
-        .select('*')
-        .eq('id', patientId)
-        .eq('clinic_id', profile.id)
-        .maybeSingle();
-
+      const {
+        data,
+        error
+      } = await supabase.from('patients').select('*').eq('id', patientId).eq('clinic_id', profile.id).maybeSingle();
       if (error) throw error;
       setPatient(data);
     } catch (error) {
@@ -97,38 +93,32 @@ const PatientProfile = () => {
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تحميل بيانات المريض",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const fetchPatientStats = async () => {
     if (!patientId) return;
-
     try {
       // Fetch appointments count
-      const { data: appointments } = await supabase
-        .from('appointments')
-        .select('id, status')
-        .eq('patient_id', patientId);
+      const {
+        data: appointments
+      } = await supabase.from('appointments').select('id, status').eq('patient_id', patientId);
 
       // Fetch treatments count
-      const { data: treatments } = await supabase
-        .from('dental_treatments')
-        .select('id, status')
-        .eq('patient_id', patientId);
+      const {
+        data: treatments
+      } = await supabase.from('dental_treatments').select('id, status').eq('patient_id', patientId);
 
       // Fetch tooth conditions for health percentage
-      const { data: conditions } = await supabase
-        .from('tooth_conditions')
-        .select('condition_type')
-        .eq('patient_id', patientId);
-
+      const {
+        data: conditions
+      } = await supabase.from('tooth_conditions').select('condition_type').eq('patient_id', patientId);
       const totalAppointments = appointments?.length || 0;
       const completedTreatments = treatments?.filter(t => t.status === 'completed').length || 0;
-      
+
       // Calculate health percentage based on healthy teeth
       let healthyTeeth = 0;
       let treatedTeeth = 0;
@@ -136,10 +126,8 @@ const PatientProfile = () => {
         if (condition.condition_type === 'healthy') healthyTeeth++;
         if (['filled', 'crown', 'root_canal'].includes(condition.condition_type)) treatedTeeth++;
       });
-      
       const totalHealthyTeeth = healthyTeeth + treatedTeeth;
-      const healthPercentage = Math.round((totalHealthyTeeth / 32) * 100);
-
+      const healthPercentage = Math.round(totalHealthyTeeth / 32 * 100);
       setPatientStats({
         totalAppointments,
         completedTreatments,
@@ -149,110 +137,76 @@ const PatientProfile = () => {
       console.error('Error fetching patient stats:', error);
     }
   };
-
   const handleToothSelect = (toothNumber: string, system: 'universal' | 'palmer' | 'fdi') => {
     setSelectedTooth(toothNumber);
     setSelectedToothSystem(system);
   };
-
   const getGenderBadge = (gender: string) => {
-    return gender === 'male' ? (
-      <Badge variant="outline">ذكر</Badge>
-    ) : gender === 'female' ? (
-      <Badge variant="outline">أنثى</Badge>
-    ) : null;
+    return gender === 'male' ? <Badge variant="outline">ذكر</Badge> : gender === 'female' ? <Badge variant="outline">أنثى</Badge> : null;
   };
-
   const getAge = (dateOfBirth: string) => {
     return new Date().getFullYear() - new Date(dateOfBirth).getFullYear();
   };
-
   const handleEditPatient = () => {
-    setEditData({ ...patient! });
+    setEditData({
+      ...patient!
+    });
     setEditMode(true);
   };
-
   const handleSaveEdit = async () => {
     if (!editData || !user) return;
-
     try {
-      const { error } = await supabase
-        .from('patients')
-        .update({
-          full_name: editData.full_name,
-          phone: editData.phone || null,
-          email: editData.email || null,
-          date_of_birth: editData.date_of_birth || null,
-          gender: editData.gender || null,
-          address: editData.address || null,
-          medical_history: editData.medical_history || null,
-          notes: editData.notes || null
-        })
-        .eq('id', patientId);
-
+      const {
+        error
+      } = await supabase.from('patients').update({
+        full_name: editData.full_name,
+        phone: editData.phone || null,
+        email: editData.email || null,
+        date_of_birth: editData.date_of_birth || null,
+        gender: editData.gender || null,
+        address: editData.address || null,
+        medical_history: editData.medical_history || null,
+        notes: editData.notes || null
+      }).eq('id', patientId);
       if (error) throw error;
-
       setPatient(editData);
       setEditMode(false);
       toast({
         title: "تم بنجاح",
-        description: "تم تحديث بيانات المريض بنجاح",
+        description: "تم تحديث بيانات المريض بنجاح"
       });
     } catch (error) {
       console.error('Error updating patient:', error);
       toast({
         title: "خطأ",
         description: "حدث خطأ أثناء تحديث البيانات",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleEditChange = (field: string, value: string) => {
     if (editData) {
-      setEditData({ ...editData, [field]: value });
+      setEditData({
+        ...editData,
+        [field]: value
+      });
     }
   };
-
   if (loading) {
-    return (
-      <PageContainer>
+    return <PageContainer>
         <div className="text-center">جاري التحميل...</div>
-      </PageContainer>
-    );
+      </PageContainer>;
   }
-
   if (!patient) {
-    return (
-      <PageContainer>
+    return <PageContainer>
         <div className="text-center">لم يتم العثور على المريض</div>
-      </PageContainer>
-    );
+      </PageContainer>;
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/30 dark:from-background dark:via-background dark:to-background">
+  return <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/30 dark:from-background dark:via-background dark:to-background">
       {/* Patient Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-        <div className="flex items-center gap-4 mb-4">
-          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="hover:bg-primary/10" dir="rtl">
-            ← المرضى
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleEditPatient}>
-            <Edit className="w-4 h-4 ml-2" />
-            تعديل
-          </Button>
-          <Button size="sm" onClick={() => setTreatmentDialogOpen(true)}>
-            <Plus className="w-4 h-4 ml-2" />
-            إضافة علاج
-          </Button>
-        </div>
-        <PatientHeader 
-          patient={patient} 
-          stats={patientStats}
-          onEditPatient={handleEditPatient}
-          onAddTreatment={() => setTreatmentDialogOpen(true)}
-        />
+        
+        <PatientHeader patient={patient} stats={patientStats} onEditPatient={handleEditPatient} onAddTreatment={() => setTreatmentDialogOpen(true)} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-0">
@@ -303,12 +257,7 @@ const PatientProfile = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <Enhanced2DToothChart 
-                      patientId={patient.id} 
-                      onToothSelect={handleToothSelect}
-                      selectedTooth={selectedTooth}
-                      numberingSystem={selectedToothSystem}
-                    />
+                    <Enhanced2DToothChart patientId={patient.id} onToothSelect={handleToothSelect} selectedTooth={selectedTooth} numberingSystem={selectedToothSystem} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -347,14 +296,11 @@ const PatientProfile = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <PatientPrescriptionSection 
-                      patientId={patient.id} 
-                      patientData={{
-                        full_name: patient.full_name,
-                        date_of_birth: patient.date_of_birth,
-                        phone: patient.phone
-                      }}
-                    />
+                    <PatientPrescriptionSection patientId={patient.id} patientData={{
+                  full_name: patient.full_name,
+                  date_of_birth: patient.date_of_birth,
+                  phone: patient.phone
+                }} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -386,10 +332,7 @@ const PatientProfile = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <PatientAppointmentCalendar 
-                      patientId={patient.id} 
-                      patientName={patient.full_name}
-                    />
+                    <PatientAppointmentCalendar patientId={patient.id} patientName={patient.full_name} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -405,10 +348,7 @@ const PatientProfile = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="p-8">
-                    <PatientFinancialStatus 
-                      patientId={patient.id} 
-                      patientName={patient.full_name}
-                    />
+                    <PatientFinancialStatus patientId={patient.id} patientName={patient.full_name} />
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -416,13 +356,7 @@ const PatientProfile = () => {
           </Tabs>
       </div>
 
-      <AddTreatmentDialog
-        open={treatmentDialogOpen}
-        onOpenChange={setTreatmentDialogOpen}
-        patientId={patient.id}
-        patientName={patient.full_name}
-        onTreatmentAdded={() => setTreatmentDialogOpen(false)}
-      />
+      <AddTreatmentDialog open={treatmentDialogOpen} onOpenChange={setTreatmentDialogOpen} patientId={patient.id} patientName={patient.full_name} onTreatmentAdded={() => setTreatmentDialogOpen(false)} />
 
       {/* Edit Patient Dialog */}
       <Dialog open={editMode} onOpenChange={setEditMode}>
@@ -431,53 +365,35 @@ const PatientProfile = () => {
             <DialogTitle>تعديل بيانات المريض</DialogTitle>
           </DialogHeader>
           
-          {editData && (
-            <div className="space-y-6 mt-6">
+          {editData && <div className="space-y-6 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>اسم المريض *</Label>
-                  <Input
-                    value={editData.full_name}
-                    onChange={(e) => handleEditChange('full_name', e.target.value)}
-                    placeholder="الاسم الكامل"
-                  />
+                  <Input value={editData.full_name} onChange={e => handleEditChange('full_name', e.target.value)} placeholder="الاسم الكامل" />
                 </div>
                 
                 <div className="space-y-2">
                   <Label>رقم الهاتف</Label>
-                  <Input
-                    value={editData.phone || ''}
-                    onChange={(e) => handleEditChange('phone', e.target.value)}
-                    placeholder="+201234567890"
-                  />
+                  <Input value={editData.phone || ''} onChange={e => handleEditChange('phone', e.target.value)} placeholder="+201234567890" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>البريد الإلكتروني</Label>
-                  <Input
-                    value={editData.email || ''}
-                    onChange={(e) => handleEditChange('email', e.target.value)}
-                    placeholder="patient@example.com"
-                    type="email"
-                  />
+                  <Input value={editData.email || ''} onChange={e => handleEditChange('email', e.target.value)} placeholder="patient@example.com" type="email" />
                 </div>
                 
                 <div className="space-y-2">
                   <Label>تاريخ الميلاد</Label>
-                  <Input
-                    value={editData.date_of_birth || ''}
-                    onChange={(e) => handleEditChange('date_of_birth', e.target.value)}
-                    type="date"
-                  />
+                  <Input value={editData.date_of_birth || ''} onChange={e => handleEditChange('date_of_birth', e.target.value)} type="date" />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>الجنس</Label>
-                  <Select value={editData.gender || ''} onValueChange={(value) => handleEditChange('gender', value)}>
+                  <Select value={editData.gender || ''} onValueChange={value => handleEditChange('gender', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="اختر الجنس" />
                     </SelectTrigger>
@@ -490,33 +406,19 @@ const PatientProfile = () => {
                 
                 <div className="space-y-2">
                   <Label>العنوان</Label>
-                  <Input
-                    value={editData.address || ''}
-                    onChange={(e) => handleEditChange('address', e.target.value)}
-                    placeholder="عنوان المريض"
-                  />
+                  <Input value={editData.address || ''} onChange={e => handleEditChange('address', e.target.value)} placeholder="عنوان المريض" />
                 </div>
               </div>
 
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label>التاريخ المرضي</Label>
-                  <Textarea
-                    value={editData.medical_history || ''}
-                    onChange={(e) => handleEditChange('medical_history', e.target.value)}
-                    placeholder="التاريخ المرضي والحساسيات..."
-                    rows={3}
-                  />
+                  <Textarea value={editData.medical_history || ''} onChange={e => handleEditChange('medical_history', e.target.value)} placeholder="التاريخ المرضي والحساسيات..." rows={3} />
                 </div>
                 
                 <div className="space-y-2">
                   <Label>ملاحظات إضافية</Label>
-                  <Textarea
-                    value={editData.notes || ''}
-                    onChange={(e) => handleEditChange('notes', e.target.value)}
-                    placeholder="أي ملاحظات أو معلومات إضافية..."
-                    rows={3}
-                  />
+                  <Textarea value={editData.notes || ''} onChange={e => handleEditChange('notes', e.target.value)} placeholder="أي ملاحظات أو معلومات إضافية..." rows={3} />
                 </div>
               </div>
 
@@ -528,12 +430,9 @@ const PatientProfile = () => {
                   حفظ التغييرات
                 </Button>
               </div>
-            </div>
-          )}
+            </div>}
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default PatientProfile;
