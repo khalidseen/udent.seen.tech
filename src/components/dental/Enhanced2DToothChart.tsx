@@ -12,7 +12,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Heart, AlertTriangle, Plus, Edit, FileText, Calendar, Trash2, Save, X } from 'lucide-react';
-import { EnhancedToothNotesButton } from './EnhancedToothNotesButton';
+import ToothNoteDialog from './ToothNoteDialog';
 interface Enhanced2DToothChartProps {
   patientId?: string;
   onToothSelect: (toothNumber: string) => void;
@@ -253,16 +253,19 @@ const Enhanced2DToothChart = ({
     if (isPremolar) toothShape = "rounded-md h-9 w-7";
     if (isCanine) toothShape = "rounded-full h-10 w-6";
     if (isIncisor) toothShape = "rounded-sm h-8 w-5";
+    // Create tooltip content for hover
+    const tooltipContent = `السن رقم ${toothNumber} (Universal)${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? `\nالملاحظات:\n${notes.map(n => `• ${n.title}: ${n.content.substring(0, 50)}${n.content.length > 50 ? '...' : ''}`).join('\n')}` : ''}`;
+
     return (
-      <div key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} className="relative flex flex-col items-center gap-1">
+      <div key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} className="relative">
         <button
           onClick={() => handleToothClick(toothNumber)}
           className={cn(
             toothShape,
-            "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative",
+            "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative group",
             getToothColorClasses(colorType, isSelected)
           )}
-          title={`السن رقم ${toothNumber} (Universal)${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? ` - ${notes.length} ملاحظة` : ''}`}
+          title={tooltipContent}
         >
           {toothNumber}
           
@@ -284,16 +287,34 @@ const Enhanced2DToothChart = ({
               <AlertTriangle className="h-3 w-3 text-red-600" />
             </div>
           )}
+          
+          {/* Hover tooltip for notes */}
+          {notes.length > 0 && (
+            <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none">
+              <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3 max-w-xs whitespace-pre-line text-right text-xs">
+                <div className="font-medium mb-2">ملاحظات السن {toothNumber}:</div>
+                {notes.slice(0, 3).map((note, idx) => (
+                  <div key={note.id} className="mb-1 last:mb-0">
+                    <div className="font-medium text-primary">{note.title}</div>
+                    <div className="text-muted-foreground">
+                      {note.content.length > 80 ? note.content.substring(0, 80) + '...' : note.content}
+                    </div>
+                    {note.priority === 'high' && (
+                      <Badge variant="destructive" className="text-xs mt-1">
+                        أولوية عالية
+                      </Badge>
+                    )}
+                  </div>
+                ))}
+                {notes.length > 3 && (
+                  <div className="text-muted-foreground text-xs mt-1">
+                    و {notes.length - 3} ملاحظات أخرى...
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </button>
-        
-        {/* Enhanced Notes Button */}
-        {patientId && (
-          <EnhancedToothNotesButton
-            patientId={patientId}
-            toothNumber={toothNumber}
-            className="scale-75"
-          />
-        )}
       </div>
     );
   };
@@ -311,16 +332,18 @@ const Enhanced2DToothChart = ({
                   </span>}
               </Badge>
               
-              {patientId && <div className="flex justify-center gap-2">
+              {patientId && (
+                <div className="flex justify-center gap-2">
                   <Button variant="outline" size="sm" onClick={() => setNoteDialogOpen(true)}>
                     <Plus className="h-4 w-4 ml-2" />
-                    إضافة ملاحظة
+                    إضافة ملاحظة طبية
                   </Button>
                   <Button variant="outline" size="sm" onClick={() => setConditionDialogOpen(true)}>
                     <Edit className="h-4 w-4 ml-2" />
                     تحديث الحالة
                   </Button>
-                </div>}
+                </div>
+              )}
             </div>}
         </CardHeader>
 
@@ -328,7 +351,7 @@ const Enhanced2DToothChart = ({
           {/* Upper Teeth */}
           <div className="space-y-2">
             <h3 className="text-sm font-medium text-center text-muted-foreground">الفك العلوي</h3>
-            <div className="flex justify-center gap-2 flex-wrap">
+            <div className="flex justify-center gap-1 flex-wrap">
               {toothNumbers.upper.map((tooth, index) => renderTooth(tooth, true, index))}
             </div>
           </div>
@@ -338,7 +361,7 @@ const Enhanced2DToothChart = ({
 
           {/* Lower Teeth */}
           <div className="space-y-2">
-            <div className="flex justify-center gap-2 flex-wrap">
+            <div className="flex justify-center gap-1 flex-wrap">
               {toothNumbers.lower.map((tooth, index) => renderTooth(tooth, false, index))}
             </div>
             <h3 className="text-sm font-medium text-center text-muted-foreground">الفك السفلي</h3>
@@ -409,80 +432,18 @@ const Enhanced2DToothChart = ({
         </CardContent>
       </Card>
 
-      {/* Add Note Dialog */}
-      <Dialog open={noteDialogOpen} onOpenChange={setNoteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>إضافة ملاحظة للسن {selectedTooth}</DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="note-title">عنوان الملاحظة</Label>
-              <Input id="note-title" value={newNote.title} onChange={e => setNewNote({
-              ...newNote,
-              title: e.target.value
-            })} placeholder="أدخل عنوان الملاحظة" />
-            </div>
-            
-            <div>
-              <Label htmlFor="note-content">محتوى الملاحظة</Label>
-              <Textarea id="note-content" value={newNote.content} onChange={e => setNewNote({
-              ...newNote,
-              content: e.target.value
-            })} placeholder="أدخل تفاصيل الملاحظة" rows={4} />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="note-type">نوع الملاحظة</Label>
-                <Select value={newNote.note_type} onValueChange={value => setNewNote({
-                ...newNote,
-                note_type: value
-              })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">عام</SelectItem>
-                    <SelectItem value="treatment">علاج</SelectItem>
-                    <SelectItem value="diagnosis">تشخيص</SelectItem>
-                    <SelectItem value="follow_up">متابعة</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="note-priority">الأولوية</Label>
-                <Select value={newNote.priority} onValueChange={value => setNewNote({
-                ...newNote,
-                priority: value
-              })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="low">منخفضة</SelectItem>
-                    <SelectItem value="medium">متوسطة</SelectItem>
-                    <SelectItem value="high">عالية</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setNoteDialogOpen(false)}>
-                <X className="h-4 w-4 ml-2" />
-                إلغاء
-              </Button>
-              <Button onClick={() => addNoteMutation.mutate(newNote)} disabled={!newNote.title || !newNote.content}>
-                <Save className="h-4 w-4 ml-2" />
-                حفظ
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {patientId && selectedTooth && (
+        <ToothNoteDialog
+          isOpen={noteDialogOpen}
+          onOpenChange={setNoteDialogOpen}
+          patientId={patientId}
+          toothNumber={selectedTooth}
+          numberingSystem="universal"
+          onNoteUpdate={() => {
+            queryClient.invalidateQueries({ queryKey: ['advanced-tooth-notes'] });
+          }}
+        />
+      )}
 
       {/* Add Condition Dialog */}
       <Dialog open={conditionDialogOpen} onOpenChange={setConditionDialogOpen}>
