@@ -359,6 +359,38 @@ const Enhanced2DToothChart = ({
           {selectedTooth && <div className="bg-muted/50 p-4 rounded-lg space-y-4">
               <h4 className="font-medium text-center">تفاصيل السن {selectedTooth}</h4>
               
+              {/* Control Buttons */}
+              <div className="flex justify-center gap-2 flex-wrap">
+                <Button 
+                  size="sm" 
+                  onClick={() => setNoteDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  إضافة ملاحظة
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => setConditionDialogOpen(true)}
+                  className="flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  تحديث الحالة
+                </Button>
+                {getToothNotes(selectedTooth).length > 0 && (
+                  <Button 
+                    size="sm" 
+                    variant="secondary"
+                    onClick={() => setNoteDialogOpen(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <FileText className="h-4 w-4" />
+                    عرض الملاحظات ({getToothNotes(selectedTooth).length})
+                  </Button>
+                )}
+              </div>
+              
               {/* Current Condition */}
               {getToothCondition(selectedTooth) && <div className="space-y-2">
                   <h5 className="text-sm font-medium">الحالة الحالية:</h5>
