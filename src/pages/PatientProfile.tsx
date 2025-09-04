@@ -232,95 +232,22 @@ const PatientProfile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/30 dark:from-background dark:via-background dark:to-background">
-      {/* Enhanced Patient Header */}
-      <div className="bg-white/90 dark:bg-background/90 backdrop-blur-xl border-b border-primary/20 sticky top-0 z-50 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6">
-            {/* Patient Avatar & Basic Info */}
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="hover:bg-primary/10 mb-4 lg:mb-0">
-                المرضى ←
-              </Button>
-              <div className="hidden lg:block h-8 w-px bg-border"></div>
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center text-white font-bold text-xl shadow-xl">
-                    {patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 text-2xl">
-                    {patient.gender === 'male' ? '👨‍⚕️' : patient.gender === 'female' ? '👩‍⚕️' : '👤'}
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <h1 className="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                    {patient.full_name}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-sm text-muted-foreground">#{patient.id.slice(0, 8)}</p>
-                    {patient.gender && (
-                      <Badge variant="outline" className="text-xs">
-                        {patient.gender === 'male' ? 'ذكر' : 'أنثى'}
-                      </Badge>
-                    )}
-                    {patient.date_of_birth && (
-                      <Badge variant="secondary" className="text-xs bg-primary/10 text-primary">
-                        {getAge(patient.date_of_birth)} سنة
-                      </Badge>
-                    )}
-                    <Badge variant="outline" className="text-xs">
-                      مريض منذ {format(new Date(patient.created_at), 'MMMM yyyy', { locale: ar })}
-                    </Badge>
-                  </div>
-                  {/* Contact Info Row */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground mt-2">
-                    {patient.phone && (
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {patient.phone}
-                      </div>
-                    )}
-                    {patient.email && (
-                      <div className="flex items-center gap-1">
-                        <Heart className="h-3 w-3" />
-                        {patient.email}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Patient Stats & Actions */}
-            <div className="flex-1 flex flex-col lg:flex-row items-start lg:items-center justify-end gap-6">
-              {/* Statistics Cards */}
-              <div className="grid grid-cols-2 gap-2 w-full lg:w-auto">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/50 rounded-lg p-3 border border-blue-200/50 dark:border-blue-800/50 text-center min-w-[80px] hover:shadow-md transition-all duration-200">
-                  <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{patientStats.totalAppointments}</div>
-                  <div className="text-xs text-blue-700 dark:text-blue-300 font-medium">إجمالي المواعيد</div>
-                </div>
-                
-                <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/50 dark:to-green-900/50 rounded-lg p-3 border border-green-200/50 dark:border-green-800/50 text-center min-w-[80px] hover:shadow-md transition-all duration-200">
-                  <div className="text-lg font-bold text-green-600 dark:text-green-400">{patientStats.completedTreatments}</div>
-                  <div className="text-xs text-green-700 dark:text-green-300 font-medium">العلاجات المكتملة</div>
-                </div>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex items-center gap-1 w-full lg:w-auto">
-                <Button variant="outline" size="sm" className="w-8 h-8 p-0 hover:bg-blue-50 hover:border-blue-300">
-                  <Printer className="w-3.5 h-3.5" />
-                </Button>
-                <Button variant="outline" size="sm" onClick={handleEditPatient} className="w-8 h-8 p-0 hover:bg-orange-50 hover:border-orange-300">
-                  <Edit className="w-3.5 h-3.5" />
-                </Button>
-                <Button size="sm" onClick={() => setTreatmentDialogOpen(true)} className="bg-gradient-to-r from-primary to-secondary shadow-md hover:shadow-lg transition-all duration-200 flex-1 lg:flex-none">
-                  <Plus className="w-3.5 h-3.5 mr-1" />
-                  <span className="text-xs">إضافة علاج جديد</span>
-                </Button>
-              </div>
-            </div>
-          </div>
+      {/* Patient Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+        <div className="flex items-center gap-4 mb-4">
+          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="hover:bg-primary/10" dir="rtl">
+            ← المرضى
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleEditPatient}>
+            <Edit className="w-4 h-4 ml-2" />
+            تعديل
+          </Button>
+          <Button size="sm" onClick={() => setTreatmentDialogOpen(true)}>
+            <Plus className="w-4 h-4 ml-2" />
+            إضافة علاج
+          </Button>
         </div>
+        <PatientHeader patient={patient} stats={patientStats} />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-0">
@@ -330,29 +257,29 @@ const PatientProfile = () => {
           <div className="mb-0">
             <div className="bg-background/90 backdrop-blur-sm shadow-lg border rounded-t-2xl" dir="rtl">
               <TabsList className="grid w-full h-auto bg-transparent p-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1" dir="rtl">
-                <TabsTrigger value="financial" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-primary-foreground hover:bg-emerald-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
-                  <CreditCard className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">الحالة المالية</span>
-                </TabsTrigger>
-                <TabsTrigger value="appointments" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-primary-foreground hover:bg-orange-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
-                  <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">المواعيد</span>
-                </TabsTrigger>
-                <TabsTrigger value="images" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-cyan-500 data-[state=active]:text-primary-foreground hover:bg-indigo-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
-                  <Image className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">الأشعة</span>
-                </TabsTrigger>
-                <TabsTrigger value="prescriptions" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-primary-foreground hover:bg-purple-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
-                  <Stethoscope className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">الوصفات</span>
+                <TabsTrigger value="dental-chart" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground hover:bg-primary/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Heart className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">مخطط الأسنان</span>
                 </TabsTrigger>
                 <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-blue-500 data-[state=active]:text-primary-foreground hover:bg-green-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
                   <Activity className="w-3.5 h-3.5 flex-shrink-0" />
                   <span className="text-xs font-medium">نظرة عامة</span>
                 </TabsTrigger>
-                <TabsTrigger value="dental-chart" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-primary data-[state=active]:to-secondary data-[state=active]:text-primary-foreground hover:bg-primary/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
-                  <Heart className="w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-xs font-medium">مخطط الأسنان</span>
+                <TabsTrigger value="prescriptions" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-primary-foreground hover:bg-purple-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Stethoscope className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">الوصفات</span>
+                </TabsTrigger>
+                <TabsTrigger value="images" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-500 data-[state=active]:to-cyan-500 data-[state=active]:text-primary-foreground hover:bg-indigo-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Image className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">الأشعة</span>
+                </TabsTrigger>
+                <TabsTrigger value="appointments" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-primary-foreground hover:bg-orange-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">المواعيد</span>
+                </TabsTrigger>
+                <TabsTrigger value="financial" className="flex flex-col sm:flex-row items-center justify-center gap-1 p-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-500 data-[state=active]:text-primary-foreground hover:bg-emerald-500/10 transition-all duration-200 rounded-lg text-center" dir="rtl">
+                  <CreditCard className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-xs font-medium">الحالة المالية</span>
                 </TabsTrigger>
               </TabsList>
             </div>
