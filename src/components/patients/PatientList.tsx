@@ -8,6 +8,8 @@ import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
 import VirtualizedPatientList from "./VirtualizedPatientList";
 import { usePatients, useClinicId } from "@/hooks/usePatients";
+import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
+import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -15,6 +17,7 @@ import { withErrorBoundary } from "@/components/ui/error-boundary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 const PatientList = () => {
   const { t } = useLanguage();
+  const { metrics } = usePerformanceMonitor('PatientList');
   
   // State management
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -39,15 +42,7 @@ const PatientList = () => {
 
   // Optimized search with debouncing
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
-
-  // Use debounced search effect
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   // Calculate pagination parameters
 
   const offset = useMemo(() => (currentPage - 1) * itemsPerPage, [currentPage, itemsPerPage]);

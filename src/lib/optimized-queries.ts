@@ -17,8 +17,19 @@ export const optimizedPatientQueries = {
         created_at,
         date_of_birth,
         gender,
-        national_id
-      `)
+        national_id,
+        address,
+        medical_history,
+        financial_status,
+        emergency_contact,
+        emergency_phone,
+        insurance_info,
+        blood_type,
+        occupation,
+        marital_status,
+        assigned_doctor_id,
+        medical_condition
+      `, { count: 'exact' })
       .eq("clinic_id", clinicId)
       .order("created_at", { ascending: false })
       .range((page - 1) * limit, page * limit - 1);

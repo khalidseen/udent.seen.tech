@@ -2,6 +2,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineSupabase } from '@/lib/offline-supabase';
 import { globalCaches } from '@/lib/performance-optimizations';
+import { optimizedPatientQueries } from '@/lib/optimized-queries';
+import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 
 export interface Patient {
   id: string;
@@ -38,63 +40,35 @@ export interface PatientsQueryParams {
   ascending?: boolean;
 }
 
-// Enhanced fetch function with better performance
+// Enhanced fetch function using optimized queries
 const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patient[]; total: number }> => {
-  const { clinicId, search = '', limit = 50, offset = 0, orderBy = 'created_at', ascending = false } = params;
+  const { clinicId, search = '', limit = 50, offset = 0 } = params;
   
   if (!clinicId) {
     return { data: [], total: 0 };
   }
 
-  // Check cache first
-  const cacheKey = `patients_${clinicId}_${search}_${limit}_${offset}_${orderBy}_${ascending}`;
-  const cached = globalCaches.patients.get(cacheKey);
-  if (cached) {
-    return cached;
-  }
-
   try {
-    let query = supabase
-      .from('patients')
-      .select(`
-        *,
-        assigned_doctor:doctors(full_name)
-      `, { count: 'exact' })
-      .eq('clinic_id', clinicId);
+    // Use optimized query with pagination
+    const page = Math.floor(offset / limit) + 1;
+    const result = await optimizedPatientQueries.getPatients(
+      clinicId, 
+      page, 
+      limit, 
+      search
+    );
 
-    // Add search filter if provided
-    if (search) {
-      query = query.or(`
-        full_name.ilike.%${search}%,
-        phone.ilike.%${search}%,
-        email.ilike.%${search}%,
-        national_id.ilike.%${search}%
-      `);
-    }
+    if (result.error) throw result.error;
 
-    // Add pagination and ordering
-    query = query
-      .order(orderBy, { ascending })
-      .range(offset, offset + limit - 1);
-
-    const { data: patientsData, error, count } = await query;
-
-    if (error) throw error;
-
-    const enhancedPatients: Patient[] = patientsData?.map(patient => ({
+    const enhancedPatients: Patient[] = result.data?.map(patient => ({
       ...patient,
-      financial_status: patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial' || 'pending',
-      assigned_doctor: patient.assigned_doctor ? {
-        full_name: patient.assigned_doctor.full_name
-      } : undefined
+      address: patient.address || '',
+      medical_history: patient.medical_history || '',
+      financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
+      assigned_doctor: undefined
     })) || [];
 
-    const result = { data: enhancedPatients, total: count || 0 };
-    
-    // Cache the result
-    globalCaches.patients.set(cacheKey, result, 5 * 60 * 1000); // 5 minutes
-    
-    return result;
+    return { data: enhancedPatients, total: result.count || 0 };
 
   } catch (error) {
     console.error('Error fetching patients:', error);
@@ -103,12 +77,14 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
     try {
       const patientsResult = await offlineSupabase.select('patients', {
         filter: { clinic_id: clinicId },
-        order: { column: orderBy, ascending }
+        order: { column: 'created_at', ascending: false }
       });
 
       const fallbackPatients: Patient[] = patientsResult.data?.map(patient => ({
         ...patient,
-        financial_status: patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial' || 'pending',
+        address: patient.address || '',
+        medical_history: patient.medical_history || '',
+        financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
         assigned_doctor: undefined
       })) || [];
 
@@ -120,21 +96,20 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
   }
 };
 
-// Hook for fetching patients with React Query
+// Hook for fetching patients with optimized query
 export const usePatients = (params: PatientsQueryParams) => {
-  return useQuery({
-    queryKey: ['patients', params],
-    queryFn: () => fetchPatients(params),
-    enabled: !!params.clinicId,
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false,
-    retry: (failureCount, error) => {
-      // Don't retry if it's a permission error
-      if (error?.message?.includes('permission')) return false;
-      return failureCount < 2;
+  const queryKey = ['patients', JSON.stringify(params)];
+  
+  return useOptimizedQuery(
+    queryKey,
+    () => fetchPatients(params),
+    {
+      enabled: !!params.clinicId,
+      staleTime: 2 * 60 * 1000,
+      cacheTime: 10 * 60 * 1000,
+      localCacheMinutes: 3
     }
-  });
+  );
 };
 
 // Hook for getting current user's clinic ID
