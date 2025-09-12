@@ -65,10 +65,8 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
     // Use direct supabase query with join to get doctor info
     const { data: patientsData, error, count } = await supabase
       .from('patients')
-      .select(`
-        *,
-        assigned_doctor:profiles!assigned_doctor_id(full_name)
-      `, { count: 'exact' })
+      .select('*', { count: 'exact' })
+      .eq('clinic_id', clinicId)
       .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -84,8 +82,7 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
       ...patient,
       address: patient.address || '',
       medical_history: patient.medical_history || '',
-      financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
-      assigned_doctor: patient.assigned_doctor ? { full_name: patient.assigned_doctor.full_name } : undefined
+      financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending'
     })) || []) as unknown) as Patient[];
 
     return { data: enhancedPatients, total: count || 0 };
