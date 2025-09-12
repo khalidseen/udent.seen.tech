@@ -104,17 +104,9 @@ export async function enhancedSupabaseQuery(
 
 // 3. Enhanced Permission Fetching with Multiple Fallbacks
 export async function getPermissionsWithFallback(userId: string) {
-  // Try RPC function first
   try {
-    const result = await enhancedSupabaseQuery(
-      () => supabase.rpc('get_user_effective_permissions'),
-      [],
-      'permissions_rpc'
-    );
-    
-    if (result.data && result.data.length > 0) {
-      return result.data;
-    }
+    const { data, error } = await supabase.rpc('get_user_effective_permissions');
+    if (!error && data && data.length > 0) return data;
   } catch (error) {
     console.warn('RPC permissions failed:', error);
   }
@@ -122,10 +114,10 @@ export async function getPermissionsWithFallback(userId: string) {
   // Fallback 1: Try direct profile query
   try {
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('profiles' as any)
       .select('role')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (profile?.role) {
       return getDefaultPermissionsByRole(profile.role);
@@ -140,17 +132,9 @@ export async function getPermissionsWithFallback(userId: string) {
 
 // 4. Enhanced Role Fetching
 export async function getRolesWithFallback(userId: string) {
-  // Try RPC function first
   try {
-    const result = await enhancedSupabaseQuery(
-      () => supabase.rpc('get_user_roles'),
-      [],
-      'roles_rpc'
-    );
-    
-    if (result.data && result.data.length > 0) {
-      return result.data;
-    }
+    const { data, error } = await supabase.rpc('get_user_roles');
+    if (!error && data && data.length > 0) return data;
   } catch (error) {
     console.warn('RPC roles failed:', error);
   }
@@ -158,10 +142,10 @@ export async function getRolesWithFallback(userId: string) {
   // Fallback: Try profile query
   try {
     const { data: profile } = await supabase
-      .from('profiles')
+      .from('profiles' as any)
       .select('role')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
     if (profile?.role) {
       return [{

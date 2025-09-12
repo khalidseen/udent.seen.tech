@@ -58,17 +58,10 @@ export default function MedicalRecords() {
 
   // Update patientFilter when URL parameter changes
   useEffect(() => {
-    if (patientIdFromUrl && patients) {
+    if (patientIdFromUrl) {
       setPatientFilter(patientIdFromUrl);
-      const selectedPatient = patients.find(p => p.id === patientIdFromUrl);
-      if (selectedPatient) {
-        toast({
-          title: 'تم التنقل للملف الطبي',
-          description: `عرض السجلات الطبية للمريض: ${selectedPatient.full_name}`,
-        });
-      }
     }
-  }, [patientIdFromUrl, patients, toast]);
+  }, [patientIdFromUrl]);
 
   const { data: records, isLoading, refetch } = useQuery({
     queryKey: ['medical-records'],
@@ -91,7 +84,7 @@ export default function MedicalRecords() {
         .order('treatment_date', { ascending: false });
 
       if (error) throw error;
-      return data as MedicalRecord[];
+      return data as unknown as MedicalRecord[];
     }
   });
 

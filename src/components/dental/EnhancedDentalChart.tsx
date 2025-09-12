@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
-  Teeth, 
+  Stethoscope, 
   Activity, 
   AlertTriangle, 
   CheckCircle, 
@@ -55,7 +55,7 @@ const EnhancedDentalChart: React.FC<EnhancedDentalChartProps> = ({
       <Card className="w-full h-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Teeth className="w-5 h-5" />
+            <Stethoscope className="w-5 h-5" />
             مخطط الأسنان المطور
           </CardTitle>
         </CardHeader>
@@ -70,7 +70,7 @@ const EnhancedDentalChart: React.FC<EnhancedDentalChartProps> = ({
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Teeth className="w-5 h-5" />
+          <Stethoscope className="w-5 h-5" />
           مخطط الأسنان المطور
         </CardTitle>
       </CardHeader>
@@ -117,7 +117,7 @@ const EnhancedDentalChart: React.FC<EnhancedDentalChartProps> = ({
 
         {/* Dental Chart Placeholder */}
         <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-          <Teeth className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+          <Stethoscope className="w-16 h-16 mx-auto mb-4 text-gray-400" />
           <h3 className="text-lg font-semibold mb-2 text-gray-600">مخطط الأسنان التفاعلي</h3>
           <p className="text-gray-500 mb-4">سيتم إضافة مخطط الأسنان التفاعلي المطور قريباً</p>
           

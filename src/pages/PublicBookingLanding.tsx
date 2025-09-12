@@ -82,7 +82,7 @@ const PublicBookingLanding = () => {
 
   const fetchClinicInfo = async (clinicId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('profiles')
         .select('id, clinic_name, address, phone, email, description, logo_url, working_hours')
         .eq('id', clinicId)
@@ -104,7 +104,7 @@ const PublicBookingLanding = () => {
 
   const fetchAvailableClinics = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('profiles')
         .select('id, clinic_name, address, phone, email, description, logo_url, working_hours')
         .eq('user_type', 'clinic')

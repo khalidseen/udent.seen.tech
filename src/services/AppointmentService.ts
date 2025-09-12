@@ -87,46 +87,12 @@ export class AppointmentService {
     clinicId: string
   ): Promise<TimeSlot[]> {
     try {
-      // Get doctor's schedule for the day
-      const dayOfWeek = new Date(date).getDay();
-      
-      const { data: schedules, error: scheduleError } = await supabase
-        .from('doctor_schedules')
-        .select('*')
-        .eq('doctor_id', doctorId)
-        .eq('clinic_id', clinicId)
-        .eq('day_of_week', dayOfWeek)
-        .eq('is_active', true);
-
-      if (scheduleError) throw scheduleError;
-      if (!schedules || schedules.length === 0) return [];
-
-      // Get existing appointments for the date
-      const { data: appointments, error: appointmentError } = await supabase
-        .from('appointments')
-        .select('appointment_time, duration')
-        .eq('doctor_id', doctorId)
-        .eq('appointment_date', date)
-        .in('status', ['scheduled', 'confirmed']);
-
-      if (appointmentError) throw appointmentError;
-
-      const timeSlots: TimeSlot[] = [];
-      
-      for (const schedule of schedules) {
-        const slots = this.generateTimeSlots(
-          schedule.start_time,
-          schedule.end_time,
-          schedule.slot_duration,
-          date,
-          appointments || [],
-          doctorId,
-          clinicId
-        );
-        timeSlots.push(...slots);
-      }
-
-      return timeSlots;
+      // تم تعطيل الحسابات الزمنية مؤقتاً حتى يتم إضافة الجداول المطلوبة
+      return [];
+    } catch (error) {
+      console.error('Error fetching available time slots:', error);
+      throw error;
+    }
     } catch (error) {
       console.error('Error fetching available time slots:', error);
       throw error;

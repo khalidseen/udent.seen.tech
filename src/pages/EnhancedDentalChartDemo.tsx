@@ -149,10 +149,8 @@ const EnhancedDentalChartDemo: React.FC<EnhancedDentalChartDemoProps> = ({
           <CardContent className="p-6">
             <EnhancedDentalChart
               patientId={patientId}
-              clinicId="demo-clinic-456"
-              onToothSelect={setSelectedTooth}
+              onToothSelect={(tooth) => setSelectedTooth(tooth)}
               selectedTooth={selectedTooth || undefined}
-              numberingSystem={ToothNumberingSystem.FDI}
             />
           </CardContent>
         </Card>

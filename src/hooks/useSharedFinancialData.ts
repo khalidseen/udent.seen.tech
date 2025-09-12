@@ -38,9 +38,7 @@ export const useSharedFinancialData = ({ patientId }: UseSharedFinancialDataProp
     totalCharges: 0,
     pendingAmount: 0,
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const { profile } = useCurrentUser();
+  const { user } = useCurrentUser();
 
   // Calculate financial summary from transactions
   const calculateSummary = useCallback((transactions: FinancialTransaction[]): FinancialSummary => {

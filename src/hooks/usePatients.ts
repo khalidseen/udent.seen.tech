@@ -77,13 +77,13 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
 
     console.log('✅ Successfully fetched patients:', { count: patientsData?.length, total: count });
 
-    const enhancedPatients: Patient[] = patientsData?.map(patient => ({
+    const enhancedPatients = ((patientsData?.map((patient: any) => ({
       ...patient,
       address: patient.address || '',
       medical_history: patient.medical_history || '',
       financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
       assigned_doctor: undefined
-    })) || [];
+    })) || []) as unknown) as Patient[];
 
     return { data: enhancedPatients, total: count || 0 };
 
