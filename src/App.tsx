@@ -218,17 +218,20 @@ function App() {
                    {/* 404 route */}
                    <Route path="*" element={<NotFound />} />
                  </Routes>
-                 <Toaster />
-               </div>
-             </TooltipProvider>
-           </PermissionsProvider>
-         </CurrencyProvider>
-       </ThemeProvider>
-     </SidebarProvider>
-   </SettingsProvider>
- </LanguageProvider>
-</BrowserRouter>
-</QueryClientProvider>
+                        <Toaster />
+                      </div>
+                    </TooltipProvider>
+                  </PermissionsProvider>
+                </CurrencyProvider>
+              </ThemeProvider>
+            </SidebarProvider>
+          </SettingsProvider>
+        </LanguageProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+  );
+}
+  );
 );
 }
 
