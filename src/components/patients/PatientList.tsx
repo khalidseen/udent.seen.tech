@@ -19,10 +19,12 @@ import { AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { withErrorBoundary } from "@/components/ui/error-boundary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useOptimizedNavigation } from "@/hooks/useOptimizedNavigation";
 const PatientList = () => {
   const { t } = useLanguage();
   const { metrics } = usePerformanceMonitor('PatientList');
   const queryClient = useQueryClient();
+  const { navigateTo } = useOptimizedNavigation();
   
   // State management
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -139,8 +141,8 @@ const PatientList = () => {
   }, []);
 
   const handleEditPatient = useCallback((patientId: string) => {
-    window.location.href = `/patients/${patientId}`;
-  }, []);
+    navigateTo(`/patients/${patientId}`);
+  }, [navigateTo]);
 
   const handleTreatmentAdded = useCallback(() => {
     // Optionally refresh data or show success message
