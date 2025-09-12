@@ -62,12 +62,17 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
   }
 
   try {
-    // Use direct supabase query with join to get doctor info
-    const { data: patientsData, error, count } = await supabase
+    // Build query with conditional search to avoid empty-search issues
+    let query = supabase
       .from('patients')
       .select('*', { count: 'exact' })
-      .eq('clinic_id', clinicId)
-      .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
+      .eq('clinic_id', clinicId);
+
+    if (search && search.trim().length > 0) {
+      query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+
+    const { data: patientsData, error, count } = await query
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -77,6 +82,29 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
     }
 
     console.log('✅ Successfully fetched patients:', { count: patientsData?.length, total: count });
+
+    // Fallback: if server returned no results and there's no search term, try offline cache
+    if ((!patientsData || patientsData.length === 0) && (!search || search.trim().length === 0)) {
+      try {
+        const patientsResult = await offlineSupabase.select('patients', {
+          filter: clinicId ? { clinic_id: clinicId } : undefined,
+          order: { column: 'created_at', ascending: false }
+        });
+
+        const offlinePatients: Patient[] = (patientsResult.data || []).map((patient: any) => ({
+          ...patient,
+          address: patient.address || '',
+          medical_history: patient.medical_history || '',
+          financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending'
+        }));
+
+        if (offlinePatients.length > 0) {
+          return { data: offlinePatients, total: offlinePatients.length };
+        }
+      } catch (e) {
+        console.warn('⚠️ Offline cache read failed:', e);
+      }
+    }
 
     const enhancedPatients = ((patientsData?.map((patient: any) => ({
       ...patient,
