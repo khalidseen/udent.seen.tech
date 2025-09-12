@@ -149,7 +149,7 @@ export const usePatients = (params: PatientsQueryParams) => {
     queryKey,
     () => fetchPatients(params),
     {
-      enabled: !!params.clinicId,
+      enabled: true,
       staleTime: 2 * 60 * 1000,
       cacheTime: 10 * 60 * 1000,
       localCacheMinutes: 3

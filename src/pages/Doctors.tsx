@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AddDoctorDialog from "@/components/doctors/AddDoctorDialog";
 import DatabaseTestButton from "@/components/debug/DatabaseTestButton";
+import DoctorPasswordDialog from "@/components/doctors/DoctorPasswordDialog";
 
 interface Doctor {
   id: string;
@@ -29,6 +30,8 @@ const Doctors = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
+  const [passwordDialogOpen, setPasswordDialogOpen] = useState(false);
+  const [passwordDoctor, setPasswordDoctor] = useState<{ email: string; name: string } | null>(null);
   const { toast } = useToast();
 
   const { data: doctors, isLoading, refetch } = useQuery({
@@ -227,6 +230,14 @@ const Doctors = () => {
                   <Button
                     variant="outline"
                     size="sm"
+                    disabled={!doctor.email}
+                    onClick={() => doctor.email && (setPasswordDoctor({ email: doctor.email, name: doctor.full_name }), setPasswordDialogOpen(true))}
+                  >
+                    كلمة المرور
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => handleDelete(doctor.id)}
                   >
                     <Trash2 className="h-4 w-4" />
@@ -243,6 +254,16 @@ const Doctors = () => {
         onOpenChange={setIsDialogOpen}
         onSuccess={refetch}
         editingDoctor={editingDoctor}
+      />
+      <DoctorPasswordDialog 
+        open={passwordDialogOpen}
+        onOpenChange={setPasswordDialogOpen}
+        doctorEmail={passwordDoctor?.email || ''}
+        doctorName={passwordDoctor?.name || ''}
+        onSuccess={() => {
+          setPasswordDialogOpen(false);
+          toast({ title: 'تم التحديث', description: 'تم تعيين كلمة المرور بنجاح' });
+        }}
       />
     </PageContainer>
   );
