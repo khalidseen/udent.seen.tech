@@ -149,7 +149,7 @@ export const usePatients = (params: PatientsQueryParams) => {
     queryKey,
     () => fetchPatients(params),
     {
-      enabled: true,
+      enabled: !!params.clinicId,
       staleTime: 2 * 60 * 1000,
       cacheTime: 10 * 60 * 1000,
       localCacheMinutes: 3
@@ -165,13 +165,13 @@ export const useClinicId = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return 'default-clinic-id'; // حل مؤقت للاختبار
       
-      const { data: profiles } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
-        .select('clinic_id, id')
+        .select('id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      return profiles?.clinic_id || profiles?.id || 'default-clinic-id';
+      return profile?.id || 'default-clinic-id';
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
