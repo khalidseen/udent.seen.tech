@@ -112,23 +112,29 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
           return;
         }
 
-        // استخدام RPC للقراءة الآمنة من قاعدة البيانات
-        // RPC function exists after migration
-        const { data: dismissedData, error: rpcError } = await supabase.rpc('get_dashboard_dismissed', { 
-          p_profile_id: profile.id 
-        });
+      if (profile?.id) {
+        console.log('الحصول على حالة التجاهل للملف الشخصي:', profile.id);
+        
+        // قراءة البيانات مباشرة من profiles table
+        const { data: profileData, error: selectError } = await supabase
+          .from('profiles')
+          .select('dashboard_link_validation_dismissed')
+          .eq('id', profile.id)
+          .maybeSingle();
+        
+        if (selectError) {
+          console.error('خطأ في قراءة البيانات:', selectError);
+          setServerDashboardDismissed(false);
+          return;
+        }
+
+        setServerDashboardDismissed(profileData?.dashboard_link_validation_dismissed || false);
+      }
 
         if (mounted) {
-          if (!rpcError && dismissedData !== undefined) {
-            // استخدام قيمة الخادم
-            setServerDashboardDismissed(Boolean(dismissedData));
-            localStorage.setItem('dashboard_link_validation_dismissed', JSON.stringify(Boolean(dismissedData)));
-          } else {
-            // fallback إلى localStorage
-            const local = localStorage.getItem('dashboard_link_validation_dismissed');
-            if (local) {
-              setServerDashboardDismissed(JSON.parse(local));
-            }
+          const local = localStorage.getItem('dashboard_link_validation_dismissed');
+          if (local) {
+            setServerDashboardDismissed(JSON.parse(local));
           }
         }
       } catch (err) {
@@ -161,15 +167,14 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         return;
       }
 
-      // استخدام RPC function للتحديث الآمن
-      // @ts-expect-error: RPC function exists after migration but may not be in type definitions yet
-      const { error } = await supabase.rpc('set_dashboard_dismissed', { 
-        p_profile_id: profile.id, 
-        p_value: value 
-      });
+      // تحديث مباشر لجدول profiles
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ dashboard_link_validation_dismissed: value })
+        .eq('id', profile.id);
       
-      if (error) {
-        console.warn('⚠️ خطأ في تحديث الخادم، استخدام localStorage:', error.message);
+      if (updateError) {
+        console.warn('⚠️ خطأ في تحديث الخادم، استخدام localStorage:', updateError.message);
         localStorage.setItem('dashboard_link_validation_dismissed', JSON.stringify(value));
         setServerDashboardDismissed(value);
         return;

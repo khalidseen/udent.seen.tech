@@ -1472,6 +1472,9 @@ export type Database = {
           blood_type: string | null
           clinic_id: string
           created_at: string
+          created_by_id: string | null
+          created_by_name: string | null
+          created_by_role: string | null
           date_of_birth: string | null
           email: string | null
           emergency_contact: string | null
@@ -1482,6 +1485,9 @@ export type Database = {
           gender: string | null
           id: string
           insurance_info: string | null
+          last_modified_by_id: string | null
+          last_modified_by_name: string | null
+          last_modified_by_role: string | null
           marital_status: string | null
           medical_condition: string | null
           medical_history: string | null
@@ -1498,6 +1504,9 @@ export type Database = {
           blood_type?: string | null
           clinic_id: string
           created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          created_by_role?: string | null
           date_of_birth?: string | null
           email?: string | null
           emergency_contact?: string | null
@@ -1508,6 +1517,9 @@ export type Database = {
           gender?: string | null
           id?: string
           insurance_info?: string | null
+          last_modified_by_id?: string | null
+          last_modified_by_name?: string | null
+          last_modified_by_role?: string | null
           marital_status?: string | null
           medical_condition?: string | null
           medical_history?: string | null
@@ -1524,6 +1536,9 @@ export type Database = {
           blood_type?: string | null
           clinic_id?: string
           created_at?: string
+          created_by_id?: string | null
+          created_by_name?: string | null
+          created_by_role?: string | null
           date_of_birth?: string | null
           email?: string | null
           emergency_contact?: string | null
@@ -1534,6 +1549,9 @@ export type Database = {
           gender?: string | null
           id?: string
           insurance_info?: string | null
+          last_modified_by_id?: string | null
+          last_modified_by_name?: string | null
+          last_modified_by_role?: string | null
           marital_status?: string | null
           medical_condition?: string | null
           medical_history?: string | null
@@ -2869,6 +2887,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_patient_financial_status: {
+        Args: { patient_id_param: string }
+        Returns: {
+          balance_due: number
+          status: string
+          total_charges: number
+          total_payments: number
+        }[]
+      }
       can_manage_role: {
         Args: {
           manager_role: Database["public"]["Enums"]["user_role_type"]
