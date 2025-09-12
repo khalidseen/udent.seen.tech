@@ -125,32 +125,32 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <SettingsProvider>
-          <SidebarProvider>
-            <ThemeProvider>
-              <CurrencyProvider>
-                <PermissionsProvider>
-                  <TooltipProvider>
-                  <BrowserRouter 
-                    future={{
-                      v7_startTransition: true,
-                    v7_relativeSplatPath: true
-                  }}
-                >
-                  <div className="min-h-screen bg-background">
-                  <Routes>
-                  {/* Public routes */}
-                  <Route path="/book" element={<PublicBookingLanding />} />
-                  <Route path="/book/:clinic" element={<PublicBooking />} />
-                  <Route path="/auth" element={<Auth />} />
-                  
-                  {/* Protected routes with main layout */}
-                  <Route path="/" element={
-                    <SimpleProtectedRoute>
-                      <MainLayout />
-                    </SimpleProtectedRoute>
-                  }>
+      <BrowserRouter 
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
+        <LanguageProvider>
+          <SettingsProvider>
+            <SidebarProvider>
+              <ThemeProvider>
+                <CurrencyProvider>
+                  <PermissionsProvider>
+                    <TooltipProvider>
+                      <div className="min-h-screen bg-background">
+                        <Routes>
+                          {/* Public routes */}
+                          <Route path="/book" element={<PublicBookingLanding />} />
+                          <Route path="/book/:clinic" element={<PublicBooking />} />
+                          <Route path="/auth" element={<Auth />} />
+                          
+                          {/* Protected routes with main layout */}
+                          <Route path="/" element={
+                            <SimpleProtectedRoute>
+                              <MainLayout />
+                            </SimpleProtectedRoute>
+                          }>
                     <Route index element={<Index />} />
                     <Route path="patients" element={<Patients />} />
                     <Route path="patients/:id" element={<PatientProfile />} />
@@ -213,21 +213,21 @@ function App() {
                   {/* Public demo routes */}
                   <Route path="/demos/noise" element={<NoiseDemo />} />
                   
-                  {/* 404 route */}
-                  <Route path="*" element={<NotFound />} />
-                  </Routes>
-                  <Toaster />
-                </div>
-              </BrowserRouter>
-            </TooltipProvider>
-          </PermissionsProvider>
-        </CurrencyProvider>
-        </ThemeProvider>
-        </SidebarProvider>
-      </SettingsProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
-  );
+                   {/* 404 route */}
+                   <Route path="*" element={<NotFound />} />
+                 </Routes>
+                 <Toaster />
+               </div>
+             </TooltipProvider>
+           </PermissionsProvider>
+         </CurrencyProvider>
+       </ThemeProvider>
+     </SidebarProvider>
+   </SettingsProvider>
+ </LanguageProvider>
+</BrowserRouter>
+</QueryClientProvider>
+);
 }
 
 export default App;
