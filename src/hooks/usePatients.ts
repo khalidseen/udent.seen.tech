@@ -176,16 +176,13 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
 export const usePatients = (params: PatientsQueryParams) => {
   const queryKey = ['patients', JSON.stringify(params)];
   
-  return useOptimizedQuery(
+  return useOptimizedQuery({
     queryKey,
-    () => fetchPatients(params),
-    {
-      enabled: true, // Always enabled - super admins don't need clinic_id
-      staleTime: 2 * 60 * 1000,
-      cacheTime: 10 * 60 * 1000,
-      localCacheMinutes: 3
-    }
-  );
+    queryFn: () => fetchPatients(params),
+    enabled: true, // Always enabled - super admins don't need clinic_id
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 };
 
 // Hook for getting current user's clinic ID

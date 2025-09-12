@@ -8,59 +8,63 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PermissionsProvider } from "@/contexts/PermissionsContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { useEffect } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { toast } from "sonner";
+import { EnhancedErrorBoundary } from "@/components/ui/enhanced-performance";
+import { createNetworkMonitor } from "@/utils/performance";
 
 // Layout components
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SimpleProtectedRoute } from "@/components/auth/SimpleProtectedRoute";
 
-// Page components
+// Critical pages - loaded immediately
 import Index from "@/pages/Index";
 import Auth from "@/pages/Auth";
-import Patients from "@/pages/Patients";
-import Appointments from "@/pages/Appointments";
-import NewAppointment from "@/pages/NewAppointment";
-import PatientProfile from "@/pages/PatientProfile";
-import MedicalRecords from "@/pages/MedicalRecords";
-import Settings from "@/pages/Settings";
-import Doctors from "@/pages/Doctors";
-import DoctorAssistants from "@/pages/DoctorAssistants";
-import Secretaries from "@/pages/Secretaries";
-import AppointmentRequests from "@/pages/AppointmentRequests";
-import PublicBooking from "@/pages/PublicBooking";
-import PublicBookingLanding from "@/pages/PublicBookingLanding";
-import Invoices from "@/pages/Invoices";
-import Payments from "@/pages/Payments";
-import Inventory from "@/pages/Inventory";
-import ServicePrices from "@/pages/ServicePrices";
-import PurchaseOrders from "@/pages/PurchaseOrders";
-import StockMovements from "@/pages/StockMovements";
-import DentalTreatments from "@/pages/DentalTreatments";
-import Treatments from "@/pages/Treatments";
-import Advanced3DDental from "@/pages/Advanced3DDental";
-import DentalModelsAdmin from "@/pages/DentalModelsAdmin";
-import Advanced3DDentalEditor from "@/pages/Advanced3DDentalEditor";
-import AdvancedToothEditor from "@/pages/AdvancedToothEditor";
-import ToothAnatomy from "@/pages/ToothAnatomy";
-import Notifications from "@/pages/Notifications";
-import NotificationTemplates from "@/pages/NotificationTemplates";
-import Reports from "@/pages/Reports";
-import AIInsights from "@/pages/AIInsights";
-import SmartDiagnosis from "@/pages/SmartDiagnosis";
-import Medications from "@/pages/Medications";
-import Prescriptions from "@/pages/Prescriptions";
 import NotFound from "@/pages/NotFound";
-import SplashCursorDemo from "@/pages/SplashCursorDemo";
-import NoiseDemo from "@/pages/NoiseDemo";
-import SecurityAudit from "@/pages/SecurityAudit";
-import Permissions from "@/pages/Permissions";
-import Profile from "@/pages/Profile";
-import Users from "@/pages/Users";
-import SuperAdmin from "@/pages/SuperAdmin";
-import SubscriptionPlans from "@/pages/SubscriptionPlans";
-import SubscriptionManagement from "@/pages/SubscriptionManagement";
-import { UnderDevelopment } from "@/pages/UnderDevelopment";
+
+// Lazy loaded pages for better performance
+const Patients = lazy(() => import("@/pages/Patients"));
+const Appointments = lazy(() => import("@/pages/Appointments"));
+const NewAppointment = lazy(() => import("@/pages/NewAppointment"));
+const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
+const MedicalRecords = lazy(() => import("@/pages/MedicalRecords"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const Doctors = lazy(() => import("@/pages/Doctors"));
+const DoctorAssistants = lazy(() => import("@/pages/DoctorAssistants"));
+const Secretaries = lazy(() => import("@/pages/Secretaries"));
+const AppointmentRequests = lazy(() => import("@/pages/AppointmentRequests"));
+const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
+const PublicBookingLanding = lazy(() => import("@/pages/PublicBookingLanding"));
+const Invoices = lazy(() => import("@/pages/Invoices"));
+const Payments = lazy(() => import("@/pages/Payments"));
+const Inventory = lazy(() => import("@/pages/Inventory"));
+const ServicePrices = lazy(() => import("@/pages/ServicePrices"));
+const PurchaseOrders = lazy(() => import("@/pages/PurchaseOrders"));
+const StockMovements = lazy(() => import("@/pages/StockMovements"));
+const DentalTreatments = lazy(() => import("@/pages/DentalTreatments"));
+const Treatments = lazy(() => import("@/pages/Treatments"));
+const Advanced3DDental = lazy(() => import("@/pages/Advanced3DDental"));
+const DentalModelsAdmin = lazy(() => import("@/pages/DentalModelsAdmin"));
+const Advanced3DDentalEditor = lazy(() => import("@/pages/Advanced3DDentalEditor"));
+const AdvancedToothEditor = lazy(() => import("@/pages/AdvancedToothEditor"));
+const ToothAnatomy = lazy(() => import("@/pages/ToothAnatomy"));
+const Notifications = lazy(() => import("@/pages/Notifications"));
+const NotificationTemplates = lazy(() => import("@/pages/NotificationTemplates"));
+const Reports = lazy(() => import("@/pages/Reports"));
+const AIInsights = lazy(() => import("@/pages/AIInsights"));
+const SmartDiagnosis = lazy(() => import("@/pages/SmartDiagnosis"));
+const Medications = lazy(() => import("@/pages/Medications"));
+const Prescriptions = lazy(() => import("@/pages/Prescriptions"));
+const SplashCursorDemo = lazy(() => import("@/pages/SplashCursorDemo"));
+const NoiseDemo = lazy(() => import("@/pages/NoiseDemo"));
+const SecurityAudit = lazy(() => import("@/pages/SecurityAudit"));
+const Permissions = lazy(() => import("@/pages/Permissions"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const Users = lazy(() => import("@/pages/Users"));
+const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
+const SubscriptionPlans = lazy(() => import("@/pages/SubscriptionPlans"));
+const SubscriptionManagement = lazy(() => import("@/pages/SubscriptionManagement"));
+const UnderDevelopment = lazy(() => import("@/pages/UnderDevelopment").then(module => ({ default: module.UnderDevelopment })));
 
 // New feature pages
 import DentalTreatmentsManagement from "@/pages/DentalTreatmentsManagement";
@@ -106,8 +110,26 @@ const queryClient = new QueryClient({
   },
 });
 
+// Loading component for suspense
+const PageLoader = ({ type }: { type?: 'patients' | 'appointments' | 'form' | 'dashboard' | 'default' }) => {
+  const { PageSkeleton } = require('@/components/ui/loading-skeleton');
+  return <PageSkeleton type={type} />;
+};
+
 function App() {
   useEffect(() => {
+    // Network monitoring
+    const networkMonitor = createNetworkMonitor();
+    const unsubscribe = networkMonitor.subscribe((online) => {
+      if (online) {
+        toast.success('تم استعادة الاتصال بالإنترنت');
+      } else {
+        toast.error('تم فقدان الاتصال بالإنترنت', {
+          description: 'سيتم حفظ التغييرات محلياً'
+        });
+      }
+    });
+
     // Listen for service worker updates
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
@@ -122,25 +144,31 @@ function App() {
         }
       });
     }
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter 
-        future={{
-          v7_startTransition: true,
-          v7_relativeSplatPath: true
-        }}
-      >
-        <LanguageProvider>
-          <SettingsProvider>
-            <SidebarProvider>
-              <ThemeProvider>
-                <CurrencyProvider>
-                  <PermissionsProvider>
-                    <TooltipProvider>
-                      <div className="min-h-screen bg-background">
-                        <Routes>
+    <EnhancedErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter 
+          future={{
+            v7_startTransition: true,
+            v7_relativeSplatPath: true
+          }}
+        >
+          <LanguageProvider>
+            <SettingsProvider>
+              <SidebarProvider>
+                <ThemeProvider>
+                  <CurrencyProvider>
+                    <PermissionsProvider>
+                      <TooltipProvider>
+                        <div className="min-h-screen bg-background">
+                          <Suspense fallback={<PageLoader />}>
+                            <Routes>
                           {/* Public routes */}
                           <Route path="/book" element={<PublicBookingLanding />} />
                           <Route path="/book/:clinic" element={<PublicBooking />} />
@@ -217,18 +245,20 @@ function App() {
                   
                    {/* 404 route */}
                    <Route path="*" element={<NotFound />} />
-                 </Routes>
-                        <Toaster />
-                      </div>
-                    </TooltipProvider>
-                  </PermissionsProvider>
-                </CurrencyProvider>
-              </ThemeProvider>
-            </SidebarProvider>
-          </SettingsProvider>
-        </LanguageProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
+                            </Routes>
+                          </Suspense>
+                          <Toaster />
+                        </div>
+                      </TooltipProvider>
+                    </PermissionsProvider>
+                  </CurrencyProvider>
+                </ThemeProvider>
+              </SidebarProvider>
+            </SettingsProvider>
+          </LanguageProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
+    </EnhancedErrorBoundary>
   );
 }
 

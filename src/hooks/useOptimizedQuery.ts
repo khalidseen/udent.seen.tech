@@ -1,72 +1,72 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo } from "react";
-import { cacheHelpers } from "@/lib/optimized-queries";
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+import { useCallback, useMemo } from 'react';
 
-// Hook محسن للاستعلامات مع التخزين المؤقت
-export function useOptimizedQuery<T>(
-  queryKey: string[],
-  queryFn: () => Promise<T>,
-  options: {
-    staleTime?: number;
-    cacheTime?: number;
-    enabled?: boolean;
-    localCacheMinutes?: number;
-  } = {}
-) {
-  const queryClient = useQueryClient();
-  
-  const {
-    staleTime = 5 * 60 * 1000, // 5 دقائق
-    cacheTime = 10 * 60 * 1000, // 10 دقائق
-    enabled = true,
-    localCacheMinutes = 2 // 2 دقيقة للتخزين المحلي
-  } = options;
+interface OptimizedQueryOptions<T> {
+  queryKey: string[];
+  queryFn: () => Promise<T>;
+  optimistic?: boolean;
+  priority?: 'high' | 'normal' | 'low';
+  enabled?: boolean;
+  staleTime?: number;
+  gcTime?: number;
+  refetchOnWindowFocus?: boolean;
+}
 
-  const cacheKey = cacheHelpers.createCacheKey(queryKey.join(':'));
+export function useOptimizedQuery<T>({
+  queryKey,
+  queryFn,
+  optimistic = false,
+  priority = 'normal',
+  enabled = true,
+  staleTime,
+  gcTime,
+  refetchOnWindowFocus,
+  ...options
+}: OptimizedQueryOptions<T>) {
+  // Memoize query function to prevent unnecessary re-renders
+  const memoizedQueryFn = useCallback(queryFn, []);
 
-  const optimizedQueryFn = useCallback(async (): Promise<T> => {
-    // تحقق من التخزين المؤقت المحلي أولاً
-    const cachedData = cacheHelpers.getCache(cacheKey);
-    if (cachedData) {
-      return cachedData;
+  // Optimize query options based on priority
+  const optimizedOptions = useMemo(() => {
+    const baseOptions: UseQueryOptions<T, Error, T, string[]> = {
+      queryKey,
+      queryFn: memoizedQueryFn,
+      enabled,
+      staleTime: staleTime ?? (priority === 'high' ? 1000 * 60 * 1 : // 1 minute for high priority
+                 priority === 'normal' ? 1000 * 60 * 3 : // 3 minutes for normal
+                 1000 * 60 * 10), // 10 minutes for low priority
+      gcTime: gcTime ?? 1000 * 60 * 15, // 15 minutes cache time
+      retry: priority === 'high' ? 3 : 2,
+      retryDelay: (attemptIndex: number) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      refetchOnWindowFocus: refetchOnWindowFocus ?? (priority === 'high'),
+    };
+
+    if (optimistic && !staleTime) {
+      baseOptions.staleTime = 0; // Always consider optimistic data fresh
     }
 
-    // إجراء الاستعلام
-    const data = await queryFn();
-    
-    // تخزين النتيجة محلياً
-    cacheHelpers.setCache(cacheKey, data, localCacheMinutes);
-    
-    return data;
-  }, [queryFn, cacheKey, localCacheMinutes]);
+    return baseOptions;
+  }, [queryKey, memoizedQueryFn, enabled, priority, optimistic, staleTime, gcTime, refetchOnWindowFocus]);
 
-  const query = useQuery({
-    queryKey,
-    queryFn: optimizedQueryFn,
-    staleTime,
-    gcTime: cacheTime,
-    enabled,
-    refetchOnWindowFocus: false,
-    retry: 3,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
-  });
+  return useQuery(optimizedOptions);
+}
 
-  const invalidate = useCallback(() => {
-    queryClient.invalidateQueries({ queryKey });
-    cacheHelpers.clearCache(cacheKey);
-  }, [queryClient, queryKey, cacheKey]);
-
-  const prefetch = useCallback(() => {
-    queryClient.prefetchQuery({
+// Hook for batch queries to reduce network requests
+export function useBatchQuery<T>(
+  queries: Array<{
+    queryKey: string[];
+    queryFn: () => Promise<T>;
+    enabled?: boolean;
+  }>
+) {
+  const enabledQueries = queries.filter(q => q.enabled !== false);
+  
+  return enabledQueries.map(({ queryKey, queryFn, enabled }) =>
+    useOptimizedQuery({
       queryKey,
-      queryFn: optimizedQueryFn,
-      staleTime
-    });
-  }, [queryClient, queryKey, optimizedQueryFn, staleTime]);
-
-  return {
-    ...query,
-    invalidate,
-    prefetch
-  };
+      queryFn,
+      priority: 'normal',
+      enabled
+    })
+  );
 }
