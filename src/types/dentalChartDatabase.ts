@@ -163,7 +163,7 @@ export function toothRecordToDatabase(record: any): Partial<DatabaseToothRecord>
     plaque_index: record.measurements?.plaqueIndex || 0,
     
     // تبويب الجذور
-    number_of_roots: record.roots?.numberOfRoots || 1,
+    number_of_roots: record.roots?.number_of_roots || 1,
     root_canal_completed: record.roots?.canalCompleted || false,
     root_canal_date: record.roots?.canalDate,
     root_canal_notes: record.roots?.canalNotes,
@@ -176,7 +176,7 @@ export function toothRecordToDatabase(record: any): Partial<DatabaseToothRecord>
   };
 }
 
-export function databaseToToothRecord(dbRecord: DatabaseToothRecord): ToothRecord {
+export function databaseToToothRecord(dbRecord: DatabaseToothRecord): any {
   return {
     id: dbRecord.id,
     toothNumber: dbRecord.tooth_number,
@@ -184,21 +184,20 @@ export function databaseToToothRecord(dbRecord: DatabaseToothRecord): ToothRecor
     clinicId: dbRecord.clinic_id,
     
     // تبويب التشخيص
-    condition: dbRecord.primary_condition,
-    priority: dbRecord.priority_level,
-    icd10Code: dbRecord.icd10_code,
-    notes: dbRecord.diagnosis_notes,
+    condition: dbRecord.primary_condition as any,
+    priority: dbRecord.priority_level as any,
+    notes: dbRecord.diagnosis_notes as any,
     imageUrl: dbRecord.image_url,
     imageData: dbRecord.image_data,
     
     // تبويب الأسطح
     surfaces: {
-      mesial: dbRecord.surface_mesial,
-      distal: dbRecord.surface_distal,
-      buccal: dbRecord.surface_buccal,
-      lingual: dbRecord.surface_lingual,
-      occlusal: dbRecord.surface_occlusal,
-      incisal: dbRecord.surface_incisal,
+      mesial: dbRecord.surface_mesial as any,
+      distal: dbRecord.surface_distal as any,
+      buccal: dbRecord.surface_buccal as any,
+      lingual: dbRecord.surface_lingual as any,
+      occlusal: dbRecord.surface_occlusal as any,
+      incisal: dbRecord.surface_incisal as any,
     },
     
     // تبويب القياسات السريرية

@@ -165,7 +165,7 @@ export class AppointmentService {
         .single();
 
       if (error) throw error;
-      return data.id;
+      return (data as any).id;
     } catch (error) {
       console.error('Error creating appointment request:', error);
       throw error;
@@ -183,8 +183,21 @@ export class AppointmentService {
         .eq('clinic_id', clinicId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      return data || [];
+      if (error) return [];
+      return (data as any[]).map((record: any) => ({
+        id: record.id,
+        clinic_id: record.clinic_id,
+        patient_name: record.patient_name,
+        patient_phone: record.patient_phone,
+        patient_email: record.patient_email,
+        doctor_id: record.doctor_id || '',
+        requested_date: record.preferred_date || new Date().toISOString().slice(0,10),
+        requested_time: '09:00',
+        notes: record.condition_description || '',
+        status: record.status || 'pending',
+        created_at: record.created_at,
+        updated_at: record.updated_at
+      }));
     } catch (error) {
       console.error('Error fetching appointment requests:', error);
       throw error;
@@ -237,7 +250,7 @@ export class AppointmentService {
 
       if (updateError) throw updateError;
 
-      return appointment.id;
+      return (appointment as any).id;
     } catch (error) {
       console.error('Error approving appointment request:', error);
       throw error;
@@ -276,7 +289,13 @@ export class AppointmentService {
         .eq('is_active', true);
 
       if (error) throw error;
-      return data || [];
+      return (data as any[]).map((doc: any) => ({
+        id: doc.id,
+        name: doc.name || doc.full_name || 'طبيب',
+        specialization: doc.specialization || 'عام',
+        phone: doc.phone,
+        email: doc.email
+      }));
     } catch (error) {
       console.error('Error fetching doctors:', error);
       throw error;

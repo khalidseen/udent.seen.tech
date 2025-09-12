@@ -75,6 +75,7 @@ import AdvancedUserManagement from "@/pages/AdvancedUserManagement";
 import ComprehensiveSecurityAudit from "@/pages/ComprehensiveSecurityAudit";
 import Dental3DModelsManagement from "@/pages/Dental3DModelsManagement";
 import EnhancedDentalChartDemo from "@/pages/EnhancedDentalChartDemo";
+import ToothAnatomy from "@/pages/ToothAnatomy";
 import FinancialIntegrationTest from "@/components/debug/FinancialIntegrationTest";
 
 // Initialize the offline database
