@@ -66,21 +66,25 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
         .select('role')
         .eq('user_id', user.id)
         .maybeSingle();
-      isSuperAdmin = profile?.role === 'admin';
+      isSuperAdmin = profile?.role === 'super_admin';
     }
+
+    console.log('🔍 User is super admin:', isSuperAdmin);
 
     // Build query with conditional search to avoid empty-search issues
     let query = supabase
       .from('patients')
       .select('*', { count: 'exact' });
 
-    // Apply clinic filter only for non-admin users
+    // Apply clinic filter only for non-super-admin users
     if (!isSuperAdmin) {
       if (!clinicId) {
-        console.warn('⚠️ No clinic ID for non-admin user, returning empty data');
+        console.warn('⚠️ No clinic ID for non-super-admin user, returning empty data');
         return { data: [], total: 0 };
       }
       query = query.eq('clinic_id', clinicId);
+    } else {
+      console.log('🔐 Super admin detected - querying ALL patients across ALL clinics');
     }
 
     if (search && search.trim().length > 0) {

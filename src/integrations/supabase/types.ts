@@ -3039,6 +3039,10 @@ export type Database = {
         Args: { permission_key_param: string; user_id_param: string }
         Returns: boolean
       }
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       log_security_event: {
         Args: { details: Json; event_type: string }
         Returns: undefined
