@@ -42,6 +42,7 @@ import Advanced3DDental from "@/pages/Advanced3DDental";
 import DentalModelsAdmin from "@/pages/DentalModelsAdmin";
 import Advanced3DDentalEditor from "@/pages/Advanced3DDentalEditor";
 import AdvancedToothEditor from "@/pages/AdvancedToothEditor";
+import ToothAnatomy from "@/pages/ToothAnatomy";
 import Notifications from "@/pages/Notifications";
 import NotificationTemplates from "@/pages/NotificationTemplates";
 import Reports from "@/pages/Reports";
@@ -75,7 +76,6 @@ import AdvancedUserManagement from "@/pages/AdvancedUserManagement";
 import ComprehensiveSecurityAudit from "@/pages/ComprehensiveSecurityAudit";
 import Dental3DModelsManagement from "@/pages/Dental3DModelsManagement";
 import EnhancedDentalChartDemo from "@/pages/EnhancedDentalChartDemo";
-import ToothAnatomy from "@/pages/ToothAnatomy";
 import FinancialIntegrationTest from "@/components/debug/FinancialIntegrationTest";
 
 // Initialize the offline database
@@ -171,13 +171,14 @@ function App() {
                     <Route path="service-prices" element={<ServicePrices />} />
                     <Route path="purchase-orders" element={<PurchaseOrders />} />
                     <Route path="stock-movements" element={<StockMovements />} />
-                    <Route path="dental-treatments" element={<DentalTreatments />} />
-                    <Route path="treatments" element={<Treatments />} />
-                     <Route path="advanced-3d-dental" element={<Advanced3DDental />} />
-                     <Route path="dental-models-admin" element={<DentalModelsAdmin />} />
-                     <Route path="advanced-3d-dental-editor/:patientId/:toothNumber" element={<Advanced3DDentalEditor />} />
-                     <Route path="advanced-tooth-editor/:patientId/:toothNumber" element={<AdvancedToothEditor />} />
-                     <Route path="notifications" element={<Notifications />} />
+                     <Route path="dental-treatments" element={<DentalTreatments />} />
+                     <Route path="treatments" element={<Treatments />} />
+                      <Route path="advanced-3d-dental" element={<Advanced3DDental />} />
+                      <Route path="dental-models-admin" element={<DentalModelsAdmin />} />
+                      <Route path="advanced-3d-dental-editor/:patientId/:toothNumber" element={<Advanced3DDentalEditor />} />
+                      <Route path="advanced-tooth-editor/:patientId/:toothNumber" element={<AdvancedToothEditor />} />
+                      <Route path="ToothAnatomy" element={<ToothAnatomy />} />
+                      <Route path="notifications" element={<Notifications />} />
                     <Route path="notification-templates" element={<NotificationTemplates />} />
                     <Route path="reports" element={<Reports />} />
                     <Route path="medications" element={<Medications />} />

@@ -274,6 +274,11 @@ export function AppSidebar() {
       icon: Box,
       permissions: []
     }, {
+      title: "تشريح السن التفاعلي",
+      url: "/ToothAnatomy",
+      icon: Activity,
+      permissions: []
+    }, {
       title: "إدارة النماذج ثلاثية الأبعاد",
       url: "/dental-3d-models-management",
       icon: Package,
