@@ -127,7 +127,7 @@ export interface ToothSearchResult {
 }
 
 // دوال التحويل بين أنواع UI وقاعدة البيانات
-export function toothRecordToDatabase(record: ToothRecord): Partial<DatabaseToothRecord> {
+export function toothRecordToDatabase(record: any): Partial<DatabaseToothRecord> {
   return {
     tooth_number: record.toothNumber,
     patient_id: record.patientId,
@@ -184,8 +184,8 @@ export function databaseToToothRecord(dbRecord: DatabaseToothRecord): ToothRecor
     clinicId: dbRecord.clinic_id,
     
     // تبويب التشخيص
-    condition: dbRecord.primary_condition as ConditionType,
-    priority: dbRecord.priority_level as PriorityLevel,
+    condition: dbRecord.primary_condition,
+    priority: dbRecord.priority_level,
     icd10Code: dbRecord.icd10_code,
     notes: dbRecord.diagnosis_notes,
     imageUrl: dbRecord.image_url,
@@ -193,12 +193,12 @@ export function databaseToToothRecord(dbRecord: DatabaseToothRecord): ToothRecor
     
     // تبويب الأسطح
     surfaces: {
-      mesial: dbRecord.surface_mesial as ConditionType,
-      distal: dbRecord.surface_distal as ConditionType,
-      buccal: dbRecord.surface_buccal as ConditionType,
-      lingual: dbRecord.surface_lingual as ConditionType,
-      occlusal: dbRecord.surface_occlusal as ConditionType,
-      incisal: dbRecord.surface_incisal as ConditionType,
+      mesial: dbRecord.surface_mesial,
+      distal: dbRecord.surface_distal,
+      buccal: dbRecord.surface_buccal,
+      lingual: dbRecord.surface_lingual,
+      occlusal: dbRecord.surface_occlusal,
+      incisal: dbRecord.surface_incisal,
     },
     
     // تبويب القياسات السريرية

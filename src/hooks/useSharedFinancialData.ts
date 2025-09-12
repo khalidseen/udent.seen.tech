@@ -39,6 +39,8 @@ export const useSharedFinancialData = ({ patientId }: UseSharedFinancialDataProp
     pendingAmount: 0,
   });
   const { user } = useCurrentUser();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Calculate financial summary from transactions
   const calculateSummary = useCallback((transactions: FinancialTransaction[]): FinancialSummary => {
@@ -80,7 +82,7 @@ export const useSharedFinancialData = ({ patientId }: UseSharedFinancialDataProp
 
   // Fetch financial data
   const fetchFinancialData = useCallback(async () => {
-    if (!patientId || !profile?.id) return;
+    if (!patientId || !user?.id) return;
     
     setIsLoading(true);
     setError(null);
@@ -93,7 +95,7 @@ export const useSharedFinancialData = ({ patientId }: UseSharedFinancialDataProp
         .from('patients')
         .select('id, clinic_id')
         .eq('id', patientId)
-        .eq('clinic_id', profile.id)
+        .eq('clinic_id', user?.id)
         .single();
       
       if (patientError || !patient) {
@@ -156,11 +158,11 @@ export const useSharedFinancialData = ({ patientId }: UseSharedFinancialDataProp
     } finally {
       setIsLoading(false);
     }
-  }, [patientId, profile?.id, calculateSummary]);
+  }, [patientId, user?.id, calculateSummary]);
 
   // Add new transaction
   const addTransaction = useCallback(async (transaction: Omit<FinancialTransaction, 'id' | 'created_at'>) => {
-    if (!profile?.id) return false;
+    if (!user?.id) return false;
     
     try {
       console.log('Adding new transaction:', transaction);
@@ -192,11 +194,11 @@ export const useSharedFinancialData = ({ patientId }: UseSharedFinancialDataProp
       });
       return false;
     }
-  }, [profile?.id, transactions, calculateSummary]);
+  }, [user?.id, transactions, calculateSummary]);
 
   // Update transaction
   const updateTransaction = useCallback(async (id: string, updates: Partial<FinancialTransaction>) => {
-    if (!profile?.id) return false;
+    if (!user?.id) return false;
     
     try {
       console.log('Updating transaction:', id, updates);
@@ -225,11 +227,11 @@ export const useSharedFinancialData = ({ patientId }: UseSharedFinancialDataProp
       });
       return false;
     }
-  }, [profile?.id, transactions, calculateSummary]);
+  }, [user?.id, transactions, calculateSummary]);
 
   // Delete transaction
   const deleteTransaction = useCallback(async (id: string) => {
-    if (!profile?.id) return false;
+    if (!user?.id) return false;
     
     try {
       console.log('Deleting transaction:', id);
@@ -255,7 +257,7 @@ export const useSharedFinancialData = ({ patientId }: UseSharedFinancialDataProp
       });
       return false;
     }
-  }, [profile?.id, transactions, calculateSummary]);
+  }, [user?.id, transactions, calculateSummary]);
 
   // Refresh data
   const refreshData = useCallback(() => {

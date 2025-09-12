@@ -39,12 +39,15 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
   onClose,
 }) => {
   const navigate = useNavigate();
+  const { currentCurrency, formatAmount } = useCurrency();
   const [activeTab, setActiveTab] = useState<'payment' | 'charges' | 'history'>('payment');
   const [paymentAmount, setPaymentAmount] = useState<string>('');
   const [paymentNote, setPaymentNote] = useState<string>('');
   const [chargeAmount, setChargeAmount] = useState<string>('');
   const [chargeDescription, setChargeDescription] = useState<string>('');
   const [newStatus, setNewStatus] = useState<'paid' | 'pending' | 'overdue' | 'partial'>('pending');
+  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
+  const [isSubmittingCharge, setIsSubmittingCharge] = useState(false);
 
   
   // استخدام الـ hook المشترك للبيانات المالية
@@ -82,15 +85,18 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
       return;
     }
 
-    // محاكاة تسجيل الدفعة - سيتم استبداله عند ربط الجداول
-    toast.success('تم تسجيل الدفعة بنجاح');
-
-    // تحديث البيانات المالية المشتركة
-    refreshFinancialData();
-
-    setPaymentAmount('');
-    setPaymentNote('');
-    onClose();
+    setIsSubmittingPayment(true);
+    try {
+      // محاكاة تسجيل الدفعة - سيتم استبداله عند ربط الجداول
+      toast.success('تم تسجيل الدفعة بنجاح');
+      // تحديث البيانات المالية المشتركة
+      refreshFinancialData();
+      setPaymentAmount('');
+      setPaymentNote('');
+      onClose();
+    } finally {
+      setIsSubmittingPayment(false);
+    }
   };
 
   const handleAddCharges = async () => {
@@ -104,15 +110,18 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
       return;
     }
 
-    // محاكاة إضافة رسوم - سيتم استبداله عند ربط الجداول
-    toast.success('تمت إضافة الرسوم بنجاح');
-
-    // تحديث البيانات المالية المشتركة
-    refreshFinancialData();
-
-    setChargeAmount('');
-    setChargeDescription('');
-    onClose();
+    setIsSubmittingCharge(true);
+    try {
+      // محاكاة إضافة رسوم - سيتم استبداله عند ربط الجداول
+      toast.success('تمت إضافة الرسوم بنجاح');
+      // تحديث البيانات المالية المشتركة
+      refreshFinancialData();
+      setChargeAmount('');
+      setChargeDescription('');
+      onClose();
+    } finally {
+      setIsSubmittingCharge(false);
+    }
   };
 
   return (
@@ -244,11 +253,11 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
               </Button>
               <Button 
                 onClick={handlePayment}
-                disabled={updateFinancials.isPending}
+                disabled={isSubmittingPayment}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Receipt className="h-4 w-4 ml-2" />
-                {updateFinancials.isPending ? 'جاري التسجيل...' : 'تسجيل الدفعة'}
+                {isSubmittingPayment ? 'جاري التسجيل...' : 'تسجيل الدفعة'}
               </Button>
             </div>
           </div>
@@ -299,11 +308,11 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
               </Button>
               <Button 
                 onClick={handleAddCharges}
-                disabled={addCharges.isPending}
+                disabled={isSubmittingCharge}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Plus className="h-4 w-4 ml-2" />
-                {addCharges.isPending ? 'جاري الإضافة...' : 'إضافة الرسوم'}
+                {isSubmittingCharge ? 'جاري الإضافة...' : 'إضافة الرسوم'}
               </Button>
             </div>
           </div>

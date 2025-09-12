@@ -119,8 +119,8 @@ export async function getPermissionsWithFallback(userId: string) {
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (profile?.role) {
-      return getDefaultPermissionsByRole(profile.role);
+    if ((profile as any)?.role) {
+      return getDefaultPermissionsByRole((profile as any).role);
     }
   } catch (error) {
     console.warn('Profile query failed:', error);
@@ -147,10 +147,10 @@ export async function getRolesWithFallback(userId: string) {
       .eq('user_id', userId)
       .maybeSingle();
 
-    if (profile?.role) {
+    if ((profile as any)?.role) {
       return [{
-        role_name: profile.role,
-        role_name_ar: profile.role === 'admin' ? 'مدير' : 'مستخدم',
+        role_name: (profile as any).role,
+        role_name_ar: (profile as any).role === 'admin' ? 'مدير' : 'مستخدم',
         is_primary: true
       }];
     }
