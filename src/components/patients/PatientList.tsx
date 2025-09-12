@@ -1,18 +1,12 @@
 import React, { useState, useMemo, useCallback, Suspense } from "react";
-<<<<<<< HEAD
 import { useQueryClient } from "@tanstack/react-query";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { Card, CardContent } from "@/components/ui/card";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageToolbar } from "@/components/layout/PageToolbar";
 import AddTreatmentDialog from "./AddTreatmentDialog";
 import AddPatientDrawer from "./AddPatientDrawer";
-<<<<<<< HEAD
 import UpdatePatientsCreatorButton from "./UpdatePatientsCreatorButton";
 import AddSamplePatientsButton from "./AddSamplePatientsButton";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
 import VirtualizedPatientList from "./VirtualizedPatientList";
@@ -27,19 +21,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 const PatientList = () => {
   const { t } = useLanguage();
   const { metrics } = usePerformanceMonitor('PatientList');
-<<<<<<< HEAD
   const queryClient = useQueryClient();
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   
   // State management
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12); // 12 patients per page as requested
-<<<<<<< HEAD
   const [isRefreshing, setIsRefreshing] = useState(false); // حالة التحديث
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const [filters, setFilters] = useState<PatientFilter>({
     gender: 'all',
     ageRange: 'all',
@@ -67,12 +55,8 @@ const PatientList = () => {
     data: patientsResult, 
     isLoading: patientsLoading, 
     error: patientsError,
-<<<<<<< HEAD
     isError,
     refetch: refetchPatients
-=======
-    isError
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   } = usePatients({
     clinicId: clinicId || undefined,
     search: debouncedSearchQuery,
@@ -82,7 +66,6 @@ const PatientList = () => {
     ascending: false
   });
 
-<<<<<<< HEAD
   const patients = useMemo(() => patientsResult?.data || [], [patientsResult?.data]);
   const totalPatients = patientsResult?.total || 0;
   const totalPages = Math.ceil(totalPatients / itemsPerPage);
@@ -94,16 +77,6 @@ const PatientList = () => {
     if (!patients || patients.length === 0) return [];
     
     return patients.filter(patient => {
-=======
-  const patients = patientsResult?.data || [];
-  const totalPatients = patientsResult?.total || 0;
-  const totalPages = Math.ceil(totalPatients / itemsPerPage);
-
-  const loading = clinicLoading || patientsLoading;
-  // Apply client-side filters to the already paginated data
-  const filteredPatients = useMemo(() => 
-    patients.filter(patient => {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       // Gender filter
       const matchesGender = !filters.gender || filters.gender === 'all' || patient.gender === filters.gender;
 
@@ -153,14 +126,8 @@ const PatientList = () => {
       }
 
       return matchesGender && matchesAge && matchesEmail && matchesPhone && matchesDateRange;
-<<<<<<< HEAD
     });
   }, [patients, filters]);
-=======
-    }), 
-    [patients, filters]
-  );
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   // Event handlers with useCallback for optimization
   const handleAddTreatment = useCallback((patientId: string, patientName: string) => {
     setSelectedPatient({ id: patientId, name: patientName });
@@ -175,7 +142,6 @@ const PatientList = () => {
     // Optionally refresh data or show success message
   }, []);
 
-<<<<<<< HEAD
   const handlePatientAdded = useCallback(async () => {
     try {
       setIsRefreshing(true); // إظهار مؤشر التحديث
@@ -228,11 +194,6 @@ const PatientList = () => {
       setIsRefreshing(false);
     }
   }, [refetchPatients, queryClient, clinicId]);
-=======
-  const handlePatientAdded = useCallback(() => {
-    setCurrentPage(1); // Reset to first page when new patient is added
-  }, []);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
@@ -297,7 +258,6 @@ const PatientList = () => {
           />
         }
         activeFiltersCount={getActiveFiltersCount(filters)}
-<<<<<<< HEAD
         actions={
           <div className="flex gap-2">
             <AddSamplePatientsButton />
@@ -305,9 +265,6 @@ const PatientList = () => {
             <AddPatientDrawer onPatientAdded={handlePatientAdded} />
           </div>
         }
-=======
-        actions={<AddPatientDrawer onPatientAdded={handlePatientAdded} />}
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       />
 
       {/* Patients Display with Virtualization */}
@@ -317,10 +274,7 @@ const PatientList = () => {
             patients={filteredPatients}
             onAddTreatment={handleAddTreatment}
             onEditPatient={handleEditPatient}
-<<<<<<< HEAD
             onPatientUpdated={handlePatientUpdated}
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             loading={loading}
             viewMode={viewMode}
             currentPage={currentPage}
@@ -369,7 +323,6 @@ const PatientList = () => {
   );
 };
 
-<<<<<<< HEAD
 const PatientListWithErrorBoundary = withErrorBoundary(
   PatientList,
   <PageContainer>
@@ -383,6 +336,3 @@ const PatientListWithErrorBoundary = withErrorBoundary(
 );
 
 export default PatientListWithErrorBoundary;
-=======
-export default withErrorBoundary(PatientList);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a

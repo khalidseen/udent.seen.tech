@@ -20,10 +20,7 @@ export default {
 		extend: {
 			fontFamily: {
 				'tajawal': ['Tajawal', 'sans-serif'],
-<<<<<<< HEAD
 				'ibm-plex-arabic': ['IBM Plex Sans Arabic', 'Tajawal', 'sans-serif'],
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 			},
 			colors: {
 				border: 'hsl(var(--border))',

@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import { ANATOMICAL_POSITIONS, ToothType } from '@/types/anatomical-dental';
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,34 +8,23 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-<<<<<<< HEAD
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { cn } from '@/lib/utils';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-<<<<<<< HEAD
 import { Heart, AlertTriangle, Plus, Edit, FileText, Calendar, Trash2, Save, X, Sparkles, ArrowLeft } from 'lucide-react';
 import ToothNoteDialog from './ToothNoteDialog';
 import { ToothNumberingSystem, ViewMode } from '@/types/dental-enhanced';
 
 import { AnatomicalDentalChart } from './AnatomicalDentalChart';
 
-=======
-import { Heart, AlertTriangle, Plus, Edit, FileText, Calendar, Trash2, Save, X } from 'lucide-react';
-import ToothNoteDialog from './ToothNoteDialog';
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 interface Enhanced2DToothChartProps {
   patientId?: string;
   onToothSelect: (toothNumber: string) => void;
   selectedTooth?: string;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 interface ToothCondition {
   id: string;
   tooth_number: string;
@@ -52,10 +38,7 @@ interface ToothCondition {
   created_at: string;
   updated_at: string;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 interface ToothNote {
   id: string;
   tooth_number: string;
@@ -65,10 +48,7 @@ interface ToothNote {
   priority: string;
   created_at: string;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 const Enhanced2DToothChart = ({
   patientId,
   onToothSelect,
@@ -76,10 +56,7 @@ const Enhanced2DToothChart = ({
 }: Enhanced2DToothChartProps) => {
   const [noteDialogOpen, setNoteDialogOpen] = useState(false);
   const [conditionDialogOpen, setConditionDialogOpen] = useState(false);
-<<<<<<< HEAD
   const [activeTab, setActiveTab] = useState("traditional");
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const [newNote, setNewNote] = useState({
     title: '',
     content: '',
@@ -91,7 +68,6 @@ const Enhanced2DToothChart = ({
     condition_color: '#10b981',
     notes: ''
   });
-<<<<<<< HEAD
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -137,36 +113,10 @@ const Enhanced2DToothChart = ({
         return [];
       }
       
-=======
-  const {
-    toast
-  } = useToast();
-  const queryClient = useQueryClient();
-
-  // Universal numbering system only
-  const toothNumbers = {
-    upper: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'],
-    lower: ['32', '31', '30', '29', '28', '27', '26', '25', '24', '23', '22', '21', '20', '19', '18', '17']
-  };
-
-  // Fetch teeth conditions
-  const {
-    data: toothConditions
-  } = useQuery({
-    queryKey: ['tooth-conditions', patientId],
-    queryFn: async () => {
-      if (!patientId) return [];
-      const {
-        data,
-        error
-      } = await supabase.from('tooth_conditions').select('*').eq('patient_id', patientId).eq('numbering_system', 'universal');
-      if (error) throw error;
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       return data as ToothCondition[];
     },
     enabled: !!patientId
   });
-<<<<<<< HEAD
   
   // Fetch tooth notes query
   const { data: toothNotes } = useQuery({
@@ -187,26 +137,10 @@ const Enhanced2DToothChart = ({
         return [];
       }
       
-=======
-
-  // Fetch teeth notes
-  const {
-    data: toothNotes
-  } = useQuery({
-    queryKey: ['advanced-tooth-notes', patientId],
-    queryFn: async () => {
-      if (!patientId) return [];
-      const {
-        data,
-        error
-      } = await supabase.from('advanced_tooth_notes').select('*').eq('patient_id', patientId).eq('numbering_system', 'universal');
-      if (error) throw error;
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       return data as ToothNote[];
     },
     enabled: !!patientId
   });
-<<<<<<< HEAD
   
   // Add condition mutation
   const addConditionMutation = useMutation({
@@ -259,70 +193,6 @@ const Enhanced2DToothChart = ({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tooth-conditions'] });
-=======
-
-  // Add note mutation
-  const addNoteMutation = useMutation({
-    mutationFn: async (noteData: any) => {
-      const {
-        data: profile
-      } = await supabase.from('profiles').select('id').eq('user_id', (await supabase.auth.getUser()).data.user?.id).single();
-      const {
-        data,
-        error
-      } = await supabase.from('tooth_notes').insert({
-        ...noteData,
-        patient_id: patientId,
-        clinic_id: profile?.id,
-        tooth_number: selectedTooth,
-        numbering_system: 'universal'
-      }).select().single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['tooth-notes']
-      });
-      setNoteDialogOpen(false);
-      setNewNote({
-        title: '',
-        content: '',
-        note_type: 'general',
-        priority: 'medium'
-      });
-      toast({
-        title: "تم بنجاح",
-        description: "تم إضافة الملاحظة بنجاح"
-      });
-    }
-  });
-
-  // Add condition mutation
-  const addConditionMutation = useMutation({
-    mutationFn: async (conditionData: any) => {
-      const {
-        data: profile
-      } = await supabase.from('profiles').select('id').eq('user_id', (await supabase.auth.getUser()).data.user?.id).single();
-      const {
-        data,
-        error
-      } = await supabase.from('tooth_conditions').insert({
-        ...conditionData,
-        patient_id: patientId,
-        clinic_id: profile?.id,
-        tooth_number: selectedTooth,
-        numbering_system: 'universal',
-        treatment_date: new Date().toISOString().split('T')[0]
-      }).select().single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['tooth-conditions']
-      });
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       setConditionDialogOpen(false);
       setNewCondition({
         condition_type: 'healthy',
@@ -333,7 +203,6 @@ const Enhanced2DToothChart = ({
         title: "تم بنجاح",
         description: "تم إضافة حالة السن بنجاح"
       });
-<<<<<<< HEAD
     },
     onError: (error) => {
       toast({
@@ -356,32 +225,14 @@ const Enhanced2DToothChart = ({
     return toothNotes?.filter(n => n.tooth_number === toothNumber) || [];
   };
 
-=======
-    }
-  });
-  const handleToothClick = (toothNumber: string) => {
-    onToothSelect(toothNumber);
-  };
-  const getToothCondition = (toothNumber: string) => {
-    return toothConditions?.find(c => c.tooth_number === toothNumber);
-  };
-  const getToothNotes = (toothNumber: string) => {
-    return toothNotes?.filter(n => n.tooth_number === toothNumber) || [];
-  };
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const getToothColor = (toothNumber: string) => {
     const condition = getToothCondition(toothNumber);
     const notes = getToothNotes(toothNumber);
     const hasHighPriorityNotes = notes.some(n => n.priority === 'high');
-<<<<<<< HEAD
     
     if (!condition && notes.length === 0) return 'default';
     if (hasHighPriorityNotes) return 'warning';
     
-=======
-    if (!condition && notes.length === 0) return 'default';
-    if (hasHighPriorityNotes) return 'warning';
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     switch (condition?.condition_type) {
       case 'decay':
         return 'decay';
@@ -399,18 +250,12 @@ const Enhanced2DToothChart = ({
         return notes.length > 0 ? 'has_notes' : 'healthy';
     }
   };
-<<<<<<< HEAD
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const getToothColorClasses = (colorType: string, isSelected: boolean) => {
     if (isSelected) {
       return "bg-primary text-primary-foreground border-primary shadow-lg";
     }
-<<<<<<< HEAD
     
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     switch (colorType) {
       case 'critical':
         return "bg-red-100 border-red-500 text-red-800 hover:bg-red-150";
@@ -436,10 +281,7 @@ const Enhanced2DToothChart = ({
         return "bg-background border-border hover:bg-accent hover:text-accent-foreground";
     }
   };
-<<<<<<< HEAD
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const renderTooth = (toothNumber: string, isUpper: boolean, index: number) => {
     const isSelected = selectedTooth === toothNumber;
     const condition = getToothCondition(toothNumber);
@@ -451,16 +293,12 @@ const Enhanced2DToothChart = ({
     const isPremolar = index >= 3 && index <= 5 || index >= 10 && index <= 12;
     const isCanine = index === 6 || index === 9;
     const isIncisor = index === 7 || index === 8;
-<<<<<<< HEAD
     
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     let toothShape = "rounded-md h-8 w-6";
     if (isMolar) toothShape = "rounded-lg h-10 w-8";
     if (isPremolar) toothShape = "rounded-md h-9 w-7";
     if (isCanine) toothShape = "rounded-full h-10 w-6";
     if (isIncisor) toothShape = "rounded-sm h-8 w-5";
-<<<<<<< HEAD
     
     // Create tooltip content for hover
     const tooltipContent = `السن رقم ${toothNumber} (Universal)${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? `\nالملاحظات:\n${notes.map(n => `• ${n.title}: ${n.content.substring(0, 50)}${n.content.length > 50 ? '...' : ''}`).join('\n')}` : ''}`;
@@ -504,36 +342,10 @@ const Enhanced2DToothChart = ({
                 <div className="font-medium mb-2">ملاحظات السن {toothNumber}:</div>
                 {notes.slice(0, 3).map((note, idx) => (
                   <div key={note.id} className="mb-1 last:mb-0">
-=======
-    // Create tooltip content for hover
-    const tooltipContent = `السن رقم ${toothNumber} (Universal)${condition ? ` - ${condition.condition_type}` : ''}${notes.length > 0 ? `\nالملاحظات:\n${notes.map(n => `• ${n.title}: ${n.content.substring(0, 50)}${n.content.length > 50 ? '...' : ''}`).join('\n')}` : ''}`;
-    return <div key={`${isUpper ? 'upper' : 'lower'}-${toothNumber}`} className="relative">
-        <button onClick={() => handleToothClick(toothNumber)} className={cn(toothShape, "border-2 transition-all duration-200 hover:scale-110 flex items-center justify-center text-xs font-bold relative group", getToothColorClasses(colorType, isSelected))} title={tooltipContent}>
-          {toothNumber}
-          
-          {/* Notes indicator */}
-          {notes.length > 0 && <div className="absolute -top-1 -right-1">
-              <Badge variant={notes.some(n => n.priority === 'high') ? "destructive" : "secondary"} className="text-xs h-4 w-4 p-0 flex items-center justify-center rounded-full">
-                {notes.length}
-              </Badge>
-            </div>}
-          
-          {/* Condition indicator */}
-          {condition && condition.condition_type === 'decay' && <div className="absolute -top-1 -left-1">
-              <AlertTriangle className="h-3 w-3 text-red-600" />
-            </div>}
-          
-          {/* Hover tooltip for notes */}
-          {notes.length > 0 && <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 pointer-events-none">
-              <div className="bg-popover text-popover-foreground border rounded-lg shadow-lg p-3 max-w-xs whitespace-pre-line text-right text-xs">
-                <div className="font-medium mb-2">ملاحظات السن {toothNumber}:</div>
-                {notes.slice(0, 3).map((note, idx) => <div key={note.id} className="mb-1 last:mb-0">
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                     <div className="font-medium text-primary">{note.title}</div>
                     <div className="text-muted-foreground">
                       {note.content.length > 80 ? note.content.substring(0, 80) + '...' : note.content}
                     </div>
-<<<<<<< HEAD
                     {note.priority === 'high' && (
                       <Badge variant="destructive" className="text-xs mt-1">
                         أولوية عالية
@@ -826,42 +638,6 @@ const Enhanced2DToothChart = ({
                 </div>
               )}
             </div>
-=======
-                    {note.priority === 'high' && <Badge variant="destructive" className="text-xs mt-1">
-                        أولوية عالية
-                      </Badge>}
-                  </div>)}
-                {notes.length > 3 && <div className="text-muted-foreground text-xs mt-1">
-                    و {notes.length - 3} ملاحظات أخرى...
-                  </div>}
-              </div>
-            </div>}
-        </button>
-      </div>;
-  };
-  return <div className="space-y-4">
-      <Card className="w-full max-w-6xl mx-auto">
-        
-
-        <CardContent className="space-y-8">
-          {/* Upper Teeth */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-center text-muted-foreground">الفك العلوي</h3>
-            <div className="flex justify-center gap-1 flex-wrap">
-              {toothNumbers.upper.map((tooth, index) => renderTooth(tooth, true, index))}
-            </div>
-          </div>
-
-          {/* Midline */}
-          <div className="border-t border-dashed border-border"></div>
-
-          {/* Lower Teeth */}
-          <div className="space-y-2">
-            <div className="flex justify-center gap-1 flex-wrap">
-              {toothNumbers.lower.map((tooth, index) => renderTooth(tooth, false, index))}
-            </div>
-            <h3 className="text-sm font-medium text-center text-muted-foreground">الفك السفلي</h3>
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
           </div>
 
           {/* Enhanced Legend */}
@@ -902,7 +678,6 @@ const Enhanced2DToothChart = ({
               </div>
             </div>
           </div>
-<<<<<<< HEAD
         </CardContent>
       </Card>
 
@@ -934,72 +709,6 @@ const Enhanced2DToothChart = ({
           </TabsContent>
         </Tabs>
       )}
-=======
-
-          {/* Selected Tooth Details */}
-          {selectedTooth && <div className="bg-muted/50 p-4 rounded-lg space-y-4">
-              <h4 className="font-medium text-center">تفاصيل السن {selectedTooth}</h4>
-              
-              {/* Control Buttons */}
-              <div className="flex justify-center gap-2 flex-wrap">
-                <Button 
-                  size="sm" 
-                  onClick={() => setNoteDialogOpen(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  إضافة ملاحظة
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => setConditionDialogOpen(true)}
-                  className="flex items-center gap-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  تحديث الحالة
-                </Button>
-                {getToothNotes(selectedTooth).length > 0 && (
-                  <Button 
-                    size="sm" 
-                    variant="secondary"
-                    onClick={() => setNoteDialogOpen(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <FileText className="h-4 w-4" />
-                    عرض الملاحظات ({getToothNotes(selectedTooth).length})
-                  </Button>
-                )}
-              </div>
-              
-              {/* Current Condition */}
-              {getToothCondition(selectedTooth) && <div className="space-y-2">
-                  <h5 className="text-sm font-medium">الحالة الحالية:</h5>
-                  <Badge variant="outline" className="text-xs">
-                    {getToothCondition(selectedTooth)?.condition_type}
-                  </Badge>
-                </div>}
-              
-              {/* Recent Notes */}
-              {getToothNotes(selectedTooth).length > 0 && <div className="space-y-2">
-                  <h5 className="text-sm font-medium">الملاحظات الحديثة:</h5>
-                  <div className="space-y-1 max-h-32 overflow-y-auto">
-                    {getToothNotes(selectedTooth).slice(0, 3).map(note => <div key={note.id} className="text-xs bg-background p-2 rounded border">
-                        <div className="font-medium">{note.title}</div>
-                        <div className="text-muted-foreground truncate">{note.content}</div>
-                      </div>)}
-                  </div>
-                </div>}
-            </div>}
-        </CardContent>
-      </Card>
-
-      {patientId && selectedTooth && <ToothNoteDialog isOpen={noteDialogOpen} onOpenChange={setNoteDialogOpen} patientId={patientId} toothNumber={selectedTooth} numberingSystem="universal" onNoteUpdate={() => {
-      queryClient.invalidateQueries({
-        queryKey: ['advanced-tooth-notes']
-      });
-    }} />}
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
       {/* Add Condition Dialog */}
       <Dialog open={conditionDialogOpen} onOpenChange={setConditionDialogOpen}>
@@ -1011,7 +720,6 @@ const Enhanced2DToothChart = ({
           <div className="space-y-4">
             <div>
               <Label htmlFor="condition-type">نوع الحالة</Label>
-<<<<<<< HEAD
               <Select 
                 value={newCondition.condition_type} 
                 onValueChange={value => {
@@ -1023,12 +731,6 @@ const Enhanced2DToothChart = ({
                   });
                 }}
               >
-=======
-              <Select value={newCondition.condition_type} onValueChange={value => setNewCondition({
-              ...newCondition,
-              condition_type: value
-            })}>
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -1045,7 +747,6 @@ const Enhanced2DToothChart = ({
             </div>
             
             <div>
-<<<<<<< HEAD
               <Label htmlFor="condition-notes">ملاحظات إضافية</Label>
               <Textarea 
                 id="condition-notes" 
@@ -1057,32 +758,6 @@ const Enhanced2DToothChart = ({
                 placeholder="أدخل ملاحظات إضافية عن حالة السن" 
                 rows={3} 
               />
-=======
-              <Label htmlFor="condition-color">لون الحالة</Label>
-              <Select value={newCondition.condition_color} onValueChange={value => setNewCondition({
-              ...newCondition,
-              condition_color: value
-            })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="#10b981">أخضر (سليم)</SelectItem>
-                  <SelectItem value="#f59e0b">برتقالي (تسوس)</SelectItem>
-                  <SelectItem value="#3b82f6">أزرق (محشو)</SelectItem>
-                  <SelectItem value="#8b5cf6">بنفسجي (تاج)</SelectItem>
-                  <SelectItem value="#ef4444">أحمر (مشكلة)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <Label htmlFor="condition-notes">ملاحظات إضافية</Label>
-              <Textarea id="condition-notes" value={newCondition.notes} onChange={e => setNewCondition({
-              ...newCondition,
-              notes: e.target.value
-            })} placeholder="أدخل ملاحظات إضافية عن حالة السن" rows={3} />
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             </div>
             
             <div className="flex justify-end gap-2">
@@ -1098,14 +773,8 @@ const Enhanced2DToothChart = ({
           </div>
         </DialogContent>
       </Dialog>
-<<<<<<< HEAD
     </div>
   );
 };
 
 export default Enhanced2DToothChart;
-=======
-    </div>;
-};
-export default Enhanced2DToothChart;
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a

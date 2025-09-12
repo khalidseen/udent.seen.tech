@@ -50,11 +50,7 @@ const CalendarView = () => {
         .order('appointment_date', { ascending: true });
 
       if (error) throw error;
-<<<<<<< HEAD
       setAppointments(data || []);
-=======
-      setAppointments((data as any) || []);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     } catch (error) {
       console.error('Error fetching appointments:', error);
     } finally {
@@ -96,7 +92,6 @@ const CalendarView = () => {
     return { total: dayAppointments.length, completed, scheduled, cancelled };
   }, [getAppointmentsForDate]);
 
-<<<<<<< HEAD
   // ألوان مختلفة لكل يوم من الأسبوع
   const getDayColors = useCallback((date: Date) => {
     const dayOfWeek = date.getDay();
@@ -192,59 +187,11 @@ const CalendarView = () => {
         
         {/* اسم اليوم في الزاوية السفلية */}
         <div className="absolute bottom-1 right-1 text-xs text-gray-500 font-medium">
-=======
-  const renderCalendarDay = useCallback((date: Date) => {
-    const stats = getDayAppointmentStats(date);
-    const isToday = isSameDay(date, new Date());
-    
-    return (
-      <div
-        onClick={() => handleDateClick(date)}
-        className={cn(
-          "relative p-2 h-20 border border-border/30 cursor-pointer transition-all duration-200 hover:bg-accent/50",
-          isToday && "bg-primary/10 border-primary/30"
-        )}
-      >
-        <div className="flex justify-between items-start h-full">
-          <span className={cn(
-            "text-sm font-medium",
-            isToday && "text-primary font-semibold"
-          )}>
-            {format(date, 'd', { locale: ar })}
-          </span>
-          
-          {stats.total > 0 && (
-            <div className="flex flex-col gap-1">
-              <Badge variant="secondary" className="text-xs px-1 py-0">
-                {stats.total}
-              </Badge>
-              
-              <div className="flex gap-1">
-                {stats.scheduled > 0 && (
-                  <div className="w-2 h-2 bg-primary rounded-full" title={`${stats.scheduled} مجدول`} />
-                )}
-                {stats.completed > 0 && (
-                  <div className="w-2 h-2 bg-green-500 rounded-full" title={`${stats.completed} مكتمل`} />
-                )}
-                {stats.cancelled > 0 && (
-                  <div className="w-2 h-2 bg-red-500 rounded-full" title={`${stats.cancelled} ملغي`} />
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-        
-        <div className="absolute bottom-1 right-1 text-xs text-muted-foreground">
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
           {format(date, 'EEEE', { locale: ar }).slice(0, 3)}
         </div>
       </div>
     );
-<<<<<<< HEAD
   }, [getDayAppointmentStats, handleDateClick, getAppointmentsForDate, getDayColors]);
-=======
-  }, [getDayAppointmentStats, handleDateClick]);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const monthDays = useMemo(() => 
     eachDayOfInterval({
@@ -372,7 +319,6 @@ const CalendarView = () => {
         <CardContent className="p-6">
           {/* Week Headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-<<<<<<< HEAD
             {[
               { name: 'السبت', color: 'text-indigo-600 bg-indigo-50' },
               { name: 'الأحد', color: 'text-purple-600 bg-purple-50' },
@@ -384,11 +330,6 @@ const CalendarView = () => {
             ].map((day) => (
               <div key={day.name} className={`p-3 text-center text-sm font-bold rounded-lg border ${day.color}`}>
                 {day.name}
-=======
-            {['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map((day) => (
-              <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
-                {day}
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
               </div>
             ))}
           </div>
@@ -396,13 +337,8 @@ const CalendarView = () => {
           {/* Calendar Days Grid */}
           <div className="grid grid-cols-7 gap-1">
             {/* Add empty cells for days before month start */}
-<<<<<<< HEAD
             {Array.from({ length: (startOfMonth(currentDate).getDay() + 1) % 7 }).map((_, index) => (
               <div key={`empty-${index}`} className="h-32" />
-=======
-            {Array.from({ length: startOfMonth(currentDate).getDay() }).map((_, index) => (
-              <div key={`empty-${index}`} className="h-20" />
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             ))}
             
             {/* Render month days */}

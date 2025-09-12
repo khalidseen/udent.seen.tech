@@ -14,10 +14,7 @@ export interface Patient {
   gender: string;
   address: string;
   medical_history: string;
-<<<<<<< HEAD
   notes?: string;
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   created_at: string;
   national_id?: string;
   emergency_contact?: string;
@@ -30,7 +27,6 @@ export interface Patient {
   assigned_doctor_id?: string;
   medical_condition?: string;
   financial_status: 'paid' | 'pending' | 'overdue' | 'partial';
-<<<<<<< HEAD
   financial_balance?: number;
   total_payments?: number;
   total_charges?: number;
@@ -40,8 +36,6 @@ export interface Patient {
   last_modified_by_id?: string;
   last_modified_by_name?: string;
   last_modified_by_role?: 'doctor' | 'assistant' | 'secretary' | 'admin' | 'super_admin';
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   assigned_doctor?: {
     full_name: string;
   };
@@ -60,19 +54,14 @@ export interface PatientsQueryParams {
 const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patient[]; total: number }> => {
   const { clinicId, search = '', limit = 50, offset = 0 } = params;
   
-<<<<<<< HEAD
   console.log('🔍 Fetching patients with params:', { clinicId, search, limit, offset });
   
   if (!clinicId) {
     console.warn('⚠️ No clinic ID provided, returning empty data');
-=======
-  if (!clinicId) {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     return { data: [], total: 0 };
   }
 
   try {
-<<<<<<< HEAD
     // Use direct supabase query for now to bypass optimized queries
     const { data: patientsData, error, count } = await supabase
       .from('patients')
@@ -89,20 +78,6 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
     console.log('✅ Successfully fetched patients:', { count: patientsData?.length, total: count });
 
     const enhancedPatients: Patient[] = patientsData?.map(patient => ({
-=======
-    // Use optimized query with pagination
-    const page = Math.floor(offset / limit) + 1;
-    const result = await optimizedPatientQueries.getPatients(
-      clinicId, 
-      page, 
-      limit, 
-      search
-    );
-
-    if (result.error) throw result.error;
-
-    const enhancedPatients: Patient[] = result.data?.map(patient => ({
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       ...patient,
       address: patient.address || '',
       medical_history: patient.medical_history || '',
@@ -110,11 +85,7 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
       assigned_doctor: undefined
     })) || [];
 
-<<<<<<< HEAD
     return { data: enhancedPatients, total: count || 0 };
-=======
-    return { data: enhancedPatients, total: result.count || 0 };
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   } catch (error) {
     console.error('Error fetching patients:', error);
@@ -164,7 +135,6 @@ export const useClinicId = () => {
     queryKey: ['clinic-id'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-<<<<<<< HEAD
       if (!user) return 'default-clinic-id'; // حل مؤقت للاختبار
       
       const { data: profiles } = await supabase
@@ -174,17 +144,6 @@ export const useClinicId = () => {
         .single();
       
       return profiles?.clinic_id || profiles?.id || 'default-clinic-id';
-=======
-      if (!user) return null;
-      
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-      
-      return profiles?.id || null;
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
@@ -203,17 +162,7 @@ export const useInvalidatePatients = () => {
     invalidateSpecific: (clinicId: string) => {
       queryClient.invalidateQueries({ queryKey: ['patients', { clinicId }] });
       // Clear specific cache entries
-<<<<<<< HEAD
       globalCaches.patients.clear();
-=======
-      const cache = globalCaches.patients;
-      const keys = Array.from((cache as any).cache?.keys() || []);
-      keys.forEach((key: string) => {
-        if (key.includes(`patients_${clinicId}`)) {
-          cache.clear();
-        }
-      });
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     }
   };
 };

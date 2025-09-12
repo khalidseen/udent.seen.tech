@@ -2,12 +2,9 @@ import React, { memo, useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-<<<<<<< HEAD
 import { useToast } from "@/hooks/use-toast";
 import { useCurrency } from '@/hooks/useCurrency';
 import { useDoctors } from '@/hooks/useDoctors';
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { 
   Eye, 
   Activity, 
@@ -19,7 +16,6 @@ import {
   Heart,
   Pill,
   Camera,
-<<<<<<< HEAD
   Calendar,
   Trash2,
   UserCheck,
@@ -41,28 +37,17 @@ import VitalsDialog from "./VitalsDialog";
 import PatientCreatorFallback from "./PatientCreatorFallback";
 import DoctorSelector from "./DoctorSelector";
 import { useDeletePatient } from "@/hooks/useDeletePatient";
-=======
-  Calendar
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import { Patient } from "@/hooks/usePatients";
-import PatientMedicalSectionsDialog from "./PatientMedicalSectionsDialog";
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 interface OptimizedPatientCardProps {
   patient: Patient;
   onAddTreatment: (patientId: string, patientName: string) => void;
   onEditPatient: (patientId: string) => void;
-<<<<<<< HEAD
   onPatientUpdated?: () => void;
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 }
 
 const OptimizedPatientCard = memo(({ 
   patient, 
   onAddTreatment, 
-<<<<<<< HEAD
   onEditPatient,
   onPatientUpdated
 }: OptimizedPatientCardProps) => {
@@ -137,13 +122,6 @@ const OptimizedPatientCard = memo(({
     }
     return null;
   }, [patient.notes]);
-=======
-  onEditPatient 
-}: OptimizedPatientCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [medicalDialogOpen, setMedicalDialogOpen] = useState(false);
-  const [selectedSection, setSelectedSection] = useState<'dental' | 'overview' | 'prescriptions' | 'images' | 'appointments' | 'financial'>('overview');
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const getFinancialStatusBadge = useCallback((status: string) => {
     const baseClasses = "text-xs font-medium transition-colors";
@@ -174,7 +152,6 @@ const OptimizedPatientCard = memo(({
     e.preventDefault();
     e.stopPropagation();
     
-<<<<<<< HEAD
     if (!patient.phone) {
       toast({
         title: "لا يوجد رقم هاتف",
@@ -218,15 +195,6 @@ const OptimizedPatientCard = memo(({
       });
     }
   }, [patient.phone, patient.full_name, toast]);
-=======
-    if (patient.phone) {
-      const cleanPhone = patient.phone.replace(/\D/g, '');
-      const message = `مرحباً ${patient.full_name}، نود تذكيركم بموعدكم في العيادة`;
-      const encodedMessage = encodeURIComponent(message);
-      window.open(`https://wa.me/${cleanPhone}?text=${encodedMessage}`, '_blank');
-    }
-  }, [patient.phone, patient.full_name]);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const handleAddTreatmentClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -237,7 +205,6 @@ const OptimizedPatientCard = memo(({
   const handleEditPatientClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-<<<<<<< HEAD
     setEditDialogOpen(true);
   }, []);
 
@@ -246,15 +213,10 @@ const OptimizedPatientCard = memo(({
       onPatientUpdated();
     }
   }, [onPatientUpdated]);
-=======
-    onEditPatient(patient.id);
-  }, [patient.id, onEditPatient]);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const handleSectionClick = useCallback((e: React.MouseEvent, section: 'dental' | 'overview' | 'prescriptions' | 'images' | 'appointments' | 'financial') => {
     e.preventDefault();
     e.stopPropagation();
-<<<<<<< HEAD
     
     // إذا كان القسم هو المالية، فتح النافذة المنبثقة
     if (section === 'financial') {
@@ -306,12 +268,6 @@ const OptimizedPatientCard = memo(({
     setDeleteDialogOpen(false);
   }, [deletePatientMutation, patient.id, patient.full_name]);
 
-=======
-    setSelectedSection(section);
-    setMedicalDialogOpen(true);
-  }, []);
-
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   return (
     <Card 
       className={`
@@ -321,7 +277,6 @@ const OptimizedPatientCard = memo(({
       `}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-<<<<<<< HEAD
       onClick={handleCardClick}
     >
       <CardContent className="p-4 h-full flex flex-col justify-between">
@@ -581,157 +536,6 @@ const OptimizedPatientCard = memo(({
           </div>
         )}
       </CardContent>
-=======
-    >
-      <Link to={`/patients/${patient.id}`} className="block h-full">
-        <CardContent className="p-4 h-full flex flex-col justify-between">
-          {/* Header Section */}
-          <div className="space-y-3">
-            {/* Patient Name & Quick Actions */}
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                {patient.full_name}
-              </h3>
-              <div className={`flex space-x-1 space-x-reverse transition-opacity ${isHovered ? 'opacity-100' : 'opacity-70'}`}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 bg-muted/40 hover:bg-primary/10 hover:text-primary transition-colors"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                  }}
-                  asChild
-                >
-                  <Link to={`/patients/${patient.id}`}>
-                    <Eye className="w-3.5 h-3.5" />
-                  </Link>
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 bg-muted/40 hover:bg-green-500/10 hover:text-green-600 transition-colors"
-                  onClick={handleAddTreatmentClick}
-                >
-                  <Activity className="w-3.5 h-3.5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 w-7 p-0 bg-muted/40 hover:bg-blue-500/10 hover:text-blue-600 transition-colors"
-                  onClick={handleEditPatientClick}
-                >
-                  <Edit className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Doctor Assignment */}
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">الطبيب المسؤول</p>
-              <p className="text-sm font-medium text-foreground line-clamp-1">
-                {patient.assigned_doctor?.full_name || 'غير محدد'}
-              </p>
-            </div>
-
-            {/* Status Information */}
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">الحالة المالية</p>
-                {getFinancialStatusBadge(patient.financial_status)}
-              </div>
-              
-              {patient.medical_condition && (
-                <div className="text-right">
-                  {getConditionBadge(patient.medical_condition)}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Quick Access Icons - Optimized */}
-          <div className="space-y-2 pt-3 border-t border-border/40">
-            <p className="text-xs text-muted-foreground font-medium">أقسام سريعة</p>
-            <div className="grid grid-cols-6 gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 flex flex-col items-center justify-center p-1 hover:bg-primary/10 hover:text-primary group/icon"
-                onClick={(e) => handleSectionClick(e, 'dental')}
-                title="مخطط الأسنان"
-              >
-                <Smile className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 flex flex-col items-center justify-center p-1 hover:bg-green-500/10 hover:text-green-600 group/icon"
-                onClick={(e) => handleSectionClick(e, 'overview')}
-                title="نظرة عامة"
-              >
-                <Heart className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 flex flex-col items-center justify-center p-1 hover:bg-blue-500/10 hover:text-blue-600 group/icon"
-                onClick={(e) => handleSectionClick(e, 'prescriptions')}
-                title="الوصفات"
-              >
-                <Pill className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 flex flex-col items-center justify-center p-1 hover:bg-purple-500/10 hover:text-purple-600 group/icon"
-                onClick={(e) => handleSectionClick(e, 'images')}
-                title="الأشعة"
-              >
-                <Camera className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 flex flex-col items-center justify-center p-1 hover:bg-orange-500/10 hover:text-orange-600 group/icon"
-                onClick={(e) => handleSectionClick(e, 'appointments')}
-                title="المواعيد"
-              >
-                <Calendar className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 flex flex-col items-center justify-center p-1 hover:bg-emerald-500/10 hover:text-emerald-600 group/icon"
-                onClick={(e) => handleSectionClick(e, 'financial')}
-                title="الحالة المالية"
-              >
-                <DollarSign className="w-3.5 h-3.5 group-hover/icon:scale-110 transition-transform" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Contact Action */}
-          {patient.phone && (
-            <div className="pt-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-center gap-2 h-8 hover:bg-green-50 hover:border-green-200 hover:text-green-700 dark:hover:bg-green-900/20 dark:hover:border-green-800 dark:hover:text-green-300 transition-all duration-200"
-                onClick={handleWhatsApp}
-              >
-                <MessageCircle className="w-3.5 h-3.5" />
-                <span className="text-xs">واتساب</span>
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Link>
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
       {/* Medical Sections Dialog */}
       <PatientMedicalSectionsDialog
@@ -741,7 +545,6 @@ const OptimizedPatientCard = memo(({
         patientName={patient.full_name}
         initialSection={selectedSection}
       />
-<<<<<<< HEAD
 
       {/* Edit Patient Dialog */}
       <EditPatientDialog
@@ -806,8 +609,6 @@ const OptimizedPatientCard = memo(({
         onOpenChange={setVitalsDialogOpen}
         patient={patient}
       />
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     </Card>
   );
 });

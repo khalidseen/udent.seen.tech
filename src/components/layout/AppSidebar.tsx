@@ -1,11 +1,7 @@
 import React from "react";
 import { useLocation, NavLink } from "react-router-dom";
 import "./sidebar.css";
-<<<<<<< HEAD
 import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, ClipboardList, UserCog, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User, TrendingUp, Brain, Pill, ChevronLeft, ChevronRight, PackageCheck, Truck, FileSpreadsheet, Megaphone, Mail, Box, Briefcase, Activity as TreatmentIcon, Calculator, Shield, Crown, Building } from "lucide-react";
-=======
-import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, Search, ClipboardList, UserCog, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User, TrendingUp, Brain, Pill, ChevronLeft, ChevronRight, PackageCheck, Truck, FileSpreadsheet, Megaphone, Mail, Box, UserCheck, Briefcase, Activity as TreatmentIcon, Calculator, Shield, Crown, Building } from "lucide-react";
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +22,6 @@ export function AppSidebar() {
   } = useLanguage();
   const location = useLocation();
   const currentPath = location.pathname;
-<<<<<<< HEAD
-=======
-  const [searchQuery, setSearchQuery] = React.useState("");
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const {
     signOut,
     user
@@ -77,33 +69,20 @@ export function AppSidebar() {
       url: "/patients",
       icon: Users,
       permissions: []
-<<<<<<< HEAD
     }]
   }, {
     groupTitle: "إدارة المواعيد",
     items: [{
-=======
-    }, {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       title: t('navigation.appointments'),
       url: "/appointments",
       icon: Calendar,
       permissions: []
     }, {
-<<<<<<< HEAD
-=======
-      title: t('appointments.appointmentRequests'),
-      url: "/appointment-requests",
-      icon: ClipboardList,
-      permissions: []
-    }, {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       title: t('actions.addAppointment'),
       url: "/appointments/new",
       icon: CalendarPlus,
       permissions: []
     }, {
-<<<<<<< HEAD
       title: "حجز موعد (للمرضى)",
       url: "/book",
       icon: ExternalLink,
@@ -113,29 +92,6 @@ export function AppSidebar() {
       title: t('appointments.appointmentRequests'),
       url: "/appointment-requests",
       icon: ClipboardList,
-=======
-      title: t('navigation.dentalTreatments'),
-      url: "/dental-treatments",
-      icon: Stethoscope,
-      permissions: []
-    }, {
-      title: t('navigation.medicalRecords'),
-      url: "/medical-records",
-      icon: FolderOpen,
-      permissions: []
-    }]
-  }, {
-    groupTitle: t('sidebar.aiMenu'),
-    items: [{
-      title: t('sidebar.smartDiagnosis'),
-      url: "/smart-diagnosis",
-      icon: Brain,
-      permissions: []
-    }, {
-      title: t('navigation.aiInsights'),
-      url: "/ai-insights",
-      icon: TrendingUp,
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       permissions: []
     }]
   }, {
@@ -146,14 +102,6 @@ export function AppSidebar() {
       icon: Stethoscope,
       permissions: []
     }, {
-<<<<<<< HEAD
-=======
-      title: "طلبات الأطباء",
-      url: "/doctor-applications",
-      icon: UserCheck,
-      permissions: []
-    }, {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       title: t('sidebar.doctorAssistants'),
       url: "/doctor-assistants",
       icon: UserCog,
@@ -207,13 +155,9 @@ export function AppSidebar() {
     }]
   },
   // Super Admin section - visible to super admins and system admin
-<<<<<<< HEAD
   ...((userRole === 'super_admin' || 
        user?.email === 'eng.khalid.work@gmail.com' || 
        user?.user_metadata?.role === 'super_admin') ? [{
-=======
-  ...((userRole === 'super_admin' || user?.email === 'eng.khalid.work@gmail.com') ? [{
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     groupTitle: "إدارة النظام الشامل",
     items: [{
       title: "لوحة تحكم مدير النظام",
@@ -244,46 +188,10 @@ export function AppSidebar() {
   }] : []), {
     groupTitle: t('sidebar.systemManagement'),
     items: [{
-<<<<<<< HEAD
-=======
-      title: "الإشعارات",
-      url: "/notifications",
-      icon: Bell,
-      permissions: []
-    }, {
-      title: "قوالب الإشعارات",
-      url: "/notification-templates",
-      icon: Mail,
-      permissions: []
-    }, {
-      title: "التقارير",
-      url: "/reports",
-      icon: FileSpreadsheet,
-      permissions: []
-    },
-    // Role-based system management items - always show for system admin
-    ...(userRole === 'super_admin' || userRole === 'clinic_manager' || user?.email === 'eng.khalid.work@gmail.com' ? [{
-      title: "إدارة الصلاحيات",
-      url: "/permissions",
-      icon: UserCog,
-      permissions: ['permissions.manage']
-    }, {
-      title: "إدارة المستخدمين",
-      url: "/users",
-      icon: Users,
-      permissions: ['users.view_all']
-    }, {
-      title: "التدقيق الأمني",
-      url: "/security-audit",
-      icon: Shield,
-      permissions: ['audit.view']
-    }] : []), {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       title: t('navigation.settings'),
       url: "/settings",
       icon: Settings,
       permissions: []
-<<<<<<< HEAD
     }]
   }, {
     groupTitle: "� الإحصائيات والتقارير",
@@ -361,39 +269,13 @@ export function AppSidebar() {
   }, {
     groupTitle: "🦷 النماذج ثلاثية الأبعاد",
     items: [{
-=======
-    }, {
-      title: "رابط حجز المرضى",
-      url: "/book",
-      icon: ExternalLink,
-      permissions: [],
-      external: true
-    }]
-  }, {
-    groupTitle: "الميزات المتقدمة",
-    items: [{
-      title: "العلاجات",
-      url: "/treatments",
-      icon: TreatmentIcon,
-      permissions: []
-    }, {
-      title: "أسعار الخدمات",
-      url: "/service-prices",
-      icon: Calculator,
-      permissions: []
-    }, {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       title: "3D للأسنان المتقدم",
       url: "/advanced-3d-dental",
       icon: Box,
       permissions: []
     }, {
       title: "إدارة النماذج ثلاثية الأبعاد",
-<<<<<<< HEAD
       url: "/dental-3d-models-management",
-=======
-      url: "/dental-models-admin",
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       icon: Package,
       permissions: []
     }]
@@ -448,7 +330,6 @@ export function AppSidebar() {
          <div className="text-muted-foreground">جاري تحميل القائمة...</div>
        </aside>;
   }
-<<<<<<< HEAD
   return <aside className={cn(
     "fixed inset-y-0 z-50 bg-background border-r border-border flex flex-col shadow-lg",
     isRTL ? "right-0" : "left-0",
@@ -514,44 +395,6 @@ export function AppSidebar() {
                       external={item.external} 
                     />
                   )}
-=======
-  return <aside className={cn("fixed inset-y-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm flex flex-col", isRTL ? "right-0 border-l" : "left-0 border-r", isCollapsed ? "w-[4.5rem]" : "w-64", "transition-all duration-300")} data-state={isCollapsed ? "collapsed" : "expanded"}>
-      {/* Header */}
-      <div className="h-16 flex items-center px-4 border-b">
-        <div className={cn("flex items-center gap-3 flex-1", isRTL && "flex-row-reverse")}>
-          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0">
-            <Stethoscope className="w-5 h-5 text-primary-foreground" />
-          </div>
-          {!isCollapsed && <h1 className="text-lg font-bold text-primary truncate">
-              {t('sidebar.systemName')}
-            </h1>}
-        </div>
-        <Button variant="ghost" size="icon" className={cn("absolute -right-3 top-3", isRTL && "-left-3 right-auto")} onClick={() => setIsCollapsed(!isCollapsed)}>
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
-      </div>
-
-      {/* Search */}
-      {!isCollapsed && <div className="p-4 border-b">
-          <div className="relative">
-            <Search className={cn("w-4 h-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground", isRTL ? "right-3" : "left-3")} />
-            <Input type="search" placeholder={t('common.search')} value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className={cn("w-full h-9", isRTL ? "pr-9" : "pl-9")} />
-          </div>
-        </div>}
-
-      {/* Menu */}
-      <div className="flex-1 overflow-y-auto">
-        <div className={cn("py-2", isCollapsed ? "px-2" : "px-3")}>
-          {menuConfig.map(group => {
-          const filteredItems = group.items.filter(item => item.title.toLowerCase().includes(searchQuery.toLowerCase()) && canAccessMenuItem(item));
-          if (filteredItems.length === 0) return null;
-          return <div key={group.groupTitle} className="mb-4">
-                {!isCollapsed && <h2 className={cn("text-xs font-medium text-muted-foreground px-2 mb-2", isRTL && "text-right")}>
-                    {group.groupTitle}
-                  </h2>}
-                <div className="space-y-1">
-                  {filteredItems.map(item => <SidebarMenuItem key={item.title} icon={item.icon} title={item.title} url={item.url} collapsed={isCollapsed} iconSize={getIconSize()} isActive={isActive(item.url)} external={item.external || false} />)}
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                 </div>
               </div>;
         })}
@@ -559,7 +402,6 @@ export function AppSidebar() {
       </div>
 
       {/* Footer */}
-<<<<<<< HEAD
       <div className="border-t border-border p-4 bg-background/50">
         <div className="space-y-2">
           {!isCollapsed && (
@@ -582,16 +424,6 @@ export function AppSidebar() {
             )} 
             onClick={signOut}
           >
-=======
-      <div className="border-t p-4">
-        
-        <div className="space-y-2 mt-3">
-          {!isCollapsed && <Button variant="ghost" size="default" className="w-full justify-start gap-2" onClick={() => window.location.href = '/profile'}>
-              <User className="w-4 h-4" />
-              الملف الشخصي
-            </Button>}
-          <Button variant="ghost" size={isCollapsed ? "icon" : "default"} className={cn("w-full", !isCollapsed && "justify-start gap-2")} onClick={signOut}>
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             <LogOut className="w-4 h-4" />
             {!isCollapsed && t('common.logout')}
           </Button>

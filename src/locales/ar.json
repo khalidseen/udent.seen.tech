@@ -49,12 +49,9 @@
     "aiInsights": "رؤى الذكاء الاصطناعي",
     "advanced3D": "النماذج ثلاثية الأبعاد المتقدمة"
   },
-<<<<<<< HEAD
   "actions": {
     "addAppointment": "إضافة موعد"
   },
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   "header": {
     "search": "البحث في النظام...",
     "notifications": "الإشعارات",

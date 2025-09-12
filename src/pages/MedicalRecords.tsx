@@ -1,11 +1,6 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-=======
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageToolbar } from "@/components/layout/PageToolbar";
 import { Button } from "@/components/ui/button";
@@ -48,16 +43,11 @@ interface MedicalRecord {
 }
 
 export default function MedicalRecords() {
-<<<<<<< HEAD
   const [searchParams] = useSearchParams();
   const patientIdFromUrl = searchParams.get('patient');
   
   const [searchTerm, setSearchTerm] = useState("");
   const [patientFilter, setPatientFilter] = useState(patientIdFromUrl || "all");
-=======
-  const [searchTerm, setSearchTerm] = useState("");
-  const [patientFilter, setPatientFilter] = useState("all");
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const [recordTypeFilter, setRecordTypeFilter] = useState("all");
   const [isCreateRecordOpen, setIsCreateRecordOpen] = useState(false);
   const [isUploadImageOpen, setIsUploadImageOpen] = useState(false);
@@ -66,7 +56,6 @@ export default function MedicalRecords() {
   const [isCompareImagesOpen, setIsCompareImagesOpen] = useState(false);
   const { toast } = useToast();
 
-<<<<<<< HEAD
   // Update patientFilter when URL parameter changes
   useEffect(() => {
     if (patientIdFromUrl && patients) {
@@ -81,8 +70,6 @@ export default function MedicalRecords() {
     }
   }, [patientIdFromUrl, patients, toast]);
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const { data: records, isLoading, refetch } = useQuery({
     queryKey: ['medical-records'],
     queryFn: async () => {
@@ -104,11 +91,7 @@ export default function MedicalRecords() {
         .order('treatment_date', { ascending: false });
 
       if (error) throw error;
-<<<<<<< HEAD
       return data as MedicalRecord[];
-=======
-      return data as any;
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     }
   });
 

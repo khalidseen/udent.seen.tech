@@ -112,10 +112,7 @@ interface VirtualizedPatientListProps {
   patients: Patient[];
   onAddTreatment: (patientId: string, patientName: string) => void;
   onEditPatient: (patientId: string) => void;
-<<<<<<< HEAD
   onPatientUpdated?: () => void;
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   loading?: boolean;
   viewMode: 'cards' | 'table';
   currentPage: number;
@@ -166,10 +163,7 @@ const VirtualizedPatientList = memo(({
   patients,
   onAddTreatment,
   onEditPatient,
-<<<<<<< HEAD
   onPatientUpdated,
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   loading = false,
   viewMode,
   currentPage,
@@ -236,10 +230,7 @@ const VirtualizedPatientList = memo(({
               patient={patient}
               onAddTreatment={handleAddTreatment}
               onEditPatient={handleEditPatient}
-<<<<<<< HEAD
               onPatientUpdated={onPatientUpdated}
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             />
           </Suspense>
         ))}

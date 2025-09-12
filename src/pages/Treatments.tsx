@@ -9,12 +9,8 @@ import RealisticToothChart from "@/components/dental/RealisticToothChart";
 import ZoomableToothChart from "@/components/dental/ZoomableToothChart";
 import OralHealthStatistics from "@/components/dental/OralHealthStatistics";
 import DentalTreatmentForm from "@/components/dental/DentalTreatmentForm";
-<<<<<<< HEAD
 import TreatmentsList from "@/components/treatments/TreatmentsList";
 import { Zap, FileText, Activity, BarChart3, Maximize, List } from "lucide-react";
-=======
-import { Zap, FileText, Activity, BarChart3, Maximize } from "lucide-react";
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 const Treatments = () => {
   const location = useLocation();
@@ -35,11 +31,7 @@ const Treatments = () => {
       />
 
       <Tabs defaultValue="chart" className="w-full">
-<<<<<<< HEAD
         <TabsList className="grid w-full grid-cols-5 mb-6">
-=======
-        <TabsList className="grid w-full grid-cols-4 mb-6">
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
           <TabsTrigger value="chart" className="flex items-center gap-2">
             <Zap className="w-4 h-4" />
             مخطط الأسنان
@@ -56,13 +48,10 @@ const Treatments = () => {
             <Activity className="w-4 h-4" />
             إضافة علاج
           </TabsTrigger>
-<<<<<<< HEAD
           <TabsTrigger value="list" className="flex items-center gap-2">
             <List className="w-4 h-4" />
             قائمة العلاجات
           </TabsTrigger>
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         </TabsList>
 
         <TabsContent value="chart" className="space-y-6">
@@ -88,11 +77,7 @@ const Treatments = () => {
                   <div>
                     <span className="font-medium">نظام الترقيم:</span> {numberingSystem.toUpperCase()}
                   </div>
-<<<<<<< HEAD
                   <div className="flex gap-2">
-=======
-                  <div>
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                     <Button 
                       size="sm" 
                       onClick={() => {
@@ -103,7 +88,6 @@ const Treatments = () => {
                     >
                       إضافة علاج لهذا السن
                     </Button>
-<<<<<<< HEAD
                     <Button 
                       size="sm" 
                       variant="outline"
@@ -115,8 +99,6 @@ const Treatments = () => {
                     >
                       عرض العلاجات
                     </Button>
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                   </div>
                 </div>
               </CardContent>
@@ -145,13 +127,10 @@ const Treatments = () => {
             preSelectedSystem={numberingSystem}
           />
         </TabsContent>
-<<<<<<< HEAD
 
         <TabsContent value="list">
           <TreatmentsList patientId={patientId} />
         </TabsContent>
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       </Tabs>
     </PageContainer>
   );

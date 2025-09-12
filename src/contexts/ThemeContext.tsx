@@ -13,15 +13,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== "undefined") {
       const savedTheme = localStorage.getItem("theme") as Theme;
-<<<<<<< HEAD
       return savedTheme || "light"; // تم تغيير الافتراضي من "system" إلى "light"
     }
     return "light"; // تم تغيير الافتراضي من "system" إلى "light"
-=======
-      return savedTheme || "system";
-    }
-    return "system";
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   });
 
   useEffect(() => {
@@ -38,7 +32,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add(theme);
     }
     
-<<<<<<< HEAD
     // تخزين الثيم في localStorage
     localStorage.setItem("theme", theme);
     
@@ -47,9 +40,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.classList.add("light");
       localStorage.setItem("theme-initialized", "true");
     }
-=======
-    localStorage.setItem("theme", theme);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   }, [theme]);
 
   return (

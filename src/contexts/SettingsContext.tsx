@@ -1,9 +1,6 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { SettingsContext, SettingsContextType } from './SettingsContextType';
-<<<<<<< HEAD
 import { isDashboardColumnAvailable } from '@/lib/database-init';
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 interface SettingsProviderProps {
   children: ReactNode;
@@ -40,7 +37,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     return saved ? parseInt(saved) : 200;
   });
 
-<<<<<<< HEAD
   const [linkValidationAlertEnabled, setLinkValidationAlertEnabled] = useState<boolean>(() => {
     const saved = localStorage.getItem('linkValidationAlertEnabled');
     return saved ? JSON.parse(saved) : true;
@@ -49,8 +45,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   // Server-side persisted dismissal flag (per-profile)
   const [serverDashboardDismissed, setServerDashboardDismissed] = useState<boolean | null>(null);
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   useEffect(() => {
     localStorage.setItem('fontWeight', fontWeight);
     
@@ -84,7 +78,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     localStorage.setItem('boxSize', boxSize.toString());
   }, [boxSize]);
 
-<<<<<<< HEAD
   useEffect(() => {
     localStorage.setItem('linkValidationAlertEnabled', JSON.stringify(linkValidationAlertEnabled));
   }, [linkValidationAlertEnabled]);
@@ -195,8 +188,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
 
   // No global exports; consumers should use useSettings() to access setDashboardDismissedServer
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   return (
     <SettingsContext.Provider value={{ 
       fontWeight, 
@@ -210,14 +201,10 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       boxesPerRow,
       setBoxesPerRow,
       boxSize,
-<<<<<<< HEAD
   setBoxSize,
   linkValidationAlertEnabled,
   setLinkValidationAlertEnabled,
   setDashboardDismissedServer
-=======
-      setBoxSize
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     }}>
       {children}
     </SettingsContext.Provider>

@@ -7,10 +7,7 @@ import { SettingsProvider } from "@/contexts/SettingsContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PermissionsProvider } from "@/contexts/PermissionsContext";
-<<<<<<< HEAD
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { useEffect } from "react";
 import { toast } from "sonner";
 
@@ -32,10 +29,7 @@ import DoctorAssistants from "@/pages/DoctorAssistants";
 import Secretaries from "@/pages/Secretaries";
 import AppointmentRequests from "@/pages/AppointmentRequests";
 import PublicBooking from "@/pages/PublicBooking";
-<<<<<<< HEAD
 import PublicBookingLanding from "@/pages/PublicBookingLanding";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import Invoices from "@/pages/Invoices";
 import Payments from "@/pages/Payments";
 import Inventory from "@/pages/Inventory";
@@ -51,10 +45,6 @@ import AdvancedToothEditor from "@/pages/AdvancedToothEditor";
 import Notifications from "@/pages/Notifications";
 import NotificationTemplates from "@/pages/NotificationTemplates";
 import Reports from "@/pages/Reports";
-<<<<<<< HEAD
-=======
-import DoctorApplications from "@/pages/DoctorApplications";
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import AIInsights from "@/pages/AIInsights";
 import SmartDiagnosis from "@/pages/SmartDiagnosis";
 import Medications from "@/pages/Medications";
@@ -69,7 +59,6 @@ import Users from "@/pages/Users";
 import SuperAdmin from "@/pages/SuperAdmin";
 import SubscriptionPlans from "@/pages/SubscriptionPlans";
 import SubscriptionManagement from "@/pages/SubscriptionManagement";
-<<<<<<< HEAD
 import { UnderDevelopment } from "@/pages/UnderDevelopment";
 
 // New feature pages
@@ -87,8 +76,6 @@ import ComprehensiveSecurityAudit from "@/pages/ComprehensiveSecurityAudit";
 import Dental3DModelsManagement from "@/pages/Dental3DModelsManagement";
 import EnhancedDentalChartDemo from "@/pages/EnhancedDentalChartDemo";
 import FinancialIntegrationTest from "@/components/debug/FinancialIntegrationTest";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 // Initialize the offline database
 import { offlineDB } from "@/lib/offline-db";
@@ -142,7 +129,6 @@ function App() {
         <SettingsProvider>
           <SidebarProvider>
             <ThemeProvider>
-<<<<<<< HEAD
               <CurrencyProvider>
                 <PermissionsProvider>
                   <TooltipProvider>
@@ -157,15 +143,6 @@ function App() {
                   {/* Public routes */}
                   <Route path="/book" element={<PublicBookingLanding />} />
                   <Route path="/book/:clinic" element={<PublicBooking />} />
-=======
-              <PermissionsProvider>
-                <TooltipProvider>
-                <BrowserRouter>
-                  <div className="min-h-screen bg-background">
-                  <Routes>
-                  {/* Public routes */}
-                  <Route path="/book" element={<PublicBooking />} />
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                   <Route path="/auth" element={<Auth />} />
                   
                   {/* Protected routes with main layout */}
@@ -202,10 +179,6 @@ function App() {
                      <Route path="notifications" element={<Notifications />} />
                     <Route path="notification-templates" element={<NotificationTemplates />} />
                     <Route path="reports" element={<Reports />} />
-<<<<<<< HEAD
-=======
-                    <Route path="doctor-applications" element={<DoctorApplications />} />
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                     <Route path="medications" element={<Medications />} />
                     <Route path="prescriptions" element={<Prescriptions />} />
                     <Route path="permissions" element={<Permissions />} />
@@ -216,7 +189,6 @@ function App() {
                      <Route path="super-admin" element={<SuperAdmin />} />
                      <Route path="subscription-plans" element={<SubscriptionPlans />} />
                      <Route path="subscription" element={<SubscriptionManagement />} />
-<<<<<<< HEAD
                      
                      {/* New feature routes */}
                      <Route path="dental-treatments-management" element={<DentalTreatmentsManagement />} />
@@ -235,8 +207,6 @@ function App() {
                      <Route path="financial-integration-test" element={<FinancialIntegrationTest />} />
                      
                      <Route path="under-development" element={<UnderDevelopment />} />
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                      <Route path="splash-cursor-demo" element={<SplashCursorDemo />} />
                   </Route>
 
@@ -251,10 +221,7 @@ function App() {
               </BrowserRouter>
             </TooltipProvider>
           </PermissionsProvider>
-<<<<<<< HEAD
         </CurrencyProvider>
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         </ThemeProvider>
         </SidebarProvider>
       </SettingsProvider>

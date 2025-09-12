@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { ReactNode, useState, useEffect, useCallback } from 'react';
-=======
-import { ReactNode, useState, useEffect } from 'react';
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -26,7 +22,6 @@ export const FeatureGate = ({
   const [hasAccess, setHasAccess] = useState(false);
   const [loading, setLoading] = useState(true);
 
-<<<<<<< HEAD
   const checkFeatureAccess = useCallback(async () => {
     if (features.length === 0) {
       setHasAccess(true);
@@ -57,38 +52,6 @@ export const FeatureGate = ({
   useEffect(() => {
     checkFeatureAccess();
   }, [checkFeatureAccess]);
-=======
-  useEffect(() => {
-    const checkFeatureAccess = async () => {
-      if (features.length === 0) {
-        setHasAccess(true);
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const featureChecks = await Promise.all(
-          features.map(feature => 
-            supabase.rpc('has_plan_feature', { feature_key_param: feature })
-          )
-        );
-
-        const hasFeatureAccess = requireAll 
-          ? featureChecks.every(result => result.data === true)
-          : featureChecks.some(result => result.data === true);
-
-        setHasAccess(hasFeatureAccess);
-      } catch (error) {
-        console.error('Error checking feature access:', error);
-        setHasAccess(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkFeatureAccess();
-  }, [features, requireAll]);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   if (loading) {
     return (

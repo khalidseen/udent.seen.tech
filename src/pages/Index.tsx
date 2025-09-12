@@ -14,17 +14,12 @@ import {
   Brain,
   Settings,
   BarChart3,
-<<<<<<< HEAD
   Users,
-=======
-  Bell,
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   Activity,
   Edit,
   Save,
   X,
   GripVertical,
-<<<<<<< HEAD
   Link as LinkIcon,
   Pill,
   Receipt,
@@ -46,9 +41,6 @@ import {
   Copy,
   MessageCircle,
   Smartphone
-=======
-  Link as LinkIcon
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
@@ -56,29 +48,21 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettingsHook";
-<<<<<<< HEAD
 import styles from "./Index.module.css";
 import { printDashboardValidationReport, validateDashboardCards } from "@/utils/dashboardValidation";
 // import { DashboardValidator } from "@/components/dashboard/DashboardValidator"; // تم نقله إلى الإعدادات
 // import { SmartNotificationSystem } from "@/components/dashboard/SmartNotificationSystem"; // مُعطل مؤقتاً
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 interface ActionCard {
   id: string;
   title: string;
   description: string;
-<<<<<<< HEAD
   icon: React.ComponentType<{ className?: string }>;
-=======
-  icon: React.ComponentType<any>;
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   color: string;
   route: string;
   order_index?: number;
 }
 
-<<<<<<< HEAD
 const defaultCards: ActionCard[] = [
   {
     id: "patients-list",
@@ -226,127 +210,11 @@ const defaultCards: ActionCard[] = [
   }
 ];
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 function Index() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-<<<<<<< HEAD
   const settings = useSettings(); // Move this before conditional rendering
-=======
-
-  const defaultCards: ActionCard[] = [
-    {
-      id: "1",
-      title: "إضافة مريض جديد",
-      description: "تسجيل بيانات مريض جديد في النظام",
-      icon: UserPlus,
-      color: "bg-blue-500",
-      route: "/patients",
-      order_index: 1
-    },
-    {
-      id: "2",
-      title: "حجز موعد",
-      description: "حجز موعد جديد للمريض",
-      icon: Calendar,
-      color: "bg-green-500",
-      route: "/appointments/new",
-      order_index: 2
-    },
-    {
-      id: "public-booking-link",
-      title: "رابط حجز المرضى",
-      description: "رابط مباشر يمكن مشاركته مع المرضى لحجز موعد عبر الإنترنت",
-      icon: LinkIcon,
-      color: "bg-lime-600",
-      route: "/public-booking",
-      order_index: 3
-    },
-    {
-      id: "3",
-      title: "السجلات الطبية",
-      description: "إدارة السجلات الطبية للمرضى",
-      icon: FileText,
-      color: "bg-purple-500",
-      route: "/medical-records",
-      order_index: 3
-    },
-    {
-      id: "4",
-      title: "الفواتير",
-      description: "إدارة الفواتير والمدفوعات",
-      icon: DollarSign,
-      color: "bg-yellow-500",
-      route: "/invoices",
-      order_index: 4
-    },
-    {
-      id: "5",
-      title: "المخزون",
-      description: "إدارة المخزون والإمدادات",
-      icon: Package,
-      color: "bg-orange-500",
-      route: "/inventory",
-      order_index: 5
-    },
-    {
-      id: "6",
-      title: "العلاجات",
-      description: "إدارة العلاجات والإجراءات",
-      icon: Stethoscope,
-      color: "bg-red-500",
-      route: "/treatments",
-      order_index: 6
-    },
-    {
-      id: "7",
-      title: "الذكاء الاصطناعي",
-      description: "تحليل ذكي وتشخيص متقدم",
-      icon: Brain,
-      color: "bg-indigo-500",
-      route: "/ai-insights",
-      order_index: 7
-    },
-    {
-      id: "8",
-      title: "الإعدادات",
-      description: "إعدادات النظام والأداء",
-      icon: Settings,
-      color: "bg-gray-500",
-      route: "/settings",
-      order_index: 8
-    },
-    {
-      id: "9",
-      title: "التقارير",
-      description: "تقارير شاملة وإحصائيات",
-      icon: BarChart3,
-      color: "bg-teal-500",
-      route: "/reports",
-      order_index: 9
-    },
-    {
-      id: "10",
-      title: "الإشعارات",
-      description: "إدارة الإشعارات والتنبيهات",
-      icon: Bell,
-      color: "bg-pink-500",
-      route: "/notifications",
-      order_index: 10
-    },
-    {
-      id: "11",
-      title: "مراقبة النظام",
-      description: "مراقبة صحة النظام والأداء",
-      icon: Activity,
-      color: "bg-cyan-500",
-      route: "/settings",
-      order_index: 11
-    }
-  ];
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const [actionCards, setActionCards] = useState<ActionCard[]>(defaultCards);
   const [editingCard, setEditingCard] = useState<string | null>(null);
@@ -360,7 +228,6 @@ function Index() {
 
   // تحميل البيانات من localStorage أو قاعدة البيانات
   useEffect(() => {
-<<<<<<< HEAD
     let mounted = true;
     
     const loadDashboardCards = async () => {
@@ -396,46 +263,27 @@ function Index() {
       mounted = false;
     };
   }, []); // Empty dependency array - only run once
-=======
-    loadDashboardCards();
-  }, []);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const loadDashboardCards = async () => {
     try {
       // أولاً محاولة التحميل من localStorage
       const savedCards = localStorage.getItem('dashboard_cards');
       if (savedCards) {
-<<<<<<< HEAD
         const parsedCards = JSON.parse(savedCards);
         // دمج البطاقات الجديدة من defaultCards إذا لم تكن موجودة
         defaultCards.forEach((defCard) => {
           if (!parsedCards.some((c: ActionCard) => c.id === defCard.id)) {
-=======
-        let parsedCards = JSON.parse(savedCards);
-        // دمج البطاقات الجديدة من defaultCards إذا لم تكن موجودة
-        defaultCards.forEach((defCard) => {
-          if (!parsedCards.some((c: any) => c.id === defCard.id)) {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             parsedCards.push(defCard);
           }
         });
         // تحديث الخصائص (color, icon) من defaultCards دائماً
-<<<<<<< HEAD
         const loadedCards = parsedCards.map((item: Partial<ActionCard>) => {
-=======
-        const loadedCards = parsedCards.map((item: any) => {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
           const defaultCard = defaultCards.find(card => card.id === item.id);
           return {
             ...item,
             color: defaultCard?.color || "bg-gray-500",
             icon: defaultCard?.icon || Settings
-<<<<<<< HEAD
           } as ActionCard;
-=======
-          };
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         });
         setActionCards(loadedCards);
         localStorage.setItem('dashboard_cards', JSON.stringify(loadedCards));
@@ -454,11 +302,7 @@ function Index() {
         setActionCards(defaultCards);
       } else if (data && data.length > 0) {
         // تحويل البيانات من قاعدة البيانات إلى تنسيق المكون
-<<<<<<< HEAD
         const loadedCards = data.map((item: Partial<ActionCard>) => {
-=======
-        let loadedCards = data.map((item: any) => {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
           const defaultCard = defaultCards.find(card => card.id === item.id);
           return {
             id: item.id,
@@ -468,19 +312,11 @@ function Index() {
             color: defaultCard?.color || "bg-gray-500",
             icon: defaultCard?.icon || Settings,
             order_index: item.order_index
-<<<<<<< HEAD
           } as ActionCard;
         });
         // دمج البطاقات الجديدة من defaultCards إذا لم تكن موجودة
         defaultCards.forEach((defCard) => {
           if (!loadedCards.some((c: ActionCard) => c.id === defCard.id)) {
-=======
-          };
-        });
-        // دمج البطاقات الجديدة من defaultCards إذا لم تكن موجودة
-        defaultCards.forEach((defCard) => {
-          if (!loadedCards.some((c: any) => c.id === defCard.id)) {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             loadedCards.push(defCard);
           }
         });
@@ -668,7 +504,6 @@ function Index() {
     setEditData({ title: "", description: "", route: "" });
   };
 
-<<<<<<< HEAD
   const shareBookingLink = () => {
     const currentDomain = window.location.origin;
     const bookingUrl = `${currentDomain}/book`;
@@ -724,8 +559,6 @@ function Index() {
     window.location.href = smsUrl;
   };
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   if (loading) {
     return (
       <PageContainer>
@@ -736,11 +569,6 @@ function Index() {
     );
   }
 
-<<<<<<< HEAD
-=======
-  const settings = useSettings();
-
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const renderCard = (card: ActionCard) => {
     return (
       <Card 
@@ -751,7 +579,6 @@ function Index() {
         onDrop={(e) => handleDrop(e, card)}
         style={{ minHeight: `${settings.boxSize}px` }}
         className={`transition-all duration-300 relative ${editingCard === card.id ? "ring-2 ring-blue-500 shadow-lg" : "cursor-pointer md:hover:shadow-lg md:hover:scale-105 active:scale-95"} ${draggedCard?.id === card.id ? "opacity-50 rotate-3 scale-105" : ""} ${editingCard !== card.id ? "md:hover:ring-1 md:hover:ring-gray-200" : ""}`}
-<<<<<<< HEAD
         onClick={() => {
           if (editingCard !== card.id) {
             // التحقق من صحة الرابط قبل التنقل
@@ -811,10 +638,6 @@ function Index() {
             </Button>
           </div>
         )}
-=======
-        onClick={() => editingCard !== card.id && navigate(card.route)}
-      >
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
           <div className="flex items-center">
             <div className={`p-2 md:p-3 rounded-lg ${card.color} text-white`}>
@@ -890,7 +713,6 @@ function Index() {
               <CardDescription className="text-xs md:text-sm text-gray-600 leading-tight">
                 {card.description}
               </CardDescription>
-<<<<<<< HEAD
               <div className="flex items-center justify-end gap-3 mt-2">
                 {/* أزرار التحكم - التعديل والسحب */}
                 <div className="flex items-center gap-2">
@@ -914,27 +736,6 @@ function Index() {
                     <Edit className="w-4 h-4" />
                   </Button>
                 </div>
-=======
-              <div className="flex items-center justify-end gap-2 mt-2">
-                <div 
-                  className="cursor-grab hover:cursor-grabbing text-gray-400 hover:text-gray-600 p-1 rounded transition-colors"
-                  title="اسحب لإعادة الترتيب"
-                >
-                  <GripVertical className="w-3 h-3 md:w-4 md:h-4" />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startEditing(card);
-                  }}
-                  className="text-gray-600 hover:text-gray-700 active:text-gray-800 p-1 md:p-2"
-                  title="تحرير المحتوى"
-                >
-                  <Edit className="w-3 h-3 md:w-4 md:h-4" />
-                </Button>
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
               </div>
             </>
           )}
@@ -946,33 +747,20 @@ function Index() {
   return (
     <PageContainer>
       <div className="space-y-6">
-<<<<<<< HEAD
         {/* تم نقل مكون التحقق من صحة الربط إلى الإعدادات → فحص الروابط */}
 
         {/* Dashboard Action Cards */}
         {settings.showDashboardBoxes && (
           <div 
             className={`${styles.dashboardGrid} dashboard-grid-${settings.boxesPerRow}`}
-=======
-        {/* Dashboard Action Cards */}
-        {settings.showDashboardBoxes && (
-          <div 
-            className="grid gap-4"
-            style={{
-              gridTemplateColumns: `repeat(${settings.boxesPerRow}, minmax(0, 1fr))`
-            }}
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
           >
             {actionCards.map(renderCard)}
           </div>
         )}
-<<<<<<< HEAD
 
         {/* نظام الإشعارات الذكي - مُعطل مؤقتاً */}
         {/* يمكن تفعيله عبر إلغاء التعليق أدناه */}
         {/* <SmartNotificationSystem /> */}
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       </div>
     </PageContainer>
   );

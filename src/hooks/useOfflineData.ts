@@ -21,13 +21,8 @@ export function useOfflineData<T = any>({ table, filter, order, autoRefresh = tr
   const lastFetchRef = useRef<number>(0);
 
   // Memoize filter and order to prevent unnecessary re-renders
-<<<<<<< HEAD
   const memoizedFilter = useMemo(() => filter, [filter]);
   const memoizedOrder = useMemo(() => order, [order]);
-=======
-  const memoizedFilter = useMemo(() => filter, [JSON.stringify(filter)]);
-  const memoizedOrder = useMemo(() => order, [JSON.stringify(order)]);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const fetchData = useCallback(async (force = false) => {
     const now = Date.now();

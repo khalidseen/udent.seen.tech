@@ -179,11 +179,7 @@ function useToast() {
         listeners.splice(index, 1)
       }
     }
-<<<<<<< HEAD
   }, [])
-=======
-  }, [state])
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   return {
     ...state,

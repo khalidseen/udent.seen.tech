@@ -10,10 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { Activity, Save, Stethoscope, Pill } from "lucide-react";
 import ToothChart from "./ToothChart";
 import SmartTreatmentRecommendations from "../treatments/SmartTreatmentRecommendations";
-<<<<<<< HEAD
 import TreatmentsList from "../treatments/TreatmentsList";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import MedicationSelector from "@/components/medications/MedicationSelector";
@@ -63,10 +60,7 @@ const DentalTreatmentForm = ({ patientId, preSelectedTooth, preSelectedSystem }:
   });
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-<<<<<<< HEAD
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   useEffect(() => {
     fetchPatients();
@@ -181,14 +175,9 @@ const DentalTreatmentForm = ({ patientId, preSelectedTooth, preSelectedSystem }:
       });
       setSelectedTooth(null);
       setSelectedMedications([]);
-<<<<<<< HEAD
       setRefreshTrigger(prev => prev + 1);
 
     } catch (error) {
-=======
-
-    } catch (error: any) {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       toast({
         title: 'خطأ',
         description: error.message,
@@ -411,7 +400,6 @@ const DentalTreatmentForm = ({ patientId, preSelectedTooth, preSelectedSystem }:
           </CardContent>
         </Card>
       </div>
-<<<<<<< HEAD
 
       {/* Treatments List */}
       <TreatmentsList 
@@ -430,8 +418,6 @@ const DentalTreatmentForm = ({ patientId, preSelectedTooth, preSelectedSystem }:
           setEditingId(treatment.id);
         }}
       />
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     </PageContainer>
   );
 };

@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-<<<<<<< HEAD
 import { useSharedFinancialData } from "@/hooks/useSharedFinancialData";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,7 +68,6 @@ const PatientFinancialStatus = ({ patientId, patientName, patientPhone }: Patien
     notes: ""
   });
 
-<<<<<<< HEAD
   // استخدام الـ hook المشترك للبيانات المالية
   const { 
     summary: financialSummary, 
@@ -80,8 +76,6 @@ const PatientFinancialStatus = ({ patientId, patientName, patientPhone }: Patien
     refreshData: refreshFinancialData 
   } = useSharedFinancialData({ patientId });
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   // Fetch treatment plans
   const { data: treatmentPlans = [], isLoading: plansLoading } = useQuery({
     queryKey: ["treatment-plans", patientId],
@@ -112,21 +106,12 @@ const PatientFinancialStatus = ({ patientId, patientName, patientPhone }: Patien
     }
   });
 
-<<<<<<< HEAD
   // Calculate financial summary - استخدام البيانات المشتركة مع fallback للبيانات الموجودة
   const totalCost = treatmentPlans.reduce((sum, plan) => sum + plan.estimated_cost, 0);
   const totalPaid = financialSummary.totalPaid || payments
     .filter(payment => payment.status === "completed")
     .reduce((sum, payment) => sum + payment.amount, 0);
   const remaining = financialSummary.totalBalance || totalCost - totalPaid;
-=======
-  // Calculate financial summary
-  const totalCost = treatmentPlans.reduce((sum, plan) => sum + plan.estimated_cost, 0);
-  const totalPaid = payments
-    .filter(payment => payment.status === "completed")
-    .reduce((sum, payment) => sum + payment.amount, 0);
-  const remaining = totalCost - totalPaid;
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const handleAddPlan = async () => {
     try {
@@ -157,11 +142,8 @@ const PatientFinancialStatus = ({ patientId, patientName, patientPhone }: Patien
       setAddPlanDialog(false);
       setNewPlan({ title: "", description: "", estimated_cost: "", start_date: "", end_date: "", notes: "" });
       queryClient.invalidateQueries({ queryKey: ["treatment-plans", patientId] });
-<<<<<<< HEAD
       // تحديث البيانات المالية المشتركة
       refreshFinancialData();
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     } catch (error) {
       toast({
         title: "خطأ في إضافة خطة العلاج",
@@ -207,11 +189,8 @@ const PatientFinancialStatus = ({ patientId, patientName, patientPhone }: Patien
         notes: ""
       });
       queryClient.invalidateQueries({ queryKey: ["patient-payments", patientId] });
-<<<<<<< HEAD
       // تحديث البيانات المالية المشتركة
       refreshFinancialData();
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     } catch (error) {
       toast({
         title: "خطأ في إضافة الدفعة",

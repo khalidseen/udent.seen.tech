@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import { useParams, useSearchParams } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
-=======
-import { useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { supabase } from "@/integrations/supabase/client";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,7 +39,6 @@ interface Patient {
 }
 const PatientProfile = () => {
   const {
-<<<<<<< HEAD
     id: patientSlug
   } = useParams<{
     id: string;
@@ -54,12 +48,6 @@ const PatientProfile = () => {
   // Get patient ID from query parameter (preferred) or use slug as fallback
   const patientId = searchParams.get('id') || patientSlug;
   
-=======
-    id: patientId
-  } = useParams<{
-    id: string;
-  }>();
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const [patient, setPatient] = useState<Patient | null>(null);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
@@ -68,13 +56,10 @@ const PatientProfile = () => {
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
   const [selectedTooth, setSelectedTooth] = useState<string>("");
   const [selectedToothSystem, setSelectedToothSystem] = useState<'universal' | 'palmer' | 'fdi'>('universal');
-<<<<<<< HEAD
   const [activeTab, setActiveTab] = useState<string>(() => {
     // Read tab from URL parameters, default to 'dental-chart'
     return searchParams.get('tab') || 'dental-chart';
   });
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const [patientStats, setPatientStats] = useState({
     totalAppointments: 0,
     completedTreatments: 0,
@@ -90,7 +75,6 @@ const PatientProfile = () => {
     if (patientId && user) {
       fetchPatient();
       fetchPatientStats();
-<<<<<<< HEAD
       
       // Show notification when opened via appointment form
       if (searchParams.get('id')) {
@@ -102,10 +86,6 @@ const PatientProfile = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [patientId, user, searchParams, toast]);
-=======
-    }
-  }, [patientId, user]);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const fetchPatient = async () => {
     if (!user) {
       setLoading(false);
@@ -258,11 +238,7 @@ const PatientProfile = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-0">
         {/* Medical File Sections Tabs */}
-<<<<<<< HEAD
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-=======
-        <Tabs defaultValue="dental-chart" className="w-full">
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
           {/* Responsive Tabs Navigation */}
           <div className="mb-0">
             <div className="bg-background/90 backdrop-blur-sm shadow-lg border rounded-t-2xl" dir="rtl">

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { useEffect, useState, useCallback } from "react";
-=======
-import { useEffect, useState } from "react";
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,10 +17,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import EditAppointmentDialog from "./EditAppointmentDialog";
 import PostAppointmentActions from "./PostAppointmentActions";
 import CalendarView from "./CalendarView";
-<<<<<<< HEAD
 import AddAppointmentPopup from "./AddAppointmentPopup";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 interface Appointment {
@@ -61,16 +54,9 @@ const AppointmentList = () => {
   const [patientNameFilter, setPatientNameFilter] = useState("");
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-<<<<<<< HEAD
   const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] = useState(false);
 
   const fetchAppointments = useCallback(async () => {
-=======
-  useEffect(() => {
-    fetchAppointments();
-  }, []);
-  const fetchAppointments = async () => {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     try {
       // Get current user's clinic_id
       const {
@@ -92,11 +78,7 @@ const AppointmentList = () => {
         ascending: true
       });
       if (error) throw error;
-<<<<<<< HEAD
       setAppointments(data || []);
-=======
-      setAppointments(data as any || []);
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     } catch (error) {
       console.error('Error fetching appointments:', error);
       toast({
@@ -107,16 +89,12 @@ const AppointmentList = () => {
     } finally {
       setLoading(false);
     }
-<<<<<<< HEAD
   }, [t]);
 
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
 
-=======
-  };
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       scheduled: {
@@ -139,7 +117,6 @@ const AppointmentList = () => {
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.scheduled;
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
-<<<<<<< HEAD
 
   const filteredAppointments = appointments.filter(appointment => {
     const matchesSearch = appointment.patients?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || appointment.treatment_type?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -160,19 +137,6 @@ const AppointmentList = () => {
     return matchesSearch && matchesStatus && matchesDate && matchesPatientName && isFutureOrToday;
   });
 
-=======
-  const filteredAppointments = appointments.filter(appointment => {
-    const matchesSearch = appointment.patients?.full_name.toLowerCase().includes(searchTerm.toLowerCase()) || appointment.treatment_type?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "all" || appointment.status === filterStatus;
-    let matchesDate = true;
-    if (dateFilter) {
-      const appointmentDate = new Date(appointment.created_at).toISOString().split('T')[0];
-      matchesDate = appointmentDate === dateFilter;
-    }
-    const matchesPatientName = !patientNameFilter || appointment.patients?.full_name.toLowerCase().includes(patientNameFilter.toLowerCase());
-    return matchesSearch && matchesStatus && matchesDate && matchesPatientName;
-  });
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const handleCompleteAppointment = async (appointmentId: string) => {
     try {
       const {
@@ -186,11 +150,7 @@ const AppointmentList = () => {
         description: t('messages.appointmentCompleted')
       });
       fetchAppointments();
-<<<<<<< HEAD
     } catch (error) {
-=======
-    } catch (error: any) {
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       toast({
         title: t('common.error'),
         description: error.message,
@@ -198,10 +158,7 @@ const AppointmentList = () => {
       });
     }
   };
-<<<<<<< HEAD
 
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd MMMM yyyy - HH:mm", {
@@ -211,7 +168,6 @@ const AppointmentList = () => {
       return dateString;
     }
   };
-<<<<<<< HEAD
 
   // إحصائيات المواعيد
   const today = new Date();
@@ -364,198 +320,4 @@ const AppointmentList = () => {
   );
 };
 
-=======
-  if (loading) {
-    return <PageContainer>
-        <PageHeader title={t('navigation.appointments')} description={t('messages.loadingData')} />
-        <Card>
-          <CardContent className="p-6">
-            <div className="text-center">{t('common.loading')}</div>
-          </CardContent>
-        </Card>
-      </PageContainer>;
-  }
-  return <PageContainer>
-      <PageToolbar
-        title={t('navigation.appointments')}
-        searchQuery={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder={t('filters.searchByName')}
-        showViewToggle={false}
-        showAdvancedFilter={false}
-        actions={<AddAppointmentDialog onAppointmentAdded={fetchAppointments} />}
-      />
-
-      {/* Tabs for Calendar and List View */}
-      <Tabs defaultValue="calendar" className="space-y-6">
-        
-
-        {/* Calendar View */}
-        <TabsContent value="calendar">
-          <CalendarView />
-        </TabsContent>
-
-        {/* List View */}
-        <TabsContent value="list" className="space-y-6">
-          {/* Filters */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="space-y-4">
-                {/* Basic Filters */}
-                <div className="flex flex-col md:flex-row gap-4">
-                  <div className="flex-1">
-                    <div className="relative">
-                      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input placeholder={t('filters.searchByName')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pr-10" />
-                    </div>
-                  </div>
-                  <Select value={filterStatus} onValueChange={setFilterStatus}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{t('filters.allAppointments')}</SelectItem>
-                      <SelectItem value="scheduled">{t('status.scheduled')}</SelectItem>
-                      <SelectItem value="completed">{t('status.completed')}</SelectItem>
-                      <SelectItem value="cancelled">{t('status.cancelled')}</SelectItem>
-                      <SelectItem value="no_show">{t('status.noShow')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button variant="outline" onClick={() => setShowAdvancedFilters(!showAdvancedFilters)} className="flex items-center gap-2">
-                    <Filter className="w-4 h-4" />
-                    {t('actions.advancedFilter')}
-                  </Button>
-                </div>
-
-                {/* Advanced Filters */}
-                {showAdvancedFilters && <div className="border-t pt-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label>{t('filters.dateAdded')}</Label>
-                        <Input type="date" value={dateFilter} onChange={e => setDateFilter(e.target.value)} placeholder={t('filters.dateFrom')} />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>{t('filters.searchByPatientName')}</Label>
-                        <Input value={patientNameFilter} onChange={e => setPatientNameFilter(e.target.value)} placeholder={t('filters.patientName')} />
-                      </div>
-                      
-                      <div className="space-y-2">
-                        <Label>{t('common.clear')}</Label>
-                        <Button variant="outline" onClick={() => {
-                      setSearchTerm("");
-                      setFilterStatus("all");
-                      setDateFilter("");
-                      setPatientNameFilter("");
-                    }} className="w-full flex items-center gap-2">
-                          <X className="w-4 h-4" />
-                          {t('actions.clearAll')}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Active Filters Display */}
-                    {(searchTerm || filterStatus !== "all" || dateFilter || patientNameFilter) && <div className="mt-4 p-3 bg-muted rounded-lg">
-                        <div className="text-sm font-medium mb-2">{t('filters.activeFilters')}:</div>
-                        <div className="flex flex-wrap gap-2">
-                          {searchTerm && <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                              {t('common.search')}: {searchTerm}
-                            </span>}
-                          {filterStatus !== "all" && <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                              {t('forms.status')}: {filterStatus === "scheduled" ? t('status.scheduled') : filterStatus === "completed" ? t('status.completed') : filterStatus === "cancelled" ? t('status.cancelled') : t('status.noShow')}
-                            </span>}
-                          {dateFilter && <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                              {t('filters.dateAdded')}: {dateFilter}
-                            </span>}
-                          {patientNameFilter && <span className="px-2 py-1 bg-primary/10 text-primary rounded text-xs">
-                              {t('filters.patientName')}: {patientNameFilter}
-                            </span>}
-                        </div>
-                      </div>}
-                  </div>}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Appointments List */}
-          <div className="grid gap-4">
-            {filteredAppointments.length === 0 ? <Card>
-                <CardContent className="p-6">
-                  <div className="text-center text-muted-foreground">
-                    {t('messages.noAppointments')}
-                  </div>
-                </CardContent>
-              </Card> : filteredAppointments.map(appointment => <Card key={appointment.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-4 mb-2">
-                          <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-primary" />
-                            <span className="font-medium text-lg">
-                              {appointment.patients?.full_name}
-                            </span>
-                          </div>
-                          {getStatusBadge(appointment.status)}
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            {formatDate(appointment.appointment_date)}
-                          </div>
-                          
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" />
-                            {appointment.duration} دقيقة
-                          </div>
-                          
-                          {appointment.patients?.phone && <div className="flex items-center gap-2">
-                              <Phone className="w-4 h-4" />
-                              {appointment.patients.phone}
-                            </div>}
-                        </div>
-                        
-                        {appointment.treatment_type && <div className="mt-2">
-                            <span className="text-sm font-medium">{t('forms.treatmentType')}: </span>
-                            <span className="text-sm text-muted-foreground">
-                              {appointment.treatment_type}
-                            </span>
-                          </div>}
-                        
-                        {appointment.notes && <div className="mt-2">
-                            <span className="text-sm font-medium">{t('forms.notes')}: </span>
-                            <span className="text-sm text-muted-foreground">
-                              {appointment.notes}
-                            </span>
-                          </div>}
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2">
-                        <Button size="sm" variant="outline" onClick={() => {
-                    setEditingAppointment(appointment);
-                    setEditDialogOpen(true);
-                  }} className="border-border/60 hover:bg-accent/60 transition-all duration-200">
-                          <Edit className="w-4 h-4 ml-1" />
-                          {t('common.edit')}
-                        </Button>
-                        
-                        {appointment.status !== 'completed' && <PostAppointmentActions appointment={appointment} onActionsCompleted={fetchAppointments} />}
-                        
-                        <Button size="sm" onClick={() => handleCompleteAppointment(appointment.id)} className="bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200">
-                          <CheckCircle className="w-4 h-4 ml-1" />
-                          {t('common.complete')}
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>)}
-            </div>
-        </TabsContent>
-      </Tabs>
-
-      <EditAppointmentDialog appointment={editingAppointment} open={editDialogOpen} onOpenChange={setEditDialogOpen} onAppointmentUpdated={fetchAppointments} />
-    </PageContainer>;
-};
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 export default AppointmentList;

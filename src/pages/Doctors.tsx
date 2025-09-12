@@ -10,10 +10,7 @@ import { PageToolbar } from "@/components/layout/PageToolbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AddDoctorDialog from "@/components/doctors/AddDoctorDialog";
-<<<<<<< HEAD
 import DatabaseTestButton from "@/components/debug/DatabaseTestButton";
-=======
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 interface Doctor {
   id: string;
@@ -78,17 +75,10 @@ const Doctors = () => {
         title: "تم الحذف",
         description: "تم حذف الطبيب بنجاح",
       });
-<<<<<<< HEAD
     } catch (error: unknown) {
       toast({
         title: "خطأ",
         description: (error as Error)?.message || "حدث خطأ أثناء حذف الطبيب",
-=======
-    } catch (error: any) {
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء حذف الطبيب",
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         variant: "destructive"
       });
     }
@@ -117,7 +107,6 @@ const Doctors = () => {
         showViewToggle={false}
         showAdvancedFilter={false}
         actions={
-<<<<<<< HEAD
           <div className="flex gap-2">
             <DatabaseTestButton />
             <Button onClick={handleCreate}>
@@ -125,12 +114,6 @@ const Doctors = () => {
               إضافة طبيب جديد
             </Button>
           </div>
-=======
-          <Button onClick={handleCreate}>
-            <Plus className="w-4 h-4 ml-2" />
-            إضافة طبيب جديد
-          </Button>
->>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         }
       />
 
