@@ -110,9 +110,11 @@ const queryClient = new QueryClient({
   },
 });
 
+// Import the PageSkeleton component
+import { PageSkeleton } from '@/components/ui/loading-skeleton';
+
 // Loading component for suspense
 const PageLoader = ({ type }: { type?: 'patients' | 'appointments' | 'form' | 'dashboard' | 'default' }) => {
-  const { PageSkeleton } = require('@/components/ui/loading-skeleton');
   return <PageSkeleton type={type} />;
 };
 
