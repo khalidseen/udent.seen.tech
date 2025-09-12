@@ -20,7 +20,7 @@ import {
   Calendar,
   Trash2
 } from 'lucide-react';
-import { Patient } from '@/types/patient';
+import type { Patient } from '@/hooks/usePatients';
 import { calculateAge } from './PatientUtils';
 import { useToast } from '@/hooks/use-toast';
 
@@ -31,11 +31,11 @@ interface PatientWithAge extends Patient {
 
 interface MedicationDialogProps {
   patient: PatientWithAge;
-  isOpen: boolean;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const MedicationDialog: React.FC<MedicationDialogProps> = ({ patient, isOpen, onClose }) => {
+const MedicationDialog: React.FC<MedicationDialogProps> = ({ patient, open, onOpenChange }) => {
   const { toast } = useToast();
   const [medications, setMedications] = useState([
     {
@@ -101,7 +101,7 @@ const MedicationDialog: React.FC<MedicationDialogProps> = ({ patient, isOpen, on
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -294,7 +294,7 @@ const MedicationDialog: React.FC<MedicationDialogProps> = ({ patient, isOpen, on
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
             إغلاق
           </Button>
           <Button onClick={() => {
@@ -302,7 +302,7 @@ const MedicationDialog: React.FC<MedicationDialogProps> = ({ patient, isOpen, on
               title: "تم الحفظ",
               description: "تم حفظ تغييرات الأدوية بنجاح"
             });
-            onClose();
+            onOpenChange(false);
           }}>
             حفظ التغييرات
           </Button>

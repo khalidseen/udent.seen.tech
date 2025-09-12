@@ -116,7 +116,7 @@ const EnhancedDentalChart: React.FC<DentalChartProps> = ({
     const priority = getToothPriority(toothNumber);
     const isSelected = selectedTooth === toothNumber;
     
-    let style = {
+    let style: React.CSSProperties = {
       backgroundColor: baseColor + '20',
       borderColor: baseColor,
       color: baseColor,

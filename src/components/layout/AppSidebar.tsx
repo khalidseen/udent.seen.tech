@@ -57,7 +57,7 @@ export function AppSidebar() {
 
   // Get current user role for role-based menu
   const userRole = primaryRole?.role_name;
-  const menuConfig = [{
+  const menuConfig: { groupTitle: string; items: MenuItem[] }[] = [{
     groupTitle: t('sidebar.mainMenu'),
     items: [{
       title: t('navigation.dashboard'),

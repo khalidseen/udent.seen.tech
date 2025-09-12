@@ -9,14 +9,7 @@ import FinancialTestComponent from './FinancialTestComponent';
 import FinancialStatusDialog from '../patients/FinancialStatusDialog';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { TestTube, Users, Search, Activity } from 'lucide-react';
-
-interface Patient {
-  id: string;
-  full_name: string;
-  phone?: string;
-  financial_status?: string;
-  financial_balance?: number;
-}
+import type { Patient } from '@/hooks/usePatients';
 
 const FinancialIntegrationTest: React.FC = () => {
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
