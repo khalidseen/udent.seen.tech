@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineSupabase } from '@/lib/offline-supabase';
+import { offlineDB } from '@/lib/offline-db';
 import { globalCaches } from '@/lib/performance-optimizations';
 import { optimizedPatientQueries } from '@/lib/optimized-queries';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
@@ -56,6 +57,16 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
   
   console.log('🔍 Fetching patients with params:', { clinicId, search, limit, offset });
   
+  // Clear any stale offline data first
+  try {
+    if (!search || search.trim().length === 0) {
+      const staleOfflineData = await offlineSupabase.select('patients', {});
+      console.log('🗑️ Found stale offline data:', staleOfflineData.data?.length || 0);
+    }
+  } catch (e) {
+    console.warn('Could not check offline data:', e);
+  }
+  
   try {
     // Determine if current user is super admin to control clinic filtering
     const { data: { user } } = await supabase.auth.getUser();
@@ -102,26 +113,17 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
 
     console.log('✅ Successfully fetched patients:', { count: patientsData?.length, total: count });
 
-    // Fallback: if server returned no results and there's no search term, try offline cache
-    if ((!patientsData || patientsData.length === 0) && (!search || search.trim().length === 0)) {
+    // تخزين البيانات الحديثة في الـ offline cache
+    if (patientsData && patientsData.length > 0) {
       try {
-        const patientsResult = await offlineSupabase.select('patients', {
-          filter: clinicId ? { clinic_id: clinicId } : undefined,
-          order: { column: 'created_at', ascending: false }
-        });
-
-        const offlinePatients: Patient[] = (patientsResult.data || []).map((patient: any) => ({
-          ...patient,
-          address: patient.address || '',
-          medical_history: patient.medical_history || '',
-          financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending'
-        }));
-
-        if (offlinePatients.length > 0) {
-          return { data: offlinePatients, total: offlinePatients.length };
+        // مسح البيانات القديمة أولاً
+        await offlineDB.clear('patients');
+        // إضافة البيانات الجديدة
+        for (const patient of patientsData) {
+          await offlineDB.put('patients', patient);
         }
       } catch (e) {
-        console.warn('⚠️ Offline cache read failed:', e);
+        console.warn('⚠️ Failed to update offline cache:', e);
       }
     }
 
@@ -214,11 +216,17 @@ export const useInvalidatePatients = () => {
   return {
     invalidateAll: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.removeQueries({ queryKey: ['patients'] });
       globalCaches.patients.clear();
     },
     invalidateSpecific: (clinicId: string) => {
-      queryClient.invalidateQueries({ queryKey: ['patients', { clinicId }] });
-      // Clear specific cache entries
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.removeQueries({ queryKey: ['patients'] });
+      globalCaches.patients.clear();
+    },
+    forceRefresh: () => {
+      queryClient.removeQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patients'] });
       globalCaches.patients.clear();
     }
   };

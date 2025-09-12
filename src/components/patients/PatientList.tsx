@@ -10,7 +10,8 @@ import AddSamplePatientsButton from "./AddSamplePatientsButton";
 import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
 import VirtualizedPatientList from "./VirtualizedPatientList";
-import { usePatients, useClinicId } from "@/hooks/usePatients";
+import { useEnhancedPatients, useEnhancedInvalidatePatients } from "@/hooks/useEnhancedPatients";
+import { useClinicId } from "@/hooks/usePatients";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,6 +46,9 @@ const PatientList = () => {
   // Get clinic ID with React Query
   const { data: clinicId, isLoading: clinicLoading } = useClinicId();
 
+  // Enhanced invalidation hook
+  const { invalidateAll, forceSync } = useEnhancedInvalidatePatients();
+
   // Optimized search with debouncing
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -57,7 +61,7 @@ const PatientList = () => {
     error: patientsError,
     isError,
     refetch: refetchPatients
-  } = usePatients({
+  } = useEnhancedPatients({
     clinicId: clinicId || undefined,
     search: debouncedSearchQuery,
     limit: itemsPerPage,
@@ -143,57 +147,39 @@ const PatientList = () => {
   }, []);
 
   const handlePatientAdded = useCallback(async () => {
-    try {
-      setIsRefreshing(true); // إظهار مؤشر التحديث
-      setCurrentPage(1); // Reset to first page when new patient is added
-      
-      // إبطال كاش المرضى لإجبار إعادة التحميل
-      await queryClient.invalidateQueries({ queryKey: ['patients'] });
-      
-      // إبطال أي كاش متعلق بالعيادة أيضاً
-      if (clinicId) {
-        await queryClient.invalidateQueries({ 
-          predicate: (query) => 
-            query.queryKey[0] === 'patients' && 
-            JSON.stringify(query.queryKey[1]).includes(clinicId)
-        });
-      }
-      
-      // إعادة تحميل البيانات بشكل صريح أيضاً
-      await refetchPatients();
-      
-    } catch (error) {
-      console.error('Error refreshing patients list:', error);
-    } finally {
-      setIsRefreshing(false); // إخفاء مؤشر التحديث
-    }
-  }, [refetchPatients, queryClient, clinicId]);
-
-  const handlePatientUpdated = useCallback(async () => {
+    console.log('👤 Patient added - triggering enhanced refresh');
     try {
       setIsRefreshing(true);
+      setCurrentPage(1);
       
-      // إبطال كاش المرضى لإجبار إعادة التحميل
-      await queryClient.invalidateQueries({ queryKey: ['patients'] });
-      
-      // إبطال أي كاش متعلق بالعيادة أيضاً
-      if (clinicId) {
-        await queryClient.invalidateQueries({ 
-          predicate: (query) => 
-            query.queryKey[0] === 'patients' && 
-            JSON.stringify(query.queryKey[1]).includes(clinicId)
-        });
-      }
-      
-      // إعادة تحميل البيانات بشكل صريح أيضاً
+      // Use enhanced invalidation
+      await forceSync();
       await refetchPatients();
       
+      console.log('✅ Enhanced patient added refresh completed');
     } catch (error) {
-      console.error('Error refreshing patients list:', error);
+      console.error('❌ Enhanced patient added refresh failed:', error);
     } finally {
       setIsRefreshing(false);
     }
-  }, [refetchPatients, queryClient, clinicId]);
+  }, [forceSync, refetchPatients]);
+
+  const handlePatientUpdated = useCallback(async () => {
+    console.log('👤 Patient updated - triggering enhanced refresh');
+    try {
+      setIsRefreshing(true);
+      
+      // Use enhanced invalidation
+      await forceSync();
+      await refetchPatients();
+      
+      console.log('✅ Enhanced patient updated refresh completed');
+    } catch (error) {
+      console.error('❌ Enhanced patient updated refresh failed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [forceSync, refetchPatients]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
