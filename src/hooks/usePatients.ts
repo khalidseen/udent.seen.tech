@@ -125,14 +125,19 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
       }
     }
 
-    const enhancedPatients = ((patientsData?.map((patient: any) => ({
-      ...patient,
-      address: patient.address || '',
-      medical_history: patient.medical_history || '',
-      financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending'
-    })) || []) as unknown) as Patient[];
+  const enhancedPatients = ((patientsData?.map((patient: any) => ({
+    ...patient,
+    address: patient.address || '',
+    medical_history: patient.medical_history || '',
+    financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending'
+  })) || []) as unknown) as Patient[];
 
-    return { data: enhancedPatients, total: count || 0 };
+  // Remove duplicates based on patient ID
+  const uniquePatients = enhancedPatients.filter((patient, index, self) => 
+    index === self.findIndex(p => p.id === patient.id)
+  );
+
+  return { data: uniquePatients, total: count || 0 };
 
   } catch (error) {
     console.error('Error fetching patients:', error);
@@ -144,15 +149,20 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
         order: { column: 'created_at', ascending: false }
       });
 
-      const fallbackPatients: Patient[] = patientsResult.data?.map(patient => ({
-        ...patient,
-        address: patient.address || '',
-        medical_history: patient.medical_history || '',
-        financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
-        assigned_doctor: undefined
-      })) || [];
+    const fallbackPatients: Patient[] = patientsResult.data?.map(patient => ({
+      ...patient,
+      address: patient.address || '',
+      medical_history: patient.medical_history || '',
+      financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
+      assigned_doctor: undefined
+    })) || [];
 
-      return { data: fallbackPatients, total: fallbackPatients.length };
+    // Remove duplicates from fallback data too
+    const uniqueFallbackPatients = fallbackPatients.filter((patient, index, self) => 
+      index === self.findIndex(p => p.id === patient.id)
+    );
+
+    return { data: uniqueFallbackPatients, total: uniqueFallbackPatients.length };
     } catch (offlineError) {
       console.error('Offline fallback failed:', offlineError);
       return { data: [], total: 0 };
@@ -168,7 +178,7 @@ export const usePatients = (params: PatientsQueryParams) => {
     queryKey,
     () => fetchPatients(params),
     {
-      enabled: !!params.clinicId,
+      enabled: true, // Always enabled - super admins don't need clinic_id
       staleTime: 2 * 60 * 1000,
       cacheTime: 10 * 60 * 1000,
       localCacheMinutes: 3
