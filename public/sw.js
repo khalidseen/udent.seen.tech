@@ -33,12 +33,16 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(event.request.url);
   
+<<<<<<< HEAD
   // Skip Chrome extension requests to prevent port errors
   if (url.protocol === 'chrome-extension:' || url.hostname.includes('extension')) {
     return;
   }
   
   // API requests - Network First with fallback and better error handling
+=======
+  // API requests - Network First with fallback
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   if (url.pathname.includes('/rest/v1/') || url.pathname.includes('/auth/v1/')) {
     event.respondWith(
       fetch(event.request)
@@ -48,6 +52,7 @@ self.addEventListener('fetch', (event) => {
             const responseClone = response.clone();
             caches.open(CACHE_NAME).then(cache => {
               cache.put(event.request, responseClone);
+<<<<<<< HEAD
             }).catch(err => console.warn('Cache put failed:', err));
           }
           return response;
@@ -74,6 +79,16 @@ self.addEventListener('fetch', (event) => {
               error: 'Offline - cached data not available' 
             }), {
               status: 503,
+=======
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          // Fallback to cache for offline
+          return caches.match(event.request).then(cachedResponse => {
+            return cachedResponse || new Response(JSON.stringify({ error: 'Offline' }), {
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
               headers: { 'Content-Type': 'application/json' }
             });
           });

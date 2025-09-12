@@ -9,8 +9,12 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+<<<<<<< HEAD
 import { Clock, User, Phone, Mail, MapPin, FileText, Check, X, MessageCircle, Calendar, Star, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+=======
+import { Clock, User, Phone, Mail, MapPin, FileText, Check, X } from "lucide-react";
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 interface AppointmentRequest {
   id: string;
   patient_name: string;
@@ -29,6 +33,7 @@ const AppointmentRequestsList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [rejectionReason, setRejectionReason] = useState("");
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
+<<<<<<< HEAD
   const [filterStatus, setFilterStatus] = useState<string>("all");
 
   // WhatsApp message sending function
@@ -88,6 +93,8 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
         return `مرحباً ${request.patient_name} 👋\n\nشكراً لتواصلكم مع ${clinicName}`;
     }
   };
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const fetchRequests = async () => {
     try {
       setIsLoading(true);
@@ -198,6 +205,7 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
       if (appointmentError) throw appointmentError;
 
       // Update the request status
+<<<<<<< HEAD
       const { error: updateError } = await supabase
         .from('appointment_requests')
         .update({ 
@@ -215,6 +223,16 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
       }
 
       toast.success("تم قبول طلب الموعد وإرسال رسالة واتساب للمريض");
+=======
+      const {
+        error: updateError
+      } = await supabase.from('appointment_requests').update({
+        status: 'approved',
+        approved_appointment_id: appointment.id
+      }).eq('id', request.id);
+      if (updateError) throw updateError;
+      toast.success("تم قبول طلب الموعد وإنشاء بيانات المريض بنجاح");
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       fetchRequests();
     } catch (error) {
       console.error('Error approving request:', error);
@@ -223,11 +241,16 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
       setProcessingRequest(null);
     }
   };
+<<<<<<< HEAD
   const handleReject = async (requestId: string, request: AppointmentRequest) => {
+=======
+  const handleReject = async (requestId: string) => {
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     if (!rejectionReason.trim()) {
       toast.error("يرجى إدخال سبب الرفض");
       return;
     }
+<<<<<<< HEAD
 
     setProcessingRequest(requestId);
     try {
@@ -248,6 +271,18 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
       }
 
       toast.success("تم رفض طلب الموعد وإرسال رسالة واتساب للمريض");
+=======
+    setProcessingRequest(requestId);
+    try {
+      const {
+        error
+      } = await supabase.from('appointment_requests').update({
+        status: 'rejected',
+        rejection_reason: rejectionReason
+      }).eq('id', requestId);
+      if (error) throw error;
+      toast.success("تم رفض طلب الموعد");
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       setRejectionReason("");
       fetchRequests();
     } catch (error) {
@@ -260,6 +295,7 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
+<<<<<<< HEAD
         return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200">
           <Clock className="w-3 h-3 mr-1" />
           في الانتظار
@@ -274,10 +310,18 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
           <X className="w-3 h-3 mr-1" />
           تم الرفض
         </Badge>;
+=======
+        return <Badge variant="secondary">في الانتظار</Badge>;
+      case 'approved':
+        return <Badge variant="default">تم القبول</Badge>;
+      case 'rejected':
+        return <Badge variant="destructive">تم الرفض</Badge>;
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       default:
         return <Badge variant="secondary">{status}</Badge>;
     }
   };
+<<<<<<< HEAD
 
   const getPriorityLevel = (createdAt: string) => {
     const now = new Date();
@@ -610,5 +654,117 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
       )}
     </div>
   );
+=======
+  if (isLoading) {
+    return <div className="p-6">جاري التحميل...</div>;
+  }
+  return <div className="p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        
+        <Badge variant="outline">{requests.length} طلب</Badge>
+      </div>
+
+      {requests.length === 0 ? <Card>
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">لا توجد طلبات مواعيد حالياً</p>
+          </CardContent>
+        </Card> : <div className="grid gap-4">
+          {requests.map(request => <Card key={request.id}>
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <User className="w-5 h-5" />
+                      {request.patient_name}
+                    </CardTitle>
+                    <CardDescription>
+                      تم الإرسال في {format(new Date(request.created_at), 'dd/MM/yyyy HH:mm', {
+                  locale: ar
+                })}
+                    </CardDescription>
+                  </div>
+                  {getStatusBadge(request.status)}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock className="w-4 h-4" />
+                      <span>
+                        {format(new Date(request.preferred_date), 'dd/MM/yyyy', {
+                    locale: ar
+                  })} - {request.preferred_time}
+                      </span>
+                    </div>
+                    {request.patient_phone && <div className="flex items-center gap-2 text-sm">
+                        <Phone className="w-4 h-4" />
+                        <span>{request.patient_phone}</span>
+                      </div>}
+                    {request.patient_email && <div className="flex items-center gap-2 text-sm">
+                        <Mail className="w-4 h-4" />
+                        <span>{request.patient_email}</span>
+                      </div>}
+                    {request.patient_address && <div className="flex items-center gap-2 text-sm">
+                        <MapPin className="w-4 h-4" />
+                        <span>{request.patient_address}</span>
+                      </div>}
+                  </div>
+                  <div>
+                    <div className="flex items-start gap-2 text-sm">
+                      <FileText className="w-4 h-4 mt-0.5" />
+                      <div>
+                        <span className="font-medium">وصف الحالة:</span>
+                        <p className="mt-1 text-muted-foreground">{request.condition_description}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {request.status === 'pending' && <div className="flex gap-2 pt-4 border-t">
+                    <Button onClick={() => handleApprove(request)} disabled={processingRequest === request.id} className="flex items-center gap-1">
+                      <Check className="w-4 h-4" />
+                      قبول الطلب
+                    </Button>
+                    
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="flex items-center gap-1">
+                          <X className="w-4 h-4" />
+                          رفض الطلب
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>رفض طلب الموعد</DialogTitle>
+                          <DialogDescription>
+                            يرجى إدخال سبب رفض طلب الموعد لإبلاغ المريض
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="rejection_reason">سبب الرفض</Label>
+                            <Textarea id="rejection_reason" value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} placeholder="أدخل سبب رفض الطلب..." rows={3} />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button onClick={() => handleReject(request.id)} disabled={processingRequest === request.id} variant="destructive">
+                              تأكيد الرفض
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>}
+
+                {request.status === 'rejected' && request.rejection_reason && <div className="p-3 bg-destructive/10 rounded-md">
+                    <p className="text-sm text-destructive">
+                      <strong>سبب الرفض:</strong> {request.rejection_reason}
+                    </p>
+                  </div>}
+              </CardContent>
+            </Card>)}
+        </div>}
+    </div>;
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 };
 export default AppointmentRequestsList;

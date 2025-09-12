@@ -113,6 +113,7 @@ export const PatientAppointmentCalendar: React.FC<PatientAppointmentCalendarProp
     end: endOfMonth(currentDate)
   });
 
+<<<<<<< HEAD
   // Calculate empty cells needed at the start of the month
   // In Arabic calendar, Saturday = 0, Sunday = 1, etc.
   // JavaScript getDay(): Sunday = 0, Monday = 1, ..., Saturday = 6
@@ -124,6 +125,8 @@ export const PatientAppointmentCalendar: React.FC<PatientAppointmentCalendarProp
   const monthStartDay = startOfMonth(currentDate).getDay();
   const emptyCells = getArabicDayPosition(monthStartDay);
 
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const navigateMonth = (direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
       const newDate = new Date(prev);
@@ -175,23 +178,33 @@ export const PatientAppointmentCalendar: React.FC<PatientAppointmentCalendarProp
           {/* Calendar Grid */}
           <div className="grid grid-cols-7 gap-2 mb-4">
             {/* Day headers */}
+<<<<<<< HEAD
             {['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map(day => (
+=======
+            {['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'].map(day => (
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
               <div key={day} className="text-center text-sm font-medium text-muted-foreground p-2">
                 {day}
               </div>
             ))}
             
+<<<<<<< HEAD
             {/* Empty cells for days before month start */}
             {Array.from({ length: emptyCells }, (_, i) => (
               <div key={`empty-${i}`} className="p-2" />
             ))}
             
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             {/* Calendar days */}
             {calendarDays.map(day => {
               const dayAppointments = getAppointmentsForDate(day);
               const isSelected = selectedDate && isSameDay(day, selectedDate);
               const isTodayDate = isToday(day);
+<<<<<<< HEAD
               const isPastDay = day < new Date(new Date().setHours(0, 0, 0, 0));
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
               
               return (
                 <div
@@ -200,15 +213,21 @@ export const PatientAppointmentCalendar: React.FC<PatientAppointmentCalendarProp
                     relative border rounded-lg p-2 min-h-[80px] cursor-pointer transition-all duration-200
                     ${isSelected ? 'border-primary bg-primary/10' : 'border-border hover:border-primary/50'}
                     ${isTodayDate ? 'bg-blue-50 dark:bg-blue-950/20' : 'bg-background hover:bg-accent/50'}
+<<<<<<< HEAD
                     ${isPastDay ? 'bg-gray-50 dark:bg-gray-900 text-gray-400 cursor-not-allowed opacity-60' : ''}
                   `}
                   onClick={() => !isPastDay && setSelectedDate(day)}
+=======
+                  `}
+                  onClick={() => setSelectedDate(day)}
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                 >
                   <div className={`text-sm font-medium mb-1 ${isTodayDate ? 'text-blue-600' : ''}`}>
                     {format(day, 'd')}
                   </div>
                   
                   {/* Appointment indicators */}
+<<<<<<< HEAD
                   {!isPastDay && (
                     <div className="space-y-1">
                       {dayAppointments.slice(0, 2).map(appointment => (
@@ -226,6 +245,23 @@ export const PatientAppointmentCalendar: React.FC<PatientAppointmentCalendarProp
                       )}
                     </div>
                   )}
+=======
+                  <div className="space-y-1">
+                    {dayAppointments.slice(0, 2).map(appointment => (
+                      <div
+                        key={appointment.id}
+                        className={`text-xs px-1 py-0.5 rounded border ${getStatusColor(appointment.status)}`}
+                      >
+                        {format(parseISO(appointment.appointment_date), 'HH:mm')}
+                      </div>
+                    ))}
+                    {dayAppointments.length > 2 && (
+                      <div className="text-xs text-muted-foreground">
+                        +{dayAppointments.length - 2} أخرى
+                      </div>
+                    )}
+                  </div>
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                 </div>
               );
             })}

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
+=======
+import { useState } from "react";
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -53,8 +57,11 @@ export function SystemSettings() {
     status: "success"
   });
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const handleSave = () => {
     toast.success("تم حفظ إعدادات النظام بنجاح");
   };
@@ -341,8 +348,11 @@ export function SystemSettings() {
         </CardContent>
       </Card>
 
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       {/* إعدادات الأداء */}
       <Card>
         <CardHeader>

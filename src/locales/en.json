@@ -44,9 +44,12 @@
     "aiInsights": "AI Insights",
     "advanced3D": "Advanced 3D"
   },
+<<<<<<< HEAD
   "actions": {
     "addAppointment": "Add Appointment"
   },
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   "header": {
     "search": "Search system...",
     "notifications": "Notifications",

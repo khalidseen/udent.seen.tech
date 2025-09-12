@@ -6,14 +6,20 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { offlineSupabase } from "@/lib/offline-supabase";
+<<<<<<< HEAD
 import { toast } from "sonner";
 import { UserPlus, Save, Plus, X } from "lucide-react";
 // تم إزالة Search و User لأنهما لم يعودا مطلوبين
+=======
+import { toast } from "@/hooks/use-toast";
+import { UserPlus, Save, Plus, Search, User, X } from "lucide-react";
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 interface AddPatientDrawerProps {
   onPatientAdded?: () => void;
 }
 
+<<<<<<< HEAD
 interface Patient {
   id: string;
   full_name: string;
@@ -27,6 +33,13 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   // const [searchQuery, setSearchQuery] = useState('');
   // const [existingPatients, setExistingPatients] = useState<Patient[]>([]);
   // const [showExistingPatients, setShowExistingPatients] = useState(false);
+=======
+const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
+  const [open, setOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [existingPatients, setExistingPatients] = useState<any[]>([]);
+  const [showExistingPatients, setShowExistingPatients] = useState(false);
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -68,18 +81,65 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
       occupation: '',
       marital_status: ''
     });
+<<<<<<< HEAD
     // تم إلغاء البحث
     // setSearchQuery('');
     // setShowExistingPatients(false);
   };
 
   // تم حذف وظيفة searchExistingPatients لأنها لم تعد مطلوبة
+=======
+    setSearchQuery('');
+    setShowExistingPatients(false);
+  };
+
+  const searchExistingPatients = async (query: string) => {
+    if (!query.trim()) {
+      setExistingPatients([]);
+      setShowExistingPatients(false);
+      return;
+    }
+
+    try {
+      const { data: { user } } = await offlineSupabase.auth.getUser();
+      if (!user) return;
+
+      const profileResult = await offlineSupabase.select('profiles', { 
+        filter: { user_id: user.id } 
+      });
+
+      if (!profileResult.data || profileResult.data.length === 0) return;
+
+      const patients = await offlineSupabase.select('patients', {
+        filter: { clinic_id: profileResult.data[0].id }
+      });
+
+      if (patients.data) {
+        const filtered = patients.data.filter((patient: any) => 
+          patient.full_name.toLowerCase().includes(query.toLowerCase())
+        );
+        setExistingPatients(filtered);
+        setShowExistingPatients(true);
+      }
+    } catch (error) {
+      console.error('Error searching patients:', error);
+    }
+  };
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.full_name.trim()) {
+<<<<<<< HEAD
       toast.error('يجب إدخال اسم المريض');
+=======
+      toast({
+        title: 'خطأ',
+        description: 'يجب إدخال اسم المريض',
+        variant: 'destructive'
+      });
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       return;
     }
 
@@ -141,14 +201,30 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
 
       if (result.error) throw result.error;
 
+<<<<<<< HEAD
       toast.success('تم إضافة المريض بنجاح');
+=======
+      toast({
+        title: 'تم بنجاح',
+        description: 'تم إضافة المريض بنجاح'
+      });
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
       resetForm();
       setOpen(false);
       onPatientAdded?.();
 
+<<<<<<< HEAD
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'حدث خطأ غير متوقع');
+=======
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message,
+        variant: 'destructive'
+      });
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     } finally {
       setLoading(false);
     }
@@ -185,6 +261,51 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         {/* Scrollable Content */}
         <div className="h-[calc(100vh-160px)] overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
+<<<<<<< HEAD
+=======
+            {/* Search Section */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-medium text-foreground border-b pb-2">البحث عن المرضى الموجودين</h3>
+              
+              <div className="space-y-2">
+                <Label htmlFor="search">البحث بالاسم</Label>
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute right-3 top-3 text-muted-foreground" />
+                  <Input
+                    id="search"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      searchExistingPatients(e.target.value);
+                    }}
+                    placeholder="ابحث عن مريض موجود..."
+                    className="h-11 pr-10"
+                  />
+                </div>
+                
+                {showExistingPatients && existingPatients.length > 0 && (
+                  <div className="border border-border rounded-md max-h-40 overflow-y-auto bg-background z-10">
+                    {existingPatients.map((patient: any) => (
+                      <div key={patient.id} className="p-3 border-b last:border-b-0 hover:bg-accent/50 cursor-pointer flex items-center gap-3">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <div className="font-medium">{patient.full_name}</div>
+                          <div className="text-sm text-muted-foreground">{patient.phone} • {patient.email}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {showExistingPatients && existingPatients.length === 0 && searchQuery.trim() && (
+                  <div className="text-sm text-muted-foreground p-2 border border-border rounded-md bg-background">
+                    لا توجد نتائج مطابقة للبحث
+                  </div>
+                )}
+              </div>
+            </div>
+
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             {/* Basic Info Section */}
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-foreground border-b pb-2">البيانات الأساسية</h3>

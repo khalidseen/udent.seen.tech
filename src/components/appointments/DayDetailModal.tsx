@@ -21,7 +21,10 @@ import { ar } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import EditAppointmentDialog from "./EditAppointmentDialog";
+<<<<<<< HEAD
 import AddAppointmentPopup from "./AddAppointmentPopup";
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { Link } from "react-router-dom";
 
 interface Appointment {
@@ -57,7 +60,10 @@ const DayDetailModal = ({
 }: DayDetailModalProps) => {
   const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+<<<<<<< HEAD
   const [isAddAppointmentDialogOpen, setIsAddAppointmentDialogOpen] = useState(false);
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -86,10 +92,17 @@ const DayDetailModal = ({
       });
 
       onAppointmentUpdate();
+<<<<<<< HEAD
     } catch (error: unknown) {
       toast({
         title: 'خطأ',
         description: error instanceof Error ? error.message : 'حدث خطأ غير متوقع',
+=======
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message,
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         variant: 'destructive'
       });
     }
@@ -110,10 +123,17 @@ const DayDetailModal = ({
       });
 
       onAppointmentUpdate();
+<<<<<<< HEAD
     } catch (error: unknown) {
       toast({
         title: 'خطأ',
         description: error instanceof Error ? error.message : 'حدث خطأ غير متوقع',
+=======
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message,
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         variant: 'destructive'
       });
     }
@@ -156,6 +176,7 @@ const DayDetailModal = ({
                     <div className="text-center text-muted-foreground">
                       <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
                       <p>لا توجد مواعيد في هذا اليوم</p>
+<<<<<<< HEAD
                       <Button 
                         className="mt-4" 
                         size="sm"
@@ -164,6 +185,14 @@ const DayDetailModal = ({
                         <Plus className="w-4 h-4 ml-2" />
                         إضافة موعد جديد
                       </Button>
+=======
+                      <Link to="/appointments/new">
+                        <Button className="mt-4" size="sm">
+                          <Plus className="w-4 h-4 ml-2" />
+                          إضافة موعد جديد
+                        </Button>
+                      </Link>
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                     </div>
                   </CardContent>
                 </Card>
@@ -268,10 +297,19 @@ const DayDetailModal = ({
           </ScrollArea>
           
           <div className="flex justify-between items-center pt-4 border-t">
+<<<<<<< HEAD
             <Button onClick={() => setIsAddAppointmentDialogOpen(true)}>
               <Plus className="w-4 h-4 ml-2" />
               إضافة موعد جديد
             </Button>
+=======
+            <Link to="/appointments/new">
+              <Button>
+                <Plus className="w-4 h-4 ml-2" />
+                إضافة موعد جديد
+              </Button>
+            </Link>
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
             
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               إغلاق
@@ -290,6 +328,7 @@ const DayDetailModal = ({
           setEditDialogOpen(false);
         }}
       />
+<<<<<<< HEAD
 
       {/* Add Appointment Dialog */}
       <AddAppointmentPopup
@@ -297,6 +336,8 @@ const DayDetailModal = ({
         onOpenChange={setIsAddAppointmentDialogOpen}
         onAppointmentAdded={onAppointmentUpdate}
       />
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     </>
   );
 };

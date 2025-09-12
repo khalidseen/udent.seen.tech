@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { ReactNode, useState, useEffect, useCallback } from 'react';
+=======
+import { ReactNode, useState, useEffect } from 'react';
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { useUsageLimits } from '@/hooks/useUsageLimits';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -23,6 +27,7 @@ export const UsageLimitProtection = ({
   const [canProceed, setCanProceed] = useState(true);
   const [loading, setLoading] = useState(true);
 
+<<<<<<< HEAD
   const checkLimit = useCallback(async () => {
     try {
       const hasCapacity = await checkUsageLimit(metricType);
@@ -45,6 +50,30 @@ export const UsageLimitProtection = ({
   useEffect(() => {
     checkLimit();
   }, [checkLimit]);
+=======
+  useEffect(() => {
+    const checkLimit = async () => {
+      try {
+        const hasCapacity = await checkUsageLimit(metricType);
+        const status = getUsageStatus(metricType);
+        
+        // If showing warning only, always allow but show status
+        if (showWarningOnly) {
+          setCanProceed(true);
+        } else {
+          setCanProceed(hasCapacity);
+        }
+      } catch (error) {
+        console.error('Error checking usage limit:', error);
+        setCanProceed(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkLimit();
+  }, [metricType, checkUsageLimit, getUsageStatus, showWarningOnly]);
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   if (loading) {
     return (

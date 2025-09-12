@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+<<<<<<< HEAD
 interface Doctor {
   id?: string;
   full_name: string;
@@ -28,11 +29,17 @@ interface Doctor {
   notes?: string;
 }
 
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 interface AddDoctorDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
+<<<<<<< HEAD
   editingDoctor?: Doctor;
+=======
+  editingDoctor?: any;
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 }
 
 export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editingDoctor }: AddDoctorDialogProps) {
@@ -85,6 +92,7 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
 
     try {
       // Get current user profile for clinic_id
+<<<<<<< HEAD
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('المستخدم غير مسجل الدخول');
 
@@ -92,12 +100,18 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
         .from('profiles')
         .select('id')
         .eq('user_id', user.user.id)
+=======
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         .single();
 
       if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
 
       const doctorData = {
         clinic_id: profile.id,
+<<<<<<< HEAD
         full_name: formData.full_name.trim(),
         email: formData.email?.trim() || null,
         phone: formData.phone?.trim() || null,
@@ -109,10 +123,24 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
         working_hours: formData.working_hours?.trim() || null,
         address: formData.address?.trim() || null,
         bio: formData.bio?.trim() || null,
+=======
+        full_name: formData.full_name,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        specialization: formData.specialization,
+        license_number: formData.license_number || null,
+        qualifications: formData.qualifications || null,
+        experience_years: formData.experience_years ? parseInt(formData.experience_years) : 0,
+        consultation_fee: formData.consultation_fee ? parseFloat(formData.consultation_fee) : 0,
+        working_hours: formData.working_hours || null,
+        address: formData.address || null,
+        bio: formData.bio || null,
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         gender: formData.gender || null,
         date_of_birth: formData.date_of_birth || null,
         hired_date: formData.hired_date || new Date().toISOString().split('T')[0],
         status: formData.status,
+<<<<<<< HEAD
         notes: formData.notes?.trim() || null
       };
 
@@ -120,21 +148,32 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
 
       if (editingDoctor) {
         console.log('Updating doctor with ID:', editingDoctor.id);
+=======
+        notes: formData.notes || null
+      };
+
+      if (editingDoctor) {
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         const { error } = await supabase
           .from('doctors')
           .update(doctorData)
           .eq('id', editingDoctor.id);
 
+<<<<<<< HEAD
         if (error) {
           console.error('Update error:', error);
           throw error;
         }
+=======
+        if (error) throw error;
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
         toast({
           title: "تم التحديث",
           description: "تم تحديث بيانات الطبيب بنجاح",
         });
       } else {
+<<<<<<< HEAD
         console.log('Inserting new doctor');
         const { data, error } = await supabase
           .from('doctors')
@@ -147,12 +186,21 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
         }
 
         console.log('Doctor inserted successfully:', data);
+=======
+        const { error } = await supabase
+          .from('doctors')
+          .insert(doctorData);
+
+        if (error) throw error;
+
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         toast({
           title: "تم الإضافة",
           description: "تم إضافة الطبيب بنجاح",
         });
       }
 
+<<<<<<< HEAD
       // Reset form
       setFormData({
         full_name: "",
@@ -179,6 +227,14 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
       toast({
         title: "خطأ",
         description: (error as Error)?.message || "حدث خطأ أثناء حفظ البيانات",
+=======
+      onOpenChange(false);
+      onSuccess();
+    } catch (error: any) {
+      toast({
+        title: "خطأ",
+        description: error.message || "حدث خطأ أثناء حفظ البيانات",
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         variant: "destructive"
       });
     } finally {

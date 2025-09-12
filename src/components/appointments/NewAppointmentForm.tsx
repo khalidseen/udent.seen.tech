@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+<<<<<<< HEAD
 import { CalendarPlus, Clock, User, Stethoscope, UserPlus, FileText, Search, Phone, Mail, X, FileUser } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -27,6 +28,21 @@ const NewAppointmentForm = () => {
   const [patientType, setPatientType] = useState<'existing' | 'new'>('existing');
   const [patientSearchTerm, setPatientSearchTerm] = useState("");
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
+=======
+import { CalendarPlus, Clock, User, Stethoscope, UserPlus } from "lucide-react";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeader } from "@/components/layout/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+interface Patient {
+  id: string;
+  full_name: string;
+  phone: string;
+}
+const NewAppointmentForm = () => {
+  const { t } = useLanguage();
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patientType, setPatientType] = useState<'existing' | 'new'>('existing');
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const [formData, setFormData] = useState({
     patient_id: '',
     appointment_date: '',
@@ -61,6 +77,7 @@ const NewAppointmentForm = () => {
   useEffect(() => {
     fetchPatients();
   }, []);
+<<<<<<< HEAD
 
   useEffect(() => {
     // Filter patients based on search term
@@ -75,12 +92,18 @@ const NewAppointmentForm = () => {
       setFilteredPatients(patients);
     }
   }, [patients, patientSearchTerm]);
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const fetchPatients = async () => {
     try {
       const {
         data,
         error
+<<<<<<< HEAD
       } = await supabase.from('patients').select('id, full_name, phone, email, created_at').order('full_name');
+=======
+      } = await supabase.from('patients').select('id, full_name, phone').order('full_name');
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       if (error) throw error;
       setPatients(data || []);
     } catch (error) {
@@ -93,6 +116,7 @@ const NewAppointmentForm = () => {
       [field]: value
     }));
   };
+<<<<<<< HEAD
   const handlePatientTypeChange = (value: 'existing' | 'new') => {
     setPatientType(value);
     setPatientSearchTerm(""); // Clear search when switching patient types
@@ -129,6 +153,8 @@ const NewAppointmentForm = () => {
     navigate(`/patients/${patientSlug}?id=${patient.id}`);
   };
 
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   const handleNewPatientChange = (field: string, value: string) => {
     setNewPatientData(prev => ({
       ...prev,
@@ -266,11 +292,18 @@ const NewAppointmentForm = () => {
       if (patientType === 'new') {
         await fetchPatients();
       }
+<<<<<<< HEAD
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'حدث خطأ غير متوقع';
       toast({
         title: 'خطأ',
         description: errorMessage,
+=======
+    } catch (error: any) {
+      toast({
+        title: 'خطأ',
+        description: error.message,
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         variant: 'destructive'
       });
     } finally {
@@ -299,6 +332,7 @@ const NewAppointmentForm = () => {
     'استشارة متخصصة',
     'أخرى'
   ];
+<<<<<<< HEAD
   return <PageContainer maxWidth="4xl">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Main Form */}
@@ -340,11 +374,40 @@ const NewAppointmentForm = () => {
                       </div>
                     </Label>
                   </div>
+=======
+  return <PageContainer maxWidth="2xl">
+      <PageHeader title={t("appointmentForm.title")} description={t("appointmentForm.description")} />
+
+      <Card>
+        <CardHeader>
+          
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Patient Type Selection */}
+            <div className="space-y-4">
+              <Label>نوع المريض *</Label>
+              <RadioGroup value={patientType} onValueChange={(value: 'existing' | 'new') => setPatientType(value)}>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="existing" id="existing" />
+                  <Label htmlFor="existing" className="flex items-center">
+                    <User className="w-4 h-4 ml-2" />
+                    مريض موجود
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="new" id="new" />
+                  <Label htmlFor="new" className="flex items-center">
+                    <UserPlus className="w-4 h-4 ml-2" />
+                    مريض جديد
+                  </Label>
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                 </div>
               </RadioGroup>
             </div>
 
             {/* Patient Selection for Existing Patients */}
+<<<<<<< HEAD
             {patientType === 'existing' && (
               <Card className="bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-200">
                 <CardHeader>
@@ -521,6 +584,27 @@ const NewAppointmentForm = () => {
                 </CardContent>
               </Card>
             )}
+=======
+            {patientType === 'existing' && <div className="space-y-2">
+                <Label htmlFor="patient_id">اختر المريض *</Label>
+                <Select onValueChange={value => handleChange('patient_id', value)} value={formData.patient_id}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر المريض" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {patients.map(patient => <SelectItem key={patient.id} value={patient.id}>
+                        <div className="flex items-center">
+                          <User className="w-4 h-4 ml-2" />
+                          <span>{patient.full_name}</span>
+                          {patient.phone && <span className="text-muted-foreground mr-2">
+                              ({patient.phone})
+                            </span>}
+                        </div>
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>}
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
             {/* New Patient Form */}
             {patientType === 'new' && <Card className="border-dashed">
@@ -693,7 +777,10 @@ const NewAppointmentForm = () => {
                       checked={formData.requires_anesthesia === 'true'}
                       onChange={e => handleChange('requires_anesthesia', e.target.checked.toString())}
                       className="rounded"
+<<<<<<< HEAD
                       aria-label="يتطلب تخدير"
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                     />
                     <Label htmlFor="requires_anesthesia">يتطلب تخدير</Label>
                   </div>
@@ -705,7 +792,10 @@ const NewAppointmentForm = () => {
                       checked={formData.follow_up_required === 'true'}
                       onChange={e => handleChange('follow_up_required', e.target.checked.toString())}
                       className="rounded"
+<<<<<<< HEAD
                       aria-label="يتطلب متابعة"
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                     />
                     <Label htmlFor="follow_up_required">يتطلب متابعة</Label>
                   </div>
@@ -714,6 +804,7 @@ const NewAppointmentForm = () => {
             </Card>
 
             {/* Date and Time */}
+<<<<<<< HEAD
             <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
               <CardHeader>
                 <CardTitle className="text-lg flex items-center">
@@ -824,12 +915,73 @@ const NewAppointmentForm = () => {
             <div className="flex justify-end space-x-4 space-x-reverse pt-6">
               <Button type="submit" disabled={loading} className="px-8 py-3 text-lg shadow-lg">
                 <Clock className="w-5 h-5 ml-2" />
+=======
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="appointment_date">تاريخ الموعد *</Label>
+                <Input id="appointment_date" type="date" value={formData.appointment_date} onChange={e => handleChange('appointment_date', e.target.value)} required min={new Date().toISOString().split('T')[0]} />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="appointment_time">وقت الموعد *</Label>
+                <Input id="appointment_time" type="time" value={formData.appointment_time} onChange={e => handleChange('appointment_time', e.target.value)} required />
+              </div>
+            </div>
+
+            {/* Duration and Treatment Type */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="duration">مدة الموعد (بالدقائق)</Label>
+                <Select onValueChange={value => handleChange('duration', value)} value={formData.duration}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر المدة" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="15">15 دقيقة</SelectItem>
+                    <SelectItem value="30">30 دقيقة</SelectItem>
+                    <SelectItem value="45">45 دقيقة</SelectItem>
+                    <SelectItem value="60">ساعة واحدة</SelectItem>
+                    <SelectItem value="90">ساعة ونصف</SelectItem>
+                    <SelectItem value="120">ساعتان</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="treatment_type">نوع العلاج</Label>
+                <Select onValueChange={value => handleChange('treatment_type', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر نوع العلاج" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {treatmentTypes.map(type => <SelectItem key={type} value={type}>
+                        <div className="flex items-center">
+                          <Stethoscope className="w-4 h-4 ml-2" />
+                          {type}
+                        </div>
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Notes */}
+            <div className="space-y-2">
+              <Label htmlFor="notes">ملاحظات إضافية</Label>
+              <Textarea id="notes" value={formData.notes} onChange={e => handleChange('notes', e.target.value)} placeholder="أي ملاحظات حول الموعد..." rows={3} />
+            </div>
+
+            <div className="flex justify-end space-x-4 space-x-reverse">
+              <Button type="submit" disabled={loading} className="px-8">
+                <Clock className="w-4 h-4 ml-2" />
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
                 {loading ? 'جاري الحفظ...' : 'حفظ الموعد'}
               </Button>
             </div>
           </form>
         </CardContent>
       </Card>
+<<<<<<< HEAD
     </div>
 
     {/* Sidebar */}
@@ -939,5 +1091,8 @@ const NewAppointmentForm = () => {
     </div>
   </div>
 </PageContainer>;
+=======
+    </PageContainer>;
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 };
 export default NewAppointmentForm;

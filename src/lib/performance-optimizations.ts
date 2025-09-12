@@ -154,26 +154,40 @@ export const useIntersectionObserver = (
 ) => {
   const [isIntersecting, setIsIntersecting] = React.useState(false);
 
+<<<<<<< HEAD
   // Memoize options to prevent infinite re-renders
   const memoizedOptions = React.useMemo(() => ({
     threshold: 0.1,
     ...options,
   }), [options]);
 
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   React.useEffect(() => {
     const element = ref.current;
     if (!element) return;
 
     const observer = new IntersectionObserver(([entry]) => {
       setIsIntersecting(entry.isIntersecting);
+<<<<<<< HEAD
     }, memoizedOptions);
+=======
+    }, {
+      threshold: 0.1,
+      ...options,
+    });
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
     observer.observe(element);
 
     return () => {
       observer.disconnect();
     };
+<<<<<<< HEAD
   }, [ref, memoizedOptions]);
+=======
+  }, [ref, options]);
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   return isIntersecting;
 };
@@ -201,11 +215,17 @@ export const useVirtualScrolling = <T>(
   const offsetY = startIndex * itemHeight;
 
   const handleScroll = React.useCallback(
+<<<<<<< HEAD
     (e: React.UIEvent<HTMLDivElement>) => {
       throttle(() => {
         setScrollTop(e.currentTarget.scrollTop);
       }, 16)(); // ~60fps
     },
+=======
+    throttle((e: React.UIEvent<HTMLDivElement>) => {
+      setScrollTop(e.currentTarget.scrollTop);
+    }, 16), // ~60fps
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     []
   );
 
@@ -254,7 +274,11 @@ export const withPerformanceMonitoring = <P extends object>(
     React.useEffect(() => {
       const stopTiming = monitor.startTiming(`component_${componentName}`);
       return stopTiming;
+<<<<<<< HEAD
     }, [monitor]);
+=======
+    }, []);
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
     return React.createElement(MemoizedComponent, { ...props, ref });
   });

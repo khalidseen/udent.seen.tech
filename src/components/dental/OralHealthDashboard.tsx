@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useCallback } from 'react';
+=======
+import React, { useState, useEffect } from 'react';
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -72,7 +76,17 @@ export const OralHealthDashboard: React.FC<OralHealthDashboardProps> = ({
   });
   const [loading, setLoading] = useState(true);
 
+<<<<<<< HEAD
   const fetchHealthMetrics = useCallback(async () => {
+=======
+  useEffect(() => {
+    if (patientId) {
+      fetchHealthMetrics();
+    }
+  }, [patientId, onStatUpdate]);
+
+  const fetchHealthMetrics = async () => {
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     if (!patientId) return;
 
     setLoading(true);
@@ -187,6 +201,7 @@ export const OralHealthDashboard: React.FC<OralHealthDashboardProps> = ({
     } finally {
       setLoading(false);
     }
+<<<<<<< HEAD
   }, [patientId]);
 
   useEffect(() => {
@@ -194,6 +209,9 @@ export const OralHealthDashboard: React.FC<OralHealthDashboardProps> = ({
       fetchHealthMetrics();
     }
   }, [patientId, fetchHealthMetrics]);
+=======
+  };
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
   const getHealthStatus = (percentage: number) => {
     if (percentage >= 90) return { 

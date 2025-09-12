@@ -2,10 +2,13 @@ import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+<<<<<<< HEAD
 import { setupGlobalErrorHandling } from './lib/error-handler'
 
 // Setup global error handling for Chrome extensions and other errors
 setupGlobalErrorHandling();
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 // Enable concurrent features for better performance
 const container = document.getElementById("root")!;
@@ -35,6 +38,7 @@ if ('serviceWorker' in navigator) {
         console.log('SW registration failed: ', registrationError);
       });
   });
+<<<<<<< HEAD
 
   // Handle service worker messages and Chrome extension port errors
   navigator.serviceWorker.addEventListener('message', (event) => {
@@ -63,6 +67,8 @@ if ('serviceWorker' in navigator) {
       return false;
     }
   });
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 }
 
 // Only use StrictMode in development

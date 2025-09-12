@@ -119,7 +119,11 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
         return;
       }
 
+<<<<<<< HEAD
       // Fetch fresh data with fallback approach and better error handling
+=======
+      // Fetch fresh data with fallback approach
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       try {
         const { data: permissionsData, error: permissionsError } = await supabase
           .rpc('get_user_effective_permissions');
@@ -134,6 +138,7 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
           
           setPermissions(formattedPermissions);
           permissionsCache.set(cacheKey, formattedPermissions, 3 * 60 * 1000); // 3 minutes cache
+<<<<<<< HEAD
         } else if (permissionsError?.code === '500' || permissionsError?.message?.includes('500')) {
           console.warn('Server error (500) for permissions, using fallback');
           throw new Error('Server error - using fallback');
@@ -184,6 +189,27 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
       }
 
       // Fetch roles with fallback and better error handling
+=======
+        }
+      } catch (permError) {
+        console.warn('RPC permissions failed, using fallback:', permError);
+        // Fallback to basic profile-based permissions
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (profileData?.role) {
+          // Set basic permissions based on role
+          const basicPermissions: Permission[] = [];
+          setPermissions(basicPermissions);
+          permissionsCache.set(cacheKey, basicPermissions, 2 * 60 * 1000);
+        }
+      }
+
+      // Fetch roles with fallback
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       try {
         const { data: rolesData, error: rolesError } = await supabase
           .rpc('get_user_roles');
@@ -191,6 +217,7 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
         if (!rolesError && rolesData) {
           setUserRoles(rolesData);
           rolesCache.set(rolesCacheKey, rolesData, 3 * 60 * 1000);
+<<<<<<< HEAD
         } else if (rolesError?.code === '500' || rolesError?.message?.includes('500')) {
           console.warn('Server error (500) for roles, using fallback');
           throw new Error('Server error - using fallback');
@@ -230,11 +257,32 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
             role_name_ar: 'مستخدم',
             is_primary: true
           }]);
+=======
+        }
+      } catch (roleError) {
+        console.warn('RPC roles failed, using fallback:', roleError);
+        // Fallback to profile role
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', user.id)
+          .single();
+          
+        if (profileData?.role) {
+          const fallbackRole: UserRole[] = [{
+            role_name: profileData.role,
+            role_name_ar: profileData.role === 'admin' ? 'مدير' : 'مستخدم',
+            is_primary: true
+          }];
+          setUserRoles(fallbackRole);
+          rolesCache.set(rolesCacheKey, fallbackRole, 2 * 60 * 1000);
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         }
       }
 
     } catch (error) {
       console.error('Error in fetchUserPermissions:', error);
+<<<<<<< HEAD
       
       // Set fallback permissions to prevent app crash
       const fallbackPermissions: Permission[] = [{
@@ -261,6 +309,13 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
           variant: 'destructive',
         });
       }
+=======
+      toast({
+        title: 'خطأ في جلب الصلاحيات',
+        description: 'سيتم إعادة المحاولة تلقائياً',
+        variant: 'destructive',
+      });
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     } finally {
       setLoading(false);
     }

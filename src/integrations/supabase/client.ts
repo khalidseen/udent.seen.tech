@@ -13,6 +13,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
+<<<<<<< HEAD
   },
   global: {
     headers: {
@@ -67,3 +68,7 @@ supabase.rpc = function(fn: string, args?: Record<string, unknown>, options?: Re
   // Return the result if it's not a promise or doesn't have catch
   return result;
 };
+=======
+  }
+});
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a

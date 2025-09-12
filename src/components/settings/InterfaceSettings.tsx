@@ -7,7 +7,10 @@ import { useSettings } from "@/hooks/useSettingsHook";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Monitor, Moon, Sun, Languages, Type, Layout, Grid } from "lucide-react";
+<<<<<<< HEAD
 import { Button } from "@/components/ui/button";
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 
 export function InterfaceSettings() {
   const { t } = useLanguage();
@@ -25,9 +28,12 @@ export function InterfaceSettings() {
     setBoxesPerRow,
     boxSize,
     setBoxSize
+<<<<<<< HEAD
   ,
   linkValidationAlertEnabled,
   setLinkValidationAlertEnabled
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   } = useSettings();
 
   return (
@@ -185,6 +191,7 @@ export function InterfaceSettings() {
               </div>
             </>
           )}
+<<<<<<< HEAD
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
@@ -211,6 +218,8 @@ export function InterfaceSettings() {
               إعادة إظهار تحذيرات لوحة التحكم
             </Button>
           </div>
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         </CardContent>
       </Card>
     </div>

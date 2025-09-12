@@ -1,6 +1,9 @@
+<<<<<<< HEAD
 /* إضافة خط IBM Plex Sans Arabic */
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
 
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -111,8 +114,12 @@ All colors MUST be HSL.
   }
 
   body {
+<<<<<<< HEAD
     @apply bg-background text-foreground;
     font-family: 'IBM Plex Sans Arabic', 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+=======
+    @apply bg-background text-foreground font-tajawal;
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     direction: rtl;
     overflow-x: hidden;
     font-feature-settings: "kern" 1;
@@ -130,6 +137,7 @@ All colors MUST be HSL.
     left: 0;
     right: auto;
   }
+<<<<<<< HEAD
 
   /* خط IBM Plex Sans Arabic للعناصر المحددة */
   .font-ibm-plex-arabic {
@@ -142,6 +150,8 @@ All colors MUST be HSL.
     text-align: right;
     direction: rtl;
   }
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   
   .ltr [data-side="right"] {
     right: 0;

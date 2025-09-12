@@ -30,9 +30,14 @@ export const usePermissions = () => {
 
   // System admin check - مع تحسين الأداء
   const isSystemAdmin = useMemo(() => 
+<<<<<<< HEAD
     user?.email === 'eng.khalid.work@gmail.com' || 
     user?.user_metadata?.role === 'super_admin', 
     [user?.email, user?.user_metadata?.role]
+=======
+    user?.email === 'eng.khalid.work@gmail.com', 
+    [user?.email]
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
   );
 
   // Debounced fetch function to prevent excessive API calls
@@ -47,8 +52,12 @@ export const usePermissions = () => {
         setLoading(true);
         
         // System admin gets all permissions with caching
+<<<<<<< HEAD
         if (currentUser.email === 'eng.khalid.work@gmail.com' || 
             currentUser.user_metadata?.role === 'super_admin') {
+=======
+        if (currentUser.email === 'eng.khalid.work@gmail.com') {
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
           const cacheKey = 'admin_all_permissions';
           const cachedPermissions = legacyPermissionsCache.get(cacheKey);
           
@@ -162,7 +171,10 @@ export const usePermissions = () => {
     const getUser = async () => {
       try {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
+<<<<<<< HEAD
         
+=======
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
         setUser(currentUser);
       } catch (error) {
         console.error('Error getting user:', error);

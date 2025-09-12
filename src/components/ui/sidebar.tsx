@@ -275,7 +275,11 @@ const SidebarTrigger = React.forwardRef<
       {...props}
     >
       <PanelLeft className="h-4 w-4" />
+<<<<<<< HEAD
       <span className="sr-only">تبديل القائمة الجانبية</span>
+=======
+      <span className="sr-only">Toggle Sidebar</span>
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
     </Button>
   )
 })
@@ -291,10 +295,17 @@ const SidebarRail = React.forwardRef<
     <button
       ref={ref}
       data-sidebar="rail"
+<<<<<<< HEAD
       aria-label="تبديل القائمة الجانبية"
       tabIndex={-1}
       onClick={toggleSidebar}
       title="تبديل القائمة الجانبية"
+=======
+      aria-label="Toggle Sidebar"
+      tabIndex={-1}
+      onClick={toggleSidebar}
+      title="Toggle Sidebar"
+>>>>>>> cbd682d36e862741c55b9e7b5d144f8de65c694a
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
