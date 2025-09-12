@@ -1476,6 +1476,7 @@ export type Database = {
           email: string | null
           emergency_contact: string | null
           emergency_phone: string | null
+          financial_balance: number | null
           financial_status: string | null
           full_name: string
           gender: string | null
@@ -1501,6 +1502,7 @@ export type Database = {
           email?: string | null
           emergency_contact?: string | null
           emergency_phone?: string | null
+          financial_balance?: number | null
           financial_status?: string | null
           full_name: string
           gender?: string | null
@@ -1526,6 +1528,7 @@ export type Database = {
           email?: string | null
           emergency_contact?: string | null
           emergency_phone?: string | null
+          financial_balance?: number | null
           financial_status?: string | null
           full_name?: string
           gender?: string | null
@@ -1831,6 +1834,7 @@ export type Database = {
           current_clinic_role:
             | Database["public"]["Enums"]["user_role_type"]
             | null
+          dashboard_link_validation_dismissed: boolean | null
           full_name: string
           id: string
           role: string
@@ -1844,6 +1848,7 @@ export type Database = {
           current_clinic_role?:
             | Database["public"]["Enums"]["user_role_type"]
             | null
+          dashboard_link_validation_dismissed?: boolean | null
           full_name: string
           id?: string
           role?: string
@@ -1857,6 +1862,7 @@ export type Database = {
           current_clinic_role?:
             | Database["public"]["Enums"]["user_role_type"]
             | null
+          dashboard_link_validation_dismissed?: boolean | null
           full_name?: string
           id?: string
           role?: string
@@ -2567,6 +2573,48 @@ export type Database = {
         }
         Relationships: []
       }
+      tooth_records: {
+        Row: {
+          clinic_id: string
+          clinical_measurements: Json
+          created_at: string
+          diagnosis: Json
+          id: string
+          notes: Json
+          patient_id: string
+          roots: Json
+          surfaces: Json
+          tooth_number: string
+          updated_at: string
+        }
+        Insert: {
+          clinic_id: string
+          clinical_measurements?: Json
+          created_at?: string
+          diagnosis?: Json
+          id?: string
+          notes?: Json
+          patient_id: string
+          roots?: Json
+          surfaces?: Json
+          tooth_number: string
+          updated_at?: string
+        }
+        Update: {
+          clinic_id?: string
+          clinical_measurements?: Json
+          created_at?: string
+          diagnosis?: Json
+          id?: string
+          notes?: Json
+          patient_id?: string
+          roots?: Json
+          surfaces?: Json
+          tooth_number?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tooth_treatment_history: {
         Row: {
           anesthesia_used: string[] | null
@@ -2891,6 +2939,7 @@ export type Database = {
           current_clinic_role:
             | Database["public"]["Enums"]["user_role_type"]
             | null
+          dashboard_link_validation_dismissed: boolean | null
           full_name: string
           id: string
           role: string
@@ -2965,6 +3014,10 @@ export type Database = {
       }
       log_security_event: {
         Args: { details: Json; event_type: string }
+        Returns: undefined
+      }
+      set_dashboard_dismissed: {
+        Args: { p_profile_id: string; p_value: boolean }
         Returns: undefined
       }
       switch_user_clinic: {

@@ -135,9 +135,9 @@ const EnhancedDentalChart: React.FC<DentalChartProps> = ({
     // إبراز الأولويات العالية
     if (highlightPriorities && priority) {
       if (priority === PriorityLevel.EMERGENCY || priority === PriorityLevel.URGENT) {
+        const shadowColor = 'rgba(239, 68, 68, 0.5)';
         style = {
           ...style,
-          boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)',
           borderWidth: '3px'
         };
       }

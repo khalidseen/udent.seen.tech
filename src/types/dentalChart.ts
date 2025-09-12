@@ -65,6 +65,11 @@ export interface ToothRecord {
     follow_up_date?: string;
   };
   
+  // إضافة خصائص مطلوبة للمكونات
+  imageUrl?: string;
+  imageData?: string;
+  priority?: PriorityLevel;
+  
   created_at: string;
   updated_at: string;
 }
@@ -216,12 +221,8 @@ export const TOOTH_POSITIONS = {
   38: 'الطاحن الثالث الأيسر السفلي',
 };
 
-// أنواع التصدير
-export enum ExportFormat {
-  JSON = 'json',
-  CSV = 'csv',
-  PDF = 'pdf'
-}
+// أنواع التصدير  
+export type ExportFormat = 'json' | 'csv' | 'pdf';
 
 // إحصائيات المخطط
 export interface ChartStatistics {
