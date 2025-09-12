@@ -1,0 +1,314 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { 
+  Settings, 
+  Camera, 
+  Eye, 
+  Upload,
+  RotateCcw,
+  Brain,
+  Zap
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { 
+  ConditionType,
+  ComprehensiveToothRecord,
+  ToothNumberingSystem
+} from "@/types/dental-enhanced";
+import { 
+  ANATOMICAL_POSITIONS,
+  ToothTemplate,
+  PatientToothImage,
+  AnatomicalChartProps
+} from "@/types/anatomical-dental";
+import { AnatomicalTooth } from "./AnatomicalTooth";
+import { ToothRecordDialog } from "./ToothRecordDialog";
+import { LinearToothComponent } from "./LinearToothComponent";
+
+export const AnatomicalDentalChart: React.FC<AnatomicalChartProps> = ({
+  patientId,
+  onToothSelect,
+  onSaveRecord
+}) => {
+  // حالات النظام
+  const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [toothRecords, setToothRecords] = useState<Map<string, ComprehensiveToothRecord>>(new Map());
+  
+  // إدارة الصور
+  const [toothTemplates, setToothTemplates] = useState<Map<string, ToothTemplate>>(new Map());
+  const [patientImages, setPatientImages] = useState<Map<string, PatientToothImage>>(new Map());
+  const [showPatientImages, setShowPatientImages] = useState<Map<string, boolean>>(new Map());
+  
+  // إعدادات العرض
+  const [showAnatomicalLabels, setShowAnatomicalLabels] = useState(true);
+  const [enableRotation, setEnableRotation] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(1.0);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // تحميل الصور المحفوظة
+  useEffect(() => {
+    loadToothTemplates();
+    loadPatientImages();
+  }, [patientId]);
+
+  const loadToothTemplates = async () => {
+    const templates = new Map();
+    setToothTemplates(templates);
+  };
+
+  const loadPatientImages = async () => {
+    const images = new Map();
+    setPatientImages(images);
+  };
+
+  // رفع صورة المريض
+  const handlePatientImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file && selectedTooth) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        const patientImage: PatientToothImage = {
+          id: `${patientId}-${selectedTooth}-${Date.now()}`,
+          patientId,
+          toothNumber: selectedTooth,
+          imageUrl,
+          createdAt: new Date(),
+          clinicianId: 'current-user'
+        };
+        
+        setPatientImages(prev => new Map(prev.set(selectedTooth, patientImage)));
+        setShowPatientImages(prev => new Map(prev.set(selectedTooth, true)));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // تبديل نوع الصورة المعروضة
+  const toggleImageType = (toothNumber: string) => {
+    setShowPatientImages(prev => {
+      const newMap = new Map(prev);
+      newMap.set(toothNumber, !prev.get(toothNumber));
+      return newMap;
+    });
+  };
+
+  // حفظ سجل السن
+  const handleSaveToothRecord = (record: ComprehensiveToothRecord) => {
+    setToothRecords(prev => new Map(prev.set(record.toothNumber, record)));
+    onSaveRecord?.(record);
+    setShowDialog(false);
+  };
+
+  // التعامل مع نقر السن
+  const handleToothClick = (toothNumber: string) => {
+    setSelectedTooth(toothNumber);
+    onToothSelect(toothNumber);
+    setShowDialog(true);
+  };
+
+  const selectedRecord = selectedTooth ? toothRecords.get(selectedTooth) : null;
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
+      {/* 🧠 رأس النظام التشريحي */}
+      <Card className="bg-gradient-to-r from-teal-50 via-cyan-50 to-blue-50 dark:from-teal-900/20 dark:via-cyan-900/20 dark:to-blue-900/20 border-2 border-teal-200 dark:border-teal-700">
+        <CardHeader>
+          <CardTitle className="text-3xl font-bold text-center flex items-center justify-center gap-4">
+            <Brain className="w-8 h-8 text-teal-600 animate-pulse" />
+            🦷 النظام التشريحي الطبيعي للفك البشري - النسخة المحسنة
+            <Zap className="w-8 h-8 text-cyan-600 animate-bounce" />
+          </CardTitle>
+          
+          {/* إعدادات سريعة */}
+          <div className="flex justify-center items-center gap-6 mt-4">
+            <div className="flex items-center gap-2">
+              <Switch 
+                id="anatomical-labels"
+                checked={showAnatomicalLabels}
+                onCheckedChange={setShowAnatomicalLabels}
+              />
+              <Label htmlFor="anatomical-labels" className="text-sm">
+                عرض التسميات التشريحية
+              </Label>
+            </div>
+            
+            <Badge variant="secondary" className="text-sm">
+              📏 تكبير: {Math.round(zoomLevel * 100)}%
+            </Badge>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* 🦷 المخطط التشريحي المحسن - نسخة خطية مبسطة */}
+      <Card className="bg-white dark:bg-gray-900 min-h-[600px] border-none shadow-none">
+        <CardContent className="p-8">
+          {/* مخطط الأسنان الخطي */}
+          <div className="space-y-8">
+            
+            {/* الفك العلوي - ترتيب خطي */}
+            <div className="space-y-4">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  الفك العلوي
+                </h3>
+                <div className="h-0.5 bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
+              </div>
+              
+              {/* أسنان الفك العلوي */}
+              <div className="flex justify-center items-center gap-1 py-4 bg-white">
+                {['18', '17', '16', '15', '14', '13', '12', '11'].map((toothNumber) => (
+                  <LinearToothComponent
+                    key={toothNumber}
+                    toothNumber={toothNumber}
+                    condition={toothRecords.get(toothNumber)?.diagnosis.primary || ConditionType.SOUND}
+                    patientImage={patientImages.get(toothNumber)}
+                    showPatientImage={showPatientImages.get(toothNumber) || false}
+                    onClick={() => handleToothClick(toothNumber)}
+                    onToggleImageType={() => toggleImageType(toothNumber)}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* خط الفصل */}
+            <div className="flex items-center gap-4">
+              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-gray-300 to-gray-300"></div>
+              <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">وسط الفم</span>
+              <div className="flex-1 h-px bg-gradient-to-l from-transparent via-gray-300 to-gray-300"></div>
+            </div>
+
+            {/* الفك السفلي - ترتيب خطي */}
+            <div className="space-y-4">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+                  الفك السفلي
+                </h3>
+                <div className="h-0.5 bg-gradient-to-r from-transparent via-green-300 to-transparent"></div>
+              </div>
+              
+              {/* أسنان الفك السفلي */}
+              <div className="flex justify-center items-center gap-1 py-4 bg-white">
+                {['48', '47', '46', '45', '44', '43', '42', '41'].map((toothNumber) => (
+                  <LinearToothComponent
+                    key={toothNumber}
+                    toothNumber={toothNumber}
+                    condition={toothRecords.get(toothNumber)?.diagnosis.primary || ConditionType.SOUND}
+                    patientImage={patientImages.get(toothNumber)}
+                    showPatientImage={showPatientImages.get(toothNumber) || false}
+                    onClick={() => handleToothClick(toothNumber)}
+                    onToggleImageType={() => toggleImageType(toothNumber)}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* أدوات التحكم */}
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setZoomLevel(prev => Math.max(0.5, prev - 0.1))}
+            >
+              تصغير -
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setZoomLevel(1.0)}
+            >
+              الحجم الطبيعي
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setZoomLevel(prev => Math.min(2.0, prev + 0.1))}
+            >
+              تكبير +
+            </Button>
+
+            <div className="mx-4 h-6 w-px bg-gray-300"></div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAnatomicalLabels(!showAnatomicalLabels)}
+            >
+              <Eye className="w-4 h-4 mr-2" />
+              {showAnatomicalLabels ? 'إخفاء' : 'عرض'} التسميات
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* معلومات إضافية */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Camera className="w-5 h-5 text-blue-500" />
+              <span className="font-medium">صور المرضى</span>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {patientImages.size} صورة محفوظة
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Settings className="w-5 h-5 text-green-500" />
+              <span className="font-medium">أشكال الأسنان</span>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {toothTemplates.size} شكل محفوظ
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <Brain className="w-5 h-5 text-purple-500" />
+              <span className="font-medium">السجلات الطبية</span>
+            </div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {toothRecords.size} سجل محفوظ
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Input مخفي لرفع الصور */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handlePatientImageUpload}
+        className="hidden"
+        aria-label="رفع صورة المريض"
+      />
+
+      {/* حوار تسجيل بيانات السن */}
+      <ToothRecordDialog
+        isOpen={showDialog}
+        onClose={() => setShowDialog(false)}
+        toothNumber={selectedTooth || ''}
+        existingRecord={selectedRecord}
+        onSave={handleSaveToothRecord}
+        onUploadImage={() => fileInputRef.current?.click()}
+        hasImage={selectedTooth ? patientImages.has(selectedTooth) : false}
+      />
+    </div>
+  );
+};

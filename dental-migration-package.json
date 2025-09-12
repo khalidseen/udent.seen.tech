@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "dental-migration": "node run-dental-migration.js"
+  }
+}

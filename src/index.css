@@ -1,0 +1,254 @@
+/* إضافة خط IBM Plex Sans Arabic */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 215 100% 97%;
+    --foreground: 215 25% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 215 25% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 15%;
+
+    --primary: 215 100% 55%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 215 20% 96%;
+    --secondary-foreground: 215 25% 20%;
+
+    --muted: 215 20% 96%;
+    --muted-foreground: 215 10% 50%;
+
+    --accent: 215 30% 92%;
+    --accent-foreground: 215 25% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 215 15% 88%;
+    --input: 215 15% 90%;
+    --ring: 215 100% 55%;
+
+    --radius: 0.75rem;
+
+    /* Font weight variable */
+    --font-weight-global: 400;
+
+  /* Enhanced Sidebar Colors */
+    --sidebar-background: 215 100% 97%;
+    --sidebar-foreground: 215 25% 25%;
+    --sidebar-primary: 215 100% 55%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 215 50% 94%;
+    --sidebar-accent-foreground: 215 25% 20%;
+    --sidebar-border: 215 20% 88%;
+    --sidebar-ring: 215 100% 60%;
+
+    /* Enhanced Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(215 100% 60%), hsl(215 100% 50%));
+    --gradient-sidebar: linear-gradient(180deg, hsl(215 100% 98%), hsl(215 30% 96%));
+    --gradient-content: linear-gradient(145deg, hsl(0 0% 100%), hsl(215 20% 98%));
+    
+    /* Enhanced Shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(215 100% 55% / 0.15);
+    --shadow-sidebar: 0 8px 32px -12px hsl(215 50% 30% / 0.18);
+    --shadow-card: 0 4px 20px -8px hsl(215 25% 40% / 0.1);
+    --shadow-header: 0 2px 10px -4px hsl(215 25% 40% / 0.08);
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'IBM Plex Sans Arabic', 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    direction: rtl;
+    overflow-x: hidden;
+    font-feature-settings: "kern" 1;
+    text-rendering: optimizeLegibility;
+    font-weight: var(--font-weight-global, 400);
+  }
+  
+  /* LTR mode adjustments */
+  body.ltr {
+    direction: ltr;
+  }
+  
+  /* Sidebar positioning fix for LTR */
+  .ltr [data-side="left"] {
+    left: 0;
+    right: auto;
+  }
+
+  /* خط IBM Plex Sans Arabic للعناصر المحددة */
+  .font-ibm-plex-arabic {
+    font-family: 'IBM Plex Sans Arabic', 'Tajawal', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  }
+
+  /* تحسين عرض النصوص العربية */
+  .arabic-text {
+    font-family: 'IBM Plex Sans Arabic', 'Tajawal', sans-serif;
+    text-align: right;
+    direction: rtl;
+  }
+  
+  .ltr [data-side="right"] {
+    right: 0;
+    left: auto;
+  }
+
+  /* Removed conflicting sidebar-layout CSS */
+
+  /* Enhanced card styling with consistent spacing */
+  .card {
+    @apply border-border/50 shadow-[var(--shadow-card)] bg-white/80 dark:bg-card/80 backdrop-blur-sm;
+    transition: all 0.2s ease-in-out;
+    margin: 0 1rem;
+  }
+
+  .card:hover {
+    @apply shadow-[var(--shadow-elegant)] border-border/70;
+    transform: translateY(-1px);
+  }
+
+  /* Enhanced button styling */
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary to-primary/90 shadow-[var(--shadow-card)];
+    transition: all 0.2s ease-in-out;
+  }
+
+  .btn-primary:hover {
+    @apply shadow-[var(--shadow-elegant)];
+    transform: translateY(-1px);
+  }
+
+  /* Consistent page spacing */
+  .page-content {
+    @apply px-4 sm:px-6 lg:px-8 py-6;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 1024px) {
+    .sidebar-layout {
+      flex-direction: column;
+    }
+    
+    .card {
+      margin: 0 0.5rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .card {
+      margin: 0 0.25rem;
+    }
+  }
+
+  /* Enhanced scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted/30;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-border/70;
+  }
+
+  /* Hide scrollbar for WebKit browsers */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+
+  /* Smooth scrolling for sidebar */
+  .sidebar-scroll {
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+  }
+
+  /* Custom thin scrollbar for collapsed sidebar */
+  .sidebar-collapsed-scroll::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  .sidebar-collapsed-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-collapsed-scroll::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/30 rounded-full;
+  }
+
+  .sidebar-collapsed-scroll::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/50;
+  }
+
+  /* Firefox scrollbar for collapsed sidebar */
+  .sidebar-collapsed-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+}

@@ -1,0 +1,52 @@
+/* Zoom Control Styles */
+.zoomProgress {
+  position: relative;
+  width: 100%;
+  height: 6px;
+  background-color: rgb(229 231 235);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.dark .zoomProgress {
+  background-color: rgb(55 65 81);
+}
+
+.zoomProgressBar {
+  height: 100%;
+  background: linear-gradient(to right, rgb(59 130 246), rgb(34 197 94));
+  border-radius: 9999px;
+  transition: all 0.3s ease-out;
+  position: relative;
+  width: var(--progress-width, 50%);
+}
+
+.zoomProgressBar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.2);
+  animation: pulse 2s infinite;
+}
+
+.zoomMarker {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background-color: rgb(31 41 55);
+  left: var(--marker-position, 33.33%);
+}
+
+.dark .zoomMarker {
+  background-color: rgb(229 231 235);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

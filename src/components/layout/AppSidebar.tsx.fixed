@@ -1,0 +1,310 @@
+import React, { useState } from "react";
+import { useLocation, NavLink } from "react-router-dom";
+import "./sidebar.css";
+import { 
+  Calendar,
+  Users,
+  Activity,
+  BarChart3,
+  Settings,
+  LogOut,
+  Stethoscope,
+  CalendarPlus,
+  FileText,
+  Bell,
+  Search,
+  ClipboardList,
+  UserCog,
+  Receipt,
+  DollarSign,
+  Package,
+  FolderOpen,
+  ExternalLink,
+  User,
+  TrendingUp,
+  Brain,
+  Pill,
+  ChevronLeft,
+  ChevronRight
+} from "lucide-react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useSettings } from "@/contexts/SettingsContext";
+import { cn } from "@/lib/utils";
+
+export function AppSidebar() {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { t, isRTL } = useLanguage();
+  const location = useLocation();
+  const currentPath = location.pathname;
+  
+  const [searchQuery, setSearchQuery] = useState("");
+  const { signOut, user } = useAuth();
+  const { hasAnyPermission, getPrimaryRole, loading: permissionsLoading } = usePermissions();
+  const { sidebarIconSize } = useSettings();
+
+  const getIconSize = () => {
+    switch (sidebarIconSize) {
+      case 'small': return 'w-4 h-4';
+      case 'large': return 'w-6 h-6';
+      default: return 'w-5 h-5';
+    }
+  };
+
+  const isActive = (path: string) => currentPath === path;
+
+  const menuConfig = [
+    {
+      groupTitle: t('sidebar.mainMenu'),
+      items: [
+        { title: t('navigation.dashboard'), url: "/", icon: BarChart3, permissions: ["dashboard.view"] },
+        { title: t('navigation.patients'), url: "/patients", icon: Users, permissions: ["patients.view"] },
+        { title: t('navigation.appointments'), url: "/appointments", icon: Calendar, permissions: ["appointments.view"] },
+        { title: t('appointments.appointmentRequests'), url: "/appointment-requests", icon: ClipboardList, permissions: ["appointments.requests"] },
+        { title: t('actions.addAppointment'), url: "/appointments/new", icon: CalendarPlus, permissions: ["appointments.create"] },
+        { title: t('navigation.dentalTreatments'), url: "/dental-treatments", icon: Stethoscope, permissions: ["dental.view"] },
+        { title: t('navigation.medicalRecords'), url: "/medical-records", icon: FolderOpen, permissions: ["medical_records.view"] }
+      ]
+    },
+    {
+      groupTitle: t('sidebar.aiMenu'),
+      items: [
+        { title: t('sidebar.smartDiagnosis'), url: "/smart-diagnosis", icon: Brain, permissions: ["ai.diagnosis"] },
+        { title: t('navigation.aiInsights'), url: "/ai-insights", icon: TrendingUp, permissions: ["ai.analysis"] }
+      ]
+    },
+    {
+      groupTitle: t('sidebar.staffManagement'),
+      items: [
+        { title: t('navigation.doctors'), url: "/doctors", icon: Stethoscope, permissions: ["doctors.view"] },
+        { title: t('sidebar.doctorAssistants'), url: "/doctor-assistants", icon: UserCog, permissions: ["assistants.view"] }
+      ]
+    },
+    {
+      groupTitle: t('sidebar.financialManagement'),
+      items: [
+        { title: t('navigation.invoices'), url: "/invoices", icon: Receipt, permissions: ["invoices.view"] },
+        { title: t('payments'), url: "/payments", icon: DollarSign, permissions: ["payments.view"] }
+      ]
+    }
+  ];
+
+  interface MenuItem {
+    title: string;
+    url: string;
+    icon: React.ComponentType;
+    permissions?: string[];
+    external?: boolean;
+  }
+
+  function SidebarMenuItem({
+    icon: Icon,
+    title,
+    url,
+    collapsed,
+    iconSize = 'w-5 h-5',
+    isActive,
+    external
+  }: {
+    icon: React.ComponentType<{ className?: string }>;
+    title: string;
+    url: string;
+    collapsed?: boolean;
+    iconSize?: string;
+    isActive?: boolean;
+    external?: boolean;
+  }) {
+    const content = (
+      <>
+        <Icon className={iconSize} />
+        {!collapsed && <span>{title}</span>}
+      </>
+    );
+
+    const className = cn(
+      "flex items-center gap-3 px-3 py-2 rounded-md transition-colors",
+      "hover:bg-accent hover:text-accent-foreground",
+      isActive && "bg-accent text-accent-foreground",
+      !collapsed && "justify-start w-full",
+      collapsed && "justify-center"
+    );
+
+    if (external) {
+      return (
+        <a href={url} className={className} target="_blank" rel="noopener noreferrer">
+          {content}
+        </a>
+      );
+    }
+
+    return (
+      <NavLink to={url} className={className}>
+        {content}
+      </NavLink>
+    );
+  }
+
+  const canAccessMenuItem = (item: MenuItem): boolean => {
+    if (!item.permissions || item.permissions.length === 0) return true;
+    return hasAnyPermission(item.permissions);
+  };
+
+  const primaryRole = getPrimaryRole();
+
+  // تم إضافة console.log للتصحيح
+  console.log("permissionsLoading:", permissionsLoading);
+
+  if (permissionsLoading) {
+    return (
+      <aside className={cn(
+        "fixed inset-y-0 z-50 bg-background border shadow-sm flex items-center justify-center",
+        isRTL ? "right-0 border-l" : "left-0 border-r",
+        isCollapsed ? "w-[4.5rem]" : "w-64"
+      )}>
+        <div className="text-muted-foreground">جاري تحميل القائمة...</div>
+      </aside>
+    );
+  }
+
+  return (
+    <aside className={cn(
+      "fixed inset-y-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 shadow-sm flex flex-col",
+      isRTL ? "right-0 border-l" : "left-0 border-r",
+      isCollapsed ? "w-[4.5rem]" : "w-64",
+      "transition-all duration-300"
+    )}>
+      {/* Header */}
+      <div className="h-16 flex items-center px-4 border-b">
+        <div className={cn(
+          "flex items-center gap-3 flex-1",
+          isRTL && "flex-row-reverse"
+        )}>
+          <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shrink-0">
+            <Stethoscope className="w-5 h-5 text-primary-foreground" />
+          </div>
+          {!isCollapsed && (
+            <h1 className="text-lg font-bold text-primary truncate">
+              {t('sidebar.systemName')}
+            </h1>
+          )}
+        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "absolute -right-3 top-3",
+            isRTL && "-left-3 right-auto"
+          )}
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-4 w-4" />
+          ) : (
+            <ChevronLeft className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+
+      {/* Search */}
+      {!isCollapsed && (
+        <div className="p-4 border-b">
+          <div className="relative">
+            <Search className={cn(
+              "w-4 h-4 absolute top-1/2 -translate-y-1/2 text-muted-foreground",
+              isRTL ? "right-3" : "left-3"
+            )} />
+            <Input
+              type="search"
+              placeholder={t('common.search')}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={cn(
+                "w-full h-9",
+                isRTL ? "pr-9" : "pl-9"
+              )}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Menu */}
+      <div className="flex-1 overflow-y-auto">
+        <div className={cn("py-2", isCollapsed ? "px-2" : "px-3")}>
+          {menuConfig.map(group => {
+            const filteredItems = group.items.filter(item =>
+              item.title.toLowerCase().includes(searchQuery.toLowerCase()) && 
+              canAccessMenuItem(item)
+            );
+
+            if (filteredItems.length === 0) return null;
+
+            return (
+              <div key={group.groupTitle} className="mb-4">
+                {!isCollapsed && (
+                  <h2 className={cn(
+                    "text-xs font-medium text-muted-foreground px-2 mb-2",
+                    isRTL && "text-right"
+                  )}>
+                    {group.groupTitle}
+                  </h2>
+                )}
+                <div className="space-y-1">
+                  {filteredItems.map(item => (
+                    <SidebarMenuItem
+                      key={item.title}
+                      icon={item.icon}
+                      title={item.title}
+                      url={item.url}
+                      collapsed={isCollapsed}
+                      iconSize={getIconSize()}
+                      isActive={isActive(item.url)}
+                      external={item.external}
+                    />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="border-t p-4">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9 shrink-0">
+            <AvatarFallback>
+              {user?.name?.[0]?.toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          {!isCollapsed && (
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{user?.name}</p>
+              {primaryRole && (
+                <p className="text-xs text-muted-foreground truncate">
+                  {primaryRole.role_name_ar}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+        <Button
+          variant="ghost"
+          size={isCollapsed ? "icon" : "default"}
+          className={cn(
+            "w-full mt-2",
+            !isCollapsed && "justify-start gap-2"
+          )}
+          onClick={signOut}
+        >
+          <LogOut className="w-4 h-4" />
+          {!isCollapsed && t('common.logout')}
+        </Button>
+      </div>
+    </aside>
+  );
+}

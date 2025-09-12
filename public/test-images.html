@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>اختبار الصور</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-image { 
+            width: 100px; 
+            height: 100px; 
+            margin: 10px; 
+            border: 2px solid #ccc; 
+            display: inline-block;
+        }
+        .test-image img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: contain; 
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>اختبار صور الأسنان</h1>
+    
+    <h2>الفك العلوي الأيسر:</h2>
+    <div id="test-container">
+        <!-- سيتم إضافة الصور هنا بواسطة JavaScript -->
+    </div>
+
+    <script>
+        const teeth = ['11', '12', '13', '14', '15', '16', '17', '18'];
+        const imageMapping = {
+            '11': '11.png',
+            '12': '22.png',
+            '13': '33.png',
+            '14': '44.png',
+            '15': '55.png',
+            '16': '66.png',
+            '17': '77.png',
+            '18': '88.png'
+        };
+
+        const container = document.getElementById('test-container');
+
+        teeth.forEach(tooth => {
+            const imagePath = `/teeth/U L/${imageMapping[tooth]}`;
+            
+            const testDiv = document.createElement('div');
+            testDiv.className = 'test-image';
+            
+            const img = document.createElement('img');
+            img.src = imagePath;
+            img.alt = `السن ${tooth}`;
+            
+            const label = document.createElement('p');
+            label.textContent = `السن ${tooth}`;
+            
+            const statusDiv = document.createElement('div');
+            statusDiv.id = `status-${tooth}`;
+            
+            img.onload = () => {
+                statusDiv.className = 'success';
+                statusDiv.textContent = '✓ تم التحميل';
+                console.log(`نجح تحميل: ${imagePath}`);
+            };
+            
+            img.onerror = () => {
+                statusDiv.className = 'error';
+                statusDiv.textContent = '✗ فشل التحميل';
+                console.error(`فشل تحميل: ${imagePath}`);
+            };
+            
+            testDiv.appendChild(img);
+            testDiv.appendChild(label);
+            testDiv.appendChild(statusDiv);
+            container.appendChild(testDiv);
+        });
+    </script>
+</body>
+</html>
