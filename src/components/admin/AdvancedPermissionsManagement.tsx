@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertTriangle, Users, Shield, Clock, Plus, Edit, Trash2, Eye, RotateCcw } from 'lucide-react';
+import { AlertTriangle, Users, Shield, Clock, Plus, Edit, Eye, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
@@ -29,28 +29,12 @@ interface ClinicRole {
 
 interface User {
   id: string;
-  full_name: string;
-  email: string;
-  role: string;
-  clinic_id: string;
-  created_at: string;
-  is_active: boolean;
-}
-
-interface SpecificPermission {
-  id: string;
-  clinic_id: string;
+  full_name?: string;
+  email?: string;
   user_id: string;
-  permission_category: string;
-  permission_key: string;
-  is_granted: boolean;
-  granted_by: string;
-  granted_at: string;
-  expires_at: string | null;
-  reason: string | null;
-  is_active: boolean;
-  user_name?: string;
-  granted_by_name?: string;
+  clinic_id?: string;
+  created_at: string;
+  current_clinic_role?: string;
 }
 
 export const AdvancedPermissionsManagement = () => {
@@ -86,101 +70,16 @@ export const AdvancedPermissionsManagement = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('clinic_id', user?.id); // assuming user.id is clinic_id for super admin
+        .select('*');
       
       if (error) throw error;
       return data as User[];
     }
   });
 
-  // الحصول على الصلاحيات المخصصة
-  const { data: specificPermissions = [], isLoading: permissionsLoading } = useQuery({
-    queryKey: ['specific-permissions'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('clinic_specific_permissions')
-        .select(`
-          *,
-          user:profiles!clinic_specific_permissions_user_id_fkey(full_name),
-          granted_by_user:profiles!clinic_specific_permissions_granted_by_fkey(full_name)
-        `)
-        .eq('is_active', true);
-      
-      if (error) throw error;
-      return data.map(item => ({
-        ...item,
-        user_name: item.user?.full_name || 'مستخدم غير معروف',
-        granted_by_name: item.granted_by_user?.full_name || 'النظام'
-      })) as SpecificPermission[];
-    }
-  });
-
-  // منح صلاحية مخصصة
-  const grantPermissionMutation = useMutation({
-    mutationFn: async (permissionData: {
-      user_id: string;
-      permission_category: string;
-      permission_key: string;
-      expires_at?: string;
-      reason?: string;
-    }) => {
-      const { error } = await supabase
-        .from('clinic_specific_permissions')
-        .upsert({
-          clinic_id: user?.id,
-          user_id: permissionData.user_id,
-          permission_category: permissionData.permission_category,
-          permission_key: permissionData.permission_key,
-          is_granted: true,
-          granted_by: user?.id,
-          expires_at: permissionData.expires_at,
-          reason: permissionData.reason,
-          is_active: true
-        });
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({
-        title: 'تم منح الصلاحية بنجاح',
-        description: 'تم منح الصلاحية المخصصة للمستخدم'
-      });
-      queryClient.invalidateQueries({ queryKey: ['specific-permissions'] });
-      setShowGrantDialog(false);
-      resetGrantForm();
-    },
-    onError: (error) => {
-      toast({
-        title: 'خطأ في منح الصلاحية',
-        description: 'حدث خطأ أثناء منح الصلاحية المخصصة',
-        variant: 'destructive'
-      });
-    }
-  });
-
-  // إلغاء صلاحية مخصصة
-  const revokePermissionMutation = useMutation({
-    mutationFn: async (permissionId: string) => {
-      const { error } = await supabase
-        .from('clinic_specific_permissions')
-        .update({ is_active: false })
-        .eq('id', permissionId);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast({
-        title: 'تم إلغاء الصلاحية',
-        description: 'تم إلغاء الصلاحية المخصصة بنجاح'
-      });
-      queryClient.invalidateQueries({ queryKey: ['specific-permissions'] });
-    }
-  });
-
   // تحديث صلاحيات الدور
   const updateRolePermissionsMutation = useMutation({
-    mutationFn: async ({ roleName, permissions }: { roleName: string; permissions: Record<string, Record<string, boolean>> }) => {
+    mutationFn: async ({ roleName, permissions }: { roleName: any; permissions: Record<string, Record<string, boolean>> }) => {
       const { error } = await supabase
         .from('clinic_role_hierarchy')
         .update({ permissions })
@@ -197,40 +96,6 @@ export const AdvancedPermissionsManagement = () => {
       setEditingRole(null);
     }
   });
-
-  const resetGrantForm = () => {
-    setSelectedUser('');
-    setSelectedCategory('');
-    setSelectedPermission('');
-    setPermissionDuration('');
-    setPermissionReason('');
-  };
-
-  const handleGrantPermission = () => {
-    if (!selectedUser || !selectedCategory || !selectedPermission) {
-      toast({
-        title: 'بيانات ناقصة',
-        description: 'يرجى ملء جميع الحقول المطلوبة',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    let expiresAt: string | undefined;
-    if (permissionDuration) {
-      const now = new Date();
-      const durationHours = parseInt(permissionDuration);
-      expiresAt = new Date(now.getTime() + durationHours * 60 * 60 * 1000).toISOString();
-    }
-
-    grantPermissionMutation.mutate({
-      user_id: selectedUser,
-      permission_category: selectedCategory,
-      permission_key: selectedPermission,
-      expires_at: expiresAt,
-      reason: permissionReason
-    });
-  };
 
   const handleRolePermissionChange = (category: string, permission: string, value: boolean) => {
     if (!editingRole) return;
@@ -253,7 +118,7 @@ export const AdvancedPermissionsManagement = () => {
     if (!editingRole) return;
     
     updateRolePermissionsMutation.mutate({
-      roleName: editingRole.role_name,
+      roleName: editingRole.role_name as any,
       permissions: editingRole.permissions
     });
   };
@@ -299,7 +164,7 @@ export const AdvancedPermissionsManagement = () => {
     return colors[roleName] || 'bg-gray-400 text-white';
   };
 
-  if (rolesLoading || usersLoading || permissionsLoading) {
+  if (rolesLoading || usersLoading) {
     return (
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center space-y-4">
@@ -320,7 +185,7 @@ export const AdvancedPermissionsManagement = () => {
       </div>
 
       <Tabs defaultValue="roles" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="roles" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
             الأدوار
@@ -328,10 +193,6 @@ export const AdvancedPermissionsManagement = () => {
           <TabsTrigger value="permissions" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             الصلاحيات
-          </TabsTrigger>
-          <TabsTrigger value="custom" className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            صلاحيات مخصصة
           </TabsTrigger>
           <TabsTrigger value="audit" className="flex items-center gap-2">
             <Eye className="h-4 w-4" />
@@ -416,172 +277,6 @@ export const AdvancedPermissionsManagement = () => {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
-
-        <TabsContent value="custom" className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="text-lg font-medium">الصلاحيات المخصصة النشطة</h3>
-            <Dialog open={showGrantDialog} onOpenChange={setShowGrantDialog}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  منح صلاحية مخصصة
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>منح صلاحية مخصصة</DialogTitle>
-                  <DialogDescription>
-                    منح صلاحية محددة لمستخدم لفترة زمنية معينة
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="user">المستخدم</Label>
-                    <Select value={selectedUser} onValueChange={setSelectedUser}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر المستخدم" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {users.map((user) => (
-                          <SelectItem key={user.id} value={user.id}>
-                            {user.full_name} ({user.email})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div>
-                    <Label htmlFor="category">فئة الصلاحية</Label>
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="اختر الفئة" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {getPermissionCategories().map((category) => (
-                          <SelectItem key={category.key} value={category.key}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {selectedCategory && (
-                    <div>
-                      <Label htmlFor="permission">الصلاحية</Label>
-                      <Select value={selectedPermission} onValueChange={setSelectedPermission}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="اختر الصلاحية" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {getPermissionsByCategory(selectedCategory).map((permission) => (
-                            <SelectItem key={permission} value={permission}>
-                              {permission}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-
-                  <div>
-                    <Label htmlFor="duration">المدة (بالساعات)</Label>
-                    <Input
-                      id="duration"
-                      type="number"
-                      value={permissionDuration}
-                      onChange={(e) => setPermissionDuration(e.target.value)}
-                      placeholder="اتركه فارغاً للصلاحية الدائمة"
-                    />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="reason">سبب المنح</Label>
-                    <Textarea
-                      id="reason"
-                      value={permissionReason}
-                      onChange={(e) => setPermissionReason(e.target.value)}
-                      placeholder="اذكر سبب منح هذه الصلاحية"
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={() => setShowGrantDialog(false)}>
-                      إلغاء
-                    </Button>
-                    <Button onClick={handleGrantPermission}>
-                      منح الصلاحية
-                    </Button>
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          <Card>
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>المستخدم</TableHead>
-                    <TableHead>الصلاحية</TableHead>
-                    <TableHead>تاريخ المنح</TableHead>
-                    <TableHead>تاريخ الانتهاء</TableHead>
-                    <TableHead>منحت بواسطة</TableHead>
-                    <TableHead>السبب</TableHead>
-                    <TableHead>الإجراءات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {specificPermissions.map((permission) => (
-                    <TableRow key={permission.id}>
-                      <TableCell>{permission.user_name}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">
-                          {permission.permission_category}.{permission.permission_key}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {format(new Date(permission.granted_at), 'PPP', { locale: ar })}
-                      </TableCell>
-                      <TableCell>
-                        {permission.expires_at ? (
-                          <Badge variant="secondary">
-                            {format(new Date(permission.expires_at), 'PPP', { locale: ar })}
-                          </Badge>
-                        ) : (
-                          <Badge variant="default">دائمة</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell>{permission.granted_by_name}</TableCell>
-                      <TableCell className="max-w-xs truncate">
-                        {permission.reason || 'غير محدد'}
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => revokePermissionMutation.mutate(permission.id)}
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                          إلغاء
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {specificPermissions.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
-                        لا توجد صلاحيات مخصصة نشطة
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
         </TabsContent>
 
         <TabsContent value="audit" className="space-y-4">

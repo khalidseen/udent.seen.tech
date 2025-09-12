@@ -492,6 +492,87 @@ export type Database = {
         }
         Relationships: []
       }
+      clinic_specific_permissions: {
+        Row: {
+          clinic_id: string
+          created_at: string | null
+          expires_at: string | null
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          is_active: boolean
+          is_granted: boolean
+          permission_category: string
+          permission_key: string
+          reason: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          is_granted?: boolean
+          permission_category: string
+          permission_key: string
+          reason?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          is_active?: boolean
+          is_granted?: boolean
+          permission_category?: string
+          permission_key?: string
+          reason?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      clinic_subscription_usage: {
+        Row: {
+          clinic_id: string
+          created_at: string | null
+          current_count: number
+          id: string
+          last_reset_date: string | null
+          max_count: number
+          metric_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string | null
+          current_count?: number
+          id?: string
+          last_reset_date?: string | null
+          max_count: number
+          metric_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string | null
+          current_count?: number
+          id?: string
+          last_reset_date?: string | null
+          max_count?: number
+          metric_type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       clinical_attachments: {
         Row: {
           category: string | null
@@ -2324,6 +2405,42 @@ export type Database = {
           feature_name_ar?: string
           id?: string
           is_active?: boolean
+        }
+        Relationships: []
+      }
+      subscription_plan_features: {
+        Row: {
+          created_at: string | null
+          feature_config: Json | null
+          feature_key: string
+          feature_limit: number | null
+          feature_name: string
+          feature_name_ar: string
+          id: string
+          is_enabled: boolean
+          plan_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          feature_config?: Json | null
+          feature_key: string
+          feature_limit?: number | null
+          feature_name: string
+          feature_name_ar: string
+          id?: string
+          is_enabled?: boolean
+          plan_id: string
+        }
+        Update: {
+          created_at?: string | null
+          feature_config?: Json | null
+          feature_key?: string
+          feature_limit?: number | null
+          feature_name?: string
+          feature_name_ar?: string
+          id?: string
+          is_enabled?: boolean
+          plan_id?: string
         }
         Relationships: []
       }

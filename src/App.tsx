@@ -77,6 +77,7 @@ import CustomNotificationTemplates from "@/pages/CustomNotificationTemplates";
 import DetailedReports from "@/pages/DetailedReports";
 import AdvancedPermissionsManagement from "@/pages/AdvancedPermissionsManagement";
 import AdvancedUserManagement from "@/pages/AdvancedUserManagement";
+import AdvancedManagement from "@/pages/AdvancedManagement";
 import ComprehensiveSecurityAudit from "@/pages/ComprehensiveSecurityAudit";
 import Dental3DModelsManagement from "@/pages/Dental3DModelsManagement";
 import EnhancedDentalChartDemo from "@/pages/EnhancedDentalChartDemo";
@@ -233,6 +234,7 @@ function App() {
                      <Route path="detailed-reports" element={<DetailedReports />} />
                      <Route path="advanced-permissions-management" element={<AdvancedPermissionsManagement />} />
                      <Route path="advanced-user-management" element={<AdvancedUserManagement />} />
+                     <Route path="advanced-management" element={<AdvancedManagement />} />
                      <Route path="comprehensive-security-audit" element={<ComprehensiveSecurityAudit />} />
                      <Route path="dental-3d-models-management" element={<Dental3DModelsManagement />} />
                      <Route path="enhanced-dental-chart-demo" element={<EnhancedDentalChartDemo patientId="demo-patient-123" />} />

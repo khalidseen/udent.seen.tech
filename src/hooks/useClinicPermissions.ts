@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export type ClinicRole = 'owner' | 'clinic_manager' | 'dentist' | 'accountant' | 'assistant' | 'super_admin';
+export type ClinicRole = 'owner' | 'clinic_manager' | 'dentist' | 'accountant' | 'assistant' | 'super_admin' | 'receptionist' | 'secretary';
 
 export interface ClinicRoleInfo {
   role_name: ClinicRole;
