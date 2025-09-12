@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { RotateCcw, ZoomIn, ZoomOut, Info, X, Eye, MousePointer, Camera, BookOpen, Microscope } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut, Info, X, Eye, MousePointer, Camera, BookOpen, Microscope, Heart } from 'lucide-react';
 import enamelfStructure from '@/assets/tooth-anatomy/enamel-structure.jpg';
 import dentinStructure from '@/assets/tooth-anatomy/dentin-structure.jpg';
 import pulpChamber from '@/assets/tooth-anatomy/pulp-chamber.jpg';
@@ -1009,7 +1009,7 @@ const RealisticToothAnatomy = () => {
           {/* دليل الأجزاء المحسن */}
           <div className="bg-white rounded-xl shadow-xl p-5 mt-6">
             <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <Book className="w-5 h-5 text-blue-600" />
+              <BookOpen className="w-5 h-5 text-blue-600" />
               دليل الأجزاء التشريحية
             </h3>
             <div className="space-y-3">
