@@ -167,11 +167,11 @@ export const useClinicId = () => {
       
       const { data: profile } = await supabase
         .from('profiles')
-        .select('id')
+        .select('clinic_id')
         .eq('user_id', user.id)
         .maybeSingle();
       
-      return profile?.id || 'default-clinic-id';
+      return profile?.clinic_id || 'default-clinic-id';
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
