@@ -397,7 +397,7 @@ export function TopNavbar() {
             <ClinicSwitcher />
 
             {/* أدوات المطورين */}
-            {(hasPermission('system.manage') || getPrimaryRole()?.role_name === 'super_admin' || process.env.NODE_ENV === 'development') && (
+            {(hasPermission('system.manage') || getPrimaryRole()?.role_name === 'super_admin' || import.meta.env.DEV) && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 

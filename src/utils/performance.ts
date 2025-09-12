@@ -112,7 +112,7 @@ export function trackBundleSize() {
 
 // Component render tracking
 export function trackComponentRender(componentName: string) {
-  if (process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     console.log(`🔄 ${componentName} rendered at ${new Date().toISOString()}`);
   }
 }

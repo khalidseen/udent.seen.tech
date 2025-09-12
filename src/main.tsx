@@ -18,6 +18,9 @@ if ('serviceWorker' in navigator) {
       .then((registration) => {
         console.log('SW registered: ', registration);
         
+        // Force check for updates immediately
+        registration.update();
+        
         // Check for updates immediately
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
@@ -66,7 +69,7 @@ if ('serviceWorker' in navigator) {
 }
 
 // Only use StrictMode in development
-const AppWrapper = process.env.NODE_ENV === 'development' 
+const AppWrapper = import.meta.env.DEV 
   ? React.StrictMode 
   : React.Fragment;
 
