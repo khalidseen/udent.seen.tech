@@ -1,5 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { RotateCcw, ZoomIn, ZoomOut, Info, X, Eye, MousePointer, Book, Microscope, Heart, Zap } from 'lucide-react';
+import { RotateCcw, ZoomIn, ZoomOut, Info, X, Eye, MousePointer, Camera, BookOpen, Microscope } from 'lucide-react';
+import enamelfStructure from '@/assets/tooth-anatomy/enamel-structure.jpg';
+import dentinStructure from '@/assets/tooth-anatomy/dentin-structure.jpg';
+import pulpChamber from '@/assets/tooth-anatomy/pulp-chamber.jpg';
+import toothRoots from '@/assets/tooth-anatomy/tooth-roots.jpg';
 
 const RealisticToothAnatomy = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
