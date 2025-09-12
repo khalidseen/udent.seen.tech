@@ -4,27 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Eye, 
-  Activity, 
   Edit, 
   MessageCircle, 
   User2, 
   UserCog2,
   Smile,
   Heart,
-  Pill,
   Camera,
-  Calendar,
   DollarSign
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import PatientMedicalSectionsPopup from "./PatientMedicalSectionsPopup";
 import { usePatientFinancials } from '@/hooks/usePatientFinancials';
+import DoctorSelector from './DoctorSelector';
 
 interface PatientCardProps {
   patient: {
     id: string;
     full_name: string;
     phone?: string;
+    assigned_doctor_id?: string;
     assigned_doctor?: {
       full_name: string;
     };
@@ -119,18 +118,6 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    onAddTreatment(patient.id, patient.full_name);
-                  }}
-                >
-                  <Activity className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 bg-muted/50 hover:bg-primary/10 hover:text-primary"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
                     onEditPatient(patient.id);
                   }}
                 >
@@ -140,14 +127,16 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
             </div>
 
             {/* Assigned Doctor */}
-            <div className="space-y-1">
+            <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
               <p className="text-sm text-muted-foreground flex items-center gap-1">
                 <UserCog2 className="w-3 h-3" />
                 الطبيب المسؤول
               </p>
-              <p className="text-sm font-medium">
-                {patient.assigned_doctor?.full_name || 'غير محدد'}
-              </p>
+              <DoctorSelector
+                patientId={patient.id}
+                currentDoctorId={patient.assigned_doctor_id}
+                currentDoctorName={patient.assigned_doctor?.full_name}
+              />
             </div>
 
             {/* Creator Info */}
@@ -191,71 +180,71 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
             )}
           </div>
 
-          {/* Quick Actions */}
-          <div className="space-y-3 pt-4 border-t border-border/40">
-            <p className="text-xs text-muted-foreground font-medium">الإجراءات السريعة</p>
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10 hover:text-primary group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('dental');
-                }}
-                title="مخطط الأسنان التفاعلي"
-              >
-                <Smile className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">الأسنان</span>
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-green-500/10 hover:text-green-600 group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('overview');
-                }}
-                title="نظرة عامة على الصحة"
-              >
-                <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">الملف الطبي</span>
-              </Button>
+            {/* Quick Actions - Keep only those with popups */}
+            <div className="space-y-3 pt-4 border-t border-border/40">
+              <p className="text-xs text-muted-foreground font-medium">الإجراءات السريعة</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10 hover:text-primary group"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSectionClick('dental');
+                  }}
+                  title="مخطط الأسنان التفاعلي"
+                >
+                  <Smile className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">الأسنان</span>
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-green-500/10 hover:text-green-600 group"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSectionClick('overview');
+                  }}
+                  title="نظرة عامة على الصحة"
+                >
+                  <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">الملف الطبي</span>
+                </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-purple-500/10 hover:text-purple-600 group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('images');
-                }}
-                title="الأشعة والصور"
-              >
-                <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">الأشعة</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-purple-500/10 hover:text-purple-600 group"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSectionClick('images');
+                  }}
+                  title="الأشعة والصور"
+                >
+                  <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">الأشعة</span>
+                </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-yellow-500/10 hover:text-yellow-600 group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('financial');
-                }}
-                title="الحالة المالية"
-              >
-                <DollarSign className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">المالية</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-yellow-500/10 hover:text-yellow-600 group"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSectionClick('financial');
+                  }}
+                  title="الحالة المالية"
+                >
+                  <DollarSign className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">المالية</span>
+                </Button>
+              </div>
             </div>
-          </div>
 
           {/* Footer Section */}
           <div className="pt-4 border-t border-border/40 mt-auto">
