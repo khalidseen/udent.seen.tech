@@ -311,7 +311,7 @@ export const useDentalChartEnhanced = ({
   }, [clinicId]);
 
   // تصدير البيانات
-  const exportData = useCallback(async (format: ExportFormat) => {
+  const exportData = useCallback(async (format: ExportFormat | 'json' | 'csv' | 'pdf') => {
     try {
       const records = Array.from(data.records.values());
       
@@ -328,8 +328,8 @@ export const useDentalChartEnhanced = ({
       let filename = '';
       let mimeType = '';
 
-      switch (format) {
-        case ExportFormat.JSON:
+      switch (format as 'json' | 'csv' | 'pdf') {
+        case 'json':
           content = JSON.stringify({
             patientId,
             exportDate: new Date().toISOString(),
@@ -340,7 +340,7 @@ export const useDentalChartEnhanced = ({
           mimeType = 'application/json';
           break;
 
-        case ExportFormat.CSV: {
+        case 'csv': {
           const headers = [
             'رقم السن',
             'الحالة',
@@ -368,7 +368,7 @@ export const useDentalChartEnhanced = ({
           break;
         }
 
-        case ExportFormat.PDF:
+        case 'pdf':
           // هنا يمكن إضافة مكتبة PDF مثل jsPDF
           toast({
             title: 'قريباً',

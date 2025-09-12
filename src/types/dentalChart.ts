@@ -221,8 +221,12 @@ export const TOOTH_POSITIONS = {
   38: 'الطاحن الثالث الأيسر السفلي',
 };
 
-// أنواع التصدير  
-export type ExportFormat = 'json' | 'csv' | 'pdf';
+// أنواع التصدير
+export enum ExportFormat {
+  JSON = 'json',
+  CSV = 'csv',
+  PDF = 'pdf'
+}
 
 // إحصائيات المخطط
 export interface ChartStatistics {
