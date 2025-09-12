@@ -56,17 +56,32 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
   
   console.log('🔍 Fetching patients with params:', { clinicId, search, limit, offset });
   
-  if (!clinicId) {
-    console.warn('⚠️ No clinic ID provided, returning empty data');
-    return { data: [], total: 0 };
-  }
-
   try {
+    // Determine if current user is super admin to control clinic filtering
+    const { data: { user } } = await supabase.auth.getUser();
+    let isSuperAdmin = false;
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      isSuperAdmin = profile?.role === 'admin';
+    }
+
     // Build query with conditional search to avoid empty-search issues
     let query = supabase
       .from('patients')
-      .select('*', { count: 'exact' })
-      .eq('clinic_id', clinicId);
+      .select('*', { count: 'exact' });
+
+    // Apply clinic filter only for non-admin users
+    if (!isSuperAdmin) {
+      if (!clinicId) {
+        console.warn('⚠️ No clinic ID for non-admin user, returning empty data');
+        return { data: [], total: 0 };
+      }
+      query = query.eq('clinic_id', clinicId);
+    }
 
     if (search && search.trim().length > 0) {
       query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
