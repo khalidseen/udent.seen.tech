@@ -17,6 +17,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { AlertTriangle, Users, Shield, Clock, Plus, Edit, Eye, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { CreateRoleDialog } from './CreateRoleDialog';
+import { SecuritySettingsDialog } from './SecuritySettingsDialog';
 
 interface ClinicRole {
   role_name: string;
@@ -49,6 +51,8 @@ export const AdvancedPermissionsManagement = () => {
   const [permissionReason, setPermissionReason] = useState<string>('');
   const [showGrantDialog, setShowGrantDialog] = useState(false);
   const [editingRole, setEditingRole] = useState<ClinicRole | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showSecurityDialog, setShowSecurityDialog] = useState(false);
 
   // الحصول على الأدوار والتسلسل الهرمي
   const { data: roles = [], isLoading: rolesLoading } = useQuery({
@@ -180,7 +184,19 @@ export const AdvancedPermissionsManagement = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">إدارة الصلاحيات المتقدمة</h2>
-          <p className="text-muted-foreground">إدارة شاملة لصلاحيات المستخدمين والأدوار</p>
+          <p className="text-muted-foreground">إدارة شاملة لصلاحيات المستخدمين والأدوار مع ربط خطط الاشتراك</p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            دور جديد
+          </Button>
+          
+          <Button variant="outline" onClick={() => setShowSecurityDialog(true)}>
+            <Shield className="h-4 w-4 mr-2" />
+            إعدادات الأمان
+          </Button>
         </div>
       </div>
 
@@ -298,6 +314,17 @@ export const AdvancedPermissionsManagement = () => {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* نوافذ الحوار */}
+      <CreateRoleDialog 
+        open={showCreateDialog} 
+        onOpenChange={setShowCreateDialog} 
+      />
+      
+      <SecuritySettingsDialog 
+        open={showSecurityDialog} 
+        onOpenChange={setShowSecurityDialog} 
+      />
     </div>
   );
 };

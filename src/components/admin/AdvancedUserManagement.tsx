@@ -18,6 +18,8 @@ import { AlertTriangle, Users, UserPlus, Settings, BarChart3, Plus, Edit, Trash2
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { useSubscriptionPermissions } from '@/hooks/useSubscriptionPermissions';
+import { ComprehensiveUsageReports } from './ComprehensiveUsageReports';
 
 interface User {
   id: string;
@@ -62,6 +64,7 @@ export const AdvancedUserManagement = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { checkUsageLimit, getUsagePercentage, shouldShowUpgradeAlert } = useSubscriptionPermissions();
   
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showUserDialog, setShowUserDialog] = useState(false);
@@ -216,6 +219,16 @@ export const AdvancedUserManagement = () => {
       toast({
         title: 'بيانات ناقصة',
         description: 'يرجى ملء جميع الحقول المطلوبة',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // فحص حدود الخطة
+    if (!checkUsageLimit('users')) {
+      toast({
+        title: 'تجاوز حد المستخدمين',
+        description: 'لا يمكن إضافة مستخدمين جدد. يرجى ترقية خطة الاشتراك.',
         variant: 'destructive'
       });
       return;
