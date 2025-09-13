@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,23 +8,65 @@ import { CreateRoleDialog } from "@/components/admin/CreateRoleDialog";
 import { SecuritySettingsDialog } from "@/components/admin/SecuritySettingsDialog";
 import { useSubscriptionPermissions } from "@/hooks/useSubscriptionPermissions";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { EditRoleDialog } from "@/components/admin/EditRoleDialog";
+
+interface RoleRow {
+  role_name: string;
+  description: string | null;
+  description_ar: string | null;
+  level: number;
+  can_manage: string[];
+  permissions: Record<string, Record<string, boolean>>;
+}
 
 const AdvancedPermissionsManagement = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [openSecurity, setOpenSecurity] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
+  const [roles, setRoles] = useState<RoleRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedRole, setSelectedRole] = useState<RoleRow | null>(null);
   const { checkPlanPermission } = useSubscriptionPermissions();
   const { toast } = useToast();
 
+  const fetchRoles = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('clinic_role_hierarchy')
+      .select('*')
+      .order('level', { ascending: true });
+    if (error) {
+      console.error(error);
+    } else {
+      setRoles((data as any) || []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { fetchRoles(); }, []);
+
+  const permCount = (permObj: RoleRow['permissions']) => {
+    try {
+      return Object.values(permObj || {}).reduce((sum, cat: any) => sum + Object.values(cat || {}).filter(Boolean).length, 0);
+    } catch { return 0; }
+  };
+
   const handleNewRoleClick = () => {
     if (!checkPlanPermission('permissions.manage')) {
-      toast({
-        title: 'غير متاح في خطتك',
-        description: 'يرجى ترقية الخطة لتمكين إدارة الأدوار والصلاحيات',
-        variant: 'destructive'
-      });
+      toast({ title: 'غير متاح في خطتك', description: 'يرجى ترقية الخطة لتمكين إدارة الأدوار والصلاحيات', variant: 'destructive' });
       return;
     }
     setOpenCreate(true);
+  };
+
+  const openEditDialog = (role: RoleRow) => {
+    if (!checkPlanPermission('permissions.manage')) {
+      toast({ title: 'غير متاح في خطتك', description: 'ترقية الخطة مطلوبة لتعديل الصلاحيات', variant: 'destructive' });
+      return;
+    }
+    setSelectedRole(role);
+    setOpenEdit(true);
   };
 
   const handleSecurityClick = () => setOpenSecurity(true);
@@ -49,37 +91,37 @@ const AdvancedPermissionsManagement = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { role: "مدير العيادة", users: 2, permissions: 25 },
-            { role: "طبيب", users: 5, permissions: 18 },
-            { role: "مساعد طبيب", users: 3, permissions: 12 },
-            { role: "سكرتير", users: 4, permissions: 8 },
-            { role: "محاسب", users: 1, permissions: 10 },
-            { role: "مشرف تقني", users: 1, permissions: 15 }
-          ].map((role, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserCog className="h-5 w-5" />
-                  {role.role}
-                </CardTitle>
-                <CardDescription>
-                  {role.users} مستخدم • {role.permissions} صلاحية
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button size="sm" variant="outline" className="w-full">
-                  <Edit className="h-3 w-3 mr-2" />
-                  تعديل الصلاحيات
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {loading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i}><CardHeader><CardTitle className="h-5 w-40 bg-muted rounded" /></CardHeader></Card>
+            ))
+          ) : (
+            roles.map((role) => (
+              <Card key={role.role_name}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCog className="h-5 w-5" />
+                    {role.description_ar || role.role_name}
+                  </CardTitle>
+                  <CardDescription>
+                    {permCount(role.permissions)} صلاحية
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button size="sm" variant="outline" className="w-full" onClick={() => openEditDialog(role)}>
+                    <Edit className="h-3 w-3 mr-2" />
+                    تعديل الصلاحيات
+                  </Button>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
 
         {/* Dialogs */}
-        <CreateRoleDialog open={openCreate} onOpenChange={setOpenCreate} />
+        <CreateRoleDialog open={openCreate} onOpenChange={(o) => { setOpenCreate(o); if (!o) fetchRoles(); }} />
         <SecuritySettingsDialog open={openSecurity} onOpenChange={setOpenSecurity} />
+        <EditRoleDialog open={openEdit} onOpenChange={setOpenEdit} role={selectedRole} onSaved={fetchRoles} />
       </div>
     </PageContainer>
   );
