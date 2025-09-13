@@ -326,18 +326,18 @@ const AdvancedUserManagement = () => {
               <div className="space-y-2">
                 <p><strong>👤 المستخدم الحالي:</strong> {currentUser?.full_name || 'غير محدد'}</p>
                 <p><strong>📧 البريد الإلكتروني:</strong> {currentUser?.email || authUser?.email || 'غير محدد'}</p>
-                <p><strong>🎭 الدور:</strong> 
+                <div><strong>🎭 الدور:</strong> 
                   <Badge variant="outline" className="mr-2">
                     {currentUser?.role || 'غير محدد'}
                   </Badge>
-                </p>
+                </div>
               </div>
               <div className="space-y-2">
-                <p><strong>✅ يمكن إضافة مستخدمين:</strong> 
+                <div><strong>✅ يمكن إضافة مستخدمين:</strong> 
                   <Badge className={canAddUsers ? 'bg-green-100 text-green-800 mr-2' : 'bg-red-100 text-red-800 mr-2'}>
                     {canAddUsers ? '✓ نعم' : '✗ لا'}
                   </Badge>
-                </p>
+                </div>
                 <p><strong>🔐 الأدوار المصرح لها:</strong></p>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {adminRoles.map(role => (
