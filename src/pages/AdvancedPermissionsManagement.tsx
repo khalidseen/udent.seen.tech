@@ -27,7 +27,7 @@ const AdvancedPermissionsManagement = () => {
   const [roles, setRoles] = useState<RoleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRole, setSelectedRole] = useState<RoleRow | null>(null);
-  const { checkPlanPermission } = useSubscriptionPermissions();
+  const { checkPlanPermission, loading: planLoading } = useSubscriptionPermissions();
   const { toast } = useToast();
 
   const fetchRoles = async () => {
@@ -53,17 +53,17 @@ const AdvancedPermissionsManagement = () => {
   };
 
   const handleNewRoleClick = () => {
-    if (!checkPlanPermission('permissions.manage')) {
-      toast({ title: 'غير متاح في خطتك', description: 'يرجى ترقية الخطة لتمكين إدارة الأدوار والصلاحيات', variant: 'destructive' });
-      return;
+    const allowed = checkPlanPermission('permissions.manage');
+    if (!allowed) {
+      toast({ title: 'إدارة الأدوار مقيدة بالخطة', description: 'يمكنك المعاينة الآن. للحفظ الكامل، يرجى الترقية.', variant: 'default' });
     }
     setOpenCreate(true);
   };
 
   const openEditDialog = (role: RoleRow) => {
-    if (!checkPlanPermission('permissions.manage')) {
-      toast({ title: 'غير متاح في خطتك', description: 'ترقية الخطة مطلوبة لتعديل الصلاحيات', variant: 'destructive' });
-      return;
+    const allowed = checkPlanPermission('permissions.manage');
+    if (!allowed) {
+      toast({ title: 'وضع القراءة فقط', description: 'يمكنك عرض الصلاحيات. للحفظ، يلزم ترقية الخطة.', variant: 'default' });
     }
     setSelectedRole(role);
     setOpenEdit(true);
