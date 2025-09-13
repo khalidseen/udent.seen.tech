@@ -1,11 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserCog, Plus, Edit, Shield } from "lucide-react";
+import { CreateRoleDialog } from "@/components/admin/CreateRoleDialog";
+import { SecuritySettingsDialog } from "@/components/admin/SecuritySettingsDialog";
+import { useSubscriptionPermissions } from "@/hooks/useSubscriptionPermissions";
+import { useToast } from "@/hooks/use-toast";
 
 const AdvancedPermissionsManagement = () => {
+  const [openCreate, setOpenCreate] = useState(false);
+  const [openSecurity, setOpenSecurity] = useState(false);
+  const { checkPlanPermission } = useSubscriptionPermissions();
+  const { toast } = useToast();
+
+  const handleNewRoleClick = () => {
+    if (!checkPlanPermission('permissions.manage')) {
+      toast({
+        title: 'غير متاح في خطتك',
+        description: 'يرجى ترقية الخطة لتمكين إدارة الأدوار والصلاحيات',
+        variant: 'destructive'
+      });
+      return;
+    }
+    setOpenCreate(true);
+  };
+
+  const handleSecurityClick = () => setOpenSecurity(true);
+
   return (
     <PageContainer>
       <PageHeader 
@@ -15,11 +38,11 @@ const AdvancedPermissionsManagement = () => {
       
       <div className="space-y-6">
         <div className="flex gap-4">
-          <Button>
+          <Button onClick={handleNewRoleClick}>
             <Plus className="h-4 w-4 mr-2" />
             دور جديد
           </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleSecurityClick}>
             <Shield className="h-4 w-4 mr-2" />
             إعدادات الأمان
           </Button>
@@ -53,6 +76,10 @@ const AdvancedPermissionsManagement = () => {
             </Card>
           ))}
         </div>
+
+        {/* Dialogs */}
+        <CreateRoleDialog open={openCreate} onOpenChange={setOpenCreate} />
+        <SecuritySettingsDialog open={openSecurity} onOpenChange={setOpenSecurity} />
       </div>
     </PageContainer>
   );
