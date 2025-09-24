@@ -3075,6 +3075,16 @@ export type Database = {
         Args: { days_back?: number }
         Returns: Json
       }
+      get_clinic_stats_batch: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          appointment_count: number
+          clinic_id: string
+          clinic_name: string
+          patient_count: number
+          user_count: number
+        }[]
+      }
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
         Returns: {
