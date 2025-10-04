@@ -47,20 +47,27 @@ export function ClinicsManagement() {
 
       if (error) throw error;
 
-      // Fetch batch stats for all clinics at once
-      const { data: stats, error: statsError } = await supabase.rpc('get_clinic_stats_batch');
-      if (statsError) throw statsError;
+      // Get user and patient counts for each clinic
+      const clinicsWithCounts = await Promise.all(
+        (data || []).map(async (clinic) => {
+          const [userCountResult, patientCountResult] = await Promise.all([
+            supabase
+              .from('profiles')
+              .select('id', { count: 'exact' })
+              .eq('clinic_id', clinic.id),
+            supabase
+              .from('patients')
+              .select('id', { count: 'exact' })
+              .eq('clinic_id', clinic.id)
+          ]);
 
-      const statsMap = new Map((stats as any[] | null)?.map((s: any) => [s.clinic_id, s]) || []);
-
-      const clinicsWithCounts = (data || []).map((clinic) => {
-        const s: any | undefined = statsMap.get(clinic.id);
-        return {
-          ...clinic,
-          user_count: s?.user_count || 0,
-          patient_count: s?.patient_count || 0,
-        };
-      });
+          return {
+            ...clinic,
+            user_count: userCountResult.count || 0,
+            patient_count: patientCountResult.count || 0
+          };
+        })
+      );
 
       setClinics(clinicsWithCounts);
     } catch (error) {

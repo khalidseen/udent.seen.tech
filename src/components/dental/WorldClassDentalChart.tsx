@@ -204,11 +204,11 @@ export const WorldClassDentalChart: React.FC<EnhancedDentalChartProps> = ({
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span>التباين العالي</span>
-              <Switch checked={accessibilityOptions.highContrast} />
+              <Switch size="sm" checked={accessibilityOptions.highContrast} />
             </div>
             <div className="flex items-center justify-between text-xs">
               <span>قارئ الشاشة</span>
-              <Switch checked={accessibilityOptions.screenReader} />
+              <Switch size="sm" checked={accessibilityOptions.screenReader} />
             </div>
           </div>
         </div>

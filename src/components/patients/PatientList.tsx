@@ -10,8 +10,7 @@ import AddSamplePatientsButton from "./AddSamplePatientsButton";
 import PatientFilters, { PatientFilter } from "./PatientFilters";
 import PatientTableView from "./PatientTableView";
 import VirtualizedPatientList from "./VirtualizedPatientList";
-import { useEnhancedPatients, useEnhancedInvalidatePatients } from "@/hooks/useEnhancedPatients";
-import { useClinicId } from "@/hooks/usePatients";
+import { usePatients, useClinicId } from "@/hooks/usePatients";
 import { usePerformanceMonitor } from "@/hooks/usePerformanceMonitor";
 import { useDebounce } from "@/hooks/useDebounce";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,12 +18,10 @@ import { AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { withErrorBoundary } from "@/components/ui/error-boundary";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useOptimizedNavigation } from "@/hooks/useOptimizedNavigation";
 const PatientList = () => {
   const { t } = useLanguage();
   const { metrics } = usePerformanceMonitor('PatientList');
   const queryClient = useQueryClient();
-  const { navigateTo } = useOptimizedNavigation();
   
   // State management
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
@@ -48,9 +45,6 @@ const PatientList = () => {
   // Get clinic ID with React Query
   const { data: clinicId, isLoading: clinicLoading } = useClinicId();
 
-  // Enhanced invalidation hook
-  const { invalidateAll, forceSync } = useEnhancedInvalidatePatients();
-
   // Optimized search with debouncing
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -63,7 +57,7 @@ const PatientList = () => {
     error: patientsError,
     isError,
     refetch: refetchPatients
-  } = useEnhancedPatients({
+  } = usePatients({
     clinicId: clinicId || undefined,
     search: debouncedSearchQuery,
     limit: itemsPerPage,
@@ -141,47 +135,65 @@ const PatientList = () => {
   }, []);
 
   const handleEditPatient = useCallback((patientId: string) => {
-    navigateTo(`/patients/${patientId}`);
-  }, [navigateTo]);
+    window.location.href = `/patients/${patientId}`;
+  }, []);
 
   const handleTreatmentAdded = useCallback(() => {
     // Optionally refresh data or show success message
   }, []);
 
   const handlePatientAdded = useCallback(async () => {
-    console.log('👤 Patient added - triggering enhanced refresh');
     try {
-      setIsRefreshing(true);
-      setCurrentPage(1);
+      setIsRefreshing(true); // إظهار مؤشر التحديث
+      setCurrentPage(1); // Reset to first page when new patient is added
       
-      // Use enhanced invalidation
-      await forceSync();
+      // إبطال كاش المرضى لإجبار إعادة التحميل
+      await queryClient.invalidateQueries({ queryKey: ['patients'] });
+      
+      // إبطال أي كاش متعلق بالعيادة أيضاً
+      if (clinicId) {
+        await queryClient.invalidateQueries({ 
+          predicate: (query) => 
+            query.queryKey[0] === 'patients' && 
+            JSON.stringify(query.queryKey[1]).includes(clinicId)
+        });
+      }
+      
+      // إعادة تحميل البيانات بشكل صريح أيضاً
       await refetchPatients();
       
-      console.log('✅ Enhanced patient added refresh completed');
     } catch (error) {
-      console.error('❌ Enhanced patient added refresh failed:', error);
+      console.error('Error refreshing patients list:', error);
     } finally {
-      setIsRefreshing(false);
+      setIsRefreshing(false); // إخفاء مؤشر التحديث
     }
-  }, [forceSync, refetchPatients]);
+  }, [refetchPatients, queryClient, clinicId]);
 
   const handlePatientUpdated = useCallback(async () => {
-    console.log('👤 Patient updated - triggering enhanced refresh');
     try {
       setIsRefreshing(true);
       
-      // Use enhanced invalidation
-      await forceSync();
+      // إبطال كاش المرضى لإجبار إعادة التحميل
+      await queryClient.invalidateQueries({ queryKey: ['patients'] });
+      
+      // إبطال أي كاش متعلق بالعيادة أيضاً
+      if (clinicId) {
+        await queryClient.invalidateQueries({ 
+          predicate: (query) => 
+            query.queryKey[0] === 'patients' && 
+            JSON.stringify(query.queryKey[1]).includes(clinicId)
+        });
+      }
+      
+      // إعادة تحميل البيانات بشكل صريح أيضاً
       await refetchPatients();
       
-      console.log('✅ Enhanced patient updated refresh completed');
     } catch (error) {
-      console.error('❌ Enhanced patient updated refresh failed:', error);
+      console.error('Error refreshing patients list:', error);
     } finally {
       setIsRefreshing(false);
     }
-  }, [forceSync, refetchPatients]);
+  }, [refetchPatients, queryClient, clinicId]);
 
   const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);

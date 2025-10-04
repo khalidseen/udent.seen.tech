@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { offlineSupabase } from '@/lib/offline-supabase';
-import { offlineDB } from '@/lib/offline-db';
 import { globalCaches } from '@/lib/performance-optimizations';
 import { optimizedPatientQueries } from '@/lib/optimized-queries';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
@@ -57,52 +56,17 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
   
   console.log('🔍 Fetching patients with params:', { clinicId, search, limit, offset });
   
-  // Clear any stale offline data first
-  try {
-    if (!search || search.trim().length === 0) {
-      const staleOfflineData = await offlineSupabase.select('patients', {});
-      console.log('🗑️ Found stale offline data:', staleOfflineData.data?.length || 0);
-    }
-  } catch (e) {
-    console.warn('Could not check offline data:', e);
+  if (!clinicId) {
+    console.warn('⚠️ No clinic ID provided, returning empty data');
+    return { data: [], total: 0 };
   }
-  
+
   try {
-    // Determine if current user is super admin to control clinic filtering
-    const { data: { user } } = await supabase.auth.getUser();
-    let isSuperAdmin = false;
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      isSuperAdmin = profile?.role === 'super_admin';
-    }
-
-    console.log('🔍 User is super admin:', isSuperAdmin);
-
-    // Build query with conditional search to avoid empty-search issues
-    let query = supabase
+    // Use direct supabase query for now to bypass optimized queries
+    const { data: patientsData, error, count } = await supabase
       .from('patients')
-      .select('*', { count: 'exact' });
-
-    // Apply clinic filter only for non-super-admin users
-    if (!isSuperAdmin) {
-      if (!clinicId) {
-        console.warn('⚠️ No clinic ID for non-super-admin user, returning empty data');
-        return { data: [], total: 0 };
-      }
-      query = query.eq('clinic_id', clinicId);
-    } else {
-      console.log('🔐 Super admin detected - querying ALL patients across ALL clinics');
-    }
-
-    if (search && search.trim().length > 0) {
-      query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
-    }
-
-    const { data: patientsData, error, count } = await query
+      .select('*', { count: 'exact' })
+      .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -113,33 +77,15 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
 
     console.log('✅ Successfully fetched patients:', { count: patientsData?.length, total: count });
 
-    // تخزين البيانات الحديثة في الـ offline cache
-    if (patientsData && patientsData.length > 0) {
-      try {
-        // مسح البيانات القديمة أولاً
-        await offlineDB.clear('patients');
-        // إضافة البيانات الجديدة
-        for (const patient of patientsData) {
-          await offlineDB.put('patients', patient);
-        }
-      } catch (e) {
-        console.warn('⚠️ Failed to update offline cache:', e);
-      }
-    }
+    const enhancedPatients: Patient[] = patientsData?.map(patient => ({
+      ...patient,
+      address: patient.address || '',
+      medical_history: patient.medical_history || '',
+      financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
+      assigned_doctor: undefined
+    })) || [];
 
-  const enhancedPatients = ((patientsData?.map((patient: any) => ({
-    ...patient,
-    address: patient.address || '',
-    medical_history: patient.medical_history || '',
-    financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending'
-  })) || []) as unknown) as Patient[];
-
-  // Remove duplicates based on patient ID
-  const uniquePatients = enhancedPatients.filter((patient, index, self) => 
-    index === self.findIndex(p => p.id === patient.id)
-  );
-
-  return { data: uniquePatients, total: count || 0 };
+    return { data: enhancedPatients, total: count || 0 };
 
   } catch (error) {
     console.error('Error fetching patients:', error);
@@ -151,20 +97,15 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
         order: { column: 'created_at', ascending: false }
       });
 
-    const fallbackPatients: Patient[] = patientsResult.data?.map(patient => ({
-      ...patient,
-      address: patient.address || '',
-      medical_history: patient.medical_history || '',
-      financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
-      assigned_doctor: undefined
-    })) || [];
+      const fallbackPatients: Patient[] = patientsResult.data?.map(patient => ({
+        ...patient,
+        address: patient.address || '',
+        medical_history: patient.medical_history || '',
+        financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
+        assigned_doctor: undefined
+      })) || [];
 
-    // Remove duplicates from fallback data too
-    const uniqueFallbackPatients = fallbackPatients.filter((patient, index, self) => 
-      index === self.findIndex(p => p.id === patient.id)
-    );
-
-    return { data: uniqueFallbackPatients, total: uniqueFallbackPatients.length };
+      return { data: fallbackPatients, total: fallbackPatients.length };
     } catch (offlineError) {
       console.error('Offline fallback failed:', offlineError);
       return { data: [], total: 0 };
@@ -176,13 +117,16 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
 export const usePatients = (params: PatientsQueryParams) => {
   const queryKey = ['patients', JSON.stringify(params)];
   
-  return useOptimizedQuery({
+  return useOptimizedQuery(
     queryKey,
-    queryFn: () => fetchPatients(params),
-    enabled: true, // Always enabled - super admins don't need clinic_id
-    staleTime: 2 * 60 * 1000,
-    gcTime: 10 * 60 * 1000,
-  });
+    () => fetchPatients(params),
+    {
+      enabled: !!params.clinicId,
+      staleTime: 2 * 60 * 1000,
+      cacheTime: 10 * 60 * 1000,
+      localCacheMinutes: 3
+    }
+  );
 };
 
 // Hook for getting current user's clinic ID
@@ -193,13 +137,13 @@ export const useClinicId = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return 'default-clinic-id'; // حل مؤقت للاختبار
       
-      const { data: profile } = await supabase
+      const { data: profiles } = await supabase
         .from('profiles')
-        .select('clinic_id')
+        .select('clinic_id, id')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .single();
       
-      return profile?.clinic_id || 'default-clinic-id';
+      return profiles?.clinic_id || profiles?.id || 'default-clinic-id';
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
@@ -213,17 +157,11 @@ export const useInvalidatePatients = () => {
   return {
     invalidateAll: () => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      queryClient.removeQueries({ queryKey: ['patients'] });
       globalCaches.patients.clear();
     },
     invalidateSpecific: (clinicId: string) => {
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
-      queryClient.removeQueries({ queryKey: ['patients'] });
-      globalCaches.patients.clear();
-    },
-    forceRefresh: () => {
-      queryClient.removeQueries({ queryKey: ['patients'] });
-      queryClient.invalidateQueries({ queryKey: ['patients'] });
+      queryClient.invalidateQueries({ queryKey: ['patients', { clinicId }] });
+      // Clear specific cache entries
       globalCaches.patients.clear();
     }
   };

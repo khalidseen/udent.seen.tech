@@ -199,7 +199,8 @@ const PublicBooking: React.FC = () => {
         notes: formData.notes
       };
 
-      await (AppointmentService as any).createAppointmentRequest(requestData as any);
+      // @ts-expect-error - Type will be fixed in service
+      await AppointmentService.createAppointmentRequest(requestData);
       setSuccess(true);
       setCurrentStep(BookingStep.CONFIRMATION);
     } catch (error) {

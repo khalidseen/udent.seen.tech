@@ -65,11 +65,6 @@ export interface ToothRecord {
     follow_up_date?: string;
   };
   
-  // إضافة خصائص مطلوبة للمكونات
-  imageUrl?: string;
-  imageData?: string;
-  priority?: PriorityLevel;
-  
   created_at: string;
   updated_at: string;
 }

@@ -492,87 +492,6 @@ export type Database = {
         }
         Relationships: []
       }
-      clinic_specific_permissions: {
-        Row: {
-          clinic_id: string
-          created_at: string | null
-          expires_at: string | null
-          granted_at: string | null
-          granted_by: string | null
-          id: string
-          is_active: boolean
-          is_granted: boolean
-          permission_category: string
-          permission_key: string
-          reason: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          clinic_id: string
-          created_at?: string | null
-          expires_at?: string | null
-          granted_at?: string | null
-          granted_by?: string | null
-          id?: string
-          is_active?: boolean
-          is_granted?: boolean
-          permission_category: string
-          permission_key: string
-          reason?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          clinic_id?: string
-          created_at?: string | null
-          expires_at?: string | null
-          granted_at?: string | null
-          granted_by?: string | null
-          id?: string
-          is_active?: boolean
-          is_granted?: boolean
-          permission_category?: string
-          permission_key?: string
-          reason?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      clinic_subscription_usage: {
-        Row: {
-          clinic_id: string
-          created_at: string | null
-          current_count: number
-          id: string
-          last_reset_date: string | null
-          max_count: number
-          metric_type: string
-          updated_at: string | null
-        }
-        Insert: {
-          clinic_id: string
-          created_at?: string | null
-          current_count?: number
-          id?: string
-          last_reset_date?: string | null
-          max_count: number
-          metric_type: string
-          updated_at?: string | null
-        }
-        Update: {
-          clinic_id?: string
-          created_at?: string | null
-          current_count?: number
-          id?: string
-          last_reset_date?: string | null
-          max_count?: number
-          metric_type?: string
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
       clinical_attachments: {
         Row: {
           category: string | null
@@ -1553,22 +1472,15 @@ export type Database = {
           blood_type: string | null
           clinic_id: string
           created_at: string
-          created_by_id: string | null
-          created_by_name: string | null
-          created_by_role: string | null
           date_of_birth: string | null
           email: string | null
           emergency_contact: string | null
           emergency_phone: string | null
-          financial_balance: number | null
           financial_status: string | null
           full_name: string
           gender: string | null
           id: string
           insurance_info: string | null
-          last_modified_by_id: string | null
-          last_modified_by_name: string | null
-          last_modified_by_role: string | null
           marital_status: string | null
           medical_condition: string | null
           medical_history: string | null
@@ -1585,22 +1497,15 @@ export type Database = {
           blood_type?: string | null
           clinic_id: string
           created_at?: string
-          created_by_id?: string | null
-          created_by_name?: string | null
-          created_by_role?: string | null
           date_of_birth?: string | null
           email?: string | null
           emergency_contact?: string | null
           emergency_phone?: string | null
-          financial_balance?: number | null
           financial_status?: string | null
           full_name: string
           gender?: string | null
           id?: string
           insurance_info?: string | null
-          last_modified_by_id?: string | null
-          last_modified_by_name?: string | null
-          last_modified_by_role?: string | null
           marital_status?: string | null
           medical_condition?: string | null
           medical_history?: string | null
@@ -1617,22 +1522,15 @@ export type Database = {
           blood_type?: string | null
           clinic_id?: string
           created_at?: string
-          created_by_id?: string | null
-          created_by_name?: string | null
-          created_by_role?: string | null
           date_of_birth?: string | null
           email?: string | null
           emergency_contact?: string | null
           emergency_phone?: string | null
-          financial_balance?: number | null
           financial_status?: string | null
           full_name?: string
           gender?: string | null
           id?: string
           insurance_info?: string | null
-          last_modified_by_id?: string | null
-          last_modified_by_name?: string | null
-          last_modified_by_role?: string | null
           marital_status?: string | null
           medical_condition?: string | null
           medical_history?: string | null
@@ -1933,7 +1831,6 @@ export type Database = {
           current_clinic_role:
             | Database["public"]["Enums"]["user_role_type"]
             | null
-          dashboard_link_validation_dismissed: boolean | null
           full_name: string
           id: string
           role: string
@@ -1947,7 +1844,6 @@ export type Database = {
           current_clinic_role?:
             | Database["public"]["Enums"]["user_role_type"]
             | null
-          dashboard_link_validation_dismissed?: boolean | null
           full_name: string
           id?: string
           role?: string
@@ -1961,7 +1857,6 @@ export type Database = {
           current_clinic_role?:
             | Database["public"]["Enums"]["user_role_type"]
             | null
-          dashboard_link_validation_dismissed?: boolean | null
           full_name?: string
           id?: string
           role?: string
@@ -2408,42 +2303,6 @@ export type Database = {
         }
         Relationships: []
       }
-      subscription_plan_features: {
-        Row: {
-          created_at: string | null
-          feature_config: Json | null
-          feature_key: string
-          feature_limit: number | null
-          feature_name: string
-          feature_name_ar: string
-          id: string
-          is_enabled: boolean
-          plan_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          feature_config?: Json | null
-          feature_key: string
-          feature_limit?: number | null
-          feature_name: string
-          feature_name_ar: string
-          id?: string
-          is_enabled?: boolean
-          plan_id: string
-        }
-        Update: {
-          created_at?: string | null
-          feature_config?: Json | null
-          feature_key?: string
-          feature_limit?: number | null
-          feature_name?: string
-          feature_name_ar?: string
-          id?: string
-          is_enabled?: boolean
-          plan_id?: string
-        }
-        Relationships: []
-      }
       subscription_plans: {
         Row: {
           created_at: string
@@ -2708,48 +2567,6 @@ export type Database = {
         }
         Relationships: []
       }
-      tooth_records: {
-        Row: {
-          clinic_id: string
-          clinical_measurements: Json
-          created_at: string
-          diagnosis: Json
-          id: string
-          notes: Json
-          patient_id: string
-          roots: Json
-          surfaces: Json
-          tooth_number: string
-          updated_at: string
-        }
-        Insert: {
-          clinic_id: string
-          clinical_measurements?: Json
-          created_at?: string
-          diagnosis?: Json
-          id?: string
-          notes?: Json
-          patient_id: string
-          roots?: Json
-          surfaces?: Json
-          tooth_number: string
-          updated_at?: string
-        }
-        Update: {
-          clinic_id?: string
-          clinical_measurements?: Json
-          created_at?: string
-          diagnosis?: Json
-          id?: string
-          notes?: Json
-          patient_id?: string
-          roots?: Json
-          surfaces?: Json
-          tooth_number?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       tooth_treatment_history: {
         Row: {
           anesthesia_used: string[] | null
@@ -3004,15 +2821,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_patient_financial_status: {
-        Args: { patient_id_param: string }
-        Returns: {
-          balance_due: number
-          status: string
-          total_charges: number
-          total_payments: number
-        }[]
-      }
       can_manage_role: {
         Args: {
           manager_role: Database["public"]["Enums"]["user_role_type"]
@@ -3075,16 +2883,6 @@ export type Database = {
         Args: { days_back?: number }
         Returns: Json
       }
-      get_clinic_stats_batch: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          appointment_count: number
-          clinic_id: string
-          clinic_name: string
-          patient_count: number
-          user_count: number
-        }[]
-      }
       get_current_user_profile: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -3093,7 +2891,6 @@ export type Database = {
           current_clinic_role:
             | Database["public"]["Enums"]["user_role_type"]
             | null
-          dashboard_link_validation_dismissed: boolean | null
           full_name: string
           id: string
           role: string
@@ -3166,16 +2963,8 @@ export type Database = {
         Args: { permission_key_param: string; user_id_param: string }
         Returns: boolean
       }
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
       log_security_event: {
         Args: { details: Json; event_type: string }
-        Returns: undefined
-      }
-      set_dashboard_dismissed: {
-        Args: { p_profile_id: string; p_value: boolean }
         Returns: undefined
       }
       switch_user_clinic: {
@@ -3208,8 +2997,6 @@ export type Database = {
         | "assistant"
         | "accountant"
         | "owner"
-        | "receptionist"
-        | "secretary"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -3354,8 +3141,6 @@ export const Constants = {
         "assistant",
         "accountant",
         "owner",
-        "receptionist",
-        "secretary",
       ],
     },
   },

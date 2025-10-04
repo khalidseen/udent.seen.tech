@@ -20,6 +20,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { useUpdatePatientFinancials, useAddPatientCharges } from '@/hooks/usePatientFinancials';
 import { Patient } from '@/hooks/usePatients';
 import { useCurrency } from '@/hooks/useCurrency';
 import { useSharedFinancialData } from '@/hooks/useSharedFinancialData';
@@ -39,16 +40,16 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
   onClose,
 }) => {
   const navigate = useNavigate();
-  const { currentCurrency, formatAmount } = useCurrency();
   const [activeTab, setActiveTab] = useState<'payment' | 'charges' | 'history'>('payment');
   const [paymentAmount, setPaymentAmount] = useState<string>('');
   const [paymentNote, setPaymentNote] = useState<string>('');
   const [chargeAmount, setChargeAmount] = useState<string>('');
   const [chargeDescription, setChargeDescription] = useState<string>('');
   const [newStatus, setNewStatus] = useState<'paid' | 'pending' | 'overdue' | 'partial'>('pending');
-  const [isSubmittingPayment, setIsSubmittingPayment] = useState(false);
-  const [isSubmittingCharge, setIsSubmittingCharge] = useState(false);
 
+  const updateFinancials = useUpdatePatientFinancials();
+  const addCharges = useAddPatientCharges();
+  const { formatAmount, currentCurrency } = useCurrency();
   
   // استخدام الـ hook المشترك للبيانات المالية
   const { 
@@ -85,18 +86,20 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
       return;
     }
 
-    setIsSubmittingPayment(true);
-    try {
-      // محاكاة تسجيل الدفعة - سيتم استبداله عند ربط الجداول
-      toast.success('تم تسجيل الدفعة بنجاح');
-      // تحديث البيانات المالية المشتركة
-      refreshFinancialData();
-      setPaymentAmount('');
-      setPaymentNote('');
-      onClose();
-    } finally {
-      setIsSubmittingPayment(false);
-    }
+    await updateFinancials.mutateAsync({
+      patientId: patient.id,
+      financial_status: newStatus,
+      financial_balance: currentBalance - Number(paymentAmount),
+      payment_amount: Number(paymentAmount),
+      payment_note: paymentNote
+    });
+
+    // تحديث البيانات المالية المشتركة
+    refreshFinancialData();
+
+    setPaymentAmount('');
+    setPaymentNote('');
+    onClose();
   };
 
   const handleAddCharges = async () => {
@@ -110,18 +113,18 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
       return;
     }
 
-    setIsSubmittingCharge(true);
-    try {
-      // محاكاة إضافة رسوم - سيتم استبداله عند ربط الجداول
-      toast.success('تمت إضافة الرسوم بنجاح');
-      // تحديث البيانات المالية المشتركة
-      refreshFinancialData();
-      setChargeAmount('');
-      setChargeDescription('');
-      onClose();
-    } finally {
-      setIsSubmittingCharge(false);
-    }
+    await addCharges.mutateAsync({
+      patientId: patient.id,
+      amount: Number(chargeAmount),
+      description: chargeDescription
+    });
+
+    // تحديث البيانات المالية المشتركة
+    refreshFinancialData();
+
+    setChargeAmount('');
+    setChargeDescription('');
+    onClose();
   };
 
   return (
@@ -253,11 +256,11 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
               </Button>
               <Button 
                 onClick={handlePayment}
-                disabled={isSubmittingPayment}
+                disabled={updateFinancials.isPending}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <Receipt className="h-4 w-4 ml-2" />
-                {isSubmittingPayment ? 'جاري التسجيل...' : 'تسجيل الدفعة'}
+                {updateFinancials.isPending ? 'جاري التسجيل...' : 'تسجيل الدفعة'}
               </Button>
             </div>
           </div>
@@ -308,11 +311,11 @@ const FinancialStatusDialog: React.FC<FinancialStatusDialogProps> = ({
               </Button>
               <Button 
                 onClick={handleAddCharges}
-                disabled={isSubmittingCharge}
+                disabled={addCharges.isPending}
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 <Plus className="h-4 w-4 ml-2" />
-                {isSubmittingCharge ? 'جاري الإضافة...' : 'إضافة الرسوم'}
+                {addCharges.isPending ? 'جاري الإضافة...' : 'إضافة الرسوم'}
               </Button>
             </div>
           </div>

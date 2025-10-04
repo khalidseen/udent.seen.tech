@@ -75,7 +75,7 @@ const AddPatientPopup = ({ open, onOpenChange, onPatientAdded }: AddPatientPopup
     setLoading(true);
 
     try {
-      await offlineSupabase.insert('patients', formData);
+      await offlineSupabase.addPatient(formData);
       toast.success('تم إضافة المريض بنجاح');
 
       resetForm();

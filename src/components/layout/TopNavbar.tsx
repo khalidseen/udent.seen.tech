@@ -31,7 +31,6 @@ import { ar } from "date-fns/locale";
 import { ClinicSwitcher } from "../clinic/ClinicSwitcher";
 import AddPatientPopup from "@/components/patients/AddPatientPopup";
 import AddAppointmentPopup from "@/components/appointments/AddAppointmentPopup";
-import { useOptimizedNavigation } from "@/hooks/useOptimizedNavigation";
 
 interface UpcomingAppointment {
   id: string;
@@ -60,7 +59,6 @@ export function TopNavbar() {
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { hasPermission, getPrimaryRole } = usePermissions();
-  const { navigateTo, refreshCurrentPage } = useOptimizedNavigation();
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -160,7 +158,7 @@ export function TopNavbar() {
   };
 
   const handleRefresh = () => {
-    refreshCurrentPage();
+    window.location.reload();
   };
 
   // Search functionality
@@ -219,12 +217,12 @@ export function TopNavbar() {
 
   const handleRoleChange = (role: string) => {
     localStorage.setItem('dev_override_role', role);
-    refreshCurrentPage();
+    window.location.reload();
   };
 
   const handleRoleReset = () => {
     localStorage.removeItem('dev_override_role');
-    refreshCurrentPage();
+    window.location.reload();
   };
 
   return (
@@ -397,7 +395,7 @@ export function TopNavbar() {
             <ClinicSwitcher />
 
             {/* أدوات المطورين */}
-            {(hasPermission('system.manage') || getPrimaryRole()?.role_name === 'super_admin' || import.meta.env.DEV) && (
+            {(hasPermission('system.manage') || getPrimaryRole()?.role_name === 'super_admin' || process.env.NODE_ENV === 'development') && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button 
@@ -557,13 +555,13 @@ export function TopNavbar() {
                 <DropdownMenuSeparator />
                 
                 <DropdownMenuItem 
-                  onClick={() => navigateTo('/profile')}
+                  onClick={() => window.location.href = '/profile'}
                   className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-cyan-50 dark:hover:from-blue-950 dark:hover:to-cyan-950 transition-all duration-200 rounded-lg mx-1 my-1"
                 >
                   👤 الملف الشخصي
                 </DropdownMenuItem>
                 <DropdownMenuItem 
-                  onClick={() => navigateTo('/settings')}
+                  onClick={() => window.location.href = '/settings'}
                   className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-slate-50 dark:hover:from-gray-950 dark:hover:to-slate-950 transition-all duration-200 rounded-lg mx-1 my-1"
                 >
                   ⚙️ الإعدادات
@@ -630,7 +628,7 @@ export function TopNavbar() {
                                  hover:border-blue-300 dark:hover:border-blue-600
                                  transition-all duration-200 cursor-pointer hover:shadow-lg"
                       onClick={() => {
-                        navigateTo(result.url);
+                        window.location.href = result.url;
                         setIsSearchDialogOpen(false);
                       }}
                     >

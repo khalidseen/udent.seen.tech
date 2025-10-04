@@ -9,30 +9,37 @@ import FinancialTestComponent from './FinancialTestComponent';
 import FinancialStatusDialog from '../patients/FinancialStatusDialog';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { TestTube, Users, Search, Activity } from 'lucide-react';
-import type { Patient } from '@/hooks/usePatients';
+
+interface Patient {
+  id: string;
+  full_name: string;
+  phone?: string;
+  financial_status?: string;
+  financial_balance?: number;
+}
 
 const FinancialIntegrationTest: React.FC = () => {
   const [selectedPatientId, setSelectedPatientId] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [financialDialogOpen, setFinancialDialogOpen] = useState(false);
-  const { user, loading, fetchCurrentUser } = useCurrentUser();
+  const { profile } = useCurrentUser();
 
   // جلب المرضى
   const { data: patients = [], isLoading: patientsLoading } = useQuery({
-    queryKey: ["patients-for-financial-test", user?.id],
+    queryKey: ["patients-for-financial-test", profile?.id],
     queryFn: async () => {
-      if (!user?.id) return [];
+      if (!profile?.id) return [];
       
       const { data, error } = await supabase
         .from("patients")
-        .select("*")
-        .eq("clinic_id", user.id)
+        .select("id, full_name, phone, financial_status, financial_balance")
+        .eq("clinic_id", profile.id)
         .order("full_name");
 
       if (error) throw error;
       return data as Patient[];
     },
-    enabled: !!user?.id
+    enabled: !!profile?.id
   });
 
   const filteredPatients = patients.filter(patient =>
@@ -161,7 +168,7 @@ const FinancialIntegrationTest: React.FC = () => {
       {/* حوار الحالة المالية */}
       {selectedPatient && (
         <FinancialStatusDialog
-          patient={selectedPatient as Patient}
+          patient={selectedPatient}
           isOpen={financialDialogOpen}
           onClose={() => setFinancialDialogOpen(false)}
         />

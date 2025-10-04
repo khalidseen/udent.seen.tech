@@ -24,24 +24,15 @@ export const useDoctors = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('profiles' as any)
-        .select('id, full_name, role')
-        .in('role', ['doctor', 'dentist', 'specialist', 'clinic_owner'] as any)
+        .from('profiles')
+        .select('*')
+        .in('role', ['doctor', 'dentist', 'specialist', 'clinic_owner'])
+        .eq('active', true)
         .order('full_name');
 
       if (error) throw error;
 
-      const mapped: Doctor[] = (data || []).map((row: any) => ({
-        id: row.id,
-        full_name: row.full_name || 'طبيب',
-        email: row.email || '',
-        phone: row.phone || undefined,
-        specialization: row.specialization || undefined,
-        role: row.role || 'doctor',
-        profile_picture_url: row.profile_picture_url || undefined,
-      }));
-
-      setDoctors(mapped);
+      setDoctors(data || []);
     } catch (err) {
       console.error('خطأ في جلب الأطباء:', err);
       setError('فشل في جلب قائمة الأطباء');

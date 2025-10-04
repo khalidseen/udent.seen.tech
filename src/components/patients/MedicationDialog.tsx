@@ -20,84 +20,114 @@ import {
   Calendar,
   Trash2
 } from 'lucide-react';
-import type { Patient } from '@/hooks/usePatients';
-import { calculateAge } from './PatientUtils';
+import { Patient } from '@/hooks/usePatients';
 import { useToast } from '@/hooks/use-toast';
 
-// تعديل نوع المريض لإضافة العمر
-interface PatientWithAge extends Patient {
-  age?: number;
-}
-
 interface MedicationDialogProps {
-  patient: PatientWithAge;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  patient: Patient;
 }
 
-const MedicationDialog: React.FC<MedicationDialogProps> = ({ patient, open, onOpenChange }) => {
+interface Medication {
+  id: string;
+  name: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  notes?: string;
+  startDate: string;
+  endDate?: string;
+  isActive: boolean;
+}
+
+const MedicationDialog: React.FC<MedicationDialogProps> = ({
+  open,
+  onOpenChange,
+  patient
+}) => {
   const { toast } = useToast();
-  const [medications, setMedications] = useState([
+  const [medications, setMedications] = useState<Medication[]>([
     {
       id: '1',
       name: 'أموكسيسيلين',
       dosage: '500 مجم',
-      frequency: 'ثلاث مرات يومياً',
+      frequency: '3 مرات يومياً',
       duration: '7 أيام',
-      instructions: 'يؤخذ مع الطعام',
-      status: 'active'
+      notes: 'بعد الأكل',
+      startDate: '2024-01-15',
+      endDate: '2024-01-22',
+      isActive: true
+    },
+    {
+      id: '2',
+      name: 'إيبوبروفين',
+      dosage: '400 مجم',
+      frequency: 'عند الحاجة',
+      duration: 'حسب الحاجة',
+      notes: 'للألم والالتهاب',
+      startDate: '2024-01-15',
+      isActive: true
     }
   ]);
 
+  const [showAddForm, setShowAddForm] = useState(false);
   const [newMedication, setNewMedication] = useState({
     name: '',
     dosage: '',
     frequency: '',
     duration: '',
-    instructions: '',
-    status: 'active'
+    notes: '',
+    startDate: new Date().toISOString().split('T')[0]
   });
 
-  const [showAddForm, setShowAddForm] = useState(false);
-
-  const addMedication = () => {
-    if (!newMedication.name || !newMedication.dosage) {
+  const handleAddMedication = () => {
+    if (!newMedication.name || !newMedication.dosage || !newMedication.frequency) {
       toast({
         title: "خطأ",
-        description: "يرجى إدخال اسم الدواء والجرعة",
+        description: "يرجى ملء الحقول المطلوبة",
         variant: "destructive"
       });
       return;
     }
 
-    const medication = {
+    const medication: Medication = {
+      id: Date.now().toString(),
       ...newMedication,
-      id: Date.now().toString()
+      isActive: true
     };
 
-    setMedications([...medications, medication]);
+    setMedications(prev => [...prev, medication]);
     setNewMedication({
       name: '',
       dosage: '',
       frequency: '',
       duration: '',
-      instructions: '',
-      status: 'active'
+      notes: '',
+      startDate: new Date().toISOString().split('T')[0]
     });
     setShowAddForm(false);
 
     toast({
-      title: "تم الإضافة",
+      title: "تم بنجاح",
       description: "تم إضافة الدواء بنجاح"
     });
   };
 
-  const removeMedication = (id: string) => {
-    setMedications(medications.filter(med => med.id !== id));
+  const handleRemoveMedication = (id: string) => {
+    setMedications(prev => prev.filter(med => med.id !== id));
     toast({
       title: "تم الحذف",
-      description: "تم حذف الدواء"
+      description: "تم حذف الدواء بنجاح"
     });
+  };
+
+  const toggleMedicationStatus = (id: string) => {
+    setMedications(prev => 
+      prev.map(med => 
+        med.id === id ? { ...med, isActive: !med.isActive } : med
+      )
+    );
   };
 
   return (
@@ -105,7 +135,7 @@ const MedicationDialog: React.FC<MedicationDialogProps> = ({ patient, open, onOp
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Pill className="w-5 h-5 text-blue-600" />
+            <Pill className="h-5 w-5 text-blue-600" />
             إدارة الأدوية - {patient.full_name}
           </DialogTitle>
         </DialogHeader>
@@ -124,188 +154,201 @@ const MedicationDialog: React.FC<MedicationDialogProps> = ({ patient, open, onOp
                 </div>
                 <div>
                   <Label className="text-sm font-medium">العمر</Label>
-                  <p className="text-sm text-muted-foreground">العمر: {patient?.age || calculateAge(patient?.date_of_birth) || 'غير محدد'} سنة</p>
+                  <p className="text-sm">{patient.age} سنة</p>
                 </div>
                 <div>
                   <Label className="text-sm font-medium">الهاتف</Label>
                   <p className="text-sm">{patient.phone || 'غير محدد'}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">الحالة</Label>
-                  <Badge variant="outline">{patient.patient_status}</Badge>
+                  <Label className="text-sm font-medium">عدد الأدوية النشطة</Label>
+                  <p className="text-sm font-bold text-blue-600">
+                    {medications.filter(med => med.isActive).length}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* الأدوية الحالية */}
+          {/* قائمة الأدوية الحالية */}
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">الأدوية الحالية</CardTitle>
-              <Button
-                onClick={() => setShowAddForm(!showAddForm)}
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                إضافة دواء
-              </Button>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">الأدوية الحالية</CardTitle>
+                <Button
+                  onClick={() => setShowAddForm(true)}
+                  size="sm"
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  إضافة دواء
+                </Button>
+              </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {/* قائمة الأدوية */}
+            <CardContent>
               {medications.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">لا توجد أدوية مسجلة</p>
+                <div className="text-center py-8 text-gray-500">
+                  <Pill className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>لا توجد أدوية مسجلة بعد</p>
+                </div>
               ) : (
-                <div className="grid gap-4">
+                <div className="space-y-4">
                   {medications.map((medication) => (
-                    <div
-                      key={medication.id}
-                      className="p-4 border rounded-lg bg-muted/50"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="space-y-2 flex-1">
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-semibold">{medication.name}</h4>
-                            <Badge variant={medication.status === 'active' ? 'default' : 'secondary'}>
-                              {medication.status === 'active' ? 'نشط' : 'متوقف'}
-                            </Badge>
+                    <Card key={medication.id} className={`${!medication.isActive ? 'opacity-60' : ''}`}>
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 space-y-2">
+                            <div className="flex items-center gap-3">
+                              <h3 className="font-semibold text-lg">{medication.name}</h3>
+                              <Badge variant={medication.isActive ? "default" : "secondary"}>
+                                {medication.isActive ? 'نشط' : 'متوقف'}
+                              </Badge>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <Label className="text-xs text-gray-600">الجرعة</Label>
+                                <p className="font-medium">{medication.dosage}</p>
+                              </div>
+                              <div>
+                                <Label className="text-xs text-gray-600">التكرار</Label>
+                                <p className="font-medium">{medication.frequency}</p>
+                              </div>
+                              <div>
+                                <Label className="text-xs text-gray-600">المدة</Label>
+                                <p className="font-medium">{medication.duration}</p>
+                              </div>
+                              <div>
+                                <Label className="text-xs text-gray-600">تاريخ البدء</Label>
+                                <p className="font-medium">
+                                  {new Date(medication.startDate).toLocaleDateString('ar-SA')}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            {medication.notes && (
+                              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                                <div className="flex items-center gap-2 text-yellow-800">
+                                  <AlertCircle className="h-4 w-4" />
+                                  <span className="font-medium">ملاحظات</span>
+                                </div>
+                                <p className="text-sm text-yellow-700 mt-1">{medication.notes}</p>
+                              </div>
+                            )}
                           </div>
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <Label className="text-xs text-muted-foreground">الجرعة</Label>
-                              <p>{medication.dosage}</p>
-                            </div>
-                            <div>
-                              <Label className="text-xs text-muted-foreground">التكرار</Label>
-                              <p>{medication.frequency}</p>
-                            </div>
-                            <div>
-                              <Label className="text-xs text-muted-foreground">المدة</Label>
-                              <p>{medication.duration}</p>
-                            </div>
-                            <div>
-                              <Label className="text-xs text-muted-foreground">تعليمات</Label>
-                              <p>{medication.instructions || 'لا توجد تعليمات'}</p>
-                            </div>
+                          
+                          <div className="flex flex-col gap-2 ml-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleMedicationStatus(medication.id)}
+                            >
+                              {medication.isActive ? 'إيقاف' : 'تفعيل'}
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleRemoveMedication(medication.id)}
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeMedication(medication.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
+                      </CardContent>
+                    </Card>
                   ))}
                 </div>
               )}
-
-              {/* نموذج إضافة دواء جديد */}
-              {showAddForm && (
-                <div className="mt-6 p-4 border rounded-lg bg-background">
-                  <h4 className="font-semibold mb-4">إضافة دواء جديد</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="name">اسم الدواء *</Label>
-                      <Input
-                        id="name"
-                        value={newMedication.name}
-                        onChange={(e) => setNewMedication({...newMedication, name: e.target.value})}
-                        placeholder="مثال: أموكسيسيلين"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="dosage">الجرعة *</Label>
-                      <Input
-                        id="dosage"
-                        value={newMedication.dosage}
-                        onChange={(e) => setNewMedication({...newMedication, dosage: e.target.value})}
-                        placeholder="مثال: 500 مجم"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="frequency">التكرار</Label>
-                      <Input
-                        id="frequency"
-                        value={newMedication.frequency}
-                        onChange={(e) => setNewMedication({...newMedication, frequency: e.target.value})}
-                        placeholder="مثال: ثلاث مرات يومياً"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="duration">المدة</Label>
-                      <Input
-                        id="duration"
-                        value={newMedication.duration}
-                        onChange={(e) => setNewMedication({...newMedication, duration: e.target.value})}
-                        placeholder="مثال: 7 أيام"
-                      />
-                    </div>
-                    <div className="col-span-2">
-                      <Label htmlFor="instructions">تعليمات الاستخدام</Label>
-                      <Textarea
-                        id="instructions"
-                        value={newMedication.instructions}
-                        onChange={(e) => setNewMedication({...newMedication, instructions: e.target.value})}
-                        placeholder="مثال: يؤخذ مع الطعام، تجنب الحليب"
-                        rows={2}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button onClick={addMedication}>إضافة الدواء</Button>
-                    <Button variant="outline" onClick={() => setShowAddForm(false)}>
-                      إلغاء
-                    </Button>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
 
-          {/* تحذيرات وتنبيهات */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-yellow-600" />
-                تحذيرات وتنبيهات
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <h5 className="font-medium text-yellow-800 mb-1">تفاعل محتمل مع المضادات الحيوية</h5>
-                  <p className="text-sm text-yellow-700">
-                    يرجى التأكد من عدم تناول منتجات الألبان مع المضادات الحيوية
-                  </p>
+          {/* نموذج إضافة دواء جديد */}
+          {showAddForm && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">إضافة دواء جديد</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">اسم الدواء *</Label>
+                    <Input
+                      id="name"
+                      value={newMedication.name}
+                      onChange={(e) => setNewMedication(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="أدخل اسم الدواء"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="dosage">الجرعة *</Label>
+                    <Input
+                      id="dosage"
+                      value={newMedication.dosage}
+                      onChange={(e) => setNewMedication(prev => ({ ...prev, dosage: e.target.value }))}
+                      placeholder="مثل: 500 مجم"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="frequency">التكرار *</Label>
+                    <Input
+                      id="frequency"
+                      value={newMedication.frequency}
+                      onChange={(e) => setNewMedication(prev => ({ ...prev, frequency: e.target.value }))}
+                      placeholder="مثل: 3 مرات يومياً"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="duration">المدة</Label>
+                    <Input
+                      id="duration"
+                      value={newMedication.duration}
+                      onChange={(e) => setNewMedication(prev => ({ ...prev, duration: e.target.value }))}
+                      placeholder="مثل: 7 أيام"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="startDate">تاريخ البدء</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={newMedication.startDate}
+                      onChange={(e) => setNewMedication(prev => ({ ...prev, startDate: e.target.value }))}
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <Label htmlFor="notes">ملاحظات</Label>
+                    <Textarea
+                      id="notes"
+                      value={newMedication.notes}
+                      onChange={(e) => setNewMedication(prev => ({ ...prev, notes: e.target.value }))}
+                      placeholder="ملاحظات إضافية (اختياري)"
+                      rows={3}
+                    />
+                  </div>
                 </div>
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <h5 className="font-medium text-blue-800 mb-1">تذكير بالمتابعة</h5>
-                  <p className="text-sm text-blue-700">
-                    موعد مراجعة الأدوية بعد أسبوع من بدء العلاج
-                  </p>
+                
+                <Separator className="my-4" />
+                
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowAddForm(false)}
+                  >
+                    إلغاء
+                  </Button>
+                  <Button onClick={handleAddMedication}>
+                    إضافة الدواء
+                  </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="flex justify-end gap-2 mt-6">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            إغلاق
-          </Button>
-          <Button onClick={() => {
-            toast({
-              title: "تم الحفظ",
-              description: "تم حفظ تغييرات الأدوية بنجاح"
-            });
-            onOpenChange(false);
-          }}>
-            حفظ التغييرات
-          </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </DialogContent>
     </Dialog>
