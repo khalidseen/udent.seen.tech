@@ -18,9 +18,9 @@ import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 export const RATE_LIMIT_CONFIG = {
   // للمصادقة (تسجيل الدخول، التسجيل)
   AUTH: {
-    points: 5, // 5 محاولات
+    points: 20, // 20 محاولة (زيادة للتطوير)
     duration: 15 * 60, // خلال 15 دقيقة
-    blockDuration: 15 * 60, // حظر لمدة 15 دقيقة
+    blockDuration: 5 * 60, // حظر لمدة 5 دقائق فقط
   },
   
   // للـ API العامة
