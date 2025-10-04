@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, Key, Webhook, FileText, TrendingUp } from 'lucide-react';
+import { Activity, Key, Webhook, FileText, TrendingUp, BarChart3 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OverviewTab from '@/components/integrations/OverviewTab';
 import ApiKeysTab from '@/components/integrations/ApiKeysTab';
 import WebhooksTab from '@/components/integrations/WebhooksTab';
 import LogsTab from '@/components/integrations/LogsTab';
 import DocumentationTab from '@/components/integrations/DocumentationTab';
+import ClinicApiKeyManager from '@/components/integrations/ClinicApiKeyManager';
+import ClinicAnalyticsDashboard from '@/components/integrations/ClinicAnalyticsDashboard';
+import { useClinicContext } from '@/hooks/useClinicContext';
 
 interface ApiKey {
   id: string;
@@ -42,6 +45,7 @@ interface ApiLog {
 
 const Integrations = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const { currentClinic } = useClinicContext();
   
   // Mock data - في التطبيق الحقيقي، سيتم جلبها من API
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([
@@ -300,6 +304,14 @@ const Integrations = () => {
             apiLogs={apiLogs}
             stats={stats}
           />
+        </TabsContent>
+
+        <TabsContent value="analytics" className="mt-6">
+          <ClinicAnalyticsDashboard clinicId={currentClinic?.id || null} />
+        </TabsContent>
+
+        <TabsContent value="clinic-api" className="mt-6">
+          <ClinicApiKeyManager clinicId={currentClinic?.id || null} />
         </TabsContent>
 
         <TabsContent value="api-keys" className="mt-6">

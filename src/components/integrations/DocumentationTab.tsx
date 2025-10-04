@@ -223,9 +223,42 @@ print(data)`;
             <Database className="w-5 h-5" />
             نقاط النهاية الرئيسية
           </CardTitle>
+          <CardDescription>
+            استخدم هذه Endpoints للوصول لبيانات عيادتك من النظام التحليلي الخارجي
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Clinic Analytics Endpoints */}
+          <div className="space-y-2">
+            <h4 className="font-semibold text-primary">Clinic Analytics API</h4>
+            <p className="text-sm text-muted-foreground mb-4">
+              استخدم مفتاح API من تبويب "مفاتيح API" للوصول لهذه Endpoints
+            </p>
+          </div>
+
           <div className="space-y-3">
+            <div className="p-4 border rounded-lg bg-card">
+              <div className="flex items-center gap-3 mb-2">
+                <Badge className="bg-blue-100 text-blue-800">GET</Badge>
+                <code className="text-sm">/functions/v1/clinic-analytics</code>
+              </div>
+              <p className="text-sm text-muted-foreground mb-3">
+                الحصول على جميع احصائيات العيادة (مرضى، مواعيد، مالية، علاجات)
+              </p>
+              <div className="bg-muted p-3 rounded text-sm">
+                <p className="font-semibold mb-2">Parameters:</p>
+                <code>?clinic_id={'{your_clinic_id}'}</code>
+              </div>
+              <div className="mt-3">
+                <CodeBlock
+                  id="analytics-ex"
+                  language="bash"
+                  code={`curl -X GET "https://lxusbjpvcyjcfrnyselc.supabase.co/functions/v1/clinic-analytics?clinic_id=YOUR_CLINIC_ID" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`}
+                />
+              </div>
+            </div>
+
             <div className="p-4 border rounded-lg">
               <div className="flex items-center gap-3 mb-2">
                 <Badge className="bg-blue-100 text-blue-800">GET</Badge>
@@ -265,6 +298,50 @@ print(data)`;
               </div>
               <p className="text-sm text-muted-foreground">الحصول على الفواتير</p>
             </div>
+          </div>
+
+          {/* Response Example */}
+          <div className="mt-6">
+            <h4 className="font-semibold mb-3">مثال على الاستجابة (Response):</h4>
+            <CodeBlock
+              id="response-ex"
+              language="json"
+              code={`{
+  "success": true,
+  "clinic": {
+    "id": "uuid",
+    "name": "عيادة الأسنان المتقدمة",
+    "subscription_plan": "premium"
+  },
+  "analytics": {
+    "patients": {
+      "total": 1250,
+      "new_this_month": 45,
+      "active": 890
+    },
+    "appointments": {
+      "total": 3420,
+      "scheduled": 125,
+      "completed": 3100,
+      "cancelled": 195
+    },
+    "financials": {
+      "total_revenue": 450000,
+      "this_month_revenue": 38500,
+      "pending_invoices": 15
+    },
+    "treatments": {
+      "total_treatments": 2845,
+      "by_type": {
+        "تنظيف": 1200,
+        "حشو": 850,
+        "علاج جذور": 245
+      }
+    }
+  },
+  "timestamp": "2025-01-04T12:00:00Z"
+}`}
+            />
           </div>
         </CardContent>
       </Card>
