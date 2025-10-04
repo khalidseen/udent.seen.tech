@@ -32,10 +32,10 @@ export interface Patient {
   total_charges?: number;
   created_by_id?: string;
   created_by_name?: string;
-  created_by_role?: 'doctor' | 'assistant' | 'secretary' | 'admin' | 'super_admin';
+  created_by_role?: string;
   last_modified_by_id?: string;
   last_modified_by_name?: string;
-  last_modified_by_role?: 'doctor' | 'assistant' | 'secretary' | 'admin' | 'super_admin';
+  last_modified_by_role?: string;
   assigned_doctor?: {
     full_name: string;
   };
@@ -77,13 +77,13 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
 
     console.log('✅ Successfully fetched patients:', { count: patientsData?.length, total: count });
 
-    const enhancedPatients: Patient[] = patientsData?.map(patient => ({
+    const enhancedPatients: Patient[] = (patientsData?.map(patient => ({
       ...patient,
       address: patient.address || '',
       medical_history: patient.medical_history || '',
       financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
       assigned_doctor: undefined
-    })) || [];
+    })) || []) as Patient[];
 
     return { data: enhancedPatients, total: count || 0 };
 

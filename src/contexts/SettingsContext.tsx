@@ -113,7 +113,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
         }
 
         // استخدام RPC للقراءة الآمنة من قاعدة البيانات
-        // @ts-expect-error: RPC function exists after migration
         const { data: dismissedData, error: rpcError } = await supabase.rpc('get_dashboard_dismissed', { 
           p_profile_id: profile.id 
         });
@@ -162,7 +161,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       }
 
       // استخدام RPC function للتحديث الآمن
-      // @ts-expect-error: RPC function exists after migration but may not be in type definitions yet
       const { error } = await supabase.rpc('set_dashboard_dismissed', { 
         p_profile_id: profile.id, 
         p_value: value 
