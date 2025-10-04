@@ -21,20 +21,6 @@ export const useCurrentUser = () => {
     try {
       setLoading(true);
       
-      // تحقق من جلسة المدير التجريبية أولاً
-      const tempAdminSession = localStorage.getItem('temp_admin_session');
-      if (tempAdminSession) {
-        try {
-          const tempUser = JSON.parse(tempAdminSession);
-          setUser(tempUser);
-          console.log('🔓 استخدام صلاحيات تجريبية:', tempUser);
-          return;
-        } catch (error) {
-          console.error('خطأ في تحليل الجلسة التجريبية:', error);
-          localStorage.removeItem('temp_admin_session');
-        }
-      }
-      
       const { data: { user: authUser } } = await supabase.auth.getUser();
       
       if (!authUser) {

@@ -14,6 +14,7 @@ import { toast } from "sonner";
 // Layout components
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SimpleProtectedRoute } from "@/components/auth/SimpleProtectedRoute";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 // Auth page - NOT lazy loaded (must be immediate)
 import Auth from "@/pages/Auth";
@@ -146,6 +147,7 @@ function App() {
                   }}
                 >
                   <div className="min-h-screen bg-background">
+                  <ErrorBoundary>
                   <Suspense fallback={<PageLoader />}>
                   <Routes>
                   {/* Public routes */}
@@ -229,6 +231,7 @@ function App() {
                   <Route path="*" element={<NotFound />} />
                   </Routes>
                   </Suspense>
+                  </ErrorBoundary>
                   <Toaster />
                 </div>
               </BrowserRouter>

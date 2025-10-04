@@ -77,7 +77,7 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
     if (!user) return;
 
     try {
-      // System admin gets all permissions
+      // System admin gets all permissions via RPC (never direct table access)
       if (isSystemAdmin) {
         const cachedPermissions = permissionsCache.get('all_permissions');
         if (cachedPermissions) {
@@ -86,10 +86,8 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
           return;
         }
 
-        const { data: allPermissions } = await supabase
-          .from('permissions')
-          .select('*')
-          .eq('is_active', true);
+        // Use RPC instead of direct table access
+        const { data: allPermissions } = await supabase.rpc('get_user_effective_permissions');
         
         const formattedPermissions = allPermissions?.map((p: any) => ({
           permission_key: p.permission_key,

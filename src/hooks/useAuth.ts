@@ -14,18 +14,44 @@ export function useAuth() {
     let mounted = true;
     let initFlag = false;
     
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, currentSession) => {
+        console.log('🔄 Auth state changed:', event);
+        
+        if (mounted) {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          
+          if (event === 'SIGNED_IN') {
+            console.log('✅ User signed in:', currentSession?.user?.email);
+          } else if (event === 'SIGNED_OUT') {
+            console.log('👋 User signed out');
+          }
+          
+          // Mark as initialized on any auth event
+          if (!initFlag) {
+            setLoading(false);
+            setInitialized(true);
+            initFlag = true;
+          }
+        }
+      }
+    );
+    
+    // THEN check for existing session
     const initializeAuth = async () => {
       try {
-        console.log(' Initializing auth...');
+        console.log('🔐 Initializing auth...');
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error(' Error getting session:', error);
+          console.error('❌ Error getting session:', error);
           throw error;
         }
 
         if (mounted) {
-          console.log(' Session found:', currentSession ? ' Active' : ' None');
+          console.log('📋 Session found:', currentSession ? '✅ Active' : '❌ None');
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
           setLoading(false);
@@ -33,7 +59,7 @@ export function useAuth() {
           initFlag = true;
         }
       } catch (error) {
-        console.error(' Auth initialization error:', error);
+        console.error('❌ Auth initialization error:', error);
         if (mounted) {
           setSession(null);
           setUser(null);
@@ -46,26 +72,9 @@ export function useAuth() {
 
     initializeAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
-        console.log(' Auth state changed:', event);
-        
-        if (mounted) {
-          setSession(currentSession);
-          setUser(currentSession?.user ?? null);
-          
-          if (event === 'SIGNED_IN') {
-            console.log(' User signed in:', currentSession?.user?.email);
-          } else if (event === 'SIGNED_OUT') {
-            console.log(' User signed out');
-          }
-        }
-      }
-    );
-
     const timeoutId = setTimeout(() => {
       if (!initFlag && mounted) {
-        console.warn(' Auth initialization timeout - forcing completion');
+        console.warn('⚠️ Auth initialization timeout - forcing completion');
         setLoading(false);
         setInitialized(true);
       }

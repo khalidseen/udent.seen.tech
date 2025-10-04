@@ -10,8 +10,8 @@ interface SimpleProtectedRouteProps {
 export const SimpleProtectedRoute = ({ children }: SimpleProtectedRouteProps) => {
   const { user, loading, initialized } = useAuth();
 
-  console.log(' Protected Route State:', {
-    user: user ?  +user.email : ' None',
+  console.log('🔐 Protected Route State:', {
+    user: user ? '✅ ' + user.email : '❌ None',
     loading,
     initialized
   });
