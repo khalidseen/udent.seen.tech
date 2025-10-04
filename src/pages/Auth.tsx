@@ -9,12 +9,14 @@ import { Stethoscope, Eye, EyeOff, Clock, Mail, AlertCircle } from "lucide-react
 import { useRateLimiter } from "@/middleware/rateLimiter";
 import { RateLimitStatus, RateLimitError } from "@/components/system/RateLimitStatus";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Auth() {
   const { user, loading, initialized, signIn } = useAuth();
   const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [rateLimitBlocked, setRateLimitBlocked] = useState<{ blocked: boolean; waitTime?: number }>({ 
     blocked: false 
   });
@@ -64,7 +66,7 @@ export default function Auth() {
     );
   }
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // فحص Rate Limit أولاً
@@ -88,12 +90,45 @@ export default function Auth() {
     setIsSubmitting(true);
     
     try {
-      await signIn(loginForm.email, loginForm.password);
+      if (isSignUp) {
+        // Sign Up
+        const { error } = await signUp(loginForm.email, loginForm.password);
+        
+        if (error) {
+          toast({
+            title: "فشل التسجيل",
+            description: error.message,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "تم التسجيل بنجاح",
+            description: "يرجى التحقق من بريدك الإلكتروني لتأكيد حسابك",
+          });
+        }
+      } else {
+        // Sign In
+        await signIn(loginForm.email, loginForm.password);
+      }
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('Auth error:', error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const signUp = async (email: string, password: string) => {
+    const redirectUrl = `${window.location.origin}/`;
+    
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: redirectUrl
+      }
+    });
+    
+    return { error };
   };
 
   return (
@@ -109,13 +144,17 @@ export default function Auth() {
 
         <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="text-xl">مرحباً بعودتك</CardTitle>
+            <CardTitle className="text-xl">
+              {isSignUp ? "إنشاء حساب جديد" : "مرحباً بعودتك"}
+            </CardTitle>
             <CardDescription>
-              قم بتسجيل الدخول للوصول إلى نظام إدارة العيادة
+              {isSignUp 
+                ? "أنشئ حساباً جديداً للوصول إلى نظام إدارة العيادة" 
+                : "قم بتسجيل الدخول للوصول إلى نظام إدارة العيادة"}
             </CardDescription>
           </CardHeader>
               <CardContent>
-                <form onSubmit={handleLogin} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">البريد الإلكتروني</Label>
                     <div className="relative">
@@ -170,9 +209,25 @@ export default function Auth() {
                     className="w-full" 
                     disabled={isSubmitting || loading}
                   >
-                    {isSubmitting ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
+                    {isSubmitting 
+                      ? (isSignUp ? "جاري التسجيل..." : "جاري تسجيل الدخول...") 
+                      : (isSignUp ? "إنشاء حساب" : "تسجيل الدخول")}
                   </Button>
                 </form>
+
+                <div className="mt-4 text-center">
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => setIsSignUp(!isSignUp)}
+                    disabled={isSubmitting}
+                    className="text-sm text-muted-foreground hover:text-primary"
+                  >
+                    {isSignUp 
+                      ? "لديك حساب بالفعل؟ تسجيل الدخول" 
+                      : "ليس لديك حساب؟ إنشاء حساب جديد"}
+                  </Button>
+                </div>
 
                 <div className="mt-6 p-4 bg-muted/50 rounded-lg border border-border/50">
                   <div className="flex items-center gap-2 mb-2">
