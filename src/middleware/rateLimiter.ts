@@ -5,6 +5,7 @@
  * يحد من عدد الطلبات من IP واحد في فترة زمنية محددة
  */
 
+import React from 'react';
 import { RateLimiterMemory, RateLimiterRes } from 'rate-limiter-flexible';
 
 // ================================================
@@ -303,9 +304,9 @@ export const useRateLimiter = (limiterType: 'auth' | 'api' | 'sensitive' | 'heav
   /**
    * الحصول على معلومات Rate Limit
    */
-  const getInfo = async () => {
+  const getInfo = React.useCallback(async () => {
     return getRateLimitInfo(limiter);
-  };
+  }, [limiter]);
   
   /**
    * إعادة تعيين Rate Limit

@@ -113,15 +113,6 @@ export default function Auth() {
             <CardDescription>
               قم بتسجيل الدخول للوصول إلى نظام إدارة العيادة
             </CardDescription>
-            
-            {/* Rate Limit Status */}
-            <div className="mt-4">
-              <RateLimitStatus 
-                limiterType="auth" 
-                showProgress={true}
-                variant="card"
-              />
-            </div>
           </CardHeader>
               <CardContent>
                 <form onSubmit={handleLogin} className="space-y-4">
