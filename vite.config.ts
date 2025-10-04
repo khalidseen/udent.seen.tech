@@ -22,40 +22,61 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React chunks
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'query-vendor': ['@tanstack/react-query'],
-          'supabase-vendor': ['@supabase/supabase-js'],
-          
-          // UI chunks
-          'ui-vendor': [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-          ],
-          
-          // Chart vendor
-          'chart-vendor': ['recharts'],
-          
-          // Form vendor
-          'form-vendor': ['react-hook-form', 'zod'],
-          
-          // Date utilities
-          'date-vendor': ['date-fns'],
-          
-          // Icons
-          'icons-vendor': ['lucide-react'],
+        manualChunks: (id) => {
+          // Core dependencies - highest priority
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-core';
+            }
+            if (id.includes('react-router-dom')) {
+              return 'react-router';
+            }
+            if (id.includes('@tanstack/react-query')) {
+              return 'react-query';
+            }
+            if (id.includes('@supabase/supabase-js')) {
+              return 'supabase';
+            }
+            
+            // UI libraries
+            if (id.includes('@radix-ui')) {
+              return 'radix-ui';
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+            
+            // Charts and heavy libraries
+            if (id.includes('recharts') || id.includes('d3-')) {
+              return 'charts';
+            }
+            
+            // Form libraries
+            if (id.includes('react-hook-form') || id.includes('zod')) {
+              return 'forms';
+            }
+            
+            // Date utilities
+            if (id.includes('date-fns')) {
+              return 'date-utils';
+            }
+            
+            // All other node_modules
+            return 'vendor';
+          }
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
     },
-    chunkSizeWarningLimit: 800,
+    chunkSizeWarningLimit: 1000,
     sourcemap: false,
     reportCompressedSize: false,
+    assetsInlineLimit: 4096, // Inline assets smaller than 4kb
+    modulePreload: {
+      polyfill: true,
+    },
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
