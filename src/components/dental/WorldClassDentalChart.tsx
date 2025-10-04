@@ -197,18 +197,18 @@ export const WorldClassDentalChart: React.FC<EnhancedDentalChartProps> = ({
         </div>
 
         {/* إمكانيات الوصول */}
-        <div className="space-y-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
+          <div className="space-y-3 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg">
           <Label className="text-sm font-medium text-blue-800 dark:text-blue-200">
             إمكانيات الوصول
           </Label>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span>التباين العالي</span>
-              <Switch size="sm" checked={accessibilityOptions.highContrast} />
+              <Switch checked={accessibilityOptions.highContrast} />
             </div>
             <div className="flex items-center justify-between text-xs">
               <span>قارئ الشاشة</span>
-              <Switch size="sm" checked={accessibilityOptions.screenReader} />
+              <Switch checked={accessibilityOptions.screenReader} />
             </div>
           </div>
         </div>

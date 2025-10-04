@@ -5,7 +5,7 @@ import './index.css'
 import { setupGlobalErrorHandling } from './lib/error-handler'
 import { initializeMonitoring } from './services/monitoring'
 import { initializeDatabaseSchema } from './lib/database-init'
-import ErrorBoundary from './components/system/ErrorBoundary'
+// import ErrorBoundary from './components/system/ErrorBoundary'
 
 // 🔍 Initialize Error Monitoring (Sentry)
 initializeMonitoring();

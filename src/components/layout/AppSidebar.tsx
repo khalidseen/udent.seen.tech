@@ -397,7 +397,7 @@ export function AppSidebar() {
                       collapsed={isCollapsed} 
                       iconSize={getIconSize()} 
                       isActive={isActive(item.url)} 
-                      external={item.external} 
+                      external={'external' in item ? item.external : undefined} 
                     />
                   )}
                 </div>

@@ -84,7 +84,7 @@ const AdvancedUserManagement = lazy(() => import("@/pages/AdvancedUserManagement
 const ComprehensiveSecurityAudit = lazy(() => import("@/pages/ComprehensiveSecurityAudit"));
 const Dental3DModelsManagement = lazy(() => import("@/pages/Dental3DModelsManagement"));
 const EnhancedDentalChartDemo = lazy(() => import("@/pages/EnhancedDentalChartDemo"));
-const FinancialIntegrationTest = lazy(() => import("@/components/debug/FinancialIntegrationTest"));
+// const FinancialIntegrationTest = lazy(() => import("@/components/debug/FinancialIntegrationTest"));
 const Integrations = lazy(() => import("@/pages/Integrations"));
 
 // Initialize the offline database
