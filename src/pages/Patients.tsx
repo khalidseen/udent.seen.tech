@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, UserPlus, Search, Filter } from "lucide-react";
+import { Users, UserPlus, Search, Grid, List } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import PatientTableView from "@/components/patients/PatientTableView";
+import PatientCardsView from "@/components/patients/PatientCardsView";
+import PatientStatsCards from "@/components/patients/PatientStatsCards";
 import AddPatientDrawer from "@/components/patients/AddPatientDrawer";
 import AddTreatmentDialog from "@/components/patients/AddTreatmentDialog";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -39,6 +41,7 @@ interface PatientData {
 export default function Patients() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [addTreatmentDialogOpen, setAddTreatmentDialogOpen] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string>("");
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
@@ -94,12 +97,45 @@ export default function Patients() {
         description="إدارة معلومات المرضى والسجلات الطبية"
       />
 
-      <Card>
-        <CardHeader>
+      {/* إحصائيات المرضى */}
+      <PatientStatsCards
+        totalPatients={patients.length}
+        activePatients={patients.filter(p => p.patient_status === 'active').length}
+        inactivePatients={patients.filter(p => p.patient_status === 'inactive').length}
+        archivedPatients={patients.filter(p => p.patient_status === 'archived').length}
+      />
+
+      <Card className="border-border/60">
+        <CardHeader className="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <CardTitle className="text-2xl font-bold">قائمة المرضى</CardTitle>
+            <CardTitle className="text-2xl font-bold flex items-center gap-2">
+              <Users className="h-6 w-6" />
+              قائمة المرضى
+            </CardTitle>
             
             <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+              {/* أزرار التبديل بين العرضين */}
+              <div className="flex gap-1 border border-border rounded-lg p-1 bg-background">
+                <Button
+                  variant={viewMode === 'cards' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('cards')}
+                  className="gap-2"
+                >
+                  <Grid className="h-4 w-4" />
+                  مربعات
+                </Button>
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="gap-2"
+                >
+                  <List className="h-4 w-4" />
+                  جدول
+                </Button>
+              </div>
+
               <div className="relative flex-1 sm:flex-initial">
                 <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -112,7 +148,6 @@ export default function Patients() {
               
               <Button
                 onClick={() => {
-                  // سيتم فتح Dialog من AddPatientDrawer Component نفسه
                   document.getElementById('add-patient-trigger')?.click();
                 }}
                 className="gap-2"
@@ -161,6 +196,11 @@ export default function Patients() {
                     إضافة مريض
                   </Button>
                 </div>
+              ) : viewMode === 'cards' ? (
+                <PatientCardsView 
+                  patients={patients} 
+                  onAddTreatment={handleAddTreatment}
+                />
               ) : (
                 <PatientTableView 
                   patients={patients} 
@@ -170,24 +210,45 @@ export default function Patients() {
             </TabsContent>
 
             <TabsContent value="active">
-              <PatientTableView 
-                patients={patients.filter(p => p.patient_status === 'active')} 
-                onAddTreatment={handleAddTreatment}
-              />
+              {viewMode === 'cards' ? (
+                <PatientCardsView 
+                  patients={patients.filter(p => p.patient_status === 'active')} 
+                  onAddTreatment={handleAddTreatment}
+                />
+              ) : (
+                <PatientTableView 
+                  patients={patients.filter(p => p.patient_status === 'active')} 
+                  onAddTreatment={handleAddTreatment}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="inactive">
-              <PatientTableView 
-                patients={patients.filter(p => p.patient_status === 'inactive')} 
-                onAddTreatment={handleAddTreatment}
-              />
+              {viewMode === 'cards' ? (
+                <PatientCardsView 
+                  patients={patients.filter(p => p.patient_status === 'inactive')} 
+                  onAddTreatment={handleAddTreatment}
+                />
+              ) : (
+                <PatientTableView 
+                  patients={patients.filter(p => p.patient_status === 'inactive')} 
+                  onAddTreatment={handleAddTreatment}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="archived">
-              <PatientTableView 
-                patients={patients.filter(p => p.patient_status === 'archived')} 
-                onAddTreatment={handleAddTreatment}
-              />
+              {viewMode === 'cards' ? (
+                <PatientCardsView 
+                  patients={patients.filter(p => p.patient_status === 'archived')} 
+                  onAddTreatment={handleAddTreatment}
+                />
+              ) : (
+                <PatientTableView 
+                  patients={patients.filter(p => p.patient_status === 'archived')} 
+                  onAddTreatment={handleAddTreatment}
+                />
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
