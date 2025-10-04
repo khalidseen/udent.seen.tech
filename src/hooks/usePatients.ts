@@ -62,10 +62,14 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
   }
 
   try {
-    // Use direct supabase query for now to bypass optimized queries
+    // Optimized query: Select only needed columns
     const { data: patientsData, error, count } = await supabase
       .from('patients')
-      .select('*', { count: 'exact' })
+      .select(`
+        id, full_name, phone, email, date_of_birth, gender, 
+        national_id, patient_status, financial_status, financial_balance,
+        clinic_id, created_at
+      `, { count: 'exact' })
       .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -79,8 +83,8 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
 
     const enhancedPatients: Patient[] = (patientsData?.map(patient => ({
       ...patient,
-      address: patient.address || '',
-      medical_history: patient.medical_history || '',
+      address: '',
+      medical_history: '',
       financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
       assigned_doctor: undefined
     })) || []) as Patient[];

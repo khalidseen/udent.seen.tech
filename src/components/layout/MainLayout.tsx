@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { AppSidebar } from "./AppSidebar";
-import { TopNavbar } from "./TopNavbar";
+import { AppSidebarOptimized as AppSidebar } from "./AppSidebarOptimized";
+import { TopNavbarOptimized as TopNavbar } from "./TopNavbarOptimized";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";

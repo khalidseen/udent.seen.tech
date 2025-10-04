@@ -90,14 +90,14 @@ import { offlineDB } from "@/lib/offline-db";
 offlineDB.init().catch(console.error);
 
 // Create a client for React Query with optimized performance settings
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes - better caching
-      gcTime: 1000 * 60 * 30, // 30 minutes - longer cache retention
-      retry: 1, // Reduce retries for faster failures
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false, // Reduce unnecessary refetches
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 10, // 10 minutes - better caching
+        gcTime: 1000 * 60 * 60, // 60 minutes - longer cache retention
+        retry: 1, // Reduce retries for faster failures
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false, // Reduce unnecessary refetches
       refetchOnMount: false, // Don't refetch on component mount if data exists
       networkMode: 'offlineFirst', // Better offline support
     },

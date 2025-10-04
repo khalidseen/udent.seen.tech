@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { 
+import { useQuery } from "@tanstack/react-query";
+import {
   Bell, Moon, Sun, User, ChevronDown, Plus, Minus, RotateCcw, Calendar,
   Search, BarChart3, Zap, UserPlus, FileText, AlertCircle, Wifi, WifiOff,
   Building2, Check, Shield, X
@@ -73,12 +74,24 @@ export function TopNavbar() {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
-  const [todayStats, setTodayStats] = useState({
-    totalAppointments: 0,
-    completedAppointments: 0,
-    pendingAppointments: 0,
-    totalRevenue: 0
-  });
+  
+  // Get clinic ID from user profile
+  const [clinicId, setClinicId] = useState<string | null>(null);
+  
+  // Fetch clinic ID
+  useEffect(() => {
+    const fetchClinicId = async () => {
+      if (user) {
+        const { data } = await supabase
+          .from('profiles')
+          .select('clinic_id')
+          .eq('user_id', user.id)
+          .single();
+        setClinicId(data?.clinic_id || null);
+      }
+    };
+    fetchClinicId();
+  }, [user]);
 
   // Update current date every minute
   useEffect(() => {
@@ -112,42 +125,51 @@ export function TopNavbar() {
   }, []);
 
   // Fetch today's statistics
-  useEffect(() => {
-    const fetchTodayStats = async () => {
-      const today = new Date().toISOString().split('T')[0];
+  // Optimized: Fetch today's statistics using useQuery with minimal data
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const { data: todayStats } = useQuery({
+    queryKey: ['today-stats', clinicId],
+    queryFn: async () => {
+      const todayStr = today.toISOString().split('T')[0];
       
       try {
         const { data: appointments } = await supabase
           .from('appointments')
           .select('status')
-          .gte('appointment_date', `${today}T00:00:00`)
-          .lt('appointment_date', `${today}T23:59:59`);
+          .gte('appointment_date', `${todayStr}T00:00:00`)
+          .lt('appointment_date', `${todayStr}T23:59:59`);
         
         if (appointments) {
-          const stats = {
+          return {
             totalAppointments: appointments.length,
             completedAppointments: appointments.filter(apt => apt.status === 'completed').length,
             pendingAppointments: appointments.filter(apt => apt.status === 'scheduled').length,
             totalRevenue: 0
           };
-          setTodayStats(stats);
         }
-      } catch (error) {
-        console.error('Error fetching today stats:', error);
-        setTodayStats({
+        return {
           totalAppointments: 0,
           completedAppointments: 0,
           pendingAppointments: 0,
           totalRevenue: 0
-        });
+        };
+      } catch (error) {
+        console.error('Error fetching today stats:', error);
+        return {
+          totalAppointments: 0,
+          completedAppointments: 0,
+          pendingAppointments: 0,
+          totalRevenue: 0
+        };
       }
-    };
-
-    fetchTodayStats();
-    
-    const interval = setInterval(fetchTodayStats, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    },
+    enabled: !!clinicId,
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
+  });
 
   // Zoom control functions
   const handleZoomIn = () => {
@@ -535,10 +557,10 @@ export function TopNavbar() {
                   >
                     <BarChart3 className="h-4 w-4 text-green-600 dark:text-green-400" />
                     <span className="text-sm font-semibold text-green-700 dark:text-green-300">
-                      {todayStats.totalAppointments} مواعيد
+                      {todayStats?.totalAppointments || 0} مواعيد
                     </span>
                     <Badge variant="secondary" className="text-xs">
-                      {todayStats.completedAppointments} مكتمل
+                      {todayStats?.completedAppointments || 0} مكتمل
                     </Badge>
                   </Button>
                 </DropdownMenuTrigger>
@@ -547,19 +569,19 @@ export function TopNavbar() {
                     <h3 className="text-sm font-bold text-center border-b pb-3">📊 إحصائيات اليوم</h3>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 rounded-xl p-3 text-center">
-                        <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{todayStats.totalAppointments}</div>
+                        <div className="text-xl font-bold text-blue-600 dark:text-blue-400">{todayStats?.totalAppointments || 0}</div>
                         <div className="text-xs text-blue-500 dark:text-blue-300">إجمالي المواعيد</div>
                       </div>
                       <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 rounded-xl p-3 text-center">
-                        <div className="text-xl font-bold text-green-600 dark:text-green-400">{todayStats.completedAppointments}</div>
+                        <div className="text-xl font-bold text-green-600 dark:text-green-400">{todayStats?.completedAppointments || 0}</div>
                         <div className="text-xs text-green-500 dark:text-green-300">مكتملة</div>
                       </div>
                       <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950 dark:to-orange-900 rounded-xl p-3 text-center">
-                        <div className="text-xl font-bold text-orange-600 dark:text-orange-400">{todayStats.pendingAppointments}</div>
+                        <div className="text-xl font-bold text-orange-600 dark:text-orange-400">{todayStats?.pendingAppointments || 0}</div>
                         <div className="text-xs text-orange-500 dark:text-orange-300">في الانتظار</div>
                       </div>
                       <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 rounded-xl p-3 text-center">
-                        <div className="text-xl font-bold text-purple-600 dark:text-purple-400">{todayStats.totalRevenue}</div>
+                        <div className="text-xl font-bold text-purple-600 dark:text-purple-400">{todayStats?.totalRevenue || 0}</div>
                         <div className="text-xs text-purple-500 dark:text-purple-300">ر.س الإيرادات</div>
                       </div>
                     </div>
