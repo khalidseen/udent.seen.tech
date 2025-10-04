@@ -3020,6 +3020,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      can_manage_role_assignments: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       check_appointment_request_rate_limit: {
         Args: { ip_address: unknown }
         Returns: boolean
