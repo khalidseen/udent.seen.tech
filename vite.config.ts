@@ -22,48 +22,17 @@ export default defineConfig(({ mode }) => ({
     },
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Core dependencies - highest priority
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-core';
-            }
-            if (id.includes('react-router-dom')) {
-              return 'react-router';
-            }
-            if (id.includes('@tanstack/react-query')) {
-              return 'react-query';
-            }
-            if (id.includes('@supabase/supabase-js')) {
-              return 'supabase';
-            }
-            
-            // UI libraries
-            if (id.includes('@radix-ui')) {
-              return 'radix-ui';
-            }
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            
-            // Charts and heavy libraries
-            if (id.includes('recharts') || id.includes('d3-')) {
-              return 'charts';
-            }
-            
-            // Form libraries
-            if (id.includes('react-hook-form') || id.includes('zod')) {
-              return 'forms';
-            }
-            
-            // Date utilities
-            if (id.includes('date-fns')) {
-              return 'date-utils';
-            }
-            
-            // All other node_modules
-            return 'vendor';
-          }
+        manualChunks: {
+          // Critical: React must be in its own chunk and loaded first
+          'react': ['react', 'react-dom', 'react/jsx-runtime'],
+          'router': ['react-router-dom'],
+          'query': ['@tanstack/react-query'],
+          'supabase': ['@supabase/supabase-js'],
+          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          'icons': ['lucide-react'],
+          'charts': ['recharts'],
+          'forms': ['react-hook-form', 'zod'],
+          'utils': ['date-fns'],
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
