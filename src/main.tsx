@@ -89,8 +89,6 @@ const AppWrapper = process.env.NODE_ENV === 'development'
 
 root.render(
   <AppWrapper>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <App />
   </AppWrapper>
 );

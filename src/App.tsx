@@ -27,20 +27,20 @@ const PageLoader = () => (
 
 // Lazy-loaded Page components for better performance
 const Index = lazy(() => import("@/pages/Index"));
-const SimpleDashboard = lazy(() => import("@/pages/SimpleDashboard"));
+// const SimpleDashboard = lazy(() => import("@/pages/SimpleDashboard"));
 // Auth is imported directly above (not lazy)
-const Patients = lazy(() => import("@/pages/Patients"));
+// const Patients = lazy(() => import("@/pages/Patients"));
 const Appointments = lazy(() => import("@/pages/Appointments"));
 const NewAppointment = lazy(() => import("@/pages/NewAppointment"));
-const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
-const MedicalRecords = lazy(() => import("@/pages/MedicalRecords"));
+// const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
+// const MedicalRecords = lazy(() => import("@/pages/MedicalRecords"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Doctors = lazy(() => import("@/pages/Doctors"));
 const DoctorAssistants = lazy(() => import("@/pages/DoctorAssistants"));
 const Secretaries = lazy(() => import("@/pages/Secretaries"));
 const AppointmentRequests = lazy(() => import("@/pages/AppointmentRequests"));
-const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
-const PublicBookingLanding = lazy(() => import("@/pages/PublicBookingLanding"));
+// const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
+// const PublicBookingLanding = lazy(() => import("@/pages/PublicBookingLanding"));
 const Invoices = lazy(() => import("@/pages/Invoices"));
 const Payments = lazy(() => import("@/pages/Payments"));
 const Inventory = lazy(() => import("@/pages/Inventory"));
@@ -83,7 +83,7 @@ const AdvancedPermissionsManagement = lazy(() => import("@/pages/AdvancedPermiss
 const AdvancedUserManagement = lazy(() => import("@/pages/AdvancedUserManagement"));
 const ComprehensiveSecurityAudit = lazy(() => import("@/pages/ComprehensiveSecurityAudit"));
 const Dental3DModelsManagement = lazy(() => import("@/pages/Dental3DModelsManagement"));
-const EnhancedDentalChartDemo = lazy(() => import("@/pages/EnhancedDentalChartDemo"));
+// const EnhancedDentalChartDemo = lazy(() => import("@/pages/EnhancedDentalChartDemo"));
 // const FinancialIntegrationTest = lazy(() => import("@/components/debug/FinancialIntegrationTest"));
 const Integrations = lazy(() => import("@/pages/Integrations"));
 
@@ -149,24 +149,26 @@ function App() {
                   <Suspense fallback={<PageLoader />}>
                   <Routes>
                   {/* Public routes */}
-                  <Route path="/book" element={<PublicBookingLanding />} />
-                  <Route path="/book/:clinic" element={<PublicBooking />} />
+                  {/* <Route path="/book" element={<PublicBookingLanding />} /> */}
+                  {/* <Route path="/book/:clinic" element={<PublicBooking />} /> */}
                   <Route path="/auth" element={<Auth />} />
                   
                   {/* Protected routes with main layout */}
                   <Route path="/" element={
                     <SimpleProtectedRoute>
-                      <MainLayout />
+                      <MainLayout>
+                        <div />
+                      </MainLayout>
                     </SimpleProtectedRoute>
                   }>
-                    <Route index element={<SimpleDashboard />} />
-                    <Route path="dashboard-full" element={<Index />} />
-                    <Route path="patients" element={<Patients />} />
-                    <Route path="patients/:id" element={<PatientProfile />} />
+                    <Route index element={<Index />} />
+                    {/* <Route path="dashboard-full" element={<Index />} /> */}
+                    {/* <Route path="patients" element={<Patients />} /> */}
+                    {/* <Route path="patients/:id" element={<PatientProfile />} /> */}
                     <Route path="appointments" element={<Appointments />} />
                     <Route path="appointments/new" element={<NewAppointment />} />
                     <Route path="appointment-requests" element={<AppointmentRequests />} />
-                    <Route path="medical-records" element={<MedicalRecords />} />
+                    {/* <Route path="medical-records" element={<MedicalRecords />} /> */}
                     <Route path="smart-diagnosis" element={<SmartDiagnosis />} />
                     <Route path="ai-insights" element={<AIInsights />} />
                     <Route path="settings" element={<Settings />} />
@@ -208,16 +210,16 @@ function App() {
                      <Route path="ai-insights-page" element={<AIInsightsPage />} />
                      <Route path="advanced-notification-management" element={<AdvancedNotificationManagement />} />
                      <Route path="custom-notification-templates" element={<CustomNotificationTemplates />} />
-                     <Route path="detailed-reports" element={<DetailedReports />} />
-                     <Route path="advanced-permissions-management" element={<AdvancedPermissionsManagement />} />
-                     <Route path="advanced-user-management" element={<AdvancedUserManagement />} />
-                     <Route path="comprehensive-security-audit" element={<ComprehensiveSecurityAudit />} />
-                     <Route path="dental-3d-models-management" element={<Dental3DModelsManagement />} />
-                     <Route path="enhanced-dental-chart-demo" element={<EnhancedDentalChartDemo patientId="demo-patient-123" />} />
-                     <Route path="financial-integration-test" element={<FinancialIntegrationTest />} />
-                     
-                     <Route path="under-development" element={<UnderDevelopment />} />
-                     <Route path="splash-cursor-demo" element={<SplashCursorDemo />} />
+                      <Route path="detailed-reports" element={<DetailedReports />} />
+                      <Route path="advanced-permissions-management" element={<AdvancedPermissionsManagement />} />
+                      <Route path="advanced-user-management" element={<AdvancedUserManagement />} />
+                      <Route path="comprehensive-security-audit" element={<ComprehensiveSecurityAudit />} />
+                      <Route path="dental-3d-models-management" element={<Dental3DModelsManagement />} />
+                      {/* <Route path="enhanced-dental-chart-demo" element={<EnhancedDentalChartDemo patientId="demo-patient-123" />} /> */}
+                      {/* <Route path="financial-integration-test" element={<FinancialIntegrationTest />} /> */}
+                      
+                      <Route path="under-development" element={<UnderDevelopment />} />
+                      <Route path="splash-cursor-demo" element={<SplashCursorDemo />} />
                   </Route>
 
                   {/* Public demo routes */}
