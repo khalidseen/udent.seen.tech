@@ -28,9 +28,6 @@ const PageLoader = () => (
 
 // Lazy-loaded Page components for better performance
 const Index = lazy(() => import("@/pages/Index"));
-// const SimpleDashboard = lazy(() => import("@/pages/SimpleDashboard"));
-// Auth is imported directly above (not lazy)
-// const Patients = lazy(() => import("@/pages/Patients"));
 const Appointments = lazy(() => import("@/pages/Appointments"));
 const NewAppointment = lazy(() => import("@/pages/NewAppointment"));
 // const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
@@ -163,10 +160,7 @@ function App() {
                       </MainLayout>
                     </SimpleProtectedRoute>
                   }>
-                    <Route index element={<Index />} />
-                    {/* <Route path="dashboard-full" element={<Index />} /> */}
-                    {/* <Route path="patients" element={<Patients />} /> */}
-                    {/* <Route path="patients/:id" element={<PatientProfile />} /> */}
+                  <Route index element={<Index />} />
                     <Route path="appointments" element={<Appointments />} />
                     <Route path="appointments/new" element={<NewAppointment />} />
                     <Route path="appointment-requests" element={<AppointmentRequests />} />

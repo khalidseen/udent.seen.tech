@@ -95,7 +95,7 @@ serve(async (req) => {
     // Small delay to ensure trigger completion
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Create profile explicitly to ensure it exists
+    // Create profile explicitly to ensure it exists (without email field)
     console.log('Creating profile...');
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
