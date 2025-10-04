@@ -10,11 +10,13 @@ import { PermissionsProvider } from "@/contexts/PermissionsContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
 import { useEffect, lazy, Suspense } from "react";
 import { toast } from "sonner";
+import { performanceMonitor } from "@/lib/performance-monitor";
 
 // Layout components
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SimpleProtectedRoute } from "@/components/auth/SimpleProtectedRoute";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
+import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
 
 // Auth page - NOT lazy loaded (must be immediate)
 import Auth from "@/pages/Auth";
@@ -110,6 +112,9 @@ offlineDB.init().catch(console.error);
 
 function App() {
   useEffect(() => {
+    // Initialize performance monitoring
+    performanceMonitor.start('app-initialization');
+    
     // Listen for service worker updates
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
@@ -124,6 +129,20 @@ function App() {
         }
       });
     }
+
+    // Monitor memory usage in development
+    if (process.env.NODE_ENV === 'development') {
+      const memoryInterval = setInterval(() => {
+        const memory = performanceMonitor.getMemoryUsage();
+        if (memory && memory.usedPercentage > 90) {
+          console.warn('⚠️ High memory usage detected:', memory.usedPercentage.toFixed(2) + '%');
+        }
+      }, 30000); // Check every 30 seconds
+
+      return () => clearInterval(memoryInterval);
+    }
+
+    performanceMonitor.end('app-initialization');
   }, []);
 
   return (
@@ -227,6 +246,7 @@ function App() {
                   </Suspense>
                   </ErrorBoundary>
                   <Toaster />
+                  <PerformanceMonitor />
                 </div>
               </BrowserRouter>
             </TooltipProvider>
