@@ -43,7 +43,7 @@ export default defineConfig(({ mode }) => ({
           'form-vendor': ['react-hook-form', 'zod'],
           
           // Date utilities
-          'date-vendor': ['date-fns', 'date-fns-tz'],
+          'date-vendor': ['date-fns'],
           
           // Icons
           'icons-vendor': ['lucide-react'],
