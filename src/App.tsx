@@ -28,17 +28,15 @@ const PageLoader = () => (
 
 // Lazy-loaded Page components for better performance
 const Index = lazy(() => import("@/pages/Index"));
+const Patients = lazy(() => import("@/pages/Patients"));
 const Appointments = lazy(() => import("@/pages/Appointments"));
 const NewAppointment = lazy(() => import("@/pages/NewAppointment"));
-// const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
-// const MedicalRecords = lazy(() => import("@/pages/MedicalRecords"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Doctors = lazy(() => import("@/pages/Doctors"));
 const DoctorAssistants = lazy(() => import("@/pages/DoctorAssistants"));
 const Secretaries = lazy(() => import("@/pages/Secretaries"));
 const AppointmentRequests = lazy(() => import("@/pages/AppointmentRequests"));
-// const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
-// const PublicBookingLanding = lazy(() => import("@/pages/PublicBookingLanding"));
+const DoctorApplications = lazy(() => import("@/pages/DoctorApplications"));
 const Invoices = lazy(() => import("@/pages/Invoices"));
 const Payments = lazy(() => import("@/pages/Payments"));
 const Inventory = lazy(() => import("@/pages/Inventory"));
@@ -161,9 +159,11 @@ function App() {
                     </SimpleProtectedRoute>
                   }>
                   <Route index element={<Index />} />
-                    <Route path="appointments" element={<Appointments />} />
-                    <Route path="appointments/new" element={<NewAppointment />} />
-                    <Route path="appointment-requests" element={<AppointmentRequests />} />
+                  <Route path="patients" element={<Patients />} />
+                  <Route path="appointments" element={<Appointments />} />
+                  <Route path="appointments/new" element={<NewAppointment />} />
+                  <Route path="appointment-requests" element={<AppointmentRequests />} />
+                  <Route path="doctor-applications" element={<DoctorApplications />} />
                     {/* <Route path="medical-records" element={<MedicalRecords />} /> */}
                     <Route path="smart-diagnosis" element={<SmartDiagnosis />} />
                     <Route path="ai-insights" element={<AIInsights />} />

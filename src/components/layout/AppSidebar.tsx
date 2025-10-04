@@ -93,6 +93,11 @@ export function AppSidebar() {
       url: "/appointment-requests",
       icon: ClipboardList,
       permissions: []
+    }, {
+      title: "طلبات الأطباء",
+      url: "/doctor-applications",
+      icon: Briefcase,
+      permissions: ['system.manage_all_clinics']
     }]
   }, {
     groupTitle: t('sidebar.staffManagement'),
