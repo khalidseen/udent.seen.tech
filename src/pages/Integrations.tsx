@@ -279,13 +279,13 @@ const Integrations = () => {
             <Activity className="w-4 h-4" />
             نظرة عامة
           </TabsTrigger>
-          <TabsTrigger value="api-keys" className="gap-2">
-            <Key className="w-4 h-4" />
-            API Keys
+          <TabsTrigger value="analytics" className="gap-2">
+            <BarChart3 className="w-4 h-4" />
+            التحليلات
           </TabsTrigger>
-          <TabsTrigger value="webhooks" className="gap-2">
-            <Webhook className="w-4 h-4" />
-            Webhooks
+          <TabsTrigger value="clinic-api" className="gap-2">
+            <Key className="w-4 h-4" />
+            مفاتيح API
           </TabsTrigger>
           <TabsTrigger value="logs" className="gap-2">
             <FileText className="w-4 h-4" />
@@ -312,27 +312,6 @@ const Integrations = () => {
 
         <TabsContent value="clinic-api" className="mt-6">
           <ClinicApiKeyManager clinicId={currentClinic?.id || null} />
-        </TabsContent>
-
-        <TabsContent value="api-keys" className="mt-6">
-          <ApiKeysTab
-            apiKeys={apiKeys}
-            onGenerateKey={generateApiKey}
-            onToggleKey={toggleApiKey}
-            onDeleteKey={deleteApiKey}
-            onCopyKey={copyToClipboard}
-          />
-        </TabsContent>
-
-        <TabsContent value="webhooks" className="mt-6">
-          <WebhooksTab
-            webhooks={webhooks}
-            onAddWebhook={addWebhook}
-            onToggleWebhook={toggleWebhook}
-            onDeleteWebhook={deleteWebhook}
-            onTestWebhook={testWebhook}
-            onUpdateWebhook={updateWebhook}
-          />
         </TabsContent>
 
         <TabsContent value="logs" className="mt-6">
