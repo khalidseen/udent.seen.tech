@@ -10,21 +10,52 @@ export default defineConfig(({ mode }) => ({
     port: 8080
   },
   build: {
+    minify: 'terser',
+    target: 'esnext',
+    cssCodeSplit: true,
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.info'],
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks: {
-          // Split vendor chunks for better caching
+          // Core React chunks
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'query-vendor': ['@tanstack/react-query'],
           'supabase-vendor': ['@supabase/supabase-js'],
-          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          
+          // UI chunks
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+          ],
+          
+          // Chart vendor
           'chart-vendor': ['recharts'],
+          
+          // Form vendor
           'form-vendor': ['react-hook-form', 'zod'],
+          
+          // Date utilities
+          'date-vendor': ['date-fns', 'date-fns-tz'],
+          
+          // Icons
+          'icons-vendor': ['lucide-react'],
         },
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       },
     },
-    chunkSizeWarningLimit: 1000,
-    sourcemap: false, // Disable sourcemaps in production for faster builds
+    chunkSizeWarningLimit: 800,
+    sourcemap: false,
+    reportCompressedSize: false,
   },
   optimizeDeps: {
     include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
@@ -37,10 +68,21 @@ export default defineConfig(({ mode }) => ({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       workbox: {
-        maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // 50 MB
+        maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,woff2}'],
         globIgnores: ['**/*.wasm', '**/ort-wasm*'],
         runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60, // 1 hour
+              },
+            },
+          },
           {
             urlPattern: /\.wasm$/,
             handler: 'NetworkFirst',
@@ -48,7 +90,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: 'wasm-cache',
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+                maxAgeSeconds: 60 * 60 * 24 * 30,
               },
             },
           },

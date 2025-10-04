@@ -5,7 +5,8 @@ import './index.css'
 import { setupGlobalErrorHandling } from './lib/error-handler'
 import { initializeMonitoring } from './services/monitoring'
 import { initializeDatabaseSchema } from './lib/database-init'
-// import ErrorBoundary from './components/system/ErrorBoundary'
+import { registerServiceWorker } from './lib/service-worker-register'
+import { setupLazyLoading } from './lib/image-optimizer'
 
 // 🔍 Initialize Error Monitoring (Sentry)
 initializeMonitoring();
@@ -17,20 +18,11 @@ setupGlobalErrorHandling();
 const container = document.getElementById("root")!;
 const root = createRoot(container);
 
-// Service Worker Registration - DISABLED IN DEVELOPMENT
-// Only register in production to avoid interfering with Vite HMR
+// Service Worker Registration - ONLY IN PRODUCTION
 if ('serviceWorker' in navigator) {
   if (import.meta.env.PROD) {
-    // Production: Register Service Worker
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then((registration) => {
-          console.log('✅ SW registered:', registration.scope);
-        })
-        .catch((error) => {
-          console.error('❌ SW registration failed:', error);
-        });
-    });
+    // Production: Register optimized Service Worker
+    registerServiceWorker();
   } else {
     // Development: Force unregister ALL service workers
     window.addEventListener('load', async () => {
@@ -55,6 +47,11 @@ if ('serviceWorker' in navigator) {
     });
   }
 }
+
+// Setup lazy loading for images
+window.addEventListener('load', () => {
+  setupLazyLoading();
+});
 
 // Prevent Chrome extension port errors from affecting the app
 window.addEventListener('error', (event) => {
