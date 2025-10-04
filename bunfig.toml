@@ -1,0 +1,6 @@
+[install]
+# Skip optional dependencies to prevent canvas/fabric native compilation issues
+optional = false
+
+# Don't run install scripts that require native compilation  
+scripts = false
