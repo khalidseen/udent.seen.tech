@@ -17,7 +17,7 @@ import {
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { UploadImageDialog } from './UploadImageDialog';
-import { ImageAnnotationEditor } from './ImageAnnotationEditor';
+// import { ImageAnnotationEditor } from './ImageAnnotationEditor'; // Removed - uses fabric package
 import { EnhancedImageViewer } from './EnhancedImageViewer';
 import { ImagePreviewModal } from './ImagePreviewModal';
 import { useToast } from '@/hooks/use-toast';
@@ -45,12 +45,12 @@ interface MedicalImage {
 
 export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [annotationEditor, setAnnotationEditor] = useState<{
-    isOpen: boolean;
-    imageUrl?: string;
-    imageId?: string;
-    existingAnnotations?: any;
-  }>({ isOpen: false });
+  // const [annotationEditor, setAnnotationEditor] = useState<{
+  //   isOpen: boolean;
+  //   imageUrl?: string;
+  //   imageId?: string;
+  //   existingAnnotations?: any;
+  // }>({ isOpen: false });
   const [viewerOpen, setViewerOpen] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [selectedImageId, setSelectedImageId] = useState<string>('');
@@ -104,110 +104,17 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
   };
 
   const handleEditAnnotation = (image: MedicalImage) => {
-    // Use annotated image if it exists, otherwise use original
-    const imageUrl = image.has_annotations && image.annotated_image_path 
-      ? supabase.storage.from('medical-images').getPublicUrl(image.annotated_image_path).data.publicUrl
-      : supabase.storage.from('medical-images').getPublicUrl(image.file_path).data.publicUrl;
-      
-    console.log('Opening annotation editor for image:', image.id);
-    console.log('Image URL (annotated if exists):', imageUrl);
-    console.log('Original image path:', image.file_path);
-    console.log('Annotated image path:', image.annotated_image_path);
-    console.log('Existing annotations:', image.annotation_data);
-    console.log('Has annotations:', image.has_annotations);
-
-    setAnnotationEditor({
-      isOpen: true,
-      imageUrl: imageUrl, // Use annotated image as base if it exists
-      imageId: image.id,
-      existingAnnotations: image.has_annotations ? image.annotation_data : null
+    // Annotation editor disabled - requires fabric package
+    toast({
+      title: "التعديل غير متاح حالياً",
+      description: "محرر الصور معطل مؤقتاً",
+      variant: "destructive",
     });
   };
 
-  const handleSaveAnnotation = async (annotatedImageUrl: string, annotationData: any) => {
-    if (!annotationEditor.imageId) return;
-
-    try {
-      // Convert data URL to blob
-      const response = await fetch(annotatedImageUrl);
-      const blob = await response.blob();
-
-      // Get current user profile for clinic_id
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .single();
-
-      if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
-
-      // Create unique filename for annotated image
-      const timestamp = Date.now();
-      const random = Math.random().toString(36).substring(2, 8);
-      const fileName = `${profile.id}/${patientId}/annotated_${annotationEditor.imageId}_${timestamp}_${random}.png`;
-      
-      console.log('Uploading annotated image:', fileName);
-      console.log('Blob size:', blob.size, 'bytes');
-      
-      // Upload annotated image to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('medical-images')
-        .upload(fileName, blob, {
-          contentType: 'image/png',
-          upsert: false
-        });
-
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw new Error(`خطأ في رفع الصورة: ${uploadError.message}`);
-      }
-
-      console.log('Image uploaded successfully:', uploadData.path);
-
-      // Update medical image record
-      const updateData = {
-        annotated_image_path: uploadData.path,
-        annotation_data: annotationData,
-        has_annotations: true,
-        updated_at: new Date().toISOString()
-      };
-      
-      console.log('Updating image record with:', updateData);
-
-      const { error: updateError } = await supabase
-        .from('medical_images')
-        .update(updateData)
-        .eq('id', annotationEditor.imageId);
-
-      if (updateError) {
-        console.error('Update error:', updateError);
-        throw new Error(`خطأ في تحديث البيانات: ${updateError.message}`);
-      }
-
-      console.log('Image record updated successfully');
-
-      // Close editor and refresh immediately
-      setAnnotationEditor({ isOpen: false });
-      
-      toast({
-        title: "تم حفظ التعديلات بنجاح",
-        description: "تم حفظ الصورة المعدلة في سجل المريض",
-      });
-
-      // Refresh data immediately and then again after a short delay to ensure storage sync
-      refetch();
-      setTimeout(() => {
-        refetch();
-      }, 2000);
-      
-    } catch (error: any) {
-      console.error('Error saving annotation:', error);
-      toast({
-        title: "خطأ في حفظ التعديلات",
-        description: error.message || 'حدث خطأ أثناء حفظ التعديلات',
-        variant: "destructive",
-      });
-    }
-  };
+  // const handleSaveAnnotation = async (annotatedImageUrl: string, annotationData: any) => {
+  //   // Disabled - requires fabric package
+  // };
 
   const handleViewImage = (imageId: string) => {
     setSelectedImageId(imageId);
@@ -390,15 +297,7 @@ export function PatientImageGallery({ patientId }: PatientImageGalleryProps) {
         defaultPatientId={patientId}
       />
 
-      {/* Annotation Editor */}
-      {annotationEditor.isOpen && annotationEditor.imageUrl && (
-        <ImageAnnotationEditor
-          imageUrl={annotationEditor.imageUrl}
-          existingAnnotations={annotationEditor.existingAnnotations}
-          onSave={handleSaveAnnotation}
-          onClose={() => setAnnotationEditor({ isOpen: false })}
-        />
-      )}
+      {/* Annotation Editor - Disabled (requires fabric package) */}
 
       {/* Enhanced Image Viewer */}
       {viewerOpen && selectedImageId && (
