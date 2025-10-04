@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إلغاء تسجيل Service Worker</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      font-size: 16px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .instructions {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .instructions h3 {
+      margin-top: 0;
+      color: #495057;
+    }
+    .instructions ol {
+      margin: 10px 0;
+      padding-right: 20px;
+    }
+    .instructions li {
+      margin: 8px 0;
+    }
+    .highlight {
+      background-color: #fff3cd;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔧 إلغاء تسجيل Service Worker</h1>
+    
+    <div id="status"></div>
+    
+    <button id="unregisterBtn" onclick="unregisterServiceWorkers()">
+      إلغاء تسجيل جميع Service Workers
+    </button>
+    
+    <div class="instructions">
+      <h3>📋 تعليمات الاستخدام:</h3>
+      <ol>
+        <li>اضغط على الزر أعلاه لإلغاء تسجيل جميع Service Workers</li>
+        <li>بعد نجاح العملية، أغلق جميع علامات التبويب الخاصة بالتطبيق</li>
+        <li>افتح DevTools (F12) > Application > Service Workers</li>
+        <li>تأكد من عدم وجود service workers نشطة</li>
+        <li>إذا كانت موجودة، اضغط على <span class="highlight">Unregister</span></li>
+        <li>امسح الـ Cache من Application > Cache Storage > حذف الكل</li>
+        <li>أعد تشغيل الـ dev server: <span class="highlight">npm run dev</span></li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    async function unregisterServiceWorkers() {
+      const statusDiv = document.getElementById('status');
+      const btn = document.getElementById('unregisterBtn');
+      
+      btn.disabled = true;
+      statusDiv.innerHTML = '<div class="info">⏳ جاري إلغاء التسجيل...</div>';
+      
+      try {
+        if ('serviceWorker' in navigator) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          
+          if (registrations.length === 0) {
+            statusDiv.innerHTML = '<div class="warning">⚠️ لم يتم العثور على أي Service Workers مسجلة</div>';
+            btn.disabled = false;
+            return;
+          }
+          
+          let unregisteredCount = 0;
+          const results = [];
+          
+          for (const registration of registrations) {
+            try {
+              await registration.unregister();
+              unregisteredCount++;
+              results.push(`✅ تم إلغاء تسجيل: ${registration.scope}`);
+            } catch (err) {
+              results.push(`❌ فشل إلغاء تسجيل: ${registration.scope} - ${err.message}`);
+            }
+          }
+          
+          // Clear all caches
+          try {
+            const cacheNames = await caches.keys();
+            for (const cacheName of cacheNames) {
+              await caches.delete(cacheName);
+              results.push(`🗑️ تم حذف cache: ${cacheName}`);
+            }
+          } catch (err) {
+            results.push(`⚠️ فشل حذف بعض الـ caches: ${err.message}`);
+          }
+          
+          statusDiv.innerHTML = `
+            <div class="success">
+              <strong>✅ تم بنجاح!</strong>
+              <ul style="margin: 10px 0; padding-right: 20px;">
+                ${results.map(r => `<li>${r}</li>`).join('')}
+              </ul>
+              <p style="margin-top: 15px;">
+                <strong>الخطوة التالية:</strong> أغلق جميع علامات التبويب وأعد تشغيل الـ dev server
+              </p>
+            </div>
+          `;
+          
+          // Auto reload after 3 seconds
+          setTimeout(() => {
+            window.location.reload();
+          }, 3000);
+          
+        } else {
+          statusDiv.innerHTML = '<div class="error">❌ المتصفح لا يدعم Service Workers</div>';
+        }
+      } catch (error) {
+        statusDiv.innerHTML = `<div class="error">❌ حدث خطأ: ${error.message}</div>`;
+        console.error('Error unregistering service workers:', error);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+    
+    // Auto-check on page load
+    window.addEventListener('load', async () => {
+      const statusDiv = document.getElementById('status');
+      
+      if ('serviceWorker' in navigator) {
+        try {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          if (registrations.length > 0) {
+            statusDiv.innerHTML = `
+              <div class="info">
+                📍 تم العثور على ${registrations.length} Service Worker(s) مسجلة
+                <ul style="margin: 10px 0; padding-right: 20px;">
+                  ${registrations.map(r => `<li>${r.scope}</li>`).join('')}
+                </ul>
+              </div>
+            `;
+          } else {
+            statusDiv.innerHTML = '<div class="success">✅ لا توجد Service Workers مسجلة - جاهز للتطوير!</div>';
+          }
+        } catch (err) {
+          statusDiv.innerHTML = `<div class="error">❌ خطأ في فحص Service Workers: ${err.message}</div>`;
+        }
+      } else {
+        statusDiv.innerHTML = '<div class="warning">⚠️ المتصفح لا يدعم Service Workers</div>';
+      }
+    });
+  </script>
+</body>
+</html>

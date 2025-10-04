@@ -9,6 +9,27 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'query-vendor': ['@tanstack/react-query'],
+          'supabase-vendor': ['@supabase/supabase-js'],
+          'ui-vendor': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
+          'chart-vendor': ['recharts'],
+          'form-vendor': ['react-hook-form', 'zod'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false, // Disable sourcemaps in production for faster builds
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
+    exclude: ['@node-rs/argon2', '@node-rs/bcrypt'],
+  },
   plugins: [
     reactSWC(),
     mode === 'development' && componentTagger(),

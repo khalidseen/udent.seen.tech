@@ -135,12 +135,37 @@ export function setupGlobalErrorHandling() {
     if (event.message && (
       event.message.includes('Extension context invalidated') ||
       event.message.includes('chrome-extension') ||
-      event.message.includes('Attempting to use a disconnected port')
+      event.message.includes('Attempting to use a disconnected port') ||
+      event.message.includes('message port closed') ||
+      event.message.includes('back/forward cache') ||
+      event.message.includes('No tab with id')
     )) {
       event.preventDefault();
-      const error = ErrorHandler.handleChromeExtensionError(event);
-      ErrorHandler['logError'](error);
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      // لا نسجل هذه الأخطاء لأنها مزعجة وليست من التطبيق
       return false;
     }
   });
+
+  // قمع أخطاء runtime.lastError من Chrome Extensions
+  const originalConsoleError = console.error;
+  console.error = (...args: unknown[]) => {
+    const message = args.join(' ');
+    
+    // تجاهل أخطاء Chrome Extensions
+    if (
+      message.includes('runtime.lastError') ||
+      message.includes('message port closed') ||
+      message.includes('back/forward cache') ||
+      message.includes('Extension context') ||
+      message.includes('No tab with id') ||
+      message.includes('chrome-extension')
+    ) {
+      return; // لا تطبع شيء
+    }
+    
+    // أخطاء أخرى تطبع بشكل طبيعي
+    originalConsoleError.apply(console, args);
+  };
 }

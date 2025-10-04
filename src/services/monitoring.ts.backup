@@ -1,0 +1,559 @@
+/**
+ * Error Monitoring & Performance Tracking Service
+ * 
+ * نظام متكامل لتتبع الأخطاء وقياس الأداء باستخدام Sentry
+ * 
+ * @module monitoring
+ * @note Sentry معطل مؤقتاً - يعمل فقط Console Logging
+ */
+
+// ================================================
+// Configuration
+// ================================================
+
+const ENVIRONMENT = import.meta.env.VITE_ENVIRONMENT || 'development';
+const APP_VERSION = import.meta.env.VITE_APP_VERSION || '1.0.0';
+
+export const MONITORING_CONFIG = {
+  environment: ENVIRONMENT,
+  release: `udent@${APP_VERSION}`,
+} as const;
+
+// ================================================
+// Initialization
+// ================================================
+
+export const initializeMonitoring = (): void => {
+  console.log('ℹ️ Monitoring System - Console Mode');
+  console.log(`📊 Environment: ${ENVIRONMENT}`);
+  console.log(`🔢 Version: ${APP_VERSION}`);
+};
+
+// ================================================
+// Error Tracking - Stub Functions
+// ================================================
+
+interface ErrorContext {
+  tags?: Record<string, string>;
+  extra?: Record<string, any>;
+  level?: string;
+  user?: any;
+}
+
+export const captureError = (
+  error: Error,
+  context?: ErrorContext
+): string => {
+  console.error('❌ Error captured:', error);
+  if (context) console.error('Context:', context);
+  return 'console-' + Date.now();
+};
+
+export const captureMessage = (
+  message: string,
+  level: string = 'info',
+  context?: ErrorContext
+): string => {
+  const emoji = level === 'error' ? '❌' : level === 'warning' ? '⚠️' : 'ℹ️';
+  console.log(`${emoji} ${message}`);
+  if (context) console.log('Context:', context);
+  return 'console-' + Date.now();
+};
+
+export const setUser = (user: any): void => {
+  console.log('👤 User set:', user);
+};
+
+export const clearUser = (): void => {
+  console.log('👤 User cleared');
+};
+
+export const setTags = (tags: Record<string, string>): void => {
+  console.log('🏷️ Tags:', tags);
+};
+
+export const setExtras = (extras: Record<string, any>): void => {
+  console.log('➕ Extras:', extras);
+};
+
+export const setContext = (name: string, context: Record<string, any> | null): void => {
+  console.log(`📋 Context [${name}]:`, context);
+};
+
+interface Breadcrumb {
+  message: string;
+  category?: string;
+  level?: string;
+  data?: Record<string, any>;
+}
+
+export const addBreadcrumb = (breadcrumb: Breadcrumb): void => {
+  console.log('🍞 Breadcrumb:', breadcrumb);
+};
+
+// ================================================
+// Performance Monitoring - Stub Functions
+// ================================================
+
+export const startTransaction = (name: string, op: string): any => {
+  const start = performance.now();
+  console.log(`⏱️ Transaction started: ${name} [${op}]`);
+  
+  return {
+    finish: () => {
+      const duration = performance.now() - start;
+      console.log(`✅ Transaction finished: ${name} (${duration.toFixed(2)}ms)`);
+    },
+    setStatus: (status: string) => {
+      console.log(`📊 Transaction status: ${status}`);
+    },
+    setData: (key: string, value: any) => {
+      console.log(`� Transaction data: ${key} =`, value);
+    },
+  };
+};
+
+export const measurePerformance = async <T>(
+  name: string,
+  fn: () => T | Promise<T>,
+  tags?: Record<string, string>
+): Promise<T> => {
+  const start = performance.now();
+  console.log(`⏱️ Measuring: ${name}`, tags);
+  
+  try {
+    const result = await fn();
+    const duration = performance.now() - start;
+    console.log(`✅ ${name}: ${duration.toFixed(2)}ms`);
+    return result;
+  } catch (error) {
+    const duration = performance.now() - start;
+    console.error(`❌ ${name} failed after ${duration.toFixed(2)}ms:`, error);
+    throw error;
+  }
+};
+
+// ================================================
+// Global Error Handler
+// ================================================
+
+export const setupGlobalErrorHandling = (): void => {
+  window.addEventListener('error', (event) => {
+    console.error('🔴 Global Error:', event.error);
+  });
+
+  window.addEventListener('unhandledrejection', (event) => {
+    console.error('🔴 Unhandled Promise Rejection:', event.reason);
+  });
+
+  console.log('✅ Global error handlers set up');
+};
+
+// ================================================
+// User Feedback - Stub Function
+// ================================================
+
+export const showReportDialog = (options?: any): void => {
+  console.log('📝 Report dialog:', options);
+  alert('Error reporting is currently disabled. Please contact support.');
+};
+
+// ================================================
+// Monitoring Information
+// ================================================
+
+export const getMonitoringInfo = () => ({
+  enabled: false,
+  environment: ENVIRONMENT,
+  version: APP_VERSION,
+  mode: 'console-only',
+  sessionId: 'local-' + Date.now(),
+  user: null,
+});
+
+// ================================================
+// Exports
+// ================================================
+
+export default {
+  initializeMonitoring,
+  captureError,
+  captureMessage,
+  setUser,
+  clearUser,
+  setTags,
+  setExtras,
+  setContext,
+  addBreadcrumb,
+  startTransaction,
+  measurePerformance,
+  setupGlobalErrorHandling,
+  showReportDialog,
+  getMonitoringInfo,
+};
+};
+
+// ================================================
+// Error Tracking
+// ================================================
+
+/**
+ * تسجيل خطأ في Sentry
+ */
+export const captureError = (
+  error: Error,
+  context?: {
+    level?: Sentry.SeverityLevel;
+    tags?: Record<string, string>;
+    extra?: Record<string, unknown>;
+    user?: Sentry.User;
+  }
+): string => {
+  if (!SENTRY_DSN) {
+    console.error('Error:', error);
+    return '';
+  }
+
+  // تعيين السياق
+  if (context) {
+    if (context.tags) {
+      Sentry.setTags(context.tags);
+    }
+    
+    if (context.extra) {
+      Sentry.setExtras(context.extra);
+    }
+    
+    if (context.user) {
+      Sentry.setUser(context.user);
+    }
+  }
+
+  // تسجيل الخطأ
+  const eventId = Sentry.captureException(error, {
+    level: context?.level || 'error',
+  });
+
+  return eventId;
+};
+
+/**
+ * تسجيل رسالة في Sentry
+ */
+export const captureMessage = (
+  message: string,
+  level: Sentry.SeverityLevel = 'info',
+  context?: {
+    tags?: Record<string, string>;
+    extra?: Record<string, unknown>;
+  }
+): string => {
+  if (!SENTRY_DSN) {
+    console.log(`[${level}] ${message}`);
+    return '';
+  }
+
+  if (context) {
+    if (context.tags) {
+      Sentry.setTags(context.tags);
+    }
+    
+    if (context.extra) {
+      Sentry.setExtras(context.extra);
+    }
+  }
+
+  return Sentry.captureMessage(message, level);
+};
+
+// ================================================
+// User Context
+// ================================================
+
+/**
+ * تعيين معلومات المستخدم الحالي
+ */
+export const setUser = (user: {
+  id?: string;
+  email?: string;
+  username?: string;
+  clinicId?: string;
+  role?: string;
+}): void => {
+  if (!SENTRY_DSN) return;
+
+  Sentry.setUser({
+    id: user.id,
+    email: user.email,
+    username: user.username,
+    clinic_id: user.clinicId,
+    role: user.role,
+  });
+};
+
+/**
+ * مسح معلومات المستخدم (عند تسجيل الخروج)
+ */
+export const clearUser = (): void => {
+  if (!SENTRY_DSN) return;
+  Sentry.setUser(null);
+};
+
+// ================================================
+// Tags & Context
+// ================================================
+
+/**
+ * إضافة tags للسياق
+ */
+export const setTags = (tags: Record<string, string>): void => {
+  if (!SENTRY_DSN) return;
+  Sentry.setTags(tags);
+};
+
+/**
+ * إضافة معلومات إضافية للسياق
+ */
+export const setExtras = (extras: Record<string, unknown>): void => {
+  if (!SENTRY_DSN) return;
+  Sentry.setExtras(extras);
+};
+
+/**
+ * تعيين سياق محدد
+ */
+export const setContext = (name: string, context: Record<string, unknown>): void => {
+  if (!SENTRY_DSN) return;
+  Sentry.setContext(name, context);
+};
+
+// ================================================
+// Breadcrumbs
+// ================================================
+
+/**
+ * إضافة breadcrumb (أثر) للتتبع
+ */
+export const addBreadcrumb = (breadcrumb: {
+  message: string;
+  category?: string;
+  level?: Sentry.SeverityLevel;
+  data?: Record<string, unknown>;
+}): void => {
+  if (!SENTRY_DSN) return;
+
+  Sentry.addBreadcrumb({
+    message: breadcrumb.message,
+    category: breadcrumb.category || 'custom',
+    level: breadcrumb.level || 'info',
+    data: breadcrumb.data,
+    timestamp: Date.now() / 1000,
+  });
+};
+
+// ================================================
+// Performance Tracking
+// ================================================
+
+/**
+ * بدء transaction للأداء
+ */
+export const startTransaction = (
+  name: string,
+  op: string = 'custom'
+): Sentry.Transaction | undefined => {
+  if (!SENTRY_DSN) return undefined;
+
+  return Sentry.startTransaction({
+    name,
+    op,
+  });
+};
+
+/**
+ * قياس وقت تنفيذ دالة
+ */
+export const measurePerformance = async <T,>(
+  name: string,
+  fn: () => Promise<T>
+): Promise<T> => {
+  if (!SENTRY_DSN) {
+    return await fn();
+  }
+
+  const transaction = startTransaction(name);
+  
+  try {
+    const result = await fn();
+    transaction?.setStatus('ok');
+    return result;
+  } catch (error) {
+    transaction?.setStatus('internal_error');
+    throw error;
+  } finally {
+    transaction?.finish();
+  }
+};
+
+// ================================================
+// Network Monitoring
+// ================================================
+
+/**
+ * تتبع API calls
+ */
+export const trackApiCall = (
+  url: string,
+  method: string,
+  statusCode: number,
+  duration: number,
+  error?: Error
+): void => {
+  addBreadcrumb({
+    message: `API ${method} ${url}`,
+    category: 'api',
+    level: statusCode >= 400 ? 'error' : 'info',
+    data: {
+      url,
+      method,
+      statusCode,
+      duration,
+      error: error?.message,
+    },
+  });
+
+  if (error) {
+    captureError(error, {
+      level: 'error',
+      tags: {
+        api_url: url,
+        api_method: method,
+        status_code: statusCode.toString(),
+      },
+      extra: {
+        duration,
+      },
+    });
+  }
+};
+
+// ================================================
+// Custom Monitoring
+// ================================================
+
+/**
+ * تتبع عملية مخصصة
+ */
+export const trackOperation = (
+  operation: string,
+  data?: Record<string, unknown>
+): void => {
+  addBreadcrumb({
+    message: operation,
+    category: 'operation',
+    data,
+  });
+};
+
+/**
+ * تتبع تفاعل المستخدم
+ */
+export const trackUserAction = (
+  action: string,
+  category: string,
+  data?: Record<string, unknown>
+): void => {
+  addBreadcrumb({
+    message: action,
+    category: `user.${category}`,
+    data,
+  });
+};
+
+/**
+ * تتبع navigation
+ */
+export const trackNavigation = (from: string, to: string): void => {
+  addBreadcrumb({
+    message: `Navigation: ${from} → ${to}`,
+    category: 'navigation',
+    data: { from, to },
+  });
+};
+
+// ================================================
+// Error Reporting UI
+// ================================================
+
+/**
+ * عرض نموذج إبلاغ عن خطأ للمستخدم
+ */
+export const showReportDialog = (eventId: string): void => {
+  if (!SENTRY_DSN) return;
+
+  Sentry.showReportDialog({
+    eventId,
+    title: 'حدث خطأ غير متوقع',
+    subtitle: 'فريقنا تم إشعاره بالمشكلة',
+    subtitle2: 'إذا كنت تريد المساعدة، أخبرنا بما حدث أدناه.',
+    labelName: 'الاسم',
+    labelEmail: 'البريد الإلكتروني',
+    labelComments: 'ماذا حدث؟',
+    labelClose: 'إغلاق',
+    labelSubmit: 'إرسال',
+    errorGeneric: 'حدث خطأ غير معروف أثناء إرسال تقريرك. يرجى المحاولة مرة أخرى.',
+    errorFormEntry: 'بعض الحقول غير صالحة. يرجى تصحيح الأخطاء والمحاولة مرة أخرى.',
+    successMessage: 'تم إرسال ملاحظاتك. شكراً لك!',
+  });
+};
+
+// ================================================
+// Utilities
+// ================================================
+
+/**
+ * التحقق من تفعيل Sentry
+ */
+export const isMonitoringEnabled = (): boolean => {
+  return !!SENTRY_DSN;
+};
+
+/**
+ * الحصول على معلومات الجلسة الحالية
+ */
+export const getCurrentSession = (): {
+  sessionId?: string;
+  user?: Sentry.User;
+} => {
+  if (!SENTRY_DSN) return {};
+
+  return {
+    sessionId: Sentry.getCurrentHub().getScope().getSession()?.id,
+    user: Sentry.getCurrentHub().getScope().getUser(),
+  };
+};
+
+// ================================================
+// Export All
+// ================================================
+
+export default {
+  initialize: initializeMonitoring,
+  captureError,
+  captureMessage,
+  setUser,
+  clearUser,
+  setTags,
+  setExtras,
+  setContext,
+  addBreadcrumb,
+  startTransaction,
+  measurePerformance,
+  trackApiCall,
+  trackOperation,
+  trackUserAction,
+  trackNavigation,
+  showReportDialog,
+  isMonitoringEnabled,
+  getCurrentSession,
+};

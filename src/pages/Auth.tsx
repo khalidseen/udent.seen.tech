@@ -5,12 +5,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { Stethoscope, Eye, EyeOff, Clock, Mail } from "lucide-react";
+import { Stethoscope, Eye, EyeOff, Clock, Mail, AlertCircle } from "lucide-react";
+import { useRateLimiter } from "@/middleware/rateLimiter";
+import { RateLimitStatus, RateLimitError } from "@/components/system/RateLimitStatus";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Auth() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading, initialized, signIn } = useAuth();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [rateLimitBlocked, setRateLimitBlocked] = useState<{ blocked: boolean; waitTime?: number }>({ 
+    blocked: false 
+  });
+
+  // Rate Limiter للحماية من Brute Force
+  const { consume } = useRateLimiter('auth');
 
   // Login form state
   const [loginForm, setLoginForm] = useState({
@@ -18,16 +28,72 @@ export default function Auth() {
     password: ""
   });
 
+  // عرض loading أثناء التهيئة
+  if (!initialized || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">جارٍ التحميل...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Redirect if user is already logged in
-  if (user && !loading) {
+  if (user) {
+    console.log('✅ User already authenticated, redirecting...');
     return <Navigate to="/" replace />;
+  }
+
+  // عرض شاشة Rate Limit إذا تم الحظر
+  if (rateLimitBlocked.blocked && rateLimitBlocked.waitTime) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Card className="shadow-xl border-0 bg-card/80 backdrop-blur-sm">
+            <CardContent className="pt-6">
+              <RateLimitError 
+                waitTime={rateLimitBlocked.waitTime}
+                message="لقد تجاوزت عدد محاولات تسجيل الدخول المسموح بها. هذا الإجراء لحماية حسابك."
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
   }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // فحص Rate Limit أولاً
+    const rateLimitResult = await consume();
+    
+    if (!rateLimitResult.success) {
+      setRateLimitBlocked({
+        blocked: true,
+        waitTime: rateLimitResult.waitTime
+      });
+      
+      toast({
+        title: "تم تجاوز الحد المسموح",
+        description: rateLimitResult.message || "حاول مرة أخرى لاحقاً",
+        variant: "destructive",
+      });
+      
+      return;
+    }
+    
     setIsSubmitting(true);
-    await signIn(loginForm.email, loginForm.password);
-    setIsSubmitting(false);
+    
+    try {
+      await signIn(loginForm.email, loginForm.password);
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -47,6 +113,15 @@ export default function Auth() {
             <CardDescription>
               قم بتسجيل الدخول للوصول إلى نظام إدارة العيادة
             </CardDescription>
+            
+            {/* Rate Limit Status */}
+            <div className="mt-4">
+              <RateLimitStatus 
+                limiterType="auth" 
+                showProgress={true}
+                variant="card"
+              />
+            </div>
           </CardHeader>
               <CardContent>
                 <form onSubmit={handleLogin} className="space-y-4">
@@ -63,6 +138,7 @@ export default function Auth() {
                         className="pr-10"
                         required
                         disabled={isSubmitting}
+                        autoComplete="email"
                       />
                     </div>
                   </div>
@@ -79,6 +155,7 @@ export default function Auth() {
                         className="pl-10"
                         required
                         disabled={isSubmitting}
+                        autoComplete="current-password"
                       />
                       <Button
                         type="button"

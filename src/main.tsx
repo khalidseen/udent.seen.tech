@@ -3,6 +3,12 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { setupGlobalErrorHandling } from './lib/error-handler'
+import { initializeMonitoring } from './services/monitoring'
+import { initializeDatabaseSchema } from './lib/database-init'
+import ErrorBoundary from './components/system/ErrorBoundary'
+
+// 🔍 Initialize Error Monitoring (Sentry)
+initializeMonitoring();
 
 // Setup global error handling for Chrome extensions and other errors
 setupGlobalErrorHandling();
@@ -11,59 +17,70 @@ setupGlobalErrorHandling();
 const container = document.getElementById("root")!;
 const root = createRoot(container);
 
-// Register service worker for PWA with better error handling
+// Service Worker Registration - DISABLED IN DEVELOPMENT
+// Only register in production to avoid interfering with Vite HMR
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration);
-        
-        // Check for updates immediately
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New content is available
-                console.log('New SW content available');
-              }
-            });
-          }
+  if (import.meta.env.PROD) {
+    // Production: Register Service Worker
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('✅ SW registered:', registration.scope);
+        })
+        .catch((error) => {
+          console.error('❌ SW registration failed:', error);
         });
-      })
-      .catch((registrationError) => {
-        console.log('SW registration failed: ', registrationError);
-      });
-  });
-
-  // Handle service worker messages and Chrome extension port errors
-  navigator.serviceWorker.addEventListener('message', (event) => {
-    // Ignore Chrome extension port errors
-    if (event.data && typeof event.data === 'object') {
+    });
+  } else {
+    // Development: Force unregister ALL service workers
+    window.addEventListener('load', async () => {
       try {
-        if (event.data.type === 'SW_UPDATED') {
-          console.log('Service worker updated');
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const registration of registrations) {
+          await registration.unregister();
+          console.log('🔴 DEV: SW unregistered:', registration.scope);
         }
-      } catch (err) {
-        // Silently ignore Chrome extension communication errors
-        console.debug('Ignoring extension communication error:', err);
+        
+        // Clear all caches
+        const cacheNames = await caches.keys();
+        for (const cacheName of cacheNames) {
+          await caches.delete(cacheName);
+          console.log('🗑️ DEV: Cache deleted:', cacheName);
+        }
+        
+        console.log('✅ DEV MODE: All SW and caches cleared');
+      } catch (error) {
+        console.error('❌ Error clearing SW:', error);
       }
-    }
-  });
-
-  // Prevent Chrome extension port errors from affecting the app
-  window.addEventListener('error', (event) => {
-    if (event.message && (
-      event.message.includes('Extension context invalidated') ||
-      event.message.includes('chrome-extension') ||
-      event.message.includes('Attempting to use a disconnected port')
-    )) {
-      event.preventDefault();
-      console.debug('Suppressed Chrome extension error:', event.message);
-      return false;
-    }
-  });
+    });
+  }
 }
+
+// Prevent Chrome extension port errors from affecting the app
+window.addEventListener('error', (event) => {
+  if (event.message && (
+    event.message.includes('Extension context invalidated') ||
+    event.message.includes('chrome-extension') ||
+    event.message.includes('Attempting to use a disconnected port')
+  )) {
+    event.preventDefault();
+    console.debug('Suppressed Chrome extension error:', event.message);
+    return false;
+  }
+});
+
+// تأخير تهيئة قاعدة البيانات حتى يتم التحقق من Auth
+const delayedDatabaseInit = () => {
+  // انتظر 1 ثانية للسماح لـ Auth بالتهيئة أولاً
+  setTimeout(() => {
+    initializeDatabaseSchema().catch(error => {
+      console.error('Failed to initialize database schema:', error);
+    });
+  }, 1000);
+};
+
+// تهيئة قاعدة البيانات بعد تحميل الصفحة
+window.addEventListener('load', delayedDatabaseInit);
 
 // Only use StrictMode in development
 const AppWrapper = process.env.NODE_ENV === 'development' 
@@ -72,6 +89,8 @@ const AppWrapper = process.env.NODE_ENV === 'development'
 
 root.render(
   <AppWrapper>
-    <App />
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
   </AppWrapper>
 );

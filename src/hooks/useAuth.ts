@@ -1,194 +1,162 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
+import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { User, Session, Subscription } from '@supabase/supabase-js';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
-export const useAuth = () => {
+export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [initialized, setInitialized] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    let subscription: Subscription | null = null;
+    let mounted = true;
+    let initFlag = false;
     
-    const initAuth = async () => {
+    const initializeAuth = async () => {
       try {
-        // Set up auth state listener
-        const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
-          (event, session) => {
-            setSession(session);
-            setUser(session?.user ?? null);
-            setLoading(false);
-          }
-        );
-        subscription = sub;
+        console.log(' Initializing auth...');
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error(' Error getting session:', error);
+          throw error;
+        }
 
-        // Check for existing session
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          setSession(session);
-          setUser(session?.user ?? null);
-          
-
-        } catch (error) {
-          console.warn('Failed to get session:', error);
+        if (mounted) {
+          console.log(' Session found:', currentSession ? ' Active' : ' None');
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          setLoading(false);
+          setInitialized(true);
+          initFlag = true;
         }
       } catch (error) {
-        console.warn('Auth initialization error:', error);
-      } finally {
-        // Always set loading to false after 1 second max
-        setTimeout(() => setLoading(false), 1000);
+        console.error(' Auth initialization error:', error);
+        if (mounted) {
+          setSession(null);
+          setUser(null);
+          setLoading(false);
+          setInitialized(true);
+          initFlag = true;
+        }
       }
     };
 
-    initAuth();
+    initializeAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, currentSession) => {
+        console.log(' Auth state changed:', event);
+        
+        if (mounted) {
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
+          
+          if (event === 'SIGNED_IN') {
+            console.log(' User signed in:', currentSession?.user?.email);
+          } else if (event === 'SIGNED_OUT') {
+            console.log(' User signed out');
+          }
+        }
+      }
+    );
+
+    const timeoutId = setTimeout(() => {
+      if (!initFlag && mounted) {
+        console.warn(' Auth initialization timeout - forcing completion');
+        setLoading(false);
+        setInitialized(true);
+      }
+    }, 3000);
 
     return () => {
-      if (subscription) {
-        subscription.unsubscribe();
-      }
+      mounted = false;
+      clearTimeout(timeoutId);
+      subscription.unsubscribe();
     };
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    setLoading(true);
-    
+  const signIn = useCallback(async (email: string, password: string) => {
     try {
-      const result = await supabase.auth.signInWithPassword({ 
-        email, 
-        password
-      });
+      console.log(' Attempting sign in for:', email);
+      setLoading(true);
 
-      if (result.error) {
-        toast({
-          title: "فشل تسجيل الدخول",
-          description: result.error.message,
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "تم تسجيل الدخول بنجاح",
-          description: "أهلاً وسهلاً بك"
-        });
-      }
-      return result;
-    } catch (error: unknown) {
-      toast({
-        title: "خطأ في الاتصال",
-        description: "تحقق من اتصال الإنترنت وحاول مرة أخرى",
-        variant: "destructive"
-      });
-      return { error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signUp = async (email: string, password: string, fullName: string) => {
-    setLoading(true);
-    
-    try {
-      const result = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName
-          }
-        }
       });
 
-      if (result.error) {
-        toast({
-          title: "فشل إنشاء الحساب",
-          description: result.error.message,
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "تم إنشاء الحساب بنجاح",
-          description: "تحقق من بريدك الإلكتروني لتأكيد الحساب"
-        });
-      }
-      return result;
-    } catch (error: unknown) {
-      toast({
-        title: "خطأ في الاتصال",
-        description: "تحقق من اتصال الإنترنت وحاول مرة أخرى",
-        variant: "destructive"
-      });
-      return { error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signInDemo = async () => {
-    setLoading(true);
-    
-    try {
-      // Use predefined demo credentials
-      const result = await supabase.auth.signInWithPassword({
-        email: 'demo@clinic.com',
-        password: 'DemoPassword123!'
-      });
-
-      if (result.error) {
-        toast({
-          title: "فشل تسجيل الدخول التجريبي",
-          description: "حدث خطأ في تسجيل الدخول التجريبي",
-          variant: "destructive"
-        });
-      } else {
-        toast({
-          title: "تم تسجيل الدخول التجريبي",
-          description: "مرحباً بك في النسخة التجريبية"
-        });
-      }
-      return result;
-    } catch (error: unknown) {
-      toast({
-        title: "خطأ في تسجيل الدخول التجريبي",
-        description: error instanceof Error ? error.message : "حدث خطأ غير متوقع",
-        variant: "destructive"
-      });
-      return { error };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const signOut = async () => {
-    setLoading(true);
-    
-    try {
-      // تسجيل الخروج من Supabase
-      const { error } = await supabase.auth.signOut();
-      
       if (error) throw error;
+
+      console.log(' Sign in successful');
       
       toast({
-        title: "تم تسجيل الخروج",
-        description: "تم تسجيل الخروج بنجاح"
+        title: 'تم تسجيل الدخول بنجاح',
+        description: 'مرحباً ' + (data.user?.email || ''),
       });
-    } catch (error: unknown) {
+
+      return { success: true, data };
+    } catch (error) {
+      console.error(' Sign in error:', error);
+      const authError = error as AuthError;
+      
       toast({
-        title: "خطأ في تسجيل الخروج",
-        description: error instanceof Error ? error.message : "حدث خطأ أثناء تسجيل الخروج",
-        variant: "destructive"
+        title: 'خطأ في تسجيل الدخول',
+        description: authError.message || 'حدث خطأ أثناء تسجيل الدخول',
+        variant: 'destructive',
       });
+
+      return { success: false, error: authError };
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  const signOut = useCallback(async () => {
+    try {
+      console.log(' Attempting sign out...');
+      setLoading(true);
+
+      const { error } = await supabase.auth.signOut();
+
+      if (error) throw error;
+
+      console.log(' Sign out successful');
+      
+      setUser(null);
+      setSession(null);
+
+      toast({
+        title: 'تم تسجيل الخروج',
+        description: 'نراك قريباً!',
+      });
+
+      return { success: true };
+    } catch (error) {
+      console.error(' Sign out error:', error);
+      const authError = error as AuthError;
+      
+      toast({
+        title: 'خطأ في تسجيل الخروج',
+        description: authError.message,
+        variant: 'destructive',
+      });
+
+      return { success: false, error: authError };
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   return {
     user,
     session,
     loading,
+    initialized,
     signIn,
-    signUp,
-    signInDemo,
-    signOut
+    signOut,
+    isAuthenticated: !!user,
   };
-};
+}

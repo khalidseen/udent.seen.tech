@@ -8,74 +8,84 @@ import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PermissionsProvider } from "@/contexts/PermissionsContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { toast } from "sonner";
 
 // Layout components
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SimpleProtectedRoute } from "@/components/auth/SimpleProtectedRoute";
 
-// Page components
-import Index from "@/pages/Index";
+// Auth page - NOT lazy loaded (must be immediate)
 import Auth from "@/pages/Auth";
-import Patients from "@/pages/Patients";
-import Appointments from "@/pages/Appointments";
-import NewAppointment from "@/pages/NewAppointment";
-import PatientProfile from "@/pages/PatientProfile";
-import MedicalRecords from "@/pages/MedicalRecords";
-import Settings from "@/pages/Settings";
-import Doctors from "@/pages/Doctors";
-import DoctorAssistants from "@/pages/DoctorAssistants";
-import Secretaries from "@/pages/Secretaries";
-import AppointmentRequests from "@/pages/AppointmentRequests";
-import PublicBooking from "@/pages/PublicBooking";
-import PublicBookingLanding from "@/pages/PublicBookingLanding";
-import Invoices from "@/pages/Invoices";
-import Payments from "@/pages/Payments";
-import Inventory from "@/pages/Inventory";
-import ServicePrices from "@/pages/ServicePrices";
-import PurchaseOrders from "@/pages/PurchaseOrders";
-import StockMovements from "@/pages/StockMovements";
-import DentalTreatments from "@/pages/DentalTreatments";
-import Treatments from "@/pages/Treatments";
-import Advanced3DDental from "@/pages/Advanced3DDental";
-import DentalModelsAdmin from "@/pages/DentalModelsAdmin";
-import Advanced3DDentalEditor from "@/pages/Advanced3DDentalEditor";
-import AdvancedToothEditor from "@/pages/AdvancedToothEditor";
-import Notifications from "@/pages/Notifications";
-import NotificationTemplates from "@/pages/NotificationTemplates";
-import Reports from "@/pages/Reports";
-import AIInsights from "@/pages/AIInsights";
-import SmartDiagnosis from "@/pages/SmartDiagnosis";
-import Medications from "@/pages/Medications";
-import Prescriptions from "@/pages/Prescriptions";
-import NotFound from "@/pages/NotFound";
-import SplashCursorDemo from "@/pages/SplashCursorDemo";
-import NoiseDemo from "@/pages/NoiseDemo";
-import SecurityAudit from "@/pages/SecurityAudit";
-import Permissions from "@/pages/Permissions";
-import Profile from "@/pages/Profile";
-import Users from "@/pages/Users";
-import SuperAdmin from "@/pages/SuperAdmin";
-import SubscriptionPlans from "@/pages/SubscriptionPlans";
-import SubscriptionManagement from "@/pages/SubscriptionManagement";
-import { UnderDevelopment } from "@/pages/UnderDevelopment";
 
-// New feature pages
-import DentalTreatmentsManagement from "@/pages/DentalTreatmentsManagement";
-import AdvancedMedicalRecords from "@/pages/AdvancedMedicalRecords";
-import AIManagementDashboard from "@/pages/AIManagementDashboard";
-import SmartDiagnosisSystem from "@/pages/SmartDiagnosisSystem";
-import AIInsightsPage from "@/pages/AIInsightsPage";
-import AdvancedNotificationManagement from "@/pages/AdvancedNotificationManagement";
-import CustomNotificationTemplates from "@/pages/CustomNotificationTemplates";
-import DetailedReports from "@/pages/DetailedReports";
-import AdvancedPermissionsManagement from "@/pages/AdvancedPermissionsManagement";
-import AdvancedUserManagement from "@/pages/AdvancedUserManagement";
-import ComprehensiveSecurityAudit from "@/pages/ComprehensiveSecurityAudit";
-import Dental3DModelsManagement from "@/pages/Dental3DModelsManagement";
-import EnhancedDentalChartDemo from "@/pages/EnhancedDentalChartDemo";
-import FinancialIntegrationTest from "@/components/debug/FinancialIntegrationTest";
+// Loading component
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+);
+
+// Lazy-loaded Page components for better performance
+const Index = lazy(() => import("@/pages/Index"));
+const SimpleDashboard = lazy(() => import("@/pages/SimpleDashboard"));
+// Auth is imported directly above (not lazy)
+const Patients = lazy(() => import("@/pages/Patients"));
+const Appointments = lazy(() => import("@/pages/Appointments"));
+const NewAppointment = lazy(() => import("@/pages/NewAppointment"));
+const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
+const MedicalRecords = lazy(() => import("@/pages/MedicalRecords"));
+const Settings = lazy(() => import("@/pages/Settings"));
+const Doctors = lazy(() => import("@/pages/Doctors"));
+const DoctorAssistants = lazy(() => import("@/pages/DoctorAssistants"));
+const Secretaries = lazy(() => import("@/pages/Secretaries"));
+const AppointmentRequests = lazy(() => import("@/pages/AppointmentRequests"));
+const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
+const PublicBookingLanding = lazy(() => import("@/pages/PublicBookingLanding"));
+const Invoices = lazy(() => import("@/pages/Invoices"));
+const Payments = lazy(() => import("@/pages/Payments"));
+const Inventory = lazy(() => import("@/pages/Inventory"));
+const ServicePrices = lazy(() => import("@/pages/ServicePrices"));
+const PurchaseOrders = lazy(() => import("@/pages/PurchaseOrders"));
+const StockMovements = lazy(() => import("@/pages/StockMovements"));
+const DentalTreatments = lazy(() => import("@/pages/DentalTreatments"));
+const Treatments = lazy(() => import("@/pages/Treatments"));
+const Advanced3DDental = lazy(() => import("@/pages/Advanced3DDental"));
+const DentalModelsAdmin = lazy(() => import("@/pages/DentalModelsAdmin"));
+const Advanced3DDentalEditor = lazy(() => import("@/pages/Advanced3DDentalEditor"));
+const AdvancedToothEditor = lazy(() => import("@/pages/AdvancedToothEditor"));
+const Notifications = lazy(() => import("@/pages/Notifications"));
+const NotificationTemplates = lazy(() => import("@/pages/NotificationTemplates"));
+const Reports = lazy(() => import("@/pages/Reports"));
+const AIInsights = lazy(() => import("@/pages/AIInsights"));
+const SmartDiagnosis = lazy(() => import("@/pages/SmartDiagnosis"));
+const Medications = lazy(() => import("@/pages/Medications"));
+const Prescriptions = lazy(() => import("@/pages/Prescriptions"));
+const NotFound = lazy(() => import("@/pages/NotFound"));
+const SplashCursorDemo = lazy(() => import("@/pages/SplashCursorDemo"));
+const NoiseDemo = lazy(() => import("@/pages/NoiseDemo"));
+const SecurityAudit = lazy(() => import("@/pages/SecurityAudit"));
+const Permissions = lazy(() => import("@/pages/Permissions"));
+const Profile = lazy(() => import("@/pages/Profile"));
+const Users = lazy(() => import("@/pages/Users"));
+const SuperAdmin = lazy(() => import("@/pages/SuperAdmin"));
+const SubscriptionPlans = lazy(() => import("@/pages/SubscriptionPlans"));
+const SubscriptionManagement = lazy(() => import("@/pages/SubscriptionManagement"));
+const UnderDevelopment = lazy(() => import("@/pages/UnderDevelopment").then(m => ({ default: m.UnderDevelopment })));
+const DentalTreatmentsManagement = lazy(() => import("@/pages/DentalTreatmentsManagement"));
+const AdvancedMedicalRecords = lazy(() => import("@/pages/AdvancedMedicalRecords"));
+const AIManagementDashboard = lazy(() => import("@/pages/AIManagementDashboard"));
+const SmartDiagnosisSystem = lazy(() => import("@/pages/SmartDiagnosisSystem"));
+const AIInsightsPage = lazy(() => import("@/pages/AIInsightsPage"));
+const AdvancedNotificationManagement = lazy(() => import("@/pages/AdvancedNotificationManagement"));
+const CustomNotificationTemplates = lazy(() => import("@/pages/CustomNotificationTemplates"));
+const DetailedReports = lazy(() => import("@/pages/DetailedReports"));
+const AdvancedPermissionsManagement = lazy(() => import("@/pages/AdvancedPermissionsManagement"));
+const AdvancedUserManagement = lazy(() => import("@/pages/AdvancedUserManagement"));
+const ComprehensiveSecurityAudit = lazy(() => import("@/pages/ComprehensiveSecurityAudit"));
+const Dental3DModelsManagement = lazy(() => import("@/pages/Dental3DModelsManagement"));
+const EnhancedDentalChartDemo = lazy(() => import("@/pages/EnhancedDentalChartDemo"));
+const FinancialIntegrationTest = lazy(() => import("@/components/debug/FinancialIntegrationTest"));
+const Integrations = lazy(() => import("@/pages/Integrations"));
 
 // Initialize the offline database
 import { offlineDB } from "@/lib/offline-db";
@@ -87,20 +97,17 @@ offlineDB.init().catch(console.error);
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 3, // 3 minutes - reduced for better data freshness
-      gcTime: 1000 * 60 * 15, // 15 minutes - increased for better caching
-      retry: 2,
+      staleTime: 1000 * 60 * 5, // 5 minutes - better caching
+      gcTime: 1000 * 60 * 30, // 30 minutes - longer cache retention
+      retry: 1, // Reduce retries for faster failures
       refetchOnWindowFocus: false,
-      refetchOnReconnect: true,
+      refetchOnReconnect: false, // Reduce unnecessary refetches
+      refetchOnMount: false, // Don't refetch on component mount if data exists
       networkMode: 'offlineFirst', // Better offline support
     },
     mutations: {
-      retry: 1,
+      retry: 0, // Don't retry mutations
       networkMode: 'offlineFirst',
-      onSuccess: () => {
-        // Invalidate related queries after successful mutations
-        queryClient.invalidateQueries();
-      }
     },
   },
 });
@@ -139,6 +146,7 @@ function App() {
                   }}
                 >
                   <div className="min-h-screen bg-background">
+                  <Suspense fallback={<PageLoader />}>
                   <Routes>
                   {/* Public routes */}
                   <Route path="/book" element={<PublicBookingLanding />} />
@@ -151,7 +159,8 @@ function App() {
                       <MainLayout />
                     </SimpleProtectedRoute>
                   }>
-                    <Route index element={<Index />} />
+                    <Route index element={<SimpleDashboard />} />
+                    <Route path="dashboard-full" element={<Index />} />
                     <Route path="patients" element={<Patients />} />
                     <Route path="patients/:id" element={<PatientProfile />} />
                     <Route path="appointments" element={<Appointments />} />
@@ -189,6 +198,7 @@ function App() {
                      <Route path="super-admin" element={<SuperAdmin />} />
                      <Route path="subscription-plans" element={<SubscriptionPlans />} />
                      <Route path="subscription" element={<SubscriptionManagement />} />
+                     <Route path="integrations" element={<Integrations />} />
                      
                      {/* New feature routes */}
                      <Route path="dental-treatments-management" element={<DentalTreatmentsManagement />} />
@@ -216,6 +226,7 @@ function App() {
                   {/* 404 route */}
                   <Route path="*" element={<NotFound />} />
                   </Routes>
+                  </Suspense>
                   <Toaster />
                 </div>
               </BrowserRouter>

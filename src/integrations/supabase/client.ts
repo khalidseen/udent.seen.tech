@@ -2,8 +2,26 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://lxusbjpvcyjcfrnyselc.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4dXNianB2Y3lqY2ZybnlzZWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTUsImV4cCI6MjA2OTQ3NTU5NX0.-UZM4oHEbJ52j_VBmEOJtmODhkkScc4I3yxgz9ckbVM";
+// 🔒 Security: API Keys are now stored in environment variables
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Validate environment variables
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  console.error('❌ Supabase Configuration Error:', {
+    url: SUPABASE_URL ? '✅ Found' : '❌ Missing VITE_SUPABASE_URL',
+    key: SUPABASE_PUBLISHABLE_KEY ? '✅ Found' : '❌ Missing VITE_SUPABASE_ANON_KEY',
+    availableVars: Object.keys(import.meta.env).filter(k => k.startsWith('VITE_SUPABASE'))
+  });
+  
+  throw new Error(
+    '⚠️ Missing Supabase environment variables!\n' +
+    'Please check your .env file and ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.\n' +
+    'Copy .env.example to .env and add your credentials.'
+  );
+}
+
+console.log('✅ Supabase client initialized successfully');
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";

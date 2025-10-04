@@ -1,7 +1,7 @@
 import React from "react";
 import { useLocation, NavLink } from "react-router-dom";
 import "./sidebar.css";
-import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, ClipboardList, UserCog, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User, TrendingUp, Brain, Pill, ChevronLeft, ChevronRight, PackageCheck, Truck, FileSpreadsheet, Megaphone, Mail, Box, Briefcase, Activity as TreatmentIcon, Calculator, Shield, Crown, Building } from "lucide-react";
+import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, ClipboardList, UserCog, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User, TrendingUp, Brain, Pill, ChevronLeft, ChevronRight, PackageCheck, Truck, FileSpreadsheet, Megaphone, Mail, Box, Briefcase, Activity as TreatmentIcon, Calculator, Shield, Crown, Building, Plug } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -191,6 +191,11 @@ export function AppSidebar() {
       title: t('navigation.settings'),
       url: "/settings",
       icon: Settings,
+      permissions: []
+    }, {
+      title: t('navigation.integrations'),
+      url: "/integrations",
+      icon: Plug,
       permissions: []
     }]
   }, {

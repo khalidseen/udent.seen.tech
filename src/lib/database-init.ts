@@ -4,6 +4,14 @@ export async function initializeDatabaseSchema() {
   console.log('🔄 فحص وتهيئة مخطط قاعدة البيانات...');
   
   try {
+    // التحقق من وجود مستخدم مسجل أولاً
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (!session) {
+      console.log('⚠️ لا يوجد مستخدم مسجل - تخطي تهيئة قاعدة البيانات');
+      return false;
+    }
+
     // فحص إذا كان العمود موجود
     const { data, error } = await supabase.from('profiles').select('dashboard_link_validation_dismissed').limit(1);
     

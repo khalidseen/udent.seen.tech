@@ -1,0 +1,15 @@
+﻿export const initializeMonitoring = () => console.log('Monitoring ready');
+export const captureError = (e: Error) => console.error(e);
+export const captureMessage = (m: string) => console.log(m);
+export const setUser = (u: any) => {};
+export const clearUser = () => {};
+export const setTags = (t: any) => {};
+export const setExtras = (e: any) => {};
+export const setContext = (n: string, c: any) => {};
+export const addBreadcrumb = (b: any) => {};
+export const startTransaction = (n: string, o: string) => ({ finish: () => {}, setStatus: (s: string) => {}, setData: (k: string, v: any) => {} });
+export const measurePerformance = async (n: string, fn: any) => await fn();
+export const setupGlobalErrorHandling = () => {};
+export const showReportDialog = () => {};
+export const getMonitoringInfo = () => ({ enabled: false });
+export default { initializeMonitoring, captureError, captureMessage, setUser, clearUser, setTags, setExtras, setContext, addBreadcrumb, startTransaction, measurePerformance, setupGlobalErrorHandling, showReportDialog, getMonitoringInfo };
