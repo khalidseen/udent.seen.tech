@@ -1,13 +1,8 @@
 import { ReactNode } from "react";
 import { AppSidebar } from "./AppSidebar";
+import { TopNavbar } from "./TopNavbar";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAuth } from "@/hooks/useAuth";
-import { NotificationCenter } from "@/components/notifications/NotificationCenter";
-import { GlobalSearch } from "./GlobalSearch";
-import { DateTime } from "./DateTime";
-import { Button } from "@/components/ui/button";
-import { Bell, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
@@ -17,7 +12,6 @@ interface MainLayoutProps {
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const { isCollapsed } = useSidebar();
   const { isRTL } = useLanguage();
-  const { user } = useAuth();
 
   return (
     <>
@@ -26,20 +20,18 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       {/* الشريط العلوي */}
       <div 
         className={cn(
-          "fixed top-0 z-40 h-16 bg-background border-b border-border flex items-center justify-between px-6 transition-all duration-300",
+          "fixed top-0 z-40 w-full transition-all duration-300",
           isRTL 
-            ? (isCollapsed ? "right-[4.5rem] left-0" : "right-64 left-0")
-            : (isCollapsed ? "left-[4.5rem] right-0" : "left-64 right-0")
+            ? (isCollapsed ? "right-[4.5rem]" : "right-64")
+            : (isCollapsed ? "left-[4.5rem]" : "left-64")
         )}
+        style={{
+          width: isRTL 
+            ? (isCollapsed ? "calc(100% - 4.5rem)" : "calc(100% - 16rem)")
+            : (isCollapsed ? "calc(100% - 4.5rem)" : "calc(100% - 16rem)")
+        }}
       >
-        <div className="flex items-center gap-4">
-          <GlobalSearch />
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <DateTime />
-          <NotificationCenter />
-        </div>
+        <TopNavbar />
       </div>
 
       {/* المحتوى الرئيسي */}
