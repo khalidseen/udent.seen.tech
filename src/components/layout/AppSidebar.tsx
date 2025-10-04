@@ -1,5 +1,6 @@
 import React from "react";
 import { useLocation, NavLink } from "react-router-dom";
+import { useOptimizedNavigation } from "@/hooks/useOptimizedNavigation";
 import "./sidebar.css";
 import { Calendar, Users, Activity, BarChart3, Settings, LogOut, Stethoscope, CalendarPlus, FileText, Bell, ClipboardList, UserCog, Receipt, DollarSign, Package, FolderOpen, ExternalLink, User, TrendingUp, Brain, Pill, ChevronLeft, ChevronRight, PackageCheck, Truck, FileSpreadsheet, Megaphone, Mail, Box, Briefcase, Activity as TreatmentIcon, Calculator, Shield, Crown, Building, Plug } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -26,6 +27,7 @@ export function AppSidebar() {
     signOut,
     user
   } = useAuth();
+  const { navigateTo } = useOptimizedNavigation();
   const {
     hasAnyPermission,
     getPrimaryRole,
@@ -57,7 +59,7 @@ export function AppSidebar() {
 
   // Get current user role for role-based menu
   const userRole = primaryRole?.role_name;
-  const menuConfig = [{
+  const menuConfig: { groupTitle: string; items: MenuItem[] }[] = [{
     groupTitle: t('sidebar.mainMenu'),
     items: [{
       title: t('navigation.dashboard'),
@@ -279,6 +281,11 @@ export function AppSidebar() {
       icon: Box,
       permissions: []
     }, {
+      title: "تشريح السن التفاعلي",
+      url: "/ToothAnatomy",
+      icon: Activity,
+      permissions: []
+    }, {
       title: "إدارة النماذج ثلاثية الأبعاد",
       url: "/dental-3d-models-management",
       icon: Package,
@@ -414,7 +421,7 @@ export function AppSidebar() {
               variant="ghost" 
               size="sm" 
               className="w-full justify-start gap-2 h-10 text-sm" 
-              onClick={() => window.location.href = '/profile'}
+              onClick={() => navigateTo('/profile')}
             >
               <User className="w-4 h-4" />
               الملف الشخصي

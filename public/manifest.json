@@ -1,7 +1,7 @@
 {
-  "name": "فوردنتست - نظام إدارة العيادة",
-  "short_name": "فوردنتست",
-  "description": "نظام إدارة العيادة المتطور",
+  "name": "AIDent - نظام إدارة العيادات السنية الذكي",
+  "short_name": "AIDent",
+  "description": "نظام AIDent لإدارة العيادات السنية بالذكاء الاصطناعي",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

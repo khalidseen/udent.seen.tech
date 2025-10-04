@@ -4,30 +4,35 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   Eye, 
-  Activity, 
   Edit, 
   MessageCircle, 
-  Phone, 
-  DollarSign,
+  User2, 
+  UserCog2,
   Smile,
   Heart,
-  Pill,
   Camera,
-  Calendar
+  DollarSign
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import PatientMedicalSectionsDialog from "./PatientMedicalSectionsDialog";
+import PatientMedicalSectionsPopup from "./PatientMedicalSectionsPopup";
+import { usePatientFinancials } from '@/hooks/usePatientFinancials';
+import DoctorSelector from './DoctorSelector';
 
 interface PatientCardProps {
   patient: {
     id: string;
     full_name: string;
     phone?: string;
+    assigned_doctor_id?: string;
     assigned_doctor?: {
       full_name: string;
     };
-    financial_status: 'paid' | 'pending' | 'overdue' | 'partial';
+    financial_status?: 'paid' | 'pending' | 'overdue' | 'partial';
     medical_condition?: string;
+    created_by_name?: string;
+    created_by_role?: string;
+    last_modified_by_name?: string;
+    last_modified_by_role?: string;
   };
   onAddTreatment: (patientId: string, patientName: string) => void;
   onEditPatient: (patientId: string) => void;
@@ -36,6 +41,10 @@ interface PatientCardProps {
 const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProps) => {
   const [medicalDialogOpen, setMedicalDialogOpen] = useState(false);
   const [selectedSection, setSelectedSection] = useState<'dental' | 'overview' | 'prescriptions' | 'images' | 'appointments' | 'financial'>('overview');
+  
+  // استخدام الحالة المالية الفعلية من قاعدة البيانات
+  const { financialStatus, loading: financialLoading } = usePatientFinancials(patient.id);
+  
   const getFinancialStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
@@ -109,18 +118,6 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    onAddTreatment(patient.id, patient.full_name);
-                  }}
-                >
-                  <Activity className="w-4 h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 bg-muted/50 hover:bg-primary/10 hover:text-primary"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
                     onEditPatient(patient.id);
                   }}
                 >
@@ -130,17 +127,48 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
             </div>
 
             {/* Assigned Doctor */}
+            <div className="space-y-1" onClick={(e) => e.stopPropagation()}>
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <UserCog2 className="w-3 h-3" />
+                الطبيب المسؤول
+              </p>
+              <DoctorSelector
+                patientId={patient.id}
+                currentDoctorId={patient.assigned_doctor_id}
+                currentDoctorName={patient.assigned_doctor?.full_name}
+              />
+            </div>
+
+            {/* Creator Info */}
             <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">الطبيب المسؤول</p>
-              <p className="text-sm font-medium">
-                {patient.assigned_doctor?.full_name || 'غير محدد'}
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <User2 className="w-3 h-3" />
+                أنشئ بواسطة
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {patient.created_by_name || 'غير محدد'} 
+                {patient.created_by_role && ` (${patient.created_by_role})`}
               </p>
             </div>
 
             {/* Financial Status */}
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">الحالة المالية</p>
-              {getFinancialStatusBadge(patient.financial_status)}
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <DollarSign className="w-3 h-3" />
+                الحالة المالية
+              </p>
+              {financialLoading ? (
+                <Badge variant="outline" className="text-xs">جاري التحميل...</Badge>
+              ) : (
+                <div className="space-y-1">
+                  {getFinancialStatusBadge(financialStatus.status)}
+                  {financialStatus.balance_due > 0 && (
+                    <p className="text-xs text-muted-foreground">
+                      المتبقي: {financialStatus.balance_due.toFixed(2)} ريال
+                    </p>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Medical Condition */}
@@ -152,103 +180,71 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
             )}
           </div>
 
-          {/* Medical File Sections Icons */}
-          <div className="space-y-3 pt-4 border-t border-border/40">
-            <p className="text-xs text-muted-foreground font-medium">أقسام الملف الطبي</p>
-            <div className="grid grid-cols-3 gap-2">
-              {/* Row 1 */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10 hover:text-primary group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('dental');
-                }}
-                title="مخطط الأسنان التفاعلي"
-              >
-                <Smile className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">الأسنان</span>
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-green-500/10 hover:text-green-600 group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('overview');
-                }}
-                title="نظرة عامة على الصحة"
-              >
-                <Heart className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">الصحة</span>
-              </Button>
+            {/* Quick Actions - Keep only those with popups */}
+            <div className="space-y-3 pt-4 border-t border-border/40">
+              <p className="text-xs text-muted-foreground font-medium">الإجراءات السريعة</p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-primary/10 hover:text-primary group"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSectionClick('dental');
+                  }}
+                  title="مخطط الأسنان التفاعلي"
+                >
+                  <Smile className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">الأسنان</span>
+                </Button>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-green-500/10 hover:text-green-600 group"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSectionClick('overview');
+                  }}
+                  title="نظرة عامة على الصحة"
+                >
+                  <Heart className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">الملف الطبي</span>
+                </Button>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-blue-500/10 hover:text-blue-600 group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('prescriptions');
-                }}
-                title="الوصفات الطبية"
-              >
-                <Pill className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">الوصفات</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-purple-500/10 hover:text-purple-600 group"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSectionClick('images');
+                  }}
+                  title="الأشعة والصور"
+                >
+                  <Camera className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">الأشعة</span>
+                </Button>
 
-              {/* Row 2 */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-purple-500/10 hover:text-purple-600 group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('images');
-                }}
-                title="الأشعة والصور"
-              >
-                <Camera className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">الأشعة</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-orange-500/10 hover:text-orange-600 group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('appointments');
-                }}
-                title="تقويم المواعيد"
-              >
-                <Calendar className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">المواعيد</span>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-10 flex flex-col items-center justify-center gap-1 p-2 hover:bg-yellow-500/10 hover:text-yellow-600 group"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSectionClick('financial');
-                }}
-                title="الحالة المالية"
-              >
-                <DollarSign className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                <span className="text-xs">المالية</span>
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-12 flex flex-col items-center justify-center gap-1 p-2 hover:bg-yellow-500/10 hover:text-yellow-600 group"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSectionClick('financial');
+                  }}
+                  title="الحالة المالية"
+                >
+                  <DollarSign className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs">المالية</span>
+                </Button>
+              </div>
             </div>
-          </div>
 
           {/* Footer Section */}
           <div className="pt-4 border-t border-border/40 mt-auto">
@@ -271,8 +267,8 @@ const PatientCard = ({ patient, onAddTreatment, onEditPatient }: PatientCardProp
         </CardContent>
       </Link>
 
-      {/* Medical Sections Dialog */}
-      <PatientMedicalSectionsDialog
+      {/* Medical Sections Popup */}
+      <PatientMedicalSectionsPopup
         open={medicalDialogOpen}
         onOpenChange={setMedicalDialogOpen}
         patientId={patient.id}
