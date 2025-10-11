@@ -46,13 +46,15 @@ export default function Patients() {
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
 
   // استخدام useClinicId و usePatients hooks
-  const { data: clinicId } = useClinicId();
-  const { data: patientsResponse, isLoading, refetch } = usePatients({
+  const { data: clinicId, isLoading: isLoadingClinic } = useClinicId();
+  const { data: patientsResponse, isLoading: isLoadingPatients, refetch } = usePatients({
     clinicId,
     search: searchQuery,
     limit: 100,
     offset: 0
   });
+
+  const isLoading = isLoadingClinic || isLoadingPatients;
 
   // Convert response data to patients array
   const patients: any[] = (patientsResponse?.data || []).map(p => ({

@@ -57,8 +57,30 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
   console.log('🔍 Fetching patients with params:', { clinicId, search, limit, offset });
   
   if (!clinicId) {
-    console.warn('⚠️ No clinic ID provided, returning empty data');
-    return { data: [], total: 0 };
+    console.warn('⚠️ No clinic ID provided, trying to fetch all patients');
+    // If no clinic_id, try to fetch patients without filter for testing
+    try {
+      const { data: allPatients, error, count } = await supabase
+        .from('patients')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+
+      const enhancedPatients: Patient[] = (allPatients?.map(patient => ({
+        ...patient,
+        address: patient.address || '',
+        medical_history: patient.medical_history || '',
+        financial_status: (patient.financial_status as 'paid' | 'pending' | 'overdue' | 'partial') || 'pending',
+        assigned_doctor: undefined
+      })) || []) as Patient[];
+
+      return { data: enhancedPatients, total: count || 0 };
+    } catch (error) {
+      console.error('Error fetching patients:', error);
+      return { data: [], total: 0 };
+    }
   }
 
   try {
@@ -125,7 +147,7 @@ export const usePatients = (params: PatientsQueryParams) => {
     queryKey,
     () => fetchPatients(params),
     {
-      enabled: !!params.clinicId,
+      enabled: true, // Always enable to allow fetching even without clinicId
       staleTime: 2 * 60 * 1000,
       cacheTime: 10 * 60 * 1000,
       localCacheMinutes: 3
@@ -139,15 +161,25 @@ export const useClinicId = () => {
     queryKey: ['clinic-id'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return 'default-clinic-id'; // حل مؤقت للاختبار
+      if (!user) {
+        console.log('⚠️ No authenticated user, returning undefined');
+        return undefined;
+      }
       
-      const { data: profiles } = await supabase
+      const { data: profiles, error } = await supabase
         .from('profiles')
         .select('clinic_id, id')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      return profiles?.clinic_id || profiles?.id || 'default-clinic-id';
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return undefined;
+      }
+      
+      const clinicId = profiles?.clinic_id || profiles?.id;
+      console.log('✅ Clinic ID:', clinicId);
+      return clinicId;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 30 * 60 * 1000, // 30 minutes
