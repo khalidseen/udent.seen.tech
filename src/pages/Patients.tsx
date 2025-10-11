@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { usePatients, useClinicId } from '@/hooks/usePatients';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -46,36 +45,26 @@ export default function Patients() {
   const [selectedPatientId, setSelectedPatientId] = useState<string>("");
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
 
-  // Fetch patients
-  const { data: patientsData = [], isLoading, refetch } = useQuery({
-    queryKey: ['patients', searchQuery],
-    queryFn: async () => {
-      let query = supabase
-        .from('patients')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (searchQuery) {
-        query = query.or(`full_name.ilike.%${searchQuery}%,phone.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      return data as PatientData[];
-    },
+  // استخدام useClinicId و usePatients hooks
+  const { data: clinicId } = useClinicId();
+  const { data: patientsResponse, isLoading, refetch } = usePatients({
+    clinicId,
+    search: searchQuery,
+    limit: 100,
+    offset: 0
   });
 
-  // Convert PatientData to Patient type for PatientTableView
-  const patients: any[] = patientsData.map(p => ({
+  // Convert response data to patients array
+  const patients: any[] = (patientsResponse?.data || []).map(p => ({
     ...p,
     email: p.email || '',
     date_of_birth: p.date_of_birth || undefined,
-    address: p.address || undefined,
-    medical_history: p.medical_history || undefined,
-    allergies: p.allergies || undefined,
-    current_medications: p.current_medications || undefined,
-    insurance_provider: p.insurance_provider || undefined,
-    insurance_policy_number: p.insurance_policy_number || undefined,
+    address: p.address || '',
+    medical_history: p.medical_history || '',
+    allergies: undefined,
+    current_medications: undefined,
+    insurance_provider: undefined,
+    insurance_policy_number: undefined,
     emergency_contact: p.emergency_contact || undefined,
     emergency_phone: p.emergency_phone || undefined,
     insurance_info: p.insurance_info || undefined,

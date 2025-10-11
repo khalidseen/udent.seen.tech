@@ -1,10 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Eye, Edit, Activity, Phone, Mail, Calendar, User, CreditCard, Heart, Trash2 } from "lucide-react";
+import { Eye, Edit, Activity, Phone, Mail, Calendar, User, CreditCard, Heart } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { PatientCardActions } from "./PatientCardActions";
+import { usePatientStats } from "@/hooks/usePatientStats";
 
 interface Patient {
   id: string;
@@ -83,95 +85,109 @@ export default function PatientCardsView({ patients, onAddTreatment }: PatientCa
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {patients.map((patient, index) => (
-        <div 
-          key={patient.id}
-          className="animate-in fade-in zoom-in-95 duration-300"
-          style={{ animationDelay: `${index * 50}ms` }}
-        >
-          <Card className="hover:shadow-lg transition-all duration-300 border-border/60 overflow-hidden group">
-            <CardHeader className="pb-3 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-1">{patient.full_name}</h3>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {getGenderIcon(patient.gender)}
-                    {getStatusBadge(patient.patient_status)}
+      {patients.map((patient, index) => {
+        const PatientCard = () => {
+          const { data: stats } = usePatientStats(patient.id);
+
+          return (
+            <Card className="hover:shadow-lg transition-all duration-300 border-border/60 overflow-hidden group">
+              <CardHeader className="pb-3 bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg mb-1">{patient.full_name}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {getGenderIcon(patient.gender)}
+                      {getStatusBadge(patient.patient_status)}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardHeader>
+              </CardHeader>
 
-            <CardContent className="pt-4 space-y-3">
-              {/* معلومات العمر وفصيلة الدم */}
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-medium">{getAge(patient.date_of_birth)} سنة</span>
+              <CardContent className="pt-4 space-y-3">
+                {/* معلومات العمر وفصيلة الدم */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">{getAge(patient.date_of_birth)} سنة</span>
+                  </div>
+                  {patient.blood_type && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Heart className="w-4 h-4 text-red-500" />
+                      <span className="font-medium">{patient.blood_type}</span>
+                    </div>
+                  )}
                 </div>
-                {patient.blood_type && (
+
+                {/* رقم الهوية */}
+                {patient.national_id && (
                   <div className="flex items-center gap-2 text-sm">
-                    <Heart className="w-4 h-4 text-red-500" />
-                    <span className="font-medium">{patient.blood_type}</span>
+                    <CreditCard className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-mono text-xs">{patient.national_id}</span>
                   </div>
                 )}
-              </div>
 
-              {/* رقم الهوية */}
-              {patient.national_id && (
-                <div className="flex items-center gap-2 text-sm">
-                  <CreditCard className="w-4 h-4 text-muted-foreground" />
-                  <span className="font-mono text-xs">{patient.national_id}</span>
+                {/* معلومات الاتصال */}
+                <div className="space-y-2">
+                  {patient.phone && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">{patient.phone}</span>
+                    </div>
+                  )}
+                  {patient.email && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-muted-foreground text-xs">{patient.email}</span>
+                    </div>
+                  )}
                 </div>
-              )}
 
-              {/* معلومات الاتصال */}
-              <div className="space-y-2">
-                {patient.phone && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">{patient.phone}</span>
-                  </div>
-                )}
-                {patient.email && (
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-muted-foreground text-xs">{patient.email}</span>
-                  </div>
-                )}
-              </div>
+                {/* تاريخ التسجيل */}
+                <div className="pt-2 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground">
+                    تاريخ التسجيل: {format(new Date(patient.created_at), 'yyyy/MM/dd', { locale: ar })}
+                  </p>
+                </div>
+              </CardContent>
 
-              {/* تاريخ التسجيل */}
-              <div className="pt-2 border-t border-border/50">
-                <p className="text-xs text-muted-foreground">
-                  تاريخ التسجيل: {format(new Date(patient.created_at), 'yyyy/MM/dd', { locale: ar })}
-                </p>
-              </div>
-            </CardContent>
+              <CardFooter className="flex flex-col gap-3 pt-3 pb-4 bg-muted/20">
+                <div className="flex w-full gap-2">
+                  <Link to={`/patients/${patient.id}`} className="flex-1">
+                    <Button variant="outline" size="sm" className="w-full gap-2">
+                      <Eye className="w-4 h-4" />
+                      عرض
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex-1 gap-2"
+                    onClick={() => onAddTreatment(patient.id, patient.full_name)}
+                  >
+                    <Activity className="w-4 h-4" />
+                    علاج
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Edit className="w-4 h-4" />
+                  </Button>
+                </div>
+                
+                <PatientCardActions patientId={patient.id} stats={stats} />
+              </CardFooter>
+            </Card>
+          );
+        };
 
-            <CardFooter className="pt-3 pb-4 gap-2 bg-muted/20">
-              <Link to={`/patients/${patient.id}`} className="flex-1">
-                <Button variant="outline" size="sm" className="w-full gap-2">
-                  <Eye className="w-4 h-4" />
-                  عرض
-                </Button>
-              </Link>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="flex-1 gap-2"
-                onClick={() => onAddTreatment(patient.id, patient.full_name)}
-              >
-                <Activity className="w-4 h-4" />
-                علاج
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2">
-                <Edit className="w-4 h-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      ))}
+        return (
+          <div 
+            key={patient.id}
+            className="animate-in fade-in zoom-in-95 duration-300"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            <PatientCard />
+          </div>
+        );
+      })}
     </div>
   );
 }
