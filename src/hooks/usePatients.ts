@@ -84,17 +84,30 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
   }
 
   try {
-    // Optimized query: Select only needed columns
-    const { data: patientsData, error, count } = await supabase
+    // Optimized query: Select only needed columns with clinic_id filter
+    let query = supabase
       .from('patients')
       .select(`
         id, full_name, phone, email, date_of_birth, gender, 
         national_id, patient_status, financial_status, financial_balance,
-        clinic_id, created_at
+        clinic_id, created_at, blood_type
       `, { count: 'exact' })
-      .or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`)
-      .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .order('created_at', { ascending: false });
+
+    // Add clinic_id filter if provided
+    if (clinicId) {
+      query = query.eq('clinic_id', clinicId);
+    }
+
+    // Add search filter if provided
+    if (search) {
+      query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
+    }
+
+    // Add pagination
+    query = query.range(offset, offset + limit - 1);
+
+    const { data: patientsData, error, count } = await query;
 
     if (error) {
       console.error('❌ Supabase query error:', error);
@@ -155,20 +168,20 @@ export const usePatients = (params: PatientsQueryParams) => {
   );
 };
 
-// Hook for getting current user's clinic ID
+// Hook for getting current user's clinic ID (returns profile.id as clinic_id)
 export const useClinicId = () => {
   return useQuery({
     queryKey: ['clinic-id'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log('⚠️ No authenticated user, returning undefined');
+        console.log('⚠️ No authenticated user');
         return undefined;
       }
       
       const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('clinic_id, id')
+        .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
       
@@ -177,12 +190,13 @@ export const useClinicId = () => {
         return undefined;
       }
       
-      const clinicId = profiles?.clinic_id || profiles?.id;
-      console.log('✅ Clinic ID:', clinicId);
+      // استخدام profiles.id كـ clinic_id (لأن foreign keys تشير إلى profiles.id)
+      const clinicId = profiles?.id;
+      console.log('✅ Clinic ID (Profile ID):', clinicId);
       return clinicId;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 30 * 60 * 1000, // 30 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 };
 
