@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { offlineSupabase } from "@/lib/offline-supabase";
 import { toast } from "sonner";
 import { UserPlus, Save, Plus, X } from "lucide-react";
@@ -121,7 +122,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
       }
 
       const result = await offlineSupabase.insert('patients', {
-        clinic_id: profile.id,
+        clinic_id: profile.clinic_id || profile.id,
         full_name: formData.full_name,
         phone: formData.phone || null,
         email: formData.email || null,
@@ -163,6 +164,9 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         </Button>
       </DialogTrigger>
       <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none overflow-hidden">
+        <VisuallyHidden>
+          <DialogTitle>إضافة مريض جديد</DialogTitle>
+        </VisuallyHidden>
         {/* Custom Header with Close Button */}
         <div className="sticky top-0 z-50 bg-background border-b border-border p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
