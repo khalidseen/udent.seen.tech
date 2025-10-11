@@ -160,7 +160,7 @@ export const usePatients = (params: PatientsQueryParams) => {
     queryKey,
     () => fetchPatients(params),
     {
-      enabled: true, // Always enable to allow fetching even without clinicId
+      enabled: params?.clinicId !== undefined, // فعّل الجلب فقط بعد توفر clinicId لضمان نتائج صحيحة مع RLS
       staleTime: 2 * 60 * 1000,
       cacheTime: 10 * 60 * 1000,
       localCacheMinutes: 3

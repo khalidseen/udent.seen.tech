@@ -59,25 +59,37 @@ export const usePermissions = () => {
             return;
           }
 
-          const { data: allPermissions } = await supabase
-            .from('permissions')
-            .select('*')
-            .eq('is_active', true);
-          
-          const formattedPermissions = allPermissions?.map((p: any) => ({
-            permission_key: p.permission_key,
-            permission_name: p.permission_name,
-            permission_name_ar: p.permission_name_ar,
-            category: p.category
-          })) || [];
-          
-          setPermissions(formattedPermissions);
-          setUserRoles([{ role_name: 'admin', role_name_ar: 'مدير النظام', is_primary: true }]);
-          
-          // Cache admin permissions for 10 minutes
-          legacyPermissionsCache.set(cacheKey, formattedPermissions, 10 * 60 * 1000);
-          setLoading(false);
-          return;
+          try {
+            // Use RPC for admin as well to avoid direct table access and 500s
+            const { data: adminPerms, error: adminPermsError } = await supabase
+              .rpc('get_user_effective_permissions');
+
+            if (adminPermsError) {
+              throw adminPermsError;
+            }
+
+            const formattedPermissions = adminPerms?.map((p: any) => ({
+              permission_key: p.permission_key,
+              permission_name: p.permission_name,
+              permission_name_ar: p.permission_name_ar,
+              category: p.category
+            })) || [];
+            
+            setPermissions(formattedPermissions);
+            setUserRoles([{ role_name: 'admin', role_name_ar: 'مدير النظام', is_primary: true }]);
+            
+            // Cache admin permissions for 10 minutes
+            legacyPermissionsCache.set(cacheKey, formattedPermissions, 10 * 60 * 1000);
+            setLoading(false);
+            return;
+          } catch (e) {
+            console.warn('Admin permissions fetch failed, falling back to empty list', e);
+            setPermissions([]);
+            setUserRoles([{ role_name: 'admin', role_name_ar: 'مدير النظام', is_primary: true }]);
+            legacyPermissionsCache.set('admin_all_permissions', [], 5 * 60 * 1000);
+            setLoading(false);
+            return;
+          }
         }
 
         // Regular user permissions with caching and fallback
