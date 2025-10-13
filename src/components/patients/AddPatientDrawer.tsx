@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
-import { offlineSupabase } from "@/lib/offline-supabase";
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { UserPlus, Save, Plus, X } from "lucide-react";
 // تم إزالة Search و User لأنهما لم يعودا مطلوبين
@@ -88,59 +88,51 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
     
     try {
       // Get current user
-      const { data: { user } } = await offlineSupabase.auth.getUser();
-      
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error('يجب تسجيل الدخول أولاً');
       }
 
-      // Get or create user's profile
-      const profileResult = await offlineSupabase.select('profiles', { 
-        filter: { user_id: user.id } 
-      });
+      // احضار ملف المستخدم من قاعدة البيانات
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, role')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-      let profile = null;
-      if (profileResult.data && profileResult.data.length > 0) {
-        profile = profileResult.data[0];
-      } else {
-        // Create new profile if it doesn't exist
-        const newProfile = await offlineSupabase.insert('profiles', {
-          user_id: user.id,
-          full_name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'مستخدم جديد',
-          role: 'doctor'
-        });
-
-        if (newProfile.error) {
-          console.error('Profile creation error:', newProfile.error);
-          throw new Error('فشل في إنشاء ملف المستخدم: ' + newProfile.error.message);
-        }
-        profile = newProfile.data;
+      if (profileError || !profile) {
+        console.error('Profile fetch error:', profileError);
+        throw new Error('تعذر العثور على ملف المستخدم. تأكد من إكمال التسجيل.');
       }
 
       if (!profile) {
         throw new Error('لم يتم العثور على ملف المستخدم أو فشل في إنشاؤه');
       }
 
-      const result = await offlineSupabase.insert('patients', {
-        clinic_id: profile.clinic_id || profile.id,
-        full_name: formData.full_name,
-        phone: formData.phone || null,
-        email: formData.email || null,
-        date_of_birth: formData.date_of_birth || null,
-        gender: formData.gender || null,
-        address: formData.address || null,
-        medical_history: formData.medical_history || null,
-        notes: formData.notes || null,
-        emergency_contact: formData.emergency_contact || null,
-        emergency_phone: formData.emergency_phone || null,
-        patient_status: formData.patient_status || 'active',
-        insurance_info: formData.insurance_info || null,
-        blood_type: formData.blood_type || null,
-        occupation: formData.occupation || null,
-        marital_status: formData.marital_status || null
-      });
+      const { error: insertError } = await supabase
+        .from('patients')
+        .insert([
+          {
+            clinic_id: profile.id,
+            full_name: formData.full_name,
+            phone: formData.phone || null,
+            email: formData.email || null,
+            date_of_birth: formData.date_of_birth || null,
+            gender: formData.gender || null,
+            address: formData.address || null,
+            medical_history: formData.medical_history || null,
+            notes: formData.notes || null,
+            emergency_contact: formData.emergency_contact || null,
+            emergency_phone: formData.emergency_phone || null,
+            patient_status: formData.patient_status || 'active',
+            insurance_info: formData.insurance_info || null,
+            blood_type: formData.blood_type || null,
+            occupation: formData.occupation || null,
+            marital_status: formData.marital_status || null
+          }
+        ]);
 
-      if (result.error) throw result.error;
+      if (insertError) throw insertError;
 
       toast.success('تم إضافة المريض بنجاح');
 
@@ -158,7 +150,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="flex items-center gap-2 bg-primary hover:bg-primary/90">
+        <Button id="add-patient-trigger" className="flex items-center gap-2 bg-primary hover:bg-primary/90">
           <Plus className="w-4 h-4" />
           إضافة مريض جديد
         </Button>
