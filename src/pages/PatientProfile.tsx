@@ -13,6 +13,7 @@ import { PatientImages } from "@/components/patients/profile/PatientImages";
 import { PatientPrescriptions } from "@/components/patients/profile/PatientPrescriptions";
 import { PatientRecords } from "@/components/patients/profile/PatientRecords";
 import { PatientNotes } from "@/components/patients/profile/PatientNotes";
+import { PatientWorkflowTracker } from "@/components/workflow/PatientWorkflowTracker";
 
 export default function PatientProfile() {
   const { patientId } = useParams<{ patientId: string }>();
@@ -155,8 +156,12 @@ export default function PatientProfile() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="appointments" className="space-y-4">
-        <TabsList className="grid grid-cols-7 w-full">
+      <Tabs defaultValue="workflow" className="space-y-4">
+        <TabsList className="grid grid-cols-8 w-full">
+          <TabsTrigger value="workflow">
+            <Activity className="h-4 w-4 ml-2" />
+            المسار
+          </TabsTrigger>
           <TabsTrigger value="appointments">
             <Calendar className="h-4 w-4 ml-2" />
             المواعيد
@@ -186,6 +191,10 @@ export default function PatientProfile() {
             الملاحظات
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="workflow">
+          <PatientWorkflowTracker patientId={patientId!} />
+        </TabsContent>
 
         <TabsContent value="appointments">
           <PatientAppointments patientId={patientId!} />

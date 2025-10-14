@@ -73,6 +73,7 @@ const Integrations = lazy(() => import("@/pages/Integrations"));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Users = lazy(() => import("@/pages/Users"));
 const Permissions = lazy(() => import("@/pages/Permissions"));
+const PatientFinancialTransactions = lazy(() => import("@/pages/PatientFinancialTransactions"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 import { offlineDB } from "@/lib/offline-db";
@@ -197,6 +198,7 @@ function App() {
                                 <Route path="profile" element={<Profile />} />
                                 <Route path="profile/:userId" element={<Profile />} />
                                 <Route path="users" element={<Users />} />
+                                <Route path="financial-transactions" element={<PatientFinancialTransactions />} />
                               </Route>
                               
                               <Route path="*" element={<NotFound />} />

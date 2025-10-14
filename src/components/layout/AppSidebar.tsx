@@ -89,6 +89,7 @@ export function AppSidebar() {
         { title: "الفواتير", url: "/invoices", icon: Receipt, permissions: [] },
         { title: "المدفوعات", url: "/payments", icon: DollarSign, permissions: [] },
         { title: "خطط العلاج المالية", url: "/treatment-plans", icon: CreditCard, permissions: [] },
+        { title: "سجل المعاملات المالية", url: "/financial-transactions", icon: Activity, permissions: [] },
         { title: "التقارير المالية", url: "/financial-reports", icon: Calculator, permissions: [] },
       ]
     },
