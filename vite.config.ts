@@ -85,6 +85,20 @@ export default defineConfig(({ mode }) => ({
               },
             },
           },
+          {
+            urlPattern: /\/assets\/.+\.(js|css)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-assets-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year (immutable hashed assets)
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
         ],
       },
       manifest: {
