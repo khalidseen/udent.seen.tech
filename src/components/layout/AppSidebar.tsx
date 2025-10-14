@@ -42,7 +42,9 @@ export function AppSidebar() {
 
   const canAccessMenuItem = (item: MenuItem): boolean => {
     // إعطاء صلاحيات كاملة لمدير النظام
-    if (user?.email === 'eng.khalid.work@gmail.com') return true;
+    const superAdminEmails = ['eng.khalid.work@gmail.com', 'klidmorre@gmail.com'];
+    if (user?.email && superAdminEmails.includes(user.email.toLowerCase())) return true;
+    if (userRole === 'super_admin') return true;
     if (!item.permissions || item.permissions.length === 0) return true;
     return hasAnyPermission(item.permissions);
   };
@@ -118,7 +120,7 @@ export function AppSidebar() {
       ]
     },
     // Super Admin Section
-    ...((userRole === 'super_admin' || user?.email === 'eng.khalid.work@gmail.com') ? [{
+    ...((userRole === 'super_admin' || user?.email?.toLowerCase() === 'eng.khalid.work@gmail.com' || user?.email?.toLowerCase() === 'klidmorre@gmail.com') ? [{
       groupTitle: "👑 إدارة النظام الشامل",
       items: [
         { title: "لوحة تحكم مدير النظام", url: "/super-admin", icon: Crown, permissions: ['system.manage_all_clinics'] },
@@ -128,7 +130,7 @@ export function AppSidebar() {
       ]
     }] : []),
     // Owner Section
-    ...((userRole === 'owner' || user?.email === 'eng.khalid.work@gmail.com') ? [{
+    ...((userRole === 'owner' || user?.email?.toLowerCase() === 'eng.khalid.work@gmail.com' || user?.email?.toLowerCase() === 'klidmorre@gmail.com') ? [{
       groupTitle: "👤 إدارة الاشتراك",
       items: [
         { title: "تفاصيل الاشتراك", url: "/subscription", icon: Crown, permissions: [] },
