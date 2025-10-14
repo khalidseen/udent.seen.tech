@@ -262,6 +262,9 @@ export default function Patients() {
 
       <AddPatientDrawer 
         onPatientAdded={() => {
+          // إعادة تعيين إلى الصفحة الأولى وإعادة تحميل البيانات
+          setCurrentPage(1);
+          setActiveTab('all');
           refetch();
         }}
       />

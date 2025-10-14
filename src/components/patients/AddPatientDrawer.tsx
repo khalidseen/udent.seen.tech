@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,7 +10,7 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
 import { UserPlus, Save, Plus, X } from "lucide-react";
-// تم إزالة Search و User لأنهما لم يعودا مطلوبين
+import { cacheHelpers } from "@/lib/optimized-queries";
 
 interface AddPatientDrawerProps {
   onPatientAdded?: () => void;
@@ -23,6 +24,7 @@ interface Patient {
 }
 
 const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   // تم إلغاء البحث عن المرضى الموجودين
   // const [searchQuery, setSearchQuery] = useState('');
@@ -134,11 +136,22 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
 
       if (insertError) throw insertError;
 
+      // إلغاء جميع استعلامات المرضى لإجبار إعادة التحميل
+      await queryClient.invalidateQueries({ queryKey: ['patients'] });
+      await queryClient.invalidateQueries({ queryKey: ['clinic-id'] });
+      
+      // مسح الكاش المحلي
+      cacheHelpers.clearCache('patients');
+
       toast.success('تم إضافة المريض بنجاح');
 
       resetForm();
       setOpen(false);
-      onPatientAdded?.();
+      
+      // استدعاء callback للتحديث
+      if (onPatientAdded) {
+        onPatientAdded();
+      }
 
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'حدث خطأ غير متوقع');
