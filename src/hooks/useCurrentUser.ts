@@ -31,13 +31,13 @@ export const useCurrentUser = () => {
       const { data: profile, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', authUser.id)
+        .eq('user_id', authUser.id)
         .single();
 
       if (error) throw error;
 
       setUser({
-        id: profile.id,
+        id: authUser.id,
         full_name: profile.full_name,
         email: authUser.email || '',
         role: profile.role
