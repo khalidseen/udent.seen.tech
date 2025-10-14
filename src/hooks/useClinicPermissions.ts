@@ -32,7 +32,7 @@ export const useClinicPermissions = () => {
   const fetchUserRole = async () => {
     try {
       // إعطاء صلاحيات كاملة لمدير النظام
-      if (user?.email === 'eng.khalid.work@gmail.com') {
+      if (user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com') {
         setUserRole('owner');
         return;
       }
@@ -90,7 +90,7 @@ export const useClinicPermissions = () => {
 
   const canManageRole = (targetRole: ClinicRole): boolean => {
     // إعطاء صلاحيات كاملة لمدير النظام
-    if (user?.email === 'eng.khalid.work@gmail.com') {
+    if (user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com') {
       return true;
     }
 
@@ -100,7 +100,7 @@ export const useClinicPermissions = () => {
 
   const hasClinicPermission = (permissionKey: string): boolean => {
     // إعطاء صلاحيات كاملة لمدير النظام
-    if (user?.email === 'eng.khalid.work@gmail.com') {
+    if (user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com') {
       return true;
     }
 
@@ -113,7 +113,7 @@ export const useClinicPermissions = () => {
 
   const getAvailableRoles = (): ClinicRoleInfo[] => {
     // إعطاء جميع الأدوار لمدير النظام
-    if (user?.email === 'eng.khalid.work@gmail.com') {
+    if (user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com') {
       return roleHierarchy;
     }
 

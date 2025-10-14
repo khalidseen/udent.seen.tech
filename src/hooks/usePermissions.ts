@@ -31,6 +31,7 @@ export const usePermissions = () => {
   // System admin check - مع تحسين الأداء
   const isSystemAdmin = useMemo(() => 
     user?.email === 'eng.khalid.work@gmail.com' || 
+    user?.email === 'klidmorre@gmail.com' || 
     user?.user_metadata?.role === 'super_admin', 
     [user?.email, user?.user_metadata?.role]
   );
@@ -48,6 +49,7 @@ export const usePermissions = () => {
         
         // System admin gets all permissions with caching
         if (currentUser.email === 'eng.khalid.work@gmail.com' || 
+            currentUser.email === 'klidmorre@gmail.com' || 
             currentUser.user_metadata?.role === 'super_admin') {
           const cacheKey = 'admin_all_permissions';
           const cachedPermissions = legacyPermissionsCache.get(cacheKey);

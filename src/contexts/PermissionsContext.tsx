@@ -45,7 +45,7 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
   const { toast } = useToast();
 
   // System admin check - cached for performance
-  const isSystemAdmin = user?.email === 'eng.khalid.work@gmail.com';
+  const isSystemAdmin = user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com';
 
   const clearCache = () => {
     permissionsCache.clear();
