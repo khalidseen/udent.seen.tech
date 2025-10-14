@@ -303,40 +303,40 @@ const NewAppointmentForm = () => {
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Main Form */}
         <div className="lg:col-span-3">
-          <Card className="shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b">
-              <CardTitle className="flex items-center text-xl">
-                <CalendarPlus className="w-6 h-6 ml-3 text-blue-600" />
+          <Card className="shadow-elegant border-2">
+            <CardHeader className="bg-gradient-subtle border-b border-border">
+              <CardTitle className="flex items-center text-xl font-bold">
+                <CalendarPlus className="w-6 h-6 ml-3 text-primary" />
                 حجز موعد جديد
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <form onSubmit={handleSubmit} className="space-y-8">
             {/* Patient Type Selection */}
-            <div className="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-200">
-              <h3 className="text-lg font-semibold mb-4 flex items-center">
-                <User className="w-5 h-5 ml-2 text-blue-600" />
+            <div className="bg-muted/50 p-6 rounded-lg border-2 border-dashed border-border">
+              <h3 className="text-lg font-semibold mb-4 flex items-center text-foreground">
+                <User className="w-5 h-5 ml-2 text-primary" />
                 نوع المريض
               </h3>
               <RadioGroup value={patientType} onValueChange={handlePatientTypeChange}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-3 space-x-reverse p-4 border rounded-lg hover:bg-white transition-colors cursor-pointer">
+                  <div className="flex items-center space-x-3 space-x-reverse p-4 border-2 border-border rounded-lg hover:bg-accent/50 transition-all cursor-pointer">
                     <RadioGroupItem value="existing" id="existing" />
                     <Label htmlFor="existing" className="flex items-center cursor-pointer">
-                      <User className="w-5 h-5 ml-2 text-green-600" />
+                      <User className="w-5 h-5 ml-2 text-primary" />
                       <div>
-                        <div className="font-medium">مريض موجود</div>
-                        <div className="text-sm text-gray-500">اختر من قائمة المرضى</div>
+                        <div className="font-medium text-foreground">مريض موجود</div>
+                        <div className="text-sm text-muted-foreground">اختر من قائمة المرضى</div>
                       </div>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-3 space-x-reverse p-4 border rounded-lg hover:bg-white transition-colors cursor-pointer">
+                  <div className="flex items-center space-x-3 space-x-reverse p-4 border-2 border-border rounded-lg hover:bg-accent/50 transition-all cursor-pointer">
                     <RadioGroupItem value="new" id="new" />
                     <Label htmlFor="new" className="flex items-center cursor-pointer">
-                      <UserPlus className="w-5 h-5 ml-2 text-blue-600" />
+                      <UserPlus className="w-5 h-5 ml-2 text-primary" />
                       <div>
-                        <div className="font-medium">مريض جديد</div>
-                        <div className="text-sm text-gray-500">إضافة مريض جديد</div>
+                        <div className="font-medium text-foreground">مريض جديد</div>
+                        <div className="text-sm text-muted-foreground">إضافة مريض جديد</div>
                       </div>
                     </Label>
                   </div>
@@ -346,65 +346,65 @@ const NewAppointmentForm = () => {
 
             {/* Patient Selection for Existing Patients */}
             {patientType === 'existing' && (
-              <Card className="bg-gradient-to-r from-cyan-50 to-blue-50 border-2 border-cyan-200">
+              <Card className="bg-accent/30 border-2 border-primary/30">
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center">
-                    <Search className="w-5 h-5 ml-2 text-cyan-600" />
+                  <CardTitle className="text-lg flex items-center text-foreground">
+                    <Search className="w-5 h-5 ml-2 text-primary" />
                     البحث عن المريض
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Search and Select Patient */}
                   <div className="space-y-2">
-                    <Label className="text-base font-semibold">
+                    <Label className="text-base font-semibold text-foreground">
                       ابحث واختر المريض *
                     </Label>
                     <div className="relative">
-                      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                       <Input
                         value={patientSearchTerm}
                         onChange={(e) => setPatientSearchTerm(e.target.value)}
                         placeholder="اكتب اسم المريض أو رقم الهاتف أو الإيميل..."
-                        className="pr-12 pl-12 text-lg p-3 border-2 border-cyan-200 focus:border-cyan-500"
+                        className="pr-12 pl-12 text-lg p-3 border-2 border-primary/30 focus:border-primary bg-background"
                       />
                       {patientSearchTerm && (
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute left-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-gray-100"
+                          className="absolute left-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted"
                           onClick={() => {
                             setPatientSearchTerm("");
                             handleChange('patient_id', '');
                           }}
                         >
-                          <X className="w-4 h-4 text-gray-500" />
+                          <X className="w-4 h-4 text-muted-foreground" />
                         </Button>
                       )}
                     </div>
                     
                     {/* Live Search Results */}
                     {patientSearchTerm && filteredPatients.length > 0 && (
-                      <div className="border-2 border-cyan-200 rounded-lg bg-white shadow-lg max-h-60 overflow-y-auto">
-                        <div className="p-2 bg-cyan-50 border-b text-sm font-medium text-cyan-700">
+                      <div className="border-2 border-primary/30 rounded-lg bg-card shadow-elegant max-h-60 overflow-y-auto">
+                        <div className="p-2 bg-accent border-b border-border text-sm font-medium text-foreground">
                           {filteredPatients.length} نتيجة للبحث
                         </div>
                         {filteredPatients.map(patient => (
                           <div
                             key={patient.id}
-                            className={`p-3 hover:bg-cyan-50 cursor-pointer border-b last:border-b-0 transition-colors ${
-                              formData.patient_id === patient.id ? 'bg-cyan-100 border-cyan-300' : ''
+                            className={`p-3 hover:bg-accent cursor-pointer border-b border-border last:border-b-0 transition-all ${
+                              formData.patient_id === patient.id ? 'bg-primary/10 border-primary' : ''
                             }`}
                             onClick={() => handlePatientSelect(patient)}
                           >
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center">
-                                  <User className="w-5 h-5 text-blue-600" />
+                                <div className="w-10 h-10 bg-gradient-primary rounded-full flex items-center justify-center">
+                                  <User className="w-5 h-5 text-primary-foreground" />
                                 </div>
                                 <div>
-                                  <div className="font-medium text-gray-800">{patient.full_name}</div>
-                                  <div className="flex items-center gap-3 text-sm text-gray-500">
+                                  <div className="font-medium text-foreground">{patient.full_name}</div>
+                                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
                                     {patient.phone && (
                                       <div className="flex items-center gap-1">
                                         <Phone className="w-3 h-3" />
@@ -426,7 +426,7 @@ const NewAppointmentForm = () => {
                                   type="button"
                                   variant="ghost"
                                   size="sm"
-                                  className="h-8 px-2 hover:bg-blue-100 text-blue-600 hover:text-blue-700"
+                                  className="h-8 px-2 hover:bg-accent text-primary"
                                   onClick={(e) => handleOpenMedicalRecord(patient, e)}
                                   title="ملف المريض"
                                 >
@@ -434,8 +434,8 @@ const NewAppointmentForm = () => {
                                   <span className="text-xs">ملف المريض</span>
                                 </Button>
                                 {formData.patient_id === patient.id && (
-                                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                                  <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
                                   </div>
                                 )}
                               </div>
@@ -447,42 +447,42 @@ const NewAppointmentForm = () => {
                     
                     {/* No Results Message */}
                     {patientSearchTerm && filteredPatients.length === 0 && (
-                      <div className="border-2 border-gray-200 rounded-lg bg-gray-50 p-4 text-center">
-                        <User className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-500">لا توجد نتائج للبحث عن "{patientSearchTerm}"</p>
-                        <p className="text-sm text-gray-400 mt-1">جرب البحث باسم آخر أو رقم هاتف</p>
+                      <div className="border-2 border-border rounded-lg bg-muted/50 p-4 text-center">
+                        <User className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-muted-foreground">لا توجد نتائج للبحث عن "{patientSearchTerm}"</p>
+                        <p className="text-sm text-muted-foreground mt-1">جرب البحث باسم آخر أو رقم هاتف</p>
                       </div>
                     )}
                   </div>
                   
                   {/* Display selected patient info */}
                   {formData.patient_id && (
-                    <div className="mt-4 p-4 bg-green-50 rounded-lg border-2 border-green-200">
+                    <div className="mt-4 p-4 bg-primary/10 rounded-lg border-2 border-primary/30">
                       {(() => {
                         const selectedPatient = patients.find(p => p.id === formData.patient_id);
                         return selectedPatient ? (
                           <div>
-                            <h4 className="font-semibold text-green-700 mb-3 flex items-center">
-                              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center ml-2">
-                                <div className="w-2 h-2 bg-white rounded-full"></div>
+                            <h4 className="font-semibold text-primary mb-3 flex items-center">
+                              <div className="w-6 h-6 bg-primary rounded-full flex items-center justify-center ml-2">
+                                <div className="w-2 h-2 bg-primary-foreground rounded-full"></div>
                               </div>
                               تم اختيار المريض
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               <div className="flex items-center">
-                                <User className="w-4 h-4 ml-2 text-green-600" />
-                                <span className="font-medium">{selectedPatient.full_name}</span>
+                                <User className="w-4 h-4 ml-2 text-primary" />
+                                <span className="font-medium text-foreground">{selectedPatient.full_name}</span>
                               </div>
                               {selectedPatient.phone && (
                                 <div className="flex items-center">
-                                  <Phone className="w-4 h-4 ml-2 text-green-600" />
-                                  <span>{selectedPatient.phone}</span>
+                                  <Phone className="w-4 h-4 ml-2 text-primary" />
+                                  <span className="text-foreground">{selectedPatient.phone}</span>
                                 </div>
                               )}
                               {selectedPatient.email && (
                                 <div className="flex items-center col-span-2">
-                                  <Mail className="w-4 h-4 ml-2 text-green-600" />
-                                  <span>{selectedPatient.email}</span>
+                                  <Mail className="w-4 h-4 ml-2 text-primary" />
+                                  <span className="text-foreground">{selectedPatient.email}</span>
                                 </div>
                               )}
                             </div>
@@ -491,7 +491,6 @@ const NewAppointmentForm = () => {
                                 type="button"
                                 variant="default"
                                 size="sm"
-                                className="bg-blue-600 hover:bg-blue-700"
                                 onClick={() => {
                                   const patientSlug = generatePatientSlug(selectedPatient);
                                   navigate(`/patients/${patientSlug}?id=${selectedPatient.id}`);
@@ -523,10 +522,10 @@ const NewAppointmentForm = () => {
             )}
 
             {/* New Patient Form */}
-            {patientType === 'new' && <Card className="border-dashed">
+            {patientType === 'new' && <Card className="border-2 border-dashed border-border">
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center">
-                    <UserPlus className="w-5 h-5 ml-2" />
+                  <CardTitle className="text-lg flex items-center text-foreground">
+                    <UserPlus className="w-5 h-5 ml-2 text-primary" />
                     بيانات المريض الجديد
                   </CardTitle>
                 </CardHeader>
@@ -638,10 +637,10 @@ const NewAppointmentForm = () => {
               </Card>}
 
             {/* Chief Complaint and Emergency Level */}
-            <Card>
+            <Card className="border-2">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <Stethoscope className="w-5 h-5 ml-2" />
+                <CardTitle className="text-lg flex items-center text-foreground">
+                  <Stethoscope className="w-5 h-5 ml-2 text-primary" />
                   تفاصيل الموعد
                 </CardTitle>
               </CardHeader>
@@ -714,17 +713,17 @@ const NewAppointmentForm = () => {
             </Card>
 
             {/* Date and Time */}
-            <Card className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
+            <Card className="bg-accent/30 border-2 border-primary/30">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <CalendarPlus className="w-5 h-5 ml-2 text-purple-600" />
+                <CardTitle className="text-lg flex items-center text-foreground">
+                  <CalendarPlus className="w-5 h-5 ml-2 text-primary" />
                   توقيت الموعد
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="appointment_date" className="text-base font-semibold">تاريخ الموعد *</Label>
+                    <Label htmlFor="appointment_date" className="text-base font-semibold text-foreground">تاريخ الموعد *</Label>
                     <Input 
                       id="appointment_date" 
                       type="date" 
@@ -732,19 +731,19 @@ const NewAppointmentForm = () => {
                       onChange={e => handleChange('appointment_date', e.target.value)} 
                       required 
                       min={new Date().toISOString().split('T')[0]}
-                      className="text-lg p-3 border-2 border-purple-200 focus:border-purple-500"
+                      className="text-lg p-3 border-2 border-primary/30 focus:border-primary bg-background"
                     />
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="appointment_time" className="text-base font-semibold">وقت الموعد *</Label>
+                    <Label htmlFor="appointment_time" className="text-base font-semibold text-foreground">وقت الموعد *</Label>
                     <Input 
                       id="appointment_time" 
                       type="time" 
                       value={formData.appointment_time} 
                       onChange={e => handleChange('appointment_time', e.target.value)} 
                       required
-                      className="text-lg p-3 border-2 border-purple-200 focus:border-purple-500"
+                      className="text-lg p-3 border-2 border-primary/30 focus:border-primary bg-background"
                     />
                   </div>
                 </div>
@@ -752,19 +751,19 @@ const NewAppointmentForm = () => {
             </Card>
 
             {/* Duration and Treatment Type */}
-            <Card className="bg-gradient-to-r from-green-50 to-teal-50 border-2 border-green-200">
+            <Card className="bg-accent/30 border-2 border-primary/30">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <Stethoscope className="w-5 h-5 ml-2 text-green-600" />
+                <CardTitle className="text-lg flex items-center text-foreground">
+                  <Stethoscope className="w-5 h-5 ml-2 text-primary" />
                   تفاصيل العلاج
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="duration" className="text-base font-semibold">مدة الموعد</Label>
+                    <Label htmlFor="duration" className="text-base font-semibold text-foreground">مدة الموعد</Label>
                     <Select onValueChange={value => handleChange('duration', value)} value={formData.duration}>
-                      <SelectTrigger className="text-lg p-3 border-2 border-green-200 focus:border-green-500">
+                      <SelectTrigger className="text-lg p-3 border-2 border-primary/30 focus:border-primary bg-background">
                         <SelectValue placeholder="اختر المدة" />
                       </SelectTrigger>
                       <SelectContent>
@@ -779,9 +778,9 @@ const NewAppointmentForm = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label htmlFor="treatment_type" className="text-base font-semibold">نوع العلاج</Label>
+                    <Label htmlFor="treatment_type" className="text-base font-semibold text-foreground">نوع العلاج</Label>
                     <Select onValueChange={value => handleChange('treatment_type', value)}>
-                      <SelectTrigger className="text-lg p-3 border-2 border-green-200 focus:border-green-500">
+                      <SelectTrigger className="text-lg p-3 border-2 border-primary/30 focus:border-primary bg-background">
                         <SelectValue placeholder="اختر نوع العلاج" />
                       </SelectTrigger>
                       <SelectContent>
@@ -799,30 +798,30 @@ const NewAppointmentForm = () => {
             </Card>
 
             {/* Notes */}
-            <Card className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200">
+            <Card className="bg-accent/30 border-2 border-primary/30">
               <CardHeader>
-                <CardTitle className="text-lg flex items-center">
-                  <FileText className="w-5 h-5 ml-2 text-amber-600" />
+                <CardTitle className="text-lg flex items-center text-foreground">
+                  <FileText className="w-5 h-5 ml-2 text-primary" />
                   ملاحظات إضافية
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Label htmlFor="notes" className="text-base font-semibold">ملاحظات خاصة بالموعد</Label>
+                  <Label htmlFor="notes" className="text-base font-semibold text-foreground">ملاحظات خاصة بالموعد</Label>
                   <Textarea 
                     id="notes" 
                     value={formData.notes} 
                     onChange={e => handleChange('notes', e.target.value)} 
                     placeholder="أي ملاحظات حول الموعد، تحضيرات خاصة، أو تعليمات للمريض..." 
                     rows={4}
-                    className="text-lg p-4 border-2 border-amber-200 focus:border-amber-500 resize-none"
+                    className="text-lg p-4 border-2 border-primary/30 focus:border-primary resize-none bg-background"
                   />
                 </div>
               </CardContent>
             </Card>
 
             <div className="flex justify-end space-x-4 space-x-reverse pt-6">
-              <Button type="submit" disabled={loading} className="px-8 py-3 text-lg shadow-lg">
+              <Button type="submit" disabled={loading} className="px-8 py-3 text-lg shadow-elegant">
                 <Clock className="w-5 h-5 ml-2" />
                 {loading ? 'جاري الحفظ...' : 'حفظ الموعد'}
               </Button>
@@ -836,101 +835,101 @@ const NewAppointmentForm = () => {
     <div className="lg:col-span-1">
       <div className="space-y-6">
         {/* Quick Info */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-blue-50 border-b">
-            <CardTitle className="text-lg flex items-center">
-              <Clock className="w-5 h-5 ml-2 text-blue-600" />
+        <Card className="shadow-elegant border-2">
+          <CardHeader className="bg-accent border-b border-border">
+            <CardTitle className="text-lg flex items-center text-foreground">
+              <Clock className="w-5 h-5 ml-2 text-primary" />
               معلومات سريعة
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 space-y-4">
             <div className="text-sm">
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-gray-600">التاريخ الحالي:</span>
-                <span className="font-medium">{new Date().toLocaleDateString('ar-EG')}</span>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-muted-foreground">التاريخ الحالي:</span>
+                <span className="font-medium text-foreground">{new Date().toLocaleDateString('ar-EG')}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-gray-600">إجمالي المرضى:</span>
-                <span className="font-medium">{patients.length}</span>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-muted-foreground">إجمالي المرضى:</span>
+                <span className="font-medium text-foreground">{patients.length}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b">
-                <span className="text-gray-600">نتائج البحث:</span>
-                <span className="font-medium">{filteredPatients.length}</span>
+              <div className="flex justify-between items-center py-2 border-b border-border">
+                <span className="text-muted-foreground">نتائج البحث:</span>
+                <span className="font-medium text-foreground">{filteredPatients.length}</span>
               </div>
               <div className="flex justify-between items-center py-2">
-                <span className="text-gray-600">المدة الافتراضية:</span>
-                <span className="font-medium">30 دقيقة</span>
+                <span className="text-muted-foreground">المدة الافتراضية:</span>
+                <span className="font-medium text-foreground">30 دقيقة</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Search Tips */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-cyan-50 border-b">
-            <CardTitle className="text-lg flex items-center">
-              <Search className="w-5 h-5 ml-2 text-cyan-600" />
+        <Card className="shadow-elegant border-2">
+          <CardHeader className="bg-accent border-b border-border">
+            <CardTitle className="text-lg flex items-center text-foreground">
+              <Search className="w-5 h-5 ml-2 text-primary" />
               نصائح البحث
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="space-y-3 text-sm">
-              <div className="flex items-center p-2 bg-gray-50 rounded">
-                <User className="w-4 h-4 ml-2 text-cyan-600" />
-                <span>ابحث بالاسم الكامل أو جزء منه</span>
+              <div className="flex items-center p-2 bg-muted/50 rounded">
+                <User className="w-4 h-4 ml-2 text-primary" />
+                <span className="text-foreground">ابحث بالاسم الكامل أو جزء منه</span>
               </div>
-              <div className="flex items-center p-2 bg-gray-50 rounded">
-                <Phone className="w-4 h-4 ml-2 text-cyan-600" />
-                <span>ابحث برقم الهاتف</span>
+              <div className="flex items-center p-2 bg-muted/50 rounded">
+                <Phone className="w-4 h-4 ml-2 text-primary" />
+                <span className="text-foreground">ابحث برقم الهاتف</span>
               </div>
-              <div className="flex items-center p-2 bg-gray-50 rounded">
-                <Mail className="w-4 h-4 ml-2 text-cyan-600" />
-                <span>ابحث بعنوان الإيميل</span>
+              <div className="flex items-center p-2 bg-muted/50 rounded">
+                <Mail className="w-4 h-4 ml-2 text-primary" />
+                <span className="text-foreground">ابحث بعنوان الإيميل</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         {/* Treatment Types Guide */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-green-50 border-b">
-            <CardTitle className="text-lg flex items-center">
-              <Stethoscope className="w-5 h-5 ml-2 text-green-600" />
+        <Card className="shadow-elegant border-2">
+          <CardHeader className="bg-accent border-b border-border">
+            <CardTitle className="text-lg flex items-center text-foreground">
+              <Stethoscope className="w-5 h-5 ml-2 text-primary" />
               أنواع العلاج الشائعة
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="space-y-2 text-sm">
-              <div className="p-2 bg-gray-50 rounded">فحص عام ودوري</div>
-              <div className="p-2 bg-gray-50 rounded">تنظيف الأسنان</div>
-              <div className="p-2 bg-gray-50 rounded">حشو الأسنان</div>
-              <div className="p-2 bg-gray-50 rounded">علاج العصب</div>
-              <div className="p-2 bg-gray-50 rounded">خلع الأسنان</div>
+              <div className="p-2 bg-muted/50 rounded text-foreground">فحص عام ودوري</div>
+              <div className="p-2 bg-muted/50 rounded text-foreground">تنظيف الأسنان</div>
+              <div className="p-2 bg-muted/50 rounded text-foreground">حشو الأسنان</div>
+              <div className="p-2 bg-muted/50 rounded text-foreground">علاج العصب</div>
+              <div className="p-2 bg-muted/50 rounded text-foreground">خلع الأسنان</div>
             </div>
           </CardContent>
         </Card>
 
         {/* Emergency Levels */}
-        <Card className="shadow-md">
-          <CardHeader className="bg-red-50 border-b">
-            <CardTitle className="text-lg flex items-center">
-              <CalendarPlus className="w-5 h-5 ml-2 text-red-600" />
+        <Card className="shadow-elegant border-2">
+          <CardHeader className="bg-accent border-b border-border">
+            <CardTitle className="text-lg flex items-center text-foreground">
+              <CalendarPlus className="w-5 h-5 ml-2 text-primary" />
               مستويات الأولوية
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4">
             <div className="space-y-3 text-sm">
-              <div className="flex items-center p-2 bg-green-50 rounded">
-                <div className="w-3 h-3 bg-green-500 rounded-full ml-2"></div>
-                <span>روتيني - غير عاجل</span>
+              <div className="flex items-center p-2 bg-muted/50 rounded">
+                <div className="w-3 h-3 bg-primary rounded-full ml-2"></div>
+                <span className="text-foreground">روتيني - غير عاجل</span>
               </div>
-              <div className="flex items-center p-2 bg-yellow-50 rounded">
-                <div className="w-3 h-3 bg-yellow-500 rounded-full ml-2"></div>
-                <span>عاجل - في نفس الأسبوع</span>
+              <div className="flex items-center p-2 bg-muted/50 rounded">
+                <div className="w-3 h-3 bg-secondary rounded-full ml-2"></div>
+                <span className="text-foreground">عاجل - في نفس الأسبوع</span>
               </div>
-              <div className="flex items-center p-2 bg-red-50 rounded">
-                <div className="w-3 h-3 bg-red-500 rounded-full ml-2"></div>
-                <span>طارئ - في نفس اليوم</span>
+              <div className="flex items-center p-2 bg-muted/50 rounded">
+                <div className="w-3 h-3 bg-destructive rounded-full ml-2"></div>
+                <span className="text-foreground">طارئ - في نفس اليوم</span>
               </div>
             </div>
           </CardContent>
