@@ -86,8 +86,8 @@ export function AppSidebar() {
       groupTitle: "💰 الإدارة المالية",
       items: [
         { title: "ملخص مالي شامل", url: "/financial-overview", icon: Wallet, permissions: [] },
-        { title: "الفواتير", url: "/invoices", icon: Receipt, permissions: [] },
-        { title: "المدفوعات", url: "/payments", icon: DollarSign, permissions: [] },
+        { title: "إدارة الفواتير", url: "/invoice-management", icon: Receipt, permissions: [] },
+        { title: "إدارة المدفوعات", url: "/payment-management", icon: DollarSign, permissions: [] },
         { title: "خطط العلاج المالية", url: "/treatment-plans", icon: CreditCard, permissions: [] },
         { title: "سجل المعاملات المالية", url: "/financial-transactions", icon: Activity, permissions: [] },
         { title: "التقارير المالية", url: "/financial-reports", icon: Calculator, permissions: [] },

@@ -74,6 +74,8 @@ const Profile = lazy(() => import("@/pages/Profile"));
 const Users = lazy(() => import("@/pages/Users"));
 const Permissions = lazy(() => import("@/pages/Permissions"));
 const PatientFinancialTransactions = lazy(() => import("@/pages/PatientFinancialTransactions"));
+const InvoiceManagement = lazy(() => import("@/pages/InvoiceManagement"));
+const PaymentManagement = lazy(() => import("@/pages/PaymentManagement"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 import { offlineDB } from "@/lib/offline-db";
@@ -173,6 +175,8 @@ function App() {
                                 <Route path="financial-overview" element={<FinancialOverview />} />
                                 <Route path="treatment-plans" element={<TreatmentPlans />} />
                                 <Route path="financial-reports" element={<FinancialReports />} />
+                                <Route path="invoice-management" element={<InvoiceManagement />} />
+                                <Route path="payment-management" element={<PaymentManagement />} />
                                 <Route path="inventory" element={<Inventory />} />
                                 <Route path="medications" element={<Medications />} />
                                 <Route path="prescriptions" element={<Prescriptions />} />
