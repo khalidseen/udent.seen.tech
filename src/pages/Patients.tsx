@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { usePatients, useClinicId } from '@/hooks/usePatients';
+import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +13,7 @@ import PatientCardsView from "@/components/patients/PatientCardsView";
 import PatientStatsCards from "@/components/patients/PatientStatsCards";
 import AddPatientDrawer from "@/components/patients/AddPatientDrawer";
 import AddTreatmentDialog from "@/components/patients/AddTreatmentDialog";
+import { PatientsPagination } from "@/components/patients/PatientsPagination";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PatientData {
@@ -40,46 +42,75 @@ interface PatientData {
 export default function Patients() {
   const { t } = useLanguage();
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
   const [addTreatmentDialogOpen, setAddTreatmentDialogOpen] = useState(false);
   const [selectedPatientId, setSelectedPatientId] = useState<string>("");
   const [selectedPatientName, setSelectedPatientName] = useState<string>("");
 
+  // استخدام debounce للبحث (تأخير 500ms)
+  const debouncedSearch = useDebounce(searchQuery, 500);
+  
+  const pageSize = 20;
+
   // استخدام useClinicId و usePatients hooks
   const { data: clinicId, isLoading: isLoadingClinic } = useClinicId();
+  
   const { data: patientsResponse, isLoading: isLoadingPatients, refetch } = usePatients({
     clinicId,
-    search: searchQuery,
-    limit: 100,
-    offset: 0
+    search: debouncedSearch,
+    status: activeTab,
+    limit: pageSize,
+    offset: (currentPage - 1) * pageSize,
   });
 
   const isLoading = isLoadingClinic || isLoadingPatients;
 
   // Convert response data to patients array
-  const patients: any[] = (patientsResponse?.data || []).map(p => ({
-    ...p,
-    email: p.email || '',
-    date_of_birth: p.date_of_birth || undefined,
-    address: p.address || '',
-    medical_history: p.medical_history || '',
-    allergies: undefined,
-    current_medications: undefined,
-    insurance_provider: undefined,
-    insurance_policy_number: undefined,
-    emergency_contact: p.emergency_contact || undefined,
-    emergency_phone: p.emergency_phone || undefined,
-    insurance_info: p.insurance_info || undefined,
-    blood_type: p.blood_type || undefined,
-    occupation: p.occupation || undefined,
-    marital_status: p.marital_status || undefined,
-  }));
+  const patients: any[] = useMemo(() => 
+    (patientsResponse?.data || []).map(p => ({
+      ...p,
+      email: p.email || '',
+      date_of_birth: p.date_of_birth || undefined,
+      address: p.address || '',
+      medical_history: p.medical_history || '',
+      allergies: undefined,
+      current_medications: undefined,
+      insurance_provider: undefined,
+      insurance_policy_number: undefined,
+      emergency_contact: p.emergency_contact || undefined,
+      emergency_phone: p.emergency_phone || undefined,
+      insurance_info: p.insurance_info || undefined,
+      blood_type: p.blood_type || undefined,
+      occupation: p.occupation || undefined,
+      marital_status: p.marital_status || undefined,
+    })),
+    [patientsResponse?.data]
+  );
+
+  const totalCount = patientsResponse?.total || 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   const handleAddTreatment = (patientId: string, patientName: string) => {
     setSelectedPatientId(patientId);
     setSelectedPatientName(patientName);
     setAddTreatmentDialogOpen(true);
   };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setCurrentPage(1); // إعادة تعيين الصفحة عند تغيير التبويب
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // إحصائيات من الخادم
+  const statsQuery = usePatients({ clinicId, limit: 0 });
+  const allPatientsCount = statsQuery.data?.total || 0;
 
   return (
     <PageContainer>
@@ -90,10 +121,10 @@ export default function Patients() {
 
       {/* إحصائيات المرضى */}
       <PatientStatsCards
-        totalPatients={patients.length}
-        activePatients={patients.filter(p => p.patient_status === 'active').length}
-        inactivePatients={patients.filter(p => p.patient_status === 'inactive').length}
-        archivedPatients={patients.filter(p => p.patient_status === 'archived').length}
+        totalPatients={allPatientsCount}
+        activePatients={totalCount}
+        inactivePatients={0}
+        archivedPatients={0}
       />
 
       <Card className="border-border/60">
@@ -151,94 +182,78 @@ export default function Patients() {
         </CardHeader>
 
         <CardContent>
-          <Tabs defaultValue="all" className="w-full">
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="grid w-full grid-cols-4 mb-4">
               <TabsTrigger value="all">
-                الكل ({patients.length})
+                الكل
               </TabsTrigger>
               <TabsTrigger value="active">
-                نشط ({patients.filter(p => p.patient_status === 'active').length})
+                نشط
               </TabsTrigger>
               <TabsTrigger value="inactive">
-                غير نشط ({patients.filter(p => p.patient_status === 'inactive').length})
+                غير نشط
               </TabsTrigger>
               <TabsTrigger value="archived">
-                مؤرشف ({patients.filter(p => p.patient_status === 'archived').length})
+                مؤرشف
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all">
+            <TabsContent value={activeTab} className="mt-0">
               {isLoading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                    <p className="text-sm text-muted-foreground">جاري تحميل البيانات...</p>
+                  </div>
                 </div>
               ) : patients.length === 0 ? (
                 <div className="text-center py-12">
                   <Users className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <h3 className="mt-4 text-lg font-semibold">لا يوجد مرضى</h3>
-                  <p className="text-muted-foreground">ابدأ بإضافة مريض جديد</p>
-                  <Button
-                    onClick={() => {
-                      document.getElementById('add-patient-trigger')?.click();
-                    }}
-                    className="mt-4 gap-2"
-                  >
-                    <UserPlus className="h-4 w-4" />
-                    إضافة مريض
-                  </Button>
+                  <h3 className="mt-4 text-lg font-semibold">
+                    {debouncedSearch ? 'لا توجد نتائج' : 'لا يوجد مرضى'}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {debouncedSearch 
+                      ? 'جرب البحث بكلمات أخرى' 
+                      : 'ابدأ بإضافة مريض جديد'}
+                  </p>
+                  {!debouncedSearch && (
+                    <Button
+                      onClick={() => {
+                        document.getElementById('add-patient-trigger')?.click();
+                      }}
+                      className="mt-4 gap-2"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      إضافة مريض
+                    </Button>
+                  )}
                 </div>
-              ) : viewMode === 'cards' ? (
-                <PatientCardsView 
-                  patients={patients} 
-                  onAddTreatment={handleAddTreatment}
-                />
               ) : (
-                <PatientTableView 
-                  patients={patients} 
-                  onAddTreatment={handleAddTreatment}
-                />
-              )}
-            </TabsContent>
-
-            <TabsContent value="active">
-              {viewMode === 'cards' ? (
-                <PatientCardsView 
-                  patients={patients.filter(p => p.patient_status === 'active')} 
-                  onAddTreatment={handleAddTreatment}
-                />
-              ) : (
-                <PatientTableView 
-                  patients={patients.filter(p => p.patient_status === 'active')} 
-                  onAddTreatment={handleAddTreatment}
-                />
-              )}
-            </TabsContent>
-
-            <TabsContent value="inactive">
-              {viewMode === 'cards' ? (
-                <PatientCardsView 
-                  patients={patients.filter(p => p.patient_status === 'inactive')} 
-                  onAddTreatment={handleAddTreatment}
-                />
-              ) : (
-                <PatientTableView 
-                  patients={patients.filter(p => p.patient_status === 'inactive')} 
-                  onAddTreatment={handleAddTreatment}
-                />
-              )}
-            </TabsContent>
-
-            <TabsContent value="archived">
-              {viewMode === 'cards' ? (
-                <PatientCardsView 
-                  patients={patients.filter(p => p.patient_status === 'archived')} 
-                  onAddTreatment={handleAddTreatment}
-                />
-              ) : (
-                <PatientTableView 
-                  patients={patients.filter(p => p.patient_status === 'archived')} 
-                  onAddTreatment={handleAddTreatment}
-                />
+                <>
+                  {viewMode === 'cards' ? (
+                    <PatientCardsView 
+                      patients={patients} 
+                      onAddTreatment={handleAddTreatment}
+                    />
+                  ) : (
+                    <PatientTableView 
+                      patients={patients} 
+                      onAddTreatment={handleAddTreatment}
+                    />
+                  )}
+                  
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <PatientsPagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      totalCount={totalCount}
+                      pageSize={pageSize}
+                      onPageChange={handlePageChange}
+                    />
+                  )}
+                </>
               )}
             </TabsContent>
           </Tabs>

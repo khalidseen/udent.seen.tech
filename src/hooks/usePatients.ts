@@ -44,6 +44,7 @@ export interface Patient {
 export interface PatientsQueryParams {
   clinicId?: string;
   search?: string;
+  status?: string; // إضافة فلتر الحالة
   limit?: number;
   offset?: number;
   orderBy?: string;
@@ -52,7 +53,7 @@ export interface PatientsQueryParams {
 
 // Enhanced fetch function using optimized queries
 const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patient[]; total: number }> => {
-  const { clinicId, search = '', limit = 50, offset = 0 } = params;
+  const { clinicId, search = '', status, limit = 50, offset = 0 } = params;
   
   console.log('🔍 Fetching patients with params:', { clinicId, search, limit, offset });
   
@@ -101,7 +102,12 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
 
     // Add search filter if provided
     if (search) {
-      query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%`);
+      query = query.or(`full_name.ilike.%${search}%,phone.ilike.%${search}%,email.ilike.%${search}%,national_id.ilike.%${search}%`);
+    }
+
+    // Add status filter if provided
+    if (status && status !== 'all') {
+      query = query.eq('patient_status', status);
     }
 
     // Add pagination
