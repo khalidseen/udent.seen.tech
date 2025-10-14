@@ -11,47 +11,27 @@ import { Activity, Download, Trash2 } from 'lucide-react';
 export function PerformanceMonitor() {
   const [report, setReport] = useState<any>(null);
   const [isVisible, setIsVisible] = useState(false);
-
   useEffect(() => {
     // Only show in development
     if (process.env.NODE_ENV !== 'development') return;
-
     const interval = setInterval(() => {
       const newReport = performanceMonitor.getPerformanceReport();
       setReport(newReport);
     }, 2000);
-
     return () => clearInterval(interval);
   }, []);
-
   if (process.env.NODE_ENV !== 'development' || !isVisible) {
-    return (
-      <Button
-        size="sm"
-        variant="ghost"
-        className="fixed bottom-4 right-4 z-50"
-        onClick={() => setIsVisible(true)}
-      >
-        <Activity className="h-4 w-4" />
-      </Button>
-    );
+    return;
   }
-
   if (!report) return null;
-
-  return (
-    <Card className="fixed bottom-4 right-4 w-96 z-50 shadow-lg">
+  return <Card className="fixed bottom-4 right-4 w-96 z-50 shadow-lg">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
             <CardTitle className="text-lg">مراقب الأداء</CardTitle>
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setIsVisible(false)}
-          >
+          <Button size="sm" variant="ghost" onClick={() => setIsVisible(false)}>
             ✕
           </Button>
         </div>
@@ -73,8 +53,7 @@ export function PerformanceMonitor() {
           </div>
         </div>
 
-        {report.memoryUsage && (
-          <div>
+        {report.memoryUsage && <div>
             <p className="text-sm text-muted-foreground mb-2">استخدام الذاكرة</p>
             <div className="space-y-1">
               <div className="flex justify-between text-xs">
@@ -88,56 +67,43 @@ export function PerformanceMonitor() {
                 </Badge>
               </div>
             </div>
-          </div>
-        )}
+          </div>}
 
-        {report.slowOperations.length > 0 && (
-          <div>
+        {report.slowOperations.length > 0 && <div>
             <p className="text-sm text-muted-foreground mb-2">عمليات بطيئة</p>
             <div className="space-y-1 max-h-32 overflow-y-auto">
-              {report.slowOperations.map((op: any, idx: number) => (
-                <div key={idx} className="flex justify-between text-xs">
+              {report.slowOperations.map((op: any, idx: number) => <div key={idx} className="flex justify-between text-xs">
                   <span className="truncate flex-1">{op.name}</span>
                   <Badge variant="destructive" className="ml-2">
                     {op.duration?.toFixed(2)}ms
                   </Badge>
-                </div>
-              ))}
+                </div>)}
             </div>
-          </div>
-        )}
+          </div>}
 
         <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            className="flex-1"
-            onClick={() => {
-              const json = JSON.stringify(report, null, 2);
-              const blob = new Blob([json], { type: 'application/json' });
-              const url = URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = `performance-report-${Date.now()}.json`;
-              a.click();
-              URL.revokeObjectURL(url);
-            }}
-          >
+          <Button size="sm" variant="outline" className="flex-1" onClick={() => {
+          const json = JSON.stringify(report, null, 2);
+          const blob = new Blob([json], {
+            type: 'application/json'
+          });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `performance-report-${Date.now()}.json`;
+          a.click();
+          URL.revokeObjectURL(url);
+        }}>
             <Download className="h-4 w-4 mr-1" />
             تصدير
           </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              performanceMonitor.disconnect();
-              setReport(null);
-            }}
-          >
+          <Button size="sm" variant="outline" onClick={() => {
+          performanceMonitor.disconnect();
+          setReport(null);
+        }}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 }
