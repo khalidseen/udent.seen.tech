@@ -127,21 +127,38 @@ export const VirtualizedPatientTable = memo<VirtualizedPatientTableProps>(({
     const container = containerRef.current;
     if (!container) return;
 
-    const handleScroll = () => {
-      const scrollTop = container.scrollTop;
-      const start = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_SIZE);
-      const end = Math.min(
-        patients.length,
-        Math.ceil((scrollTop + container.clientHeight) / ROW_HEIGHT) + BUFFER_SIZE
-      );
+    let rafId: number | null = null;
 
-      setVisibleRange({ start, end });
+    const handleScroll = () => {
+      // Cancel any pending animation frame to avoid duplicate calculations
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+
+      // Use requestAnimationFrame to batch layout reads and avoid forced reflows
+      rafId = requestAnimationFrame(() => {
+        const scrollTop = container.scrollTop;
+        const clientHeight = container.clientHeight;
+        const start = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_SIZE);
+        const end = Math.min(
+          patients.length,
+          Math.ceil((scrollTop + clientHeight) / ROW_HEIGHT) + BUFFER_SIZE
+        );
+
+        setVisibleRange({ start, end });
+        rafId = null;
+      });
     };
 
-    container.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial calculation
+    container.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
 
-    return () => container.removeEventListener('scroll', handleScroll);
+    return () => {
+      container.removeEventListener('scroll', handleScroll);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, [patients.length]);
 
   if (patients.length === 0) {

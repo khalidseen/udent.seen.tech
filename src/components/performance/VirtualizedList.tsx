@@ -40,8 +40,25 @@ export function VirtualizedList<T>({
     };
   }, [items, scrollTop, itemHeight, height]);
 
+  const rafRef = useRef<number | null>(null);
+
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    setScrollTop(e.currentTarget.scrollTop);
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+    }
+    
+    rafRef.current = requestAnimationFrame(() => {
+      setScrollTop(e.currentTarget.scrollTop);
+      rafRef.current = null;
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
   }, []);
 
   const totalHeight = items.length * itemHeight;

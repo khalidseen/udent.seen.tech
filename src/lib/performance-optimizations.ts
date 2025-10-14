@@ -200,14 +200,32 @@ export const useVirtualScrolling = <T>(
   const totalHeight = items.length * itemHeight;
   const offsetY = startIndex * itemHeight;
 
+  const rafRef = React.useRef<number | null>(null);
+
   const handleScroll = React.useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
-      throttle(() => {
+      // Cancel any pending animation frame
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+      
+      // Use requestAnimationFrame to batch layout reads
+      rafRef.current = requestAnimationFrame(() => {
         setScrollTop(e.currentTarget.scrollTop);
-      }, 16)(); // ~60fps
+        rafRef.current = null;
+      });
     },
     []
   );
+
+  // Cleanup on unmount
+  React.useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
 
   return {
     visibleItems,
