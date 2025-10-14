@@ -304,7 +304,7 @@ export function AppSidebar() {
                 </h2>
               )}
               <div className="space-y-1">
-                {group.items.map(item => (
+                {group.items.map((item: MenuItem) => (
                   <SidebarMenuItem 
                     key={item.title} 
                     icon={item.icon} 
@@ -313,7 +313,7 @@ export function AppSidebar() {
                     collapsed={isCollapsed} 
                     iconSize={getIconSize()} 
                     isActive={isActive(item.url)} 
-                    external={'external' in item ? item.external : undefined} 
+                    external={item.external} 
                   />
                 ))}
               </div>
