@@ -36,6 +36,7 @@ const initializeOfflineDB = async () => {
 const Index = lazy(() => import("@/pages/Index"));
 const Patients = lazy(() => import("@/pages/Patients"));
 const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
+const EditPatient = lazy(() => import("@/pages/EditPatient"));
 const Appointments = lazy(() => import("@/pages/Appointments"));
 const NewAppointment = lazy(() => import("@/pages/NewAppointment"));
 const Settings = lazy(() => import("@/pages/Settings"));
@@ -162,6 +163,7 @@ function App() {
                                 <Route index element={<Index />} />
                                 <Route path="patients" element={<Patients />} />
                                 <Route path="patients/:patientId" element={<PatientProfile />} />
+                                <Route path="patients/edit/:patientId" element={<EditPatient />} />
                                 <Route path="appointments" element={<Appointments />} />
                                 <Route path="appointments/new" element={<NewAppointment />} />
                                 <Route path="appointment-requests" element={<AppointmentRequests />} />
