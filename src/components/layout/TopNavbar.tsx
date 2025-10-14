@@ -640,6 +640,7 @@ export function TopNavbar() {
                   onClick={handleRefresh} 
                   className="h-7 w-7" 
                   title="تحديث"
+                  aria-label="تحديث الصفحة"
                 >
                   <RotateCcw className="h-3 w-3" />
                 </Button>
@@ -656,6 +657,7 @@ export function TopNavbar() {
                       size="icon" 
                       className={`h-8 w-8 ${localStorage.getItem('dev_override_role') ? 'bg-yellow-100 dark:bg-yellow-900' : ''}`}
                       title={`تبديل الصلاحيات (حالياً: ${getCurrentRoleDisplay()})`}
+                      aria-label={`تبديل الصلاحيات (حالياً: ${getCurrentRoleDisplay()})`}
                     >
                       <Shield className="h-4 w-4" />
                     </Button>
@@ -728,11 +730,11 @@ export function TopNavbar() {
                   <div className="p-3">
                     <div className="text-xs text-muted-foreground mb-2">حجم الخط</div>
                     <div className="flex items-center justify-between">
-                      <Button variant="ghost" size="icon" onClick={handleZoomOut} className="h-7 w-7">
+                      <Button variant="ghost" size="icon" onClick={handleZoomOut} className="h-7 w-7" aria-label="تصغير حجم الخط">
                         <Minus className="h-3 w-3" />
                       </Button>
                       <span className="text-xs">{getZoomText()}</span>
-                      <Button variant="ghost" size="icon" onClick={handleZoomIn} className="h-7 w-7">
+                      <Button variant="ghost" size="icon" onClick={handleZoomIn} className="h-7 w-7" aria-label="تكبير حجم الخط">
                         <Plus className="h-3 w-3" />
                       </Button>
                     </div>
@@ -773,6 +775,7 @@ export function TopNavbar() {
                 size="icon"
                 onClick={() => setIsSearchDialogOpen(false)}
                 className="h-8 w-8"
+                aria-label="إغلاق نافذة البحث"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -793,6 +796,7 @@ export function TopNavbar() {
                   size="icon"
                   onClick={() => setSearchQuery('')}
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8"
+                  aria-label="مسح البحث"
                 >
                   <X className="h-4 w-4" />
                 </Button>

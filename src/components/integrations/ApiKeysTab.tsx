@@ -188,7 +188,7 @@ const ApiKeysTab: React.FC<ApiKeysTabProps> = ({
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" aria-label="خيارات مفتاح API">
                         <MoreVertical className="w-4 h-4" />
                       </Button>
                     </DropdownMenuTrigger>
