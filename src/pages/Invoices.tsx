@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Plus, Eye, DollarSign, FileText, CreditCard, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 interface Invoice {
   id: string;

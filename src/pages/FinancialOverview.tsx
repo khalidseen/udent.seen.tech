@@ -6,6 +6,7 @@ import { DollarSign, TrendingUp, TrendingDown, Receipt, CreditCard, PieChart } f
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { TreatmentPlansManager } from "@/components/financial/TreatmentPlansManager";
 import { FinancialReports } from "@/components/financial/FinancialReports";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 export default function FinancialOverview() {
   const { data: financialSummary, isLoading } = useQuery({
