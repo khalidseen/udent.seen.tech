@@ -13,7 +13,8 @@ export default defineConfig(({ mode }) => ({
   build: {
     minify: 'terser',
     target: 'esnext',
-    cssCodeSplit: false, // Keep CSS in single file to reduce chain length
+    cssCodeSplit: true, // Split CSS for better tree-shaking
+    cssMinify: 'lightningcss', // Use faster CSS minifier
     terserOptions: {
       compress: {
         drop_console: true,

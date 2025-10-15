@@ -2,12 +2,16 @@ import type { Config } from "tailwindcss";
 
 export default {
 	darkMode: ["class"],
-	content: [
-		"./pages/**/*.{ts,tsx}",
-		"./components/**/*.{ts,tsx}",
-		"./app/**/*.{ts,tsx}",
-		"./src/**/*.{ts,tsx}",
-	],
+	content: {
+		files: [
+			"./index.html",
+			"./src/**/*.{ts,tsx,js,jsx}",
+		],
+		// Extract class names more aggressively
+		extract: {
+			tsx: (content) => content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || []
+		}
+	},
 	prefix: "",
 	theme: {
 		container: {
