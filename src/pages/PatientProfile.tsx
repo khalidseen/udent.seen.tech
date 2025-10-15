@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, DollarSign, FileText, Image, Pill, Activity, Edit } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, FileText, Image, Pill, Activity, Edit, Smile } from "lucide-react";
 import { PatientAppointments } from "@/components/patients/profile/PatientAppointments";
 import { PatientTreatments } from "@/components/patients/profile/PatientTreatments";
 import { PatientFinancials } from "@/components/patients/profile/PatientFinancials";
@@ -14,6 +14,8 @@ import { PatientPrescriptions } from "@/components/patients/profile/PatientPresc
 import { PatientRecords } from "@/components/patients/profile/PatientRecords";
 import { PatientNotes } from "@/components/patients/profile/PatientNotes";
 import { PatientWorkflowTracker } from "@/components/workflow/PatientWorkflowTracker";
+import { PatientImageGallery } from "@/components/medical-records/PatientImageGallery";
+import { AnatomicalDentalChart } from "@/components/dental/AnatomicalDentalChart";
 
 export default function PatientProfile() {
   const { patientId } = useParams<{ patientId: string }>();
@@ -157,10 +159,14 @@ export default function PatientProfile() {
 
       {/* Tabs */}
       <Tabs defaultValue="workflow" className="space-y-4">
-        <TabsList className="grid grid-cols-8 w-full">
+        <TabsList className="grid grid-cols-9 w-full">
           <TabsTrigger value="workflow">
             <Activity className="h-4 w-4 ml-2" />
             المسار
+          </TabsTrigger>
+          <TabsTrigger value="dental-chart">
+            <Smile className="h-4 w-4 ml-2" />
+            المخطط السني
           </TabsTrigger>
           <TabsTrigger value="appointments">
             <Calendar className="h-4 w-4 ml-2" />
@@ -172,11 +178,11 @@ export default function PatientProfile() {
           </TabsTrigger>
           <TabsTrigger value="financials">
             <DollarSign className="h-4 w-4 ml-2" />
-            الحالة المالية
+            المالية
           </TabsTrigger>
           <TabsTrigger value="images">
             <Image className="h-4 w-4 ml-2" />
-            الصور والأشعة
+            معرض الصور
           </TabsTrigger>
           <TabsTrigger value="prescriptions">
             <Pill className="h-4 w-4 ml-2" />
@@ -196,6 +202,22 @@ export default function PatientProfile() {
           <PatientWorkflowTracker patientId={patientId!} />
         </TabsContent>
 
+        <TabsContent value="dental-chart">
+          <Card>
+            <CardHeader>
+              <CardTitle>المخطط السني ثنائي الأبعاد</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AnatomicalDentalChart 
+                patientId={patientId!}
+                onToothSelect={(toothNumber) => {
+                  console.log('Selected tooth:', toothNumber);
+                }}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="appointments">
           <PatientAppointments patientId={patientId!} />
         </TabsContent>
@@ -209,7 +231,7 @@ export default function PatientProfile() {
         </TabsContent>
 
         <TabsContent value="images">
-          <PatientImages patientId={patientId!} />
+          <PatientImageGallery patientId={patientId!} />
         </TabsContent>
 
         <TabsContent value="prescriptions">
