@@ -251,4 +251,48 @@ All colors MUST be HSL.
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
   }
+
+  /* Performance optimizations to prevent forced reflows */
+  /* CSS containment for layout isolation */
+  .dialog-content, .popover-content, .dropdown-content, .sheet-content {
+    contain: layout style paint;
+  }
+
+  /* Optimize main content areas */
+  main, article, section {
+    contain: layout paint;
+  }
+
+  /* Will-change hints for animated/interactive elements */
+  .animate-in, .animate-out, [data-state="open"], [data-state="closed"] {
+    will-change: transform, opacity;
+  }
+
+  /* Remove will-change after animation completes */
+  .animate-in:not(:hover):not(:focus),
+  .animate-out:not(:hover):not(:focus) {
+    will-change: auto;
+  }
+
+  /* Content visibility for off-screen optimization */
+  .accordion-content:not([data-state="open"]),
+  .collapsible-content:not([data-state="open"]) {
+    content-visibility: hidden;
+  }
+
+  /* GPU acceleration for transforms */
+  [data-radix-scroll-area-viewport] {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Prevent layout thrashing on resize */
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Optimize table rendering */
+  table {
+    contain: layout;
+  }
 }
