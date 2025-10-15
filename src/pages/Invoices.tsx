@@ -170,7 +170,7 @@ export default function Invoices() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${stats?.totalRevenue?.toFixed(2) || '0.00'}</div>
+            <div className="text-2xl font-bold"><CurrencyAmount amount={stats?.totalRevenue || 0} /></div>
           </CardContent>
         </Card>
 
@@ -180,7 +180,7 @@ export default function Invoices() {
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">${stats?.totalPaid?.toFixed(2) || '0.00'}</div>
+            <div className="text-2xl font-bold text-success"><CurrencyAmount amount={stats?.totalPaid || 0} /></div>
           </CardContent>
         </Card>
 
@@ -190,7 +190,7 @@ export default function Invoices() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">${stats?.totalPending?.toFixed(2) || '0.00'}</div>
+            <div className="text-2xl font-bold text-warning"><CurrencyAmount amount={stats?.totalPending || 0} /></div>
           </CardContent>
         </Card>
 
@@ -235,9 +235,9 @@ export default function Invoices() {
                     <TableCell>{invoice.patients?.full_name}</TableCell>
                     <TableCell>{format(new Date(invoice.issue_date), 'yyyy/MM/dd')}</TableCell>
                     <TableCell>{format(new Date(invoice.due_date), 'yyyy/MM/dd')}</TableCell>
-                    <TableCell>${Number(invoice.total_amount).toFixed(2)}</TableCell>
-                    <TableCell className="text-success">${Number(invoice.paid_amount).toFixed(2)}</TableCell>
-                    <TableCell className="text-warning">${Number(invoice.balance_due).toFixed(2)}</TableCell>
+                    <TableCell><CurrencyAmount amount={Number(invoice.total_amount)} /></TableCell>
+                    <TableCell className="text-success"><CurrencyAmount amount={Number(invoice.paid_amount)} /></TableCell>
+                    <TableCell className="text-warning"><CurrencyAmount amount={Number(invoice.balance_due)} /></TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(invoice.status)}>
                         {getStatusText(invoice.status)}

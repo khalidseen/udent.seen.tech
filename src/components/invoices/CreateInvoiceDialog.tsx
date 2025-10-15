@@ -11,6 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CurrencyAmount, CurrencyInput } from "@/components/ui/currency-display";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface InvoiceItem {
   id: string;
@@ -34,6 +36,7 @@ export function CreateInvoiceDialog({ isOpen, onClose, onInvoiceCreated }: Creat
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const { formatAmount } = useCurrency();
 
   const { data: patients } = useQuery({
     queryKey: ['patients'],
@@ -266,9 +269,9 @@ export function CreateInvoiceDialog({ isOpen, onClose, onInvoiceCreated }: Creat
                                 <SelectValue placeholder="اختر الخدمة" />
                               </SelectTrigger>
                               <SelectContent>
-                                {servicePrices?.map((service) => (
+                                 {servicePrices?.map((service) => (
                                   <SelectItem key={service.id} value={service.id}>
-                                    {service.service_name} - ${Number(service.base_price).toFixed(2)}
+                                    {service.service_name} - <CurrencyAmount amount={Number(service.base_price)} />
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -304,7 +307,7 @@ export function CreateInvoiceDialog({ isOpen, onClose, onInvoiceCreated }: Creat
                             onChange={(e) => updateItem(item.id, 'unit_price', Number(e.target.value))}
                           />
                         </TableCell>
-                        <TableCell>${item.line_total.toFixed(2)}</TableCell>
+                        <TableCell><CurrencyAmount amount={item.line_total} /></TableCell>
                         <TableCell>
                           <Button
                             type="button"
@@ -329,10 +332,10 @@ export function CreateInvoiceDialog({ isOpen, onClose, onInvoiceCreated }: Creat
                 <div className="mt-4 flex justify-end">
                   <div className="text-right">
                     <div className="text-lg font-semibold">
-                      المجموع الفرعي: ${calculateSubtotal().toFixed(2)}
+                      المجموع الفرعي: <CurrencyAmount amount={calculateSubtotal()} />
                     </div>
                     <div className="text-xl font-bold">
-                      المجموع الكلي: ${calculateSubtotal().toFixed(2)}
+                      المجموع الكلي: <CurrencyAmount amount={calculateSubtotal()} />
                     </div>
                   </div>
                 </div>

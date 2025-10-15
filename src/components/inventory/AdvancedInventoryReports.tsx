@@ -10,6 +10,8 @@ import { OptimizedChart } from "@/components/ui/optimized-chart";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, TrendingDown, BarChart3, Package2, Calendar, DollarSign } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth } from "date-fns";
+import { CurrencyAmount } from "@/components/ui/currency-display";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface Supply {
   id: string;
@@ -33,6 +35,7 @@ interface StockMovement {
 export function AdvancedInventoryReports() {
   const [reportType, setReportType] = useState<"abc" | "consumption" | "forecast">("abc");
   const [timeRange, setTimeRange] = useState("3months");
+  const { formatAmount } = useCurrency();
 
   const { data: supplies } = useQuery({
     queryKey: ['supplies-for-analysis'],
@@ -178,7 +181,7 @@ export function AdvancedInventoryReports() {
       return consumptionTrends.map(item => ({
         name: item.month,
         value: item.totalValue,
-        label: `$${item.totalValue.toFixed(2)}`
+        label: formatAmount(item.totalValue)
       }));
     }
     
@@ -191,7 +194,7 @@ export function AdvancedInventoryReports() {
       return Object.entries(categoryData).map(([category, value]) => ({
         name: `فئة ${category}`,
         value,
-        label: `$${value.toFixed(2)}`
+        label: formatAmount(value)
       }));
     }
     
@@ -274,7 +277,7 @@ export function AdvancedInventoryReports() {
                       </Badge>
                     </TableCell>
                     <TableCell>{item.totalConsumption} وحدة</TableCell>
-                    <TableCell>${item.totalValue.toFixed(2)}</TableCell>
+                    <TableCell><CurrencyAmount amount={item.totalValue} /></TableCell>
                     <TableCell>{item.valuePercentage.toFixed(1)}%</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -317,7 +320,7 @@ export function AdvancedInventoryReports() {
                     <TableRow key={item.month}>
                       <TableCell>{format(new Date(item.month), 'MMMM yyyy')}</TableCell>
                       <TableCell>{item.totalQuantity} وحدة</TableCell>
-                      <TableCell>${item.totalValue.toFixed(2)}</TableCell>
+                      <TableCell><CurrencyAmount amount={item.totalValue} /></TableCell>
                       <TableCell>
                         {trend === 'up' && <TrendingUp className="w-4 h-4 text-green-600" />}
                         {trend === 'down' && <TrendingDown className="w-4 h-4 text-red-600" />}

@@ -8,6 +8,7 @@ import { DollarSign, TrendingUp, TrendingDown, Filter, Download } from "lucide-r
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState } from "react";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 export default function PatientFinancialTransactions() {
   const [filterType, setFilterType] = useState<string>("all");

@@ -9,6 +9,7 @@ import { OptimizedChart } from "@/components/ui/optimized-chart";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import FinancialStatusDashboard from "./FinancialStatusDashboard";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrency } from "@/hooks/useCurrency";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -123,6 +124,7 @@ const fetchAllAnalytics = async (dateRange: { start: Date; end: Date }) => {
 function AnalyticalDashboardComponent() {
   const [timeRange, setTimeRange] = useState("30days");
   const [chartType, setChartType] = useState<"revenue" | "appointments" | "patients">("revenue");
+  const { formatAmount } = useCurrency();
 
   // Get date range based on selection
   const getDateRange = () => {
@@ -165,7 +167,7 @@ function AnalyticalDashboardComponent() {
       return Object.entries(revenueData.dailyRevenue).map(([date, value]) => ({
         name: format(new Date(date), 'MM/dd'),
         value,
-        label: `$${value.toFixed(2)}`
+        label: formatAmount(value)
       }));
     }
     
@@ -191,7 +193,7 @@ function AnalyticalDashboardComponent() {
       
       metrics.push({
         title: "متوسط الإيرادات لكل موعد",
-        value: `$${avgRevenuePerAppointment.toFixed(2)}`,
+        value: formatAmount(avgRevenuePerAppointment),
         icon: Target,
         color: "text-blue-600"
       });
@@ -225,7 +227,7 @@ function AnalyticalDashboardComponent() {
   const todayStats = useMemo(() => [
     {
       title: "إيرادات اليوم",
-      value: `$${revenueData?.todayRevenue?.toFixed(2) || '0.00'}`,
+      value: formatAmount(revenueData?.todayRevenue || 0),
       icon: DollarSign,
       trend: revenueData?.todayRevenue ? 'up' : 'neutral'
     },
@@ -381,12 +383,12 @@ function AnalyticalDashboardComponent() {
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
               <span>إجمالي الإيرادات</span>
-              <span className="font-bold">${revenueData?.totalRevenue?.toFixed(2) || '0.00'}</span>
+              <span className="font-bold">{formatAmount(revenueData?.totalRevenue || 0)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span>متوسط يومي</span>
               <span className="font-bold">
-                ${revenueData?.totalRevenue ? (revenueData.totalRevenue / parseInt(timeRange.replace('days', '') || '30')).toFixed(2) : '0.00'}
+                {formatAmount(revenueData?.totalRevenue ? (revenueData.totalRevenue / parseInt(timeRange.replace('days', '') || '30')) : 0)}
               </span>
             </div>
             <div className="flex justify-between items-center">

@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 interface OrderItem {
   id: string;
@@ -257,9 +258,9 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
                                 <SelectValue placeholder="اختر المستلزم" />
                               </SelectTrigger>
                               <SelectContent>
-                                {supplies?.map((supply) => (
+                                 {supplies?.map((supply) => (
                                   <SelectItem key={supply.id} value={supply.id}>
-                                    {supply.name} - ${Number(supply.unit_cost).toFixed(2)}
+                                    {supply.name} - <CurrencyAmount amount={Number(supply.unit_cost)} />
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -288,7 +289,7 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
                             onChange={(e) => updateItem(item.id, 'unit_cost', Number(e.target.value))}
                           />
                         </TableCell>
-                        <TableCell>${item.line_total.toFixed(2)}</TableCell>
+                        <TableCell><CurrencyAmount amount={item.line_total} /></TableCell>
                         <TableCell>
                           <Button
                             type="button"
@@ -313,7 +314,7 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
                 <div className="mt-4 flex justify-end">
                   <div className="text-right">
                     <div className="text-xl font-bold">
-                      المجموع الكلي: ${calculateTotal().toFixed(2)}
+                      المجموع الكلي: <CurrencyAmount amount={calculateTotal()} />
                     </div>
                   </div>
                 </div>

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, Users, Receipt } from "lucide-react";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 export function FinancialDashboard() {
   const { data: stats, isLoading } = useQuery({
@@ -66,7 +67,7 @@ export function FinancialDashboard() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-green-600">
-            {stats?.totalRevenue.toFixed(2)} ريال
+            <CurrencyAmount amount={stats?.totalRevenue || 0} />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             من {stats?.invoicesCount} فاتورة
@@ -83,7 +84,7 @@ export function FinancialDashboard() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-blue-600">
-            {stats?.totalPaid.toFixed(2)} ريال
+            <CurrencyAmount amount={stats?.totalPaid || 0} />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             معدل التحصيل: {stats?.collectionRate.toFixed(1)}%
@@ -100,7 +101,7 @@ export function FinancialDashboard() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-red-600">
-            {stats?.totalPending.toFixed(2)} ريال
+            <CurrencyAmount amount={stats?.totalPending || 0} />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
             من عدة مرضى

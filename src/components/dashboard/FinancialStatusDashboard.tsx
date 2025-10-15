@@ -8,6 +8,7 @@ import { DollarSign, TrendingUp, Users, AlertTriangle } from "lucide-react";
 import { format, isToday } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 interface PatientBalance {
   patient_id: string;
@@ -154,7 +155,7 @@ const FinancialStatusDashboard = () => {
               <div>
                 <p className="text-sm font-medium text-green-600">تحصيل اليوم</p>
                 <p className="text-2xl font-bold text-green-700">
-                  {data.todayCollection.toLocaleString()} ريال
+                  <CurrencyAmount amount={data.todayCollection} />
                 </p>
                 <p className="text-xs text-green-600">
                   {data.todayPaymentsCount} دفعة
@@ -171,7 +172,7 @@ const FinancialStatusDashboard = () => {
               <div>
                 <p className="text-sm font-medium text-red-600">إجمالي المتبقي</p>
                 <p className="text-2xl font-bold text-red-700">
-                  {data.totalOutstanding.toLocaleString()} ريال
+                  <CurrencyAmount amount={data.totalOutstanding} />
                 </p>
                 <p className="text-xs text-red-600">
                   من {data.patientsWithDebt} مريض
@@ -205,9 +206,11 @@ const FinancialStatusDashboard = () => {
               <div>
                 <p className="text-sm font-medium text-blue-600">متوسط المديونية</p>
                 <p className="text-2xl font-bold text-blue-700">
-                  {data.patientsWithDebt > 0 
-                    ? Math.round(data.totalOutstanding / data.patientsWithDebt).toLocaleString()
-                    : 0} ريال
+                  <CurrencyAmount 
+                    amount={data.patientsWithDebt > 0 
+                      ? Math.round(data.totalOutstanding / data.patientsWithDebt)
+                      : 0} 
+                  />
                 </p>
                 <p className="text-xs text-blue-600">لكل مريض</p>
               </div>
@@ -255,13 +258,13 @@ const FinancialStatusDashboard = () => {
                           variant={balance.remaining_balance > 1000 ? "destructive" : "secondary"}
                           className="ml-2"
                         >
-                          {balance.remaining_balance.toLocaleString()} ريال
+                          <CurrencyAmount amount={balance.remaining_balance} />
                         </Badge>
                       </div>
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm text-muted-foreground">
-                          <span>مدفوع: {balance.total_paid.toLocaleString()} ريال</span>
-                          <span>إجمالي: {balance.total_cost.toLocaleString()} ريال</span>
+                          <span>مدفوع: <CurrencyAmount amount={balance.total_paid} /></span>
+                          <span>إجمالي: <CurrencyAmount amount={balance.total_cost} /></span>
                         </div>
                         <Progress value={paymentPercentage} className="h-2" />
                       </div>

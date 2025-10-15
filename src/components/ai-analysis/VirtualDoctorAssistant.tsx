@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 interface TreatmentSuggestion {
   id: string;
@@ -440,7 +441,7 @@ export function VirtualDoctorAssistant() {
                   </Badge>
                   <Badge variant="outline">
                     <DollarSign className="w-3 h-3 ml-1" />
-                    {patientAnalysis.costEstimate} ريال
+                    <CurrencyAmount amount={patientAnalysis.costEstimate} />
                   </Badge>
                 </div>
               </div>

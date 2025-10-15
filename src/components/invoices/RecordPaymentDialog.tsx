@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 interface Invoice {
   id: string;
@@ -138,15 +139,15 @@ export function RecordPaymentDialog({ invoice, isOpen, onClose, onPaymentRecorde
             </div>
             <div className="flex justify-between text-sm">
               <span>المجموع الكلي:</span>
-              <span>${Number(invoice.total_amount).toFixed(2)}</span>
+              <span><CurrencyAmount amount={Number(invoice.total_amount)} /></span>
             </div>
             <div className="flex justify-between text-sm text-success">
               <span>المبلغ المدفوع:</span>
-              <span>${Number(invoice.paid_amount).toFixed(2)}</span>
+              <span><CurrencyAmount amount={Number(invoice.paid_amount)} /></span>
             </div>
             <div className="flex justify-between text-sm text-warning font-medium">
               <span>الرصيد المستحق:</span>
-              <span>${Number(invoice.balance_due).toFixed(2)}</span>
+              <span><CurrencyAmount amount={Number(invoice.balance_due)} /></span>
             </div>
           </CardContent>
         </Card>

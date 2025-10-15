@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { Printer } from "lucide-react";
 import { format } from "date-fns";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 interface Invoice {
   id: string;
@@ -223,8 +224,8 @@ export function ViewInvoiceDialog({ invoice, isOpen, onClose }: ViewInvoiceDialo
                       <TableCell className="font-medium">{item.service_name}</TableCell>
                       <TableCell>{item.description || '-'}</TableCell>
                       <TableCell>{item.quantity}</TableCell>
-                      <TableCell>${Number(item.unit_price).toFixed(2)}</TableCell>
-                      <TableCell>${Number(item.line_total).toFixed(2)}</TableCell>
+                      <TableCell><CurrencyAmount amount={Number(item.unit_price)} /></TableCell>
+                      <TableCell><CurrencyAmount amount={Number(item.line_total)} /></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -238,20 +239,20 @@ export function ViewInvoiceDialog({ invoice, isOpen, onClose }: ViewInvoiceDialo
               <div className="space-y-2">
                 <div className="flex justify-between text-lg">
                   <span>المجموع الفرعي:</span>
-                  <span>${Number(invoice.total_amount).toFixed(2)}</span>
+                  <span><CurrencyAmount amount={Number(invoice.total_amount)} /></span>
                 </div>
                 <Separator />
                 <div className="flex justify-between text-xl font-bold">
                   <span>المجموع الكلي:</span>
-                  <span>${Number(invoice.total_amount).toFixed(2)}</span>
+                  <span><CurrencyAmount amount={Number(invoice.total_amount)} /></span>
                 </div>
                 <div className="flex justify-between text-lg text-success">
                   <span>المبلغ المدفوع:</span>
-                  <span>${Number(invoice.paid_amount).toFixed(2)}</span>
+                  <span><CurrencyAmount amount={Number(invoice.paid_amount)} /></span>
                 </div>
                 <div className="flex justify-between text-lg text-warning">
                   <span>الرصيد المستحق:</span>
-                  <span>${Number(invoice.balance_due).toFixed(2)}</span>
+                  <span><CurrencyAmount amount={Number(invoice.balance_due)} /></span>
                 </div>
               </div>
             </CardContent>
@@ -278,7 +279,7 @@ export function ViewInvoiceDialog({ invoice, isOpen, onClose }: ViewInvoiceDialo
                     {payments.map((payment) => (
                       <TableRow key={payment.id}>
                         <TableCell>{format(new Date(payment.payment_date), 'yyyy/MM/dd')}</TableCell>
-                        <TableCell className="text-success">${Number(payment.amount).toFixed(2)}</TableCell>
+                        <TableCell className="text-success"><CurrencyAmount amount={Number(payment.amount)} /></TableCell>
                         <TableCell>{getPaymentMethodText(payment.payment_method)}</TableCell>
                         <TableCell>{payment.reference_number || '-'}</TableCell>
                         <TableCell>{payment.notes || '-'}</TableCell>

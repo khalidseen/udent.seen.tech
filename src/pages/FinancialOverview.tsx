@@ -72,7 +72,7 @@ export default function FinancialOverview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {financialSummary?.totalRevenue.toFixed(2)} ريال
+              <CurrencyAmount amount={financialSummary?.totalRevenue || 0} />
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
               <TrendingUp className="h-3 w-3" />
@@ -90,7 +90,7 @@ export default function FinancialOverview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {financialSummary?.totalPaid.toFixed(2)} ريال
+              <CurrencyAmount amount={financialSummary?.totalPaid || 0} />
             </div>
             <p className="text-xs text-muted-foreground">
               {financialSummary?.paidInvoices} فاتورة مدفوعة
@@ -107,7 +107,7 @@ export default function FinancialOverview() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {financialSummary?.totalPending.toFixed(2)} ريال
+              <CurrencyAmount amount={financialSummary?.totalPending || 0} />
             </div>
             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
               <TrendingDown className="h-3 w-3" />

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { DollarSign, Receipt, Plus, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 interface PatientFinancialsProps {
   patientId: string;
@@ -82,7 +83,7 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {financialData?.totalInvoiced.toFixed(2)} ريال
+              <CurrencyAmount amount={financialData?.totalInvoiced || 0} />
             </div>
           </CardContent>
         </Card>
@@ -96,7 +97,7 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {financialData?.totalPaid.toFixed(2)} ريال
+              <CurrencyAmount amount={financialData?.totalPaid || 0} />
             </div>
           </CardContent>
         </Card>
@@ -110,7 +111,7 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {financialData?.totalBalance.toFixed(2)} ريال
+              <CurrencyAmount amount={financialData?.totalBalance || 0} />
             </div>
           </CardContent>
         </Card>

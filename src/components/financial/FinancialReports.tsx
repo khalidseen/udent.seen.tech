@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileSpreadsheet, Download } from "lucide-react";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 export function FinancialReports() {
   const [reportType, setReportType] = useState<string>("monthly");
@@ -144,7 +145,7 @@ export function FinancialReports() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {reportData?.totalInvoiced.toFixed(2)} ريال
+              <CurrencyAmount amount={reportData?.totalInvoiced || 0} />
             </div>
             <p className="text-xs text-muted-foreground">
               {reportData?.invoicesCount} فاتورة
@@ -158,7 +159,7 @@ export function FinancialReports() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {reportData?.totalPaid.toFixed(2)} ريال
+              <CurrencyAmount amount={reportData?.totalPaid || 0} />
             </div>
             <p className="text-xs text-muted-foreground">
               {reportData?.paymentsCount} دفعة
@@ -172,7 +173,7 @@ export function FinancialReports() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {reportData?.totalPending.toFixed(2)} ريال
+              <CurrencyAmount amount={reportData?.totalPending || 0} />
             </div>
             <p className="text-xs text-muted-foreground">
               مبالغ معلقة
