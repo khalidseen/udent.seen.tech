@@ -13,7 +13,7 @@ export default defineConfig(({ mode }) => ({
   build: {
     minify: 'terser',
     target: 'esnext',
-    cssCodeSplit: true,
+    cssCodeSplit: false, // Keep CSS in single file to reduce chain length
     terserOptions: {
       compress: {
         drop_console: true,
@@ -43,9 +43,18 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 1000,
     sourcemap: false,
     reportCompressedSize: false,
-    assetsInlineLimit: 4096, // Inline assets smaller than 4kb
+    assetsInlineLimit: 8192, // Inline assets smaller than 8kb to reduce requests
     modulePreload: {
       polyfill: true,
+      resolveDependencies: (filename, deps) => {
+        // Preload critical chunks first
+        const criticalChunks = ['react', 'router', 'query'];
+        return deps.filter(dep => 
+          criticalChunks.some(chunk => dep.includes(chunk))
+        ).concat(deps.filter(dep => 
+          !criticalChunks.some(chunk => dep.includes(chunk))
+        ));
+      },
     },
   },
   optimizeDeps: {
