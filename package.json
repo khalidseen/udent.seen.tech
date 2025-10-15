@@ -78,6 +78,7 @@
     "react-router-dom": "^6.26.2",
     "react-window": "^2.2.0",
     "recharts": "^2.12.7",
+    "rollup-plugin-critical": "^1.0.15",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",

@@ -3,6 +3,7 @@ import reactSWC from "@vitejs/plugin-react-swc"
 import { defineConfig } from "vite"
 import { VitePWA } from 'vite-plugin-pwa'
 import { componentTagger } from "lovable-tagger"
+import critical from 'rollup-plugin-critical'
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -54,6 +55,17 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     reactSWC(),
     mode === 'development' && componentTagger(),
+    mode === 'production' && critical({
+      inline: true,
+      minify: true,
+      dimensions: [{
+        width: 375,
+        height: 667
+      }, {
+        width: 1920,
+        height: 1080
+      }]
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'inline',
