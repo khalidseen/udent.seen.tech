@@ -5,6 +5,30 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { componentTagger } from "lovable-tagger"
 import critical from 'rollup-plugin-critical'
 
+// Plugin to defer CSS loading to eliminate render-blocking
+const deferCSSPlugin = () => ({
+  name: 'defer-css',
+  transformIndexHtml(html: string) {
+    // Transform CSS link tags to use media="print" technique for deferred loading
+    let noscriptTags = '';
+    const transformedHtml = html.replace(
+      /<link([^>]*?)rel=["']stylesheet["']([^>]*?)href=["']([^"']+)["']([^>]*?)>/gi,
+      (match, before, middle, href, after) => {
+        // Skip if already has onload or is a font stylesheet
+        if (match.includes('onload=') || match.includes('fonts.googleapis')) {
+          return match;
+        }
+        // Collect noscript fallback
+        noscriptTags += `<noscript><link rel="stylesheet" href="${href}"></noscript>`;
+        // Add defer loading attributes
+        return `<link${before}rel="stylesheet"${middle}href="${href}"${after} media="print" onload="this.media='all';this.onload=null;">`;
+      }
+    );
+    // Insert noscript tags before closing head tag
+    return transformedHtml.replace('</head>', `${noscriptTags}</head>`);
+  },
+});
+
 export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
@@ -65,6 +89,7 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     reactSWC(),
     mode === 'development' && componentTagger(),
+    mode === 'production' && deferCSSPlugin(),
     mode === 'production' && critical({
       inline: true,
       minify: true,
