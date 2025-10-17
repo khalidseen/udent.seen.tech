@@ -5,6 +5,19 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { componentTagger } from "lovable-tagger"
 import critical from 'rollup-plugin-critical'
 
+// Plugin to add preload hints for critical resources
+const preloadCriticalPlugin = () => ({
+  name: 'preload-critical',
+  transformIndexHtml(html: string) {
+    // Add preload hints for critical chunks before the script tag
+    const preloadTags = `
+    <!-- Preload critical chunks to reduce dependency chain -->
+    <link rel="modulepreload" href="/src/main.tsx" />`;
+    
+    return html.replace('</head>', `${preloadTags}\n  </head>`);
+  },
+});
+
 // Plugin to defer CSS loading to eliminate render-blocking
 const deferCSSPlugin = () => ({
   name: 'defer-css',
@@ -89,10 +102,11 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     reactSWC(),
     mode === 'development' && componentTagger(),
-    mode === 'production' && deferCSSPlugin(),
+    mode === 'production' && preloadCriticalPlugin(),
     mode === 'production' && critical({
       inline: true,
       minify: true,
+      extract: true,
       dimensions: [{
         width: 375,
         height: 667
@@ -101,6 +115,7 @@ export default defineConfig(({ mode }) => ({
         height: 1080
       }]
     }),
+    mode === 'production' && deferCSSPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'inline',
