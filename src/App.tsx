@@ -39,8 +39,14 @@ const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
 const EditPatient = lazy(() => import("@/pages/EditPatient"));
 const Appointments = lazy(() => import("@/pages/Appointments"));
 const NewAppointment = lazy(() => import("@/pages/NewAppointment"));
+const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Doctors = lazy(() => import("@/pages/Doctors"));
+const MedicalRecords = lazy(() => import("@/pages/MedicalRecords"));
+const DentalTreatments = lazy(() => import("@/pages/DentalTreatments"));
+const AIInsights = lazy(() => import("@/pages/AIInsights"));
+const Reports = lazy(() => import("@/pages/Reports"));
+const Notifications = lazy(() => import("@/pages/Notifications"));
 const DoctorAssistants = lazy(() => import("@/pages/DoctorAssistants"));
 const Secretaries = lazy(() => import("@/pages/Secretaries"));
 const AppointmentRequests = lazy(() => import("@/pages/AppointmentRequests"));
@@ -166,10 +172,16 @@ function App() {
                                 <Route path="patients/edit/:patientId" element={<EditPatient />} />
                                 <Route path="appointments" element={<Appointments />} />
                                 <Route path="appointments/new" element={<NewAppointment />} />
+                                <Route path="book" element={<PublicBooking />} />
                                 <Route path="appointment-requests" element={<AppointmentRequests />} />
                                 <Route path="doctor-applications" element={<DoctorApplications />} />
                                 <Route path="settings" element={<Settings />} />
                                 <Route path="doctors" element={<Doctors />} />
+                                <Route path="medical-records" element={<MedicalRecords />} />
+                                <Route path="dental-treatments" element={<DentalTreatments />} />
+                                <Route path="ai-insights" element={<AIInsights />} />
+                                <Route path="reports" element={<Reports />} />
+                                <Route path="notifications" element={<Notifications />} />
                                 <Route path="doctor-assistants" element={<DoctorAssistants />} />
                                 <Route path="secretaries" element={<Secretaries />} />
                                 <Route path="invoices" element={<Invoices />} />
