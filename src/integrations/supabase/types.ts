@@ -3143,6 +3143,10 @@ export type Database = {
         Args: { clinic_id_param?: string; metric_type_param: string }
         Returns: boolean
       }
+      check_user_role: {
+        Args: { _role: string; _user_id: string }
+        Returns: boolean
+      }
       create_clinic_with_owner: {
         Args: {
           address?: string
@@ -3221,6 +3225,10 @@ export type Database = {
         Args: { p_profile_id: string }
         Returns: boolean
       }
+      get_dashboard_stats_optimized: {
+        Args: { clinic_id_param: string }
+        Returns: Json
+      }
       get_user_accessible_clinics: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -3233,6 +3241,10 @@ export type Database = {
       get_user_clinic_role: {
         Args: { user_id_param?: string }
         Returns: Database["public"]["Enums"]["user_role_type"]
+      }
+      get_user_complete_permissions: {
+        Args: { user_id_param?: string }
+        Returns: Json
       }
       get_user_current_clinic: {
         Args: Record<PropertyKey, never>
