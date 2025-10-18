@@ -47,7 +47,12 @@ const deferCSSPlugin = () => ({
   transformIndexHtml: {
     order: 'post' as const,
     handler(html: string) {
+      // Add polyfill for CSS preload support
+      const polyfillScript = `<script>!function(e){"use strict";var t=function(t,n,r){var o,i=e.document,c=i.createElement("link");if(n)o=n;else{var a=(i.body||i.getElementsByTagName("head")[0]).childNodes;o=a[a.length-1]}var d=i.styleSheets;c.rel="stylesheet",c.href=t,c.media="only x",function e(t){if(i.body)return t();setTimeout(function(){e(t)})}(function(){o.parentNode.insertBefore(c,n?o:o.nextSibling)});var s=function(e){for(var t=c.href,n=d.length;n--;)if(d[n].href===t)return e();setTimeout(function(){s(e)})};return c.addEventListener&&c.addEventListener("load",r),c.onloadcssdefined=s,s(r),c};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);</script>`;
+      
       let noscriptTags = '';
+      let hasStylesheet = false;
+      
       const transformedHtml = html.replace(
         /<link([^>]*?)rel=["']stylesheet["']([^>]*?)href=["']([^"']+)["']([^>]*?)>/gi,
         (match, before, middle, href, after) => {
@@ -55,14 +60,17 @@ const deferCSSPlugin = () => ({
           if (match.includes('onload=') || match.includes('fonts.googleapis') || match.includes('data-critical')) {
             return match;
           }
+          hasStylesheet = true;
           // Collect noscript fallback
           noscriptTags += `<noscript><link rel="stylesheet" href="${href}"></noscript>`;
-          // Use preload + onload technique for better browser support
-          return `<link${before}rel="preload"${middle}href="${href}"${after} as="style" onload="this.onload=null;this.rel='stylesheet'">`;
+          // Use preload + onload technique for better browser support with fallback
+          return `<link${before}rel="preload"${middle}href="${href}"${after} as="style" onload="this.onload=null;this.rel='stylesheet'" media="print">`;
         }
       );
-      // Insert noscript tags before closing head tag
-      return transformedHtml.replace('</head>', `${noscriptTags}</head>`);
+      
+      // Insert polyfill script, noscript tags, and inline script before closing head tag
+      const inlineScript = hasStylesheet ? `${polyfillScript}<script>document.querySelectorAll('link[rel="preload"][as="style"]').forEach(function(l){l.media='all'});</script>` : '';
+      return transformedHtml.replace('</head>', `${inlineScript}${noscriptTags}</head>`);
     }
   }
 });
