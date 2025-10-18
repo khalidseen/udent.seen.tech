@@ -80,21 +80,91 @@ export default defineConfig(({ mode }) => ({
         drop_console: true,
         drop_debugger: true,
         pure_funcs: ['console.log', 'console.info'],
+        passes: 2, // Multiple passes for better optimization
+        unsafe_comps: true,
+        unsafe_math: true,
+        unsafe_methods: true,
+      },
+      mangle: {
+        safari10: true,
+      },
+      format: {
+        comments: false,
       },
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Critical: React must be in its own chunk and loaded first
-          'react': ['react', 'react-dom', 'react/jsx-runtime'],
-          'router': ['react-router-dom'],
-          'query': ['@tanstack/react-query'],
-          'supabase': ['@supabase/supabase-js'],
-          'ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-select'],
-          'icons': ['lucide-react'],
-          'charts': ['recharts'],
-          'forms': ['react-hook-form', 'zod'],
-          'utils': ['date-fns'],
+        manualChunks: (id) => {
+          // Critical: React core - smallest possible bundle
+          if (id.includes('react/jsx-runtime') || id.includes('react-dom/client')) {
+            return 'react-core';
+          }
+          if (id.includes('node_modules/react') && !id.includes('react-router') && !id.includes('react-hook')) {
+            return 'react';
+          }
+          
+          // Router - separate from react
+          if (id.includes('react-router-dom')) {
+            return 'router';
+          }
+          
+          // Query - separate chunk
+          if (id.includes('@tanstack/react-query')) {
+            return 'query';
+          }
+          
+          // Supabase - only load when needed
+          if (id.includes('@supabase/supabase-js')) {
+            return 'supabase';
+          }
+          
+          // Split UI components by usage frequency
+          // High frequency UI components
+          if (id.includes('@radix-ui/react-dialog') || 
+              id.includes('@radix-ui/react-dropdown-menu') ||
+              id.includes('@radix-ui/react-toast')) {
+            return 'ui-core';
+          }
+          
+          // Low frequency UI components
+          if (id.includes('@radix-ui')) {
+            return 'ui-extended';
+          }
+          
+          // Icons - separate chunk
+          if (id.includes('lucide-react')) {
+            return 'icons';
+          }
+          
+          // Charts - only load on reports/analytics pages
+          if (id.includes('recharts') || id.includes('chart.js')) {
+            return 'charts';
+          }
+          
+          // Forms - only load on form pages
+          if (id.includes('react-hook-form') || id.includes('zod')) {
+            return 'forms';
+          }
+          
+          // Utils - separate chunk
+          if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) {
+            return 'utils';
+          }
+          
+          // 3D libraries - only load when needed
+          if (id.includes('@react-three') || id.includes('three')) {
+            return '3d-libs';
+          }
+          
+          // Heavy dependencies
+          if (id.includes('fabric') || id.includes('html2canvas') || id.includes('jspdf')) {
+            return 'heavy-libs';
+          }
+          
+          // AI/ML libraries
+          if (id.includes('@huggingface')) {
+            return 'ai-libs';
+          }
         },
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
@@ -119,8 +189,21 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js'],
-    exclude: ['@node-rs/argon2', '@node-rs/bcrypt'],
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
+      '@supabase/supabase-js',
+      '@tanstack/react-query'
+    ],
+    exclude: [
+      '@node-rs/argon2', 
+      '@node-rs/bcrypt',
+      '@huggingface/transformers',
+      'three',
+      '@react-three/fiber',
+      '@react-three/drei'
+    ],
   },
   plugins: [
     reactSWC(),
