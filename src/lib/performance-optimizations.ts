@@ -201,17 +201,21 @@ export const useVirtualScrolling = <T>(
   const offsetY = startIndex * itemHeight;
 
   const rafRef = React.useRef<number | null>(null);
+  const scrollValueRef = React.useRef(0);
 
   const handleScroll = React.useCallback(
     (e: React.UIEvent<HTMLDivElement>) => {
+      // Store the scroll value immediately without reading layout
+      scrollValueRef.current = e.currentTarget.scrollTop;
+      
       // Cancel any pending animation frame
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
       }
       
-      // Use requestAnimationFrame to batch layout reads
+      // Batch state update in next frame to prevent forced reflow
       rafRef.current = requestAnimationFrame(() => {
-        setScrollTop(e.currentTarget.scrollTop);
+        setScrollTop(scrollValueRef.current);
         rafRef.current = null;
       });
     },

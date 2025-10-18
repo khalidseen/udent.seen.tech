@@ -3,6 +3,8 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  /* Add containment to prevent layout thrashing */
+  contain: layout style;
 }
 
 .logo {
