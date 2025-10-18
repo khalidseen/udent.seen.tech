@@ -8,14 +8,37 @@ import critical from 'rollup-plugin-critical'
 // Plugin to add preload hints for critical resources
 const preloadCriticalPlugin = () => ({
   name: 'preload-critical',
-  transformIndexHtml(html: string) {
-    // Add preload hints for critical chunks before the script tag
-    const preloadTags = `
-    <!-- Preload critical chunks to reduce dependency chain -->
-    <link rel="modulepreload" href="/src/main.tsx" />`;
-    
-    return html.replace('</head>', `${preloadTags}\n  </head>`);
-  },
+  transformIndexHtml: {
+    order: 'pre' as const,
+    handler(html: string) {
+      // Extract script and link tags to add preload hints
+      const scriptMatches = html.match(/<script[^>]*src=["']([^"']+)["'][^>]*>/gi) || [];
+      const cssMatches = html.match(/<link[^>]*href=["']([^"']+\.css)["'][^>]*>/gi) || [];
+      
+      let preloadTags = '\n    <!-- Preload critical resources to reduce dependency chain -->';
+      
+      // Add preload for main JS bundles
+      scriptMatches.forEach(tag => {
+        const srcMatch = tag.match(/src=["']([^"']+)["']/);
+        if (srcMatch && srcMatch[1] && (srcMatch[1].includes('/assets/js/index-') || srcMatch[1].includes('/assets/js/react-'))) {
+          preloadTags += `\n    <link rel="modulepreload" href="${srcMatch[1]}" crossorigin>`;
+        }
+      });
+      
+      // Add preload for critical CSS
+      cssMatches.forEach(tag => {
+        const hrefMatch = tag.match(/href=["']([^"']+)["']/);
+        if (hrefMatch && hrefMatch[1]) {
+          preloadTags += `\n    <link rel="preload" href="${hrefMatch[1]}" as="style">`;
+        }
+      });
+      
+      if (preloadTags.length > 60) {
+        return html.replace('</head>', `${preloadTags}\n  </head>`);
+      }
+      return html;
+    }
+  }
 });
 
 // Plugin to defer CSS loading to eliminate render-blocking
