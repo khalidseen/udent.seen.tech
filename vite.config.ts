@@ -44,25 +44,27 @@ const preloadCriticalPlugin = () => ({
 // Plugin to defer CSS loading to eliminate render-blocking
 const deferCSSPlugin = () => ({
   name: 'defer-css',
-  transformIndexHtml(html: string) {
-    // Transform CSS link tags to use media="print" technique for deferred loading
-    let noscriptTags = '';
-    const transformedHtml = html.replace(
-      /<link([^>]*?)rel=["']stylesheet["']([^>]*?)href=["']([^"']+)["']([^>]*?)>/gi,
-      (match, before, middle, href, after) => {
-        // Skip if already has onload or is a font stylesheet
-        if (match.includes('onload=') || match.includes('fonts.googleapis')) {
-          return match;
+  transformIndexHtml: {
+    order: 'post' as const,
+    handler(html: string) {
+      let noscriptTags = '';
+      const transformedHtml = html.replace(
+        /<link([^>]*?)rel=["']stylesheet["']([^>]*?)href=["']([^"']+)["']([^>]*?)>/gi,
+        (match, before, middle, href, after) => {
+          // Skip if already has onload, is a font stylesheet, or is critical inlined CSS
+          if (match.includes('onload=') || match.includes('fonts.googleapis') || match.includes('data-critical')) {
+            return match;
+          }
+          // Collect noscript fallback
+          noscriptTags += `<noscript><link rel="stylesheet" href="${href}"></noscript>`;
+          // Use preload + onload technique for better browser support
+          return `<link${before}rel="preload"${middle}href="${href}"${after} as="style" onload="this.onload=null;this.rel='stylesheet'">`;
         }
-        // Collect noscript fallback
-        noscriptTags += `<noscript><link rel="stylesheet" href="${href}"></noscript>`;
-        // Add defer loading attributes
-        return `<link${before}rel="stylesheet"${middle}href="${href}"${after} media="print" onload="this.media='all';this.onload=null;">`;
-      }
-    );
-    // Insert noscript tags before closing head tag
-    return transformedHtml.replace('</head>', `${noscriptTags}</head>`);
-  },
+      );
+      // Insert noscript tags before closing head tag
+      return transformedHtml.replace('</head>', `${noscriptTags}</head>`);
+    }
+  }
 });
 
 export default defineConfig(({ mode }) => ({
@@ -220,20 +222,21 @@ export default defineConfig(({ mode }) => ({
         width: 1920,
         height: 1080
       }],
-      // Ignore external stylesheets and focus on inline critical CSS
       ignore: {
         atrule: ['@font-face'],
         decl: (node: any, value: any) => {
-          // Keep only critical properties
           return /url\(/.test(value);
         }
       },
-      // Increase threshold for critical CSS detection
       penthouse: {
-        timeout: 60000,
-        pageLoadSkipTimeout: 10000,
-        renderWaitTime: 1000,
+        timeout: 90000,
+        pageLoadSkipTimeout: 15000,
+        renderWaitTime: 2000,
         blockJSRequests: false,
+        forceInclude: ['.hero', '.header', '.nav', 'h1', 'h2', 'button', '.btn'],
+        strict: false,
+        maxEmbeddedBase64Length: 1000,
+        keepLargerMediaQueries: false,
       }
     }),
     mode === 'production' && deferCSSPlugin(),
