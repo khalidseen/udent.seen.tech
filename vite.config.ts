@@ -82,7 +82,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     minify: 'terser',
-    target: 'esnext',
+    target: 'es2020',
     cssCodeSplit: true, // Split CSS for better tree-shaking
     cssMinify: 'lightningcss', // Use faster CSS minifier
     terserOptions: {
@@ -223,9 +223,13 @@ export default defineConfig(({ mode }) => ({
       inline: true,
       minify: true,
       extract: true,
+      base: 'dist/',
       dimensions: [{
         width: 375,
         height: 667
+      }, {
+        width: 414,
+        height: 896
       }, {
         width: 1920,
         height: 1080
@@ -237,14 +241,26 @@ export default defineConfig(({ mode }) => ({
         }
       },
       penthouse: {
-        timeout: 90000,
-        pageLoadSkipTimeout: 15000,
-        renderWaitTime: 2000,
+        timeout: 120000,
+        pageLoadSkipTimeout: 20000,
+        renderWaitTime: 3000,
         blockJSRequests: false,
-        forceInclude: ['.hero', '.header', '.nav', 'h1', 'h2', 'button', '.btn'],
+        forceInclude: [
+          '.hero', '.header', '.nav', 'h1', 'h2', 'h3', 'p', 
+          'button', '.btn', 'input', 'label', 'form', 
+          '.text-', '.bg-', '.flex', '.grid', '.container',
+          '.rounded', '.shadow', '.border'
+        ],
         strict: false,
-        maxEmbeddedBase64Length: 1000,
+        maxEmbeddedBase64Length: 2000,
         keepLargerMediaQueries: false,
+        propertiesToRemove: [
+          '(.*)transition(.*)',
+          'cursor',
+          'pointer-events',
+          '(-webkit-)?tap-highlight-color',
+          '(.*)user-select'
+        ]
       }
     }),
     mode === 'production' && deferCSSPlugin(),
