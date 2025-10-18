@@ -136,7 +136,22 @@ export default defineConfig(({ mode }) => ({
       }, {
         width: 1920,
         height: 1080
-      }]
+      }],
+      // Ignore external stylesheets and focus on inline critical CSS
+      ignore: {
+        atrule: ['@font-face'],
+        decl: (node: any, value: any) => {
+          // Keep only critical properties
+          return /url\(/.test(value);
+        }
+      },
+      // Increase threshold for critical CSS detection
+      penthouse: {
+        timeout: 60000,
+        pageLoadSkipTimeout: 10000,
+        renderWaitTime: 1000,
+        blockJSRequests: false,
+      }
     }),
     mode === 'production' && deferCSSPlugin(),
     VitePWA({
