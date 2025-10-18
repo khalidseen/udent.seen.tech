@@ -1,0 +1,44 @@
+# Cache static assets with immutable hashed filenames for 1 year
+/assets/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/fonts/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/images/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Cache other static assets
+*.png
+  Cache-Control: public, max-age=31536000
+
+*.jpg
+  Cache-Control: public, max-age=31536000
+
+*.jpeg
+  Cache-Control: public, max-age=31536000
+
+*.svg
+  Cache-Control: public, max-age=31536000
+
+*.ico
+  Cache-Control: public, max-age=31536000
+
+*.woff2
+  Cache-Control: public, max-age=31536000
+
+# Don't cache the main HTML file and service worker
+/
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/sw.js
+  Cache-Control: public, max-age=0, must-revalidate
+
+/manifest.json
+  Cache-Control: public, max-age=3600
