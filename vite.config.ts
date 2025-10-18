@@ -5,7 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { componentTagger } from "lovable-tagger"
 import critical from 'rollup-plugin-critical'
 
-// Plugin to add preload hints for critical resources
+// Plugin to add preload hints and resource hints for critical resources
 const preloadCriticalPlugin = () => ({
   name: 'preload-critical',
   transformIndexHtml: {
@@ -15,21 +15,34 @@ const preloadCriticalPlugin = () => ({
       const scriptMatches = html.match(/<script[^>]*src=["']([^"']+)["'][^>]*>/gi) || [];
       const cssMatches = html.match(/<link[^>]*href=["']([^"']+\.css)["'][^>]*>/gi) || [];
       
-      let preloadTags = '\n    <!-- Preload critical resources to reduce dependency chain -->';
+      let preloadTags = '\n    <!-- Resource hints to reduce latency -->';
+      preloadTags += '\n    <link rel="dns-prefetch" href="https://fonts.googleapis.com">';
+      preloadTags += '\n    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>';
+      preloadTags += '\n    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>';
       
-      // Add preload for main JS bundles
-      scriptMatches.forEach(tag => {
-        const srcMatch = tag.match(/src=["']([^"']+)["']/);
-        if (srcMatch && srcMatch[1] && (srcMatch[1].includes('/assets/js/index-') || srcMatch[1].includes('/assets/js/react-'))) {
-          preloadTags += `\n    <link rel="modulepreload" href="${srcMatch[1]}" crossorigin>`;
-        }
-      });
+      // Add preconnect for Supabase if used
+      const supabaseUrl = process.env.VITE_SUPABASE_URL;
+      if (supabaseUrl) {
+        const domain = new URL(supabaseUrl).origin;
+        preloadTags += `\n    <link rel="dns-prefetch" href="${domain}">`;
+        preloadTags += `\n    <link rel="preconnect" href="${domain}" crossorigin>`;
+      }
       
-      // Add preload for critical CSS
+      preloadTags += '\n    <!-- Preload critical resources to reduce dependency chain -->';
+      
+      // Add preload for critical CSS with high priority
       cssMatches.forEach(tag => {
         const hrefMatch = tag.match(/href=["']([^"']+)["']/);
         if (hrefMatch && hrefMatch[1]) {
-          preloadTags += `\n    <link rel="preload" href="${hrefMatch[1]}" as="style">`;
+          preloadTags += `\n    <link rel="preload" href="${hrefMatch[1]}" as="style" fetchpriority="high">`;
+        }
+      });
+      
+      // Add modulepreload for main JS bundles with high priority
+      scriptMatches.forEach(tag => {
+        const srcMatch = tag.match(/src=["']([^"']+)["']/);
+        if (srcMatch && srcMatch[1] && (srcMatch[1].includes('/assets/js/index-') || srcMatch[1].includes('/assets/js/react-'))) {
+          preloadTags += `\n    <link rel="modulepreload" href="${srcMatch[1]}" fetchpriority="high" crossorigin>`;
         }
       });
       
@@ -224,6 +237,8 @@ export default defineConfig(({ mode }) => ({
       minify: true,
       extract: true,
       base: 'dist/',
+      width: 1920,
+      height: 1080,
       dimensions: [{
         width: 375,
         height: 667
@@ -231,35 +246,41 @@ export default defineConfig(({ mode }) => ({
         width: 414,
         height: 896
       }, {
+        width: 768,
+        height: 1024
+      }, {
         width: 1920,
         height: 1080
       }],
       ignore: {
-        atrule: ['@font-face'],
+        atrule: [],
         decl: (node: any, value: any) => {
-          return /url\(/.test(value);
+          // Don't ignore background images as they might be critical
+          return false;
         }
       },
       penthouse: {
-        timeout: 120000,
-        pageLoadSkipTimeout: 20000,
-        renderWaitTime: 3000,
+        timeout: 150000,
+        pageLoadSkipTimeout: 30000,
+        renderWaitTime: 5000,
         blockJSRequests: false,
         forceInclude: [
-          '.hero', '.header', '.nav', 'h1', 'h2', 'h3', 'p', 
-          'button', '.btn', 'input', 'label', 'form', 
-          '.text-', '.bg-', '.flex', '.grid', '.container',
-          '.rounded', '.shadow', '.border'
+          '.hero', '.header', '.nav', 'h1', 'h2', 'h3', 'h4', 'p', 'span', 'div',
+          'button', '.btn', 'input', 'label', 'form', 'a', 'main',
+          '.text-', '.bg-', '.flex', '.grid', '.container', '.w-', '.h-',
+          '.rounded', '.shadow', '.border', '.p-', '.m-', '.space-',
+          'body', 'html', '*'
         ],
         strict: false,
-        maxEmbeddedBase64Length: 2000,
-        keepLargerMediaQueries: false,
+        maxEmbeddedBase64Length: 4000,
+        keepLargerMediaQueries: true,
         propertiesToRemove: [
           '(.*)transition(.*)',
           'cursor',
           'pointer-events',
           '(-webkit-)?tap-highlight-color',
-          '(.*)user-select'
+          '(.*)user-select',
+          '(.*)animation(.*)'
         ]
       }
     }),
