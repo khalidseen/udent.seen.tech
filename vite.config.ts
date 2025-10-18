@@ -54,36 +54,31 @@ const preloadCriticalPlugin = () => ({
   }
 });
 
-// Plugin to defer CSS loading to eliminate render-blocking
+// Simplified CSS loading - let critical CSS handle most optimization
 const deferCSSPlugin = () => ({
   name: 'defer-css',
   transformIndexHtml: {
     order: 'post' as const,
     handler(html: string) {
-      // Add polyfill for CSS preload support
-      const polyfillScript = `<script>!function(e){"use strict";var t=function(t,n,r){var o,i=e.document,c=i.createElement("link");if(n)o=n;else{var a=(i.body||i.getElementsByTagName("head")[0]).childNodes;o=a[a.length-1]}var d=i.styleSheets;c.rel="stylesheet",c.href=t,c.media="only x",function e(t){if(i.body)return t();setTimeout(function(){e(t)})}(function(){o.parentNode.insertBefore(c,n?o:o.nextSibling)});var s=function(e){for(var t=c.href,n=d.length;n--;)if(d[n].href===t)return e();setTimeout(function(){s(e)})};return c.addEventListener&&c.addEventListener("load",r),c.onloadcssdefined=s,s(r),c};"undefined"!=typeof exports?exports.loadCSS=t:e.loadCSS=t}("undefined"!=typeof global?global:this);</script>`;
-      
+      // Only defer non-critical CSS that wasn't inlined by critical plugin
+      // Use simple preload approach with immediate activation
       let noscriptTags = '';
-      let hasStylesheet = false;
       
       const transformedHtml = html.replace(
         /<link([^>]*?)rel=["']stylesheet["']([^>]*?)href=["']([^"']+)["']([^>]*?)>/gi,
         (match, before, middle, href, after) => {
-          // Skip if already has onload, is a font stylesheet, or is critical inlined CSS
+          // Skip if already processed or is critical
           if (match.includes('onload=') || match.includes('fonts.googleapis') || match.includes('data-critical')) {
             return match;
           }
-          hasStylesheet = true;
-          // Collect noscript fallback
+          // Add noscript fallback
           noscriptTags += `<noscript><link rel="stylesheet" href="${href}"></noscript>`;
-          // Use preload + onload technique for better browser support with fallback
-          return `<link${before}rel="preload"${middle}href="${href}"${after} as="style" onload="this.onload=null;this.rel='stylesheet'" media="print">`;
+          // Use preload with immediate activation - no media tricks
+          return `<link${before}rel="preload"${middle}href="${href}"${after} as="style" onload="this.onload=null;this.rel='stylesheet'">`;
         }
       );
       
-      // Insert polyfill script, noscript tags, and inline script before closing head tag
-      const inlineScript = hasStylesheet ? `${polyfillScript}<script>document.querySelectorAll('link[rel="preload"][as="style"]').forEach(function(l){l.media='all'});</script>` : '';
-      return transformedHtml.replace('</head>', `${inlineScript}${noscriptTags}</head>`);
+      return transformedHtml.replace('</head>', `${noscriptTags}</head>`);
     }
   }
 });
@@ -235,7 +230,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'production' && critical({
       inline: true,
       minify: true,
-      extract: true,
+      extract: false, // Don't extract to separate file - inline everything critical
       base: 'dist/',
       width: 1920,
       height: 1080,
@@ -254,33 +249,40 @@ export default defineConfig(({ mode }) => ({
       }],
       ignore: {
         atrule: [],
-        decl: (node: any, value: any) => {
-          // Don't ignore background images as they might be critical
-          return false;
-        }
+        decl: () => false // Don't ignore any declarations
       },
       penthouse: {
-        timeout: 150000,
-        pageLoadSkipTimeout: 30000,
-        renderWaitTime: 5000,
+        timeout: 180000, // Increase timeout
+        pageLoadSkipTimeout: 40000,
+        renderWaitTime: 8000, // Wait longer to ensure full render
         blockJSRequests: false,
         forceInclude: [
-          '.hero', '.header', '.nav', 'h1', 'h2', 'h3', 'h4', 'p', 'span', 'div',
-          'button', '.btn', 'input', 'label', 'form', 'a', 'main',
-          '.text-', '.bg-', '.flex', '.grid', '.container', '.w-', '.h-',
-          '.rounded', '.shadow', '.border', '.p-', '.m-', '.space-',
+          // Layout and structural elements
+          '.hero', '.header', '.nav', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div', 'section', 'article', 'main',
+          'button', '.btn', 'input', 'label', 'form', 'a', 
+          // All text utility classes that might affect LCP text
+          '.text-sm', '.text-base', '.text-lg', '.text-xl', '.text-2xl', '.text-3xl',
+          '.text-muted-foreground', '.text-foreground', '.text-primary', '.text-secondary',
+          '.text-muted', '.text-card-foreground', '.text-popover-foreground',
+          // Layout utilities
+          '.flex', '.grid', '.container', '.w-full', '.w-', '.h-', '.max-w-',
+          '.rounded', '.rounded-lg', '.rounded-md', '.rounded-sm',
+          '.shadow', '.shadow-sm', '.shadow-md', '.shadow-lg',
+          '.border', '.border-t', '.border-b', '.border-l', '.border-r',
+          '.p-', '.px-', '.py-', '.pt-', '.pb-', '.pl-', '.pr-',
+          '.m-', '.mx-', '.my-', '.mt-', '.mb-', '.ml-', '.mr-',
+          '.space-', '.gap-',
+          // Color utilities
+          '.bg-', '.bg-background', '.bg-card', '.bg-primary', '.bg-secondary',
+          // Everything in viewport
           'body', 'html', '*'
         ],
         strict: false,
-        maxEmbeddedBase64Length: 4000,
+        maxEmbeddedBase64Length: 8000, // Inline more assets
         keepLargerMediaQueries: true,
         propertiesToRemove: [
-          '(.*)transition(.*)',
-          'cursor',
-          'pointer-events',
-          '(-webkit-)?tap-highlight-color',
-          '(.*)user-select',
-          '(.*)animation(.*)'
+          '(.*)animation(.*)',
+          '(.*)transition(.*)'
         ]
       }
     }),
