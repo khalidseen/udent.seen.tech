@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useOptimizedDashboard } from "@/hooks/useOptimizedDashboard";
+import { useOptimizedUpcomingAppointments } from "@/hooks/useOptimizedAppointments";
 import {
   Bell, Moon, Sun, User, ChevronDown, Plus, Minus, RotateCcw, Calendar,
   Search, BarChart3, Zap, UserPlus, FileText, AlertCircle, Wifi, WifiOff,
@@ -124,52 +125,17 @@ export function TopNavbar() {
     };
   }, []);
 
-  // Fetch today's statistics
-  // Optimized: Fetch today's statistics using useQuery with minimal data
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  // استخدام الـ hooks المحسنة
+  const { data: dashboardStats } = useOptimizedDashboard(clinicId);
+  const { data: upcomingApts } = useOptimizedUpcomingAppointments(clinicId, 24);
 
-  const { data: todayStats } = useQuery({
-    queryKey: ['today-stats', clinicId],
-    queryFn: async () => {
-      const todayStr = today.toISOString().split('T')[0];
-      
-      try {
-        const { data: appointments } = await supabase
-          .from('appointments')
-          .select('status')
-          .gte('appointment_date', `${todayStr}T00:00:00`)
-          .lt('appointment_date', `${todayStr}T23:59:59`);
-        
-        if (appointments) {
-          return {
-            totalAppointments: appointments.length,
-            completedAppointments: appointments.filter(apt => apt.status === 'completed').length,
-            pendingAppointments: appointments.filter(apt => apt.status === 'scheduled').length,
-            totalRevenue: 0
-          };
-        }
-        return {
-          totalAppointments: 0,
-          completedAppointments: 0,
-          pendingAppointments: 0,
-          totalRevenue: 0
-        };
-      } catch (error) {
-        console.error('Error fetching today stats:', error);
-        return {
-          totalAppointments: 0,
-          completedAppointments: 0,
-          pendingAppointments: 0,
-          totalRevenue: 0
-        };
-      }
-    },
-    enabled: !!clinicId,
-    staleTime: 3 * 60 * 1000, // 3 minutes
-    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes
-  });
+  // تحويل البيانات لتوافق الصيغة القديمة
+  const todayStats = dashboardStats ? {
+    totalAppointments: dashboardStats.today_appointments,
+    completedAppointments: 0,
+    pendingAppointments: dashboardStats.today_appointments,
+    totalRevenue: dashboardStats.this_month_revenue
+  } : undefined;
 
   // Zoom control functions
   const handleZoomIn = () => {
@@ -343,50 +309,18 @@ export function TopNavbar() {
     fetchUserProfile();
   }, [user?.id]);
 
-  // Fetch upcoming appointments within 24 hours
+  // تحديث قائمة المواعيد من الـ hook المحسن
   useEffect(() => {
-    const fetchUpcomingAppointments = async () => {
-      const now = new Date();
-      const next24Hours = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-
-      const { data, error } = await supabase
-        .from('appointments')
-        .select(`
-          id,
-          appointment_date,
-          treatment_type,
-          patients!inner(full_name)
-        `)
-        .gte('appointment_date', now.toISOString())
-        .lte('appointment_date', next24Hours.toISOString())
-        .eq('status', 'scheduled')
-        .order('appointment_date', { ascending: true });
-
-      if (!error && data) {
-        const formattedAppointments: UpcomingAppointment[] = data.map(apt => ({
-          id: apt.id,
-          patient_name: (apt.patients as { full_name?: string })?.full_name || 'غير محدد',
-          appointment_date: apt.appointment_date,
-          treatment_type: apt.treatment_type || 'فحص عام'
-        }));
-        setUpcomingAppointments(formattedAppointments);
-      }
-    };
-
-    fetchUpcomingAppointments();
-    
-    const channel = supabase
-      .channel('upcoming-appointments')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'appointments' },
-        () => fetchUpcomingAppointments()
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
+    if (upcomingApts) {
+      const formattedAppointments = upcomingApts.map(apt => ({
+        id: apt.id,
+        patient_name: apt.patients?.full_name || 'غير محدد',
+        appointment_date: apt.appointment_date,
+        treatment_type: apt.treatment_type || 'فحص عام'
+      }));
+      setUpcomingAppointments(formattedAppointments);
+    }
+  }, [upcomingApts]);
 
   const handleLogout = async () => {
     await signOut();

@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useOptimizedFinancialSummary } from "@/hooks/useOptimizedFinancial";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,108 +21,22 @@ interface PatientBalance {
 
 const FinancialStatusDashboard = () => {
   const navigate = useNavigate();
+  const [clinicId, setClinicId] = useState<string | null>(null);
 
-  // Fetch financial summary data
-  const { data: financialData, isLoading } = useQuery({
-    queryKey: ["financial-dashboard"],
-    queryFn: async () => {
-      try {
-        // Get today's payments
-        const today = new Date().toISOString().split('T')[0];
-        const { data: todayPayments, error: paymentsError } = await supabase
-          .from("payments")
-          .select("amount, status, patient_id")
-          .eq("payment_date", today)
-          .eq("status", "completed");
+  // جلب clinic ID
+  useEffect(() => {
+    const fetchClinicId = async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('clinic_id')
+        .single();
+      setClinicId(profile?.clinic_id || null);
+    };
+    fetchClinicId();
+  }, []);
 
-        if (paymentsError) throw paymentsError;
-
-        // Get treatment plans with patient info
-        const { data: treatmentPlans, error: plansError } = await supabase
-          .from("treatment_plans")
-          .select("id, patient_id, estimated_cost");
-
-        if (plansError) throw plansError;
-
-        // Get all patients to map names
-        const { data: allPatients, error: patientsError } = await supabase
-          .from("patients")
-          .select("id, full_name");
-
-        if (patientsError) throw patientsError;
-
-        // Get all payments to calculate balances
-        const { data: allPayments, error: allPaymentsError } = await supabase
-          .from("payments")
-          .select("amount, patient_id, status")
-          .eq("status", "completed");
-
-        if (allPaymentsError) throw allPaymentsError;
-
-        // Calculate patient balances
-        const patientBalances: Record<string, PatientBalance> = {};
-        
-        // Create patient name map
-        const patientNameMap = new Map<string, string>();
-        allPatients?.forEach(patient => {
-          patientNameMap.set(patient.id, patient.full_name);
-        });
-
-        // Initialize with treatment plans
-        treatmentPlans?.forEach(plan => {
-          const patientId = plan.patient_id;
-          const patientName = patientNameMap.get(patientId) || 'مريض غير معروف';
-          
-          if (!patientBalances[patientId]) {
-            patientBalances[patientId] = {
-              patient_id: patientId,
-              patient_name: patientName,
-              total_cost: 0,
-              total_paid: 0,
-              remaining_balance: 0
-            };
-          }
-          patientBalances[patientId].total_cost += plan.estimated_cost || 0;
-        });
-
-        // Add payments
-        allPayments?.forEach(payment => {
-          const patientId = payment.patient_id;
-          if (patientBalances[patientId]) {
-            patientBalances[patientId].total_paid += payment.amount || 0;
-          }
-        });
-
-        // Calculate remaining balances
-        Object.values(patientBalances).forEach(balance => {
-          balance.remaining_balance = balance.total_cost - balance.total_paid;
-        });
-
-        // Filter patients with outstanding balances
-        const outstandingBalances = Object.values(patientBalances)
-          .filter(balance => balance.remaining_balance > 0)
-          .sort((a, b) => b.remaining_balance - a.remaining_balance);
-
-        // Calculate today's collections
-        const todayCollection = todayPayments?.reduce((sum, payment) => sum + (payment.amount || 0), 0) || 0;
-
-        // Calculate total outstanding
-        const totalOutstanding = outstandingBalances.reduce((sum, balance) => sum + balance.remaining_balance, 0);
-
-        return {
-          todayCollection,
-          totalOutstanding,
-          outstandingBalances,
-          todayPaymentsCount: todayPayments?.length || 0,
-          patientsWithDebt: outstandingBalances.length
-        };
-      } catch (error) {
-        console.error("Error fetching financial data:", error);
-        throw error;
-      }
-    },
-    refetchInterval: 5 * 60 * 1000 // Refresh every 5 minutes
-  });
+  // استخدام الـ hook المحسن
+  const { data: financialData, isLoading } = useOptimizedFinancialSummary(clinicId);
 
   if (isLoading) {
     return (
