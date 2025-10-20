@@ -11,26 +11,30 @@ const preloadCriticalPlugin = () => ({
   transformIndexHtml: {
     order: 'pre' as const,
     handler(html: string) {
-      // Extract script and link tags to add preload hints
-      const scriptMatches = html.match(/<script[^>]*src=["']([^"']+)["'][^>]*>/gi) || [];
-      const cssMatches = html.match(/<link[^>]*href=["']([^"']+\.css)["'][^>]*>/gi) || [];
+      let preloadTags = '\n    <!-- Resource hints to reduce latency and dependency chain -->';
       
-      let preloadTags = '\n    <!-- Resource hints to reduce latency -->';
+      // Critical: Add dns-prefetch and preconnect for external origins
       preloadTags += '\n    <link rel="dns-prefetch" href="https://fonts.googleapis.com">';
+      preloadTags += '\n    <link rel="dns-prefetch" href="https://fonts.gstatic.com">';
       preloadTags += '\n    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>';
       preloadTags += '\n    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>';
       
       // Add preconnect for Supabase if used
       const supabaseUrl = process.env.VITE_SUPABASE_URL;
       if (supabaseUrl) {
-        const domain = new URL(supabaseUrl).origin;
-        preloadTags += `\n    <link rel="dns-prefetch" href="${domain}">`;
-        preloadTags += `\n    <link rel="preconnect" href="${domain}" crossorigin>`;
+        try {
+          const domain = new URL(supabaseUrl).origin;
+          preloadTags += `\n    <link rel="dns-prefetch" href="${domain}">`;
+          preloadTags += `\n    <link rel="preconnect" href="${domain}" crossorigin>`;
+        } catch (e) {
+          console.warn('Invalid Supabase URL:', supabaseUrl);
+        }
       }
       
       preloadTags += '\n    <!-- Preload critical resources to reduce dependency chain -->';
       
-      // Add preload for critical CSS with high priority
+      // Extract and preload critical CSS
+      const cssMatches = html.match(/<link[^>]*href=["']([^"']+\.css)["'][^>]*>/gi) || [];
       cssMatches.forEach(tag => {
         const hrefMatch = tag.match(/href=["']([^"']+)["']/);
         if (hrefMatch && hrefMatch[1]) {
@@ -38,18 +42,20 @@ const preloadCriticalPlugin = () => ({
         }
       });
       
-      // Add modulepreload for main JS bundles with high priority
+      // Extract and modulepreload main JS bundles
+      const scriptMatches = html.match(/<script[^>]*src=["']([^"']+)["'][^>]*>/gi) || [];
       scriptMatches.forEach(tag => {
         const srcMatch = tag.match(/src=["']([^"']+)["']/);
-        if (srcMatch && srcMatch[1] && (srcMatch[1].includes('/assets/js/index-') || srcMatch[1].includes('/assets/js/react-'))) {
-          preloadTags += `\n    <link rel="modulepreload" href="${srcMatch[1]}" fetchpriority="high" crossorigin>`;
+        if (srcMatch && srcMatch[1]) {
+          // Preload all critical JS chunks
+          if (srcMatch[1].includes('/assets/js/')) {
+            preloadTags += `\n    <link rel="modulepreload" href="${srcMatch[1]}" fetchpriority="high" crossorigin>`;
+          }
         }
       });
       
-      if (preloadTags.length > 60) {
-        return html.replace('</head>', `${preloadTags}\n  </head>`);
-      }
-      return html;
+      // Insert hints right after <head> to ensure they are processed early
+      return html.replace(/<head[^>]*>/, (match) => `${match}${preloadTags}`);
     }
   }
 });
