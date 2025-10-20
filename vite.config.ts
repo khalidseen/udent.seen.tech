@@ -99,20 +99,24 @@ export default defineConfig(({ mode }) => ({
   build: {
     minify: 'terser',
     target: 'es2020',
-    cssCodeSplit: true, // Split CSS for better tree-shaking
-    cssMinify: 'lightningcss', // Use faster CSS minifier
+    cssCodeSplit: true,
+    cssMinify: 'lightningcss',
     terserOptions: {
       compress: {
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.info'],
-        passes: 2, // Multiple passes for better optimization
+        pure_funcs: ['console.log', 'console.info', 'console.debug'],
+        passes: 3, // More passes for better dead code elimination
         unsafe_comps: true,
         unsafe_math: true,
         unsafe_methods: true,
+        dead_code: true,
+        unused: true,
+        toplevel: true, // Aggressive tree-shaking
       },
       mangle: {
         safari10: true,
+        toplevel: true,
       },
       format: {
         comments: false,
@@ -204,13 +208,21 @@ export default defineConfig(({ mode }) => ({
     modulePreload: {
       polyfill: true,
       resolveDependencies: (filename, deps) => {
-        // Preload critical chunks first
-        const criticalChunks = ['react', 'router', 'query'];
-        return deps.filter(dep => 
-          criticalChunks.some(chunk => dep.includes(chunk))
-        ).concat(deps.filter(dep => 
-          !criticalChunks.some(chunk => dep.includes(chunk))
-        ));
+        // Only preload absolutely critical chunks
+        const criticalChunks = ['react-core', 'react', 'router'];
+        const deferredChunks = ['charts', 'ui-extended', 'forms', '3d-libs', 'heavy-libs', 'ai-libs'];
+        
+        // Filter out heavy non-critical chunks from initial preload
+        const filtered = deps.filter(dep => 
+          !deferredChunks.some(chunk => dep.includes(chunk))
+        );
+        
+        // Sort: critical first, then everything else
+        return filtered
+          .filter(dep => criticalChunks.some(chunk => dep.includes(chunk)))
+          .concat(filtered.filter(dep => 
+            !criticalChunks.some(chunk => dep.includes(chunk))
+          ));
       },
     },
   },
