@@ -60,27 +60,29 @@ const preloadCriticalPlugin = () => ({
   }
 });
 
-// Simplified CSS loading - let critical CSS handle most optimization
+// Advanced CSS loading optimization
 const deferCSSPlugin = () => ({
   name: 'defer-css',
   transformIndexHtml: {
     order: 'post' as const,
     handler(html: string) {
-      // Only defer non-critical CSS that wasn't inlined by critical plugin
-      // Use simple preload approach with immediate activation
       let noscriptTags = '';
       
       const transformedHtml = html.replace(
         /<link([^>]*?)rel=["']stylesheet["']([^>]*?)href=["']([^"']+)["']([^>]*?)>/gi,
         (match, before, middle, href, after) => {
-          // Skip if already processed or is critical
-          if (match.includes('onload=') || match.includes('fonts.googleapis') || match.includes('data-critical')) {
+          // Skip critical CSS and external fonts
+          if (match.includes('data-inline') || 
+              match.includes('fonts.googleapis') || 
+              match.includes('onload=')) {
             return match;
           }
-          // Add noscript fallback
+          
+          // Add noscript fallback for browsers without JS
           noscriptTags += `<noscript><link rel="stylesheet" href="${href}"></noscript>`;
-          // Use preload with immediate activation - no media tricks
-          return `<link${before}rel="preload"${middle}href="${href}"${after} as="style" onload="this.onload=null;this.rel='stylesheet'">`;
+          
+          // Defer non-critical CSS with print media trick for faster initial render
+          return `<link${before}rel="stylesheet"${middle}href="${href}"${after} media="print" onload="this.media='all';this.onload=null;">`;
         }
       );
       
@@ -236,7 +238,7 @@ export default defineConfig(({ mode }) => ({
     mode === 'production' && critical({
       inline: true,
       minify: true,
-      extract: false, // Don't extract to separate file - inline everything critical
+      extract: true, // Extract critical CSS to reduce main CSS size
       base: 'dist/',
       width: 1920,
       height: 1080,
@@ -254,41 +256,35 @@ export default defineConfig(({ mode }) => ({
         height: 1080
       }],
       ignore: {
-        atrule: [],
-        decl: () => false // Don't ignore any declarations
+        atrule: ['@font-face'],
+        decl: (node: any, value: any) => {
+          // Ignore non-critical CSS rules
+          return /url\(/.test(value);
+        }
       },
       penthouse: {
-        timeout: 180000, // Increase timeout
+        timeout: 180000,
         pageLoadSkipTimeout: 40000,
-        renderWaitTime: 8000, // Wait longer to ensure full render
+        renderWaitTime: 5000,
         blockJSRequests: false,
+        // Only include truly critical above-the-fold elements
         forceInclude: [
-          // Layout and structural elements
-          '.hero', '.header', '.nav', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'div', 'section', 'article', 'main',
-          'button', '.btn', 'input', 'label', 'form', 'a', 
-          // All text utility classes that might affect LCP text
-          '.text-sm', '.text-base', '.text-lg', '.text-xl', '.text-2xl', '.text-3xl',
-          '.text-muted-foreground', '.text-foreground', '.text-primary', '.text-secondary',
-          '.text-muted', '.text-card-foreground', '.text-popover-foreground',
-          // Layout utilities
-          '.flex', '.grid', '.container', '.w-full', '.w-', '.h-', '.max-w-',
-          '.rounded', '.rounded-lg', '.rounded-md', '.rounded-sm',
-          '.shadow', '.shadow-sm', '.shadow-md', '.shadow-lg',
-          '.border', '.border-t', '.border-b', '.border-l', '.border-r',
-          '.p-', '.px-', '.py-', '.pt-', '.pb-', '.pl-', '.pr-',
-          '.m-', '.mx-', '.my-', '.mt-', '.mb-', '.ml-', '.mr-',
-          '.space-', '.gap-',
-          // Color utilities
-          '.bg-', '.bg-background', '.bg-card', '.bg-primary', '.bg-secondary',
-          // Everything in viewport
-          'body', 'html', '*'
+          'html', 'body',
+          '.bg-background', '.text-foreground',
+          'h1', 'h2', 'button',
+          '.flex', '.grid', '.container',
+          '.w-full', '.h-full',
+          '.p-4', '.p-6', '.px-4', '.py-2',
+          '.rounded-lg', '.shadow'
         ],
         strict: false,
-        maxEmbeddedBase64Length: 8000, // Inline more assets
-        keepLargerMediaQueries: true,
+        maxEmbeddedBase64Length: 4000,
+        keepLargerMediaQueries: false,
         propertiesToRemove: [
+          '(.*)transition(.*)',
           '(.*)animation(.*)',
-          '(.*)transition(.*)'
+          'cursor',
+          'pointer-events'
         ]
       }
     }),
