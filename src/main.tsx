@@ -7,12 +7,16 @@ import { initializeMonitoring } from './services/monitoring'
 import { initializeDatabaseSchema } from './lib/database-init'
 import { registerServiceWorker } from './lib/service-worker-register'
 import { setupLazyLoading } from './lib/image-optimizer'
+import { initLayoutOptimization } from './lib/prevent-layout-thrashing'
 
 // 🔍 Initialize Error Monitoring (Sentry)
 initializeMonitoring();
 
 // Setup global error handling for Chrome extensions and other errors
 setupGlobalErrorHandling();
+
+// Initialize layout optimization to prevent forced reflows
+initLayoutOptimization();
 
 // Enable concurrent features for better performance
 const container = document.getElementById("root")!;

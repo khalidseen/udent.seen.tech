@@ -1,5 +1,7 @@
 // Utility to batch DOM reads and prevent forced reflows
 
+import { useCallback } from 'react';
+
 type LayoutReadCallback = () => void;
 type LayoutWriteCallback = () => void;
 
@@ -64,5 +66,28 @@ export const useLayoutBatcher = () => {
   return {
     read: (callback: LayoutReadCallback) => layoutBatcher.read(callback),
     write: (callback: LayoutWriteCallback) => layoutBatcher.write(callback),
+  };
+};
+
+// Hook to measure elements without causing forced reflows
+export const useMeasure = () => {
+  const batcher = useLayoutBatcher();
+  
+  return (element: HTMLElement | null, callback: (measurements: DOMRect) => void) => {
+    if (!element) return;
+    
+    batcher.read(() => {
+      const rect = element.getBoundingClientRect();
+      callback(rect);
+    });
+  };
+};
+
+// Hook for safe DOM mutations that won't cause layout thrashing
+export const useSafeMutation = () => {
+  const batcher = useLayoutBatcher();
+  
+  return (callback: () => void) => {
+    batcher.write(callback);
   };
 };
