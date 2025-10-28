@@ -272,10 +272,10 @@ export default defineConfig(({ mode }) => ({
         height: 1080
       }],
       ignore: {
-        atrule: ['@font-face'],
+        atrule: ['@font-face', '@keyframes'],
         decl: (node: any, value: any) => {
-          // Ignore non-critical CSS rules
-          return /url\(/.test(value);
+          // Aggressively ignore non-critical CSS
+          return /url\(/.test(value) || /base64/.test(value);
         }
       },
       penthouse: {
@@ -283,24 +283,26 @@ export default defineConfig(({ mode }) => ({
         pageLoadSkipTimeout: 40000,
         renderWaitTime: 5000,
         blockJSRequests: false,
-        // Only include truly critical above-the-fold elements
+        // Minimal critical selectors - only what's absolutely needed for first paint
         forceInclude: [
-          'html', 'body',
-          '.bg-background', '.text-foreground',
-          'h1', 'h2', 'button',
-          '.flex', '.grid', '.container',
-          '.w-full', '.h-full',
-          '.p-4', '.p-6', '.px-4', '.py-2',
-          '.rounded-lg', '.shadow'
+          'html', 
+          'body'
         ],
         strict: false,
-        maxEmbeddedBase64Length: 4000,
+        maxEmbeddedBase64Length: 500, // Reduced to minimize inline data
         keepLargerMediaQueries: false,
         propertiesToRemove: [
           '(.*)transition(.*)',
           '(.*)animation(.*)',
           'cursor',
-          'pointer-events'
+          'pointer-events',
+          'user-select',
+          'outline',
+          'box-shadow',
+          '(.*)transform(.*)',
+          'will-change',
+          'perspective',
+          'backface-visibility'
         ]
       }
     }),
