@@ -171,8 +171,11 @@ export default defineConfig(({ mode }) => ({
           }
           
           // Charts - only load on reports/analytics pages
-          if (id.includes('recharts') || id.includes('chart.js')) {
-            return 'charts';
+          if (id.includes('recharts')) {
+            return 'recharts';
+          }
+          if (id.includes('chart.js') || id.includes('react-chartjs')) {
+            return 'chartjs';
           }
           
           // Forms - only load on form pages
@@ -210,23 +213,19 @@ export default defineConfig(({ mode }) => ({
     reportCompressedSize: false,
     assetsInlineLimit: 8192, // Inline assets smaller than 8kb to reduce requests
     modulePreload: {
-      polyfill: true,
+      polyfill: false, // Remove polyfill to reduce bundle size
       resolveDependencies: (filename, deps) => {
         // Only preload absolutely critical chunks
         const criticalChunks = ['react-core', 'react', 'router'];
-        const deferredChunks = ['charts', 'ui-extended', 'forms', '3d-libs', 'heavy-libs', 'ai-libs'];
+        const deferredChunks = ['charts', 'ui-extended', 'forms', '3d-libs', 'heavy-libs', 'ai-libs', 'supabase', 'ui-core'];
         
-        // Filter out heavy non-critical chunks from initial preload
+        // Aggressive filtering: only load critical chunks initially
         const filtered = deps.filter(dep => 
+          criticalChunks.some(chunk => dep.includes(chunk)) &&
           !deferredChunks.some(chunk => dep.includes(chunk))
         );
         
-        // Sort: critical first, then everything else
-        return filtered
-          .filter(dep => criticalChunks.some(chunk => dep.includes(chunk)))
-          .concat(filtered.filter(dep => 
-            !criticalChunks.some(chunk => dep.includes(chunk))
-          ));
+        return filtered;
       },
     },
   },
@@ -244,8 +243,16 @@ export default defineConfig(({ mode }) => ({
       '@huggingface/transformers',
       'three',
       '@react-three/fiber',
-      '@react-three/drei'
+      '@react-three/drei',
+      'recharts',
+      'chart.js',
+      'react-chartjs-2'
     ],
+  },
+  esbuild: {
+    treeShaking: true,
+    legalComments: 'none',
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
   },
   plugins: [
     reactSWC(),
