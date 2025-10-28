@@ -11,7 +11,7 @@ const preloadCriticalPlugin = () => ({
   transformIndexHtml: {
     order: 'pre' as const,
     handler(html: string) {
-      let preloadTags = '\n    <!-- Resource hints to reduce latency and dependency chain -->';
+      let preloadTags = '\n    <!-- Resource hints to reduce latency and break dependency chain -->';
       
       // Critical: Add dns-prefetch and preconnect for external origins
       preloadTags += '\n    <link rel="dns-prefetch" href="https://fonts.googleapis.com">';
@@ -31,30 +31,34 @@ const preloadCriticalPlugin = () => ({
         }
       }
       
-      preloadTags += '\n    <!-- Preload critical resources to reduce dependency chain -->';
+      preloadTags += '\n    <!-- Preload critical resources to break dependency chain -->';
       
-      // Extract and preload critical CSS
+      // Extract and preload critical CSS with highest priority
       const cssMatches = html.match(/<link[^>]*href=["']([^"']+\.css)["'][^>]*>/gi) || [];
       cssMatches.forEach(tag => {
         const hrefMatch = tag.match(/href=["']([^"']+)["']/);
         if (hrefMatch && hrefMatch[1]) {
-          preloadTags += `\n    <link rel="preload" href="${hrefMatch[1]}" as="style" fetchpriority="high">`;
+          // Use preload with fetchpriority="high" to break the dependency chain
+          preloadTags += `\n    <link rel="preload" href="${hrefMatch[1]}" as="style" fetchpriority="high" crossorigin>`;
         }
       });
       
-      // Extract and modulepreload main JS bundles
+      // Extract and modulepreload main JS bundles with high priority
       const scriptMatches = html.match(/<script[^>]*src=["']([^"']+)["'][^>]*>/gi) || [];
       scriptMatches.forEach(tag => {
         const srcMatch = tag.match(/src=["']([^"']+)["']/);
         if (srcMatch && srcMatch[1]) {
-          // Preload all critical JS chunks
-          if (srcMatch[1].includes('/assets/js/')) {
+          // Preload all JS chunks to reduce dependency chain
+          // Use fetchpriority to ensure critical chunks load first
+          if (srcMatch[1].includes('index-') || srcMatch[1].includes('react-')) {
             preloadTags += `\n    <link rel="modulepreload" href="${srcMatch[1]}" fetchpriority="high" crossorigin>`;
+          } else {
+            preloadTags += `\n    <link rel="modulepreload" href="${srcMatch[1]}" crossorigin>`;
           }
         }
       });
       
-      // Insert hints right after <head> to ensure they are processed early
+      // Insert hints immediately after <head> to ensure earliest possible processing
       return html.replace(/<head[^>]*>/, (match) => `${match}${preloadTags}`);
     }
   }
