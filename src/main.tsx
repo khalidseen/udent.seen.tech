@@ -25,8 +25,21 @@ const root = createRoot(container);
 // Service Worker Registration - ONLY IN PRODUCTION
 if ('serviceWorker' in navigator) {
   if (import.meta.env.PROD) {
-    // Production: Register optimized Service Worker
-    registerServiceWorker();
+    // Production: Register optimized Service Worker with timeout protection
+    try {
+      const swTimeout = setTimeout(() => {
+        console.warn('⚠️ SW registration timeout - continuing without SW');
+      }, 5000);
+      
+      registerServiceWorker()
+        .then(() => clearTimeout(swTimeout))
+        .catch((error) => {
+          clearTimeout(swTimeout);
+          console.error('❌ SW registration failed:', error);
+        });
+    } catch (error) {
+      console.error('❌ SW initialization error:', error);
+    }
   } else {
     // Development: Force unregister ALL service workers
     window.addEventListener('load', async () => {

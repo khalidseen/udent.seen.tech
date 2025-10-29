@@ -170,12 +170,9 @@ export default defineConfig(({ mode }) => ({
             return 'icons';
           }
           
-          // Charts - only load on reports/analytics pages
-          if (id.includes('recharts')) {
-            return 'recharts';
-          }
-          if (id.includes('chart.js') || id.includes('react-chartjs')) {
-            return 'chartjs';
+          // Charts - merge into single chunk for better caching
+          if (id.includes('recharts') || id.includes('chart.js') || id.includes('react-chartjs')) {
+            return 'charts';
           }
           
           // Forms - only load on form pages
@@ -213,40 +210,44 @@ export default defineConfig(({ mode }) => ({
     reportCompressedSize: false,
     assetsInlineLimit: 8192, // Inline assets smaller than 8kb to reduce requests
     modulePreload: {
-      polyfill: false, // Remove polyfill to reduce bundle size
+      polyfill: true, // Keep polyfill for compatibility
       resolveDependencies: (filename, deps) => {
-        // Only preload absolutely critical chunks
-        const criticalChunks = ['react-core', 'react', 'router'];
-        const deferredChunks = ['charts', 'ui-extended', 'forms', '3d-libs', 'heavy-libs', 'ai-libs', 'supabase', 'ui-core'];
+        // Preload core chunks, defer heavy/specialized chunks
+        const criticalChunks = ['react-core', 'react', 'router', 'query', 'supabase', 'ui-core'];
+        const deferredChunks = ['charts', 'forms', '3d-libs', 'heavy-libs', 'ai-libs'];
         
-        // Aggressive filtering: only load critical chunks initially
+        // Filter: include critical, exclude deferred
         const filtered = deps.filter(dep => 
-          criticalChunks.some(chunk => dep.includes(chunk)) &&
           !deferredChunks.some(chunk => dep.includes(chunk))
         );
         
-        return filtered;
+        // Sort: critical first, then others
+        return filtered.sort((a, b) => {
+          const aIsCritical = criticalChunks.some(chunk => a.includes(chunk));
+          const bIsCritical = criticalChunks.some(chunk => b.includes(chunk));
+          if (aIsCritical && !bIsCritical) return -1;
+          if (!aIsCritical && bIsCritical) return 1;
+          return 0;
+        });
       },
     },
   },
   optimizeDeps: {
     include: [
-      'react', 
-      'react-dom', 
-      'react-router-dom', 
-      '@supabase/supabase-js',
-      '@tanstack/react-query'
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@tanstack/react-query',
+      'zustand',
+      'date-fns',
+      'clsx',
+      'tailwind-merge'
     ],
     exclude: [
-      '@node-rs/argon2', 
-      '@node-rs/bcrypt',
       '@huggingface/transformers',
       'three',
       '@react-three/fiber',
-      '@react-three/drei',
-      'recharts',
-      'chart.js',
-      'react-chartjs-2'
+      '@react-three/drei'
     ],
   },
   esbuild: {
@@ -281,8 +282,8 @@ export default defineConfig(({ mode }) => ({
       ignore: {
         atrule: ['@font-face', '@keyframes'],
         decl: (node: any, value: any) => {
-          // Aggressively ignore non-critical CSS
-          return /url\(/.test(value) || /base64/.test(value);
+          // Keep inline data URLs
+          return /base64|data:image/.test(value);
         }
       },
       penthouse: {
@@ -290,13 +291,16 @@ export default defineConfig(({ mode }) => ({
         pageLoadSkipTimeout: 40000,
         renderWaitTime: 5000,
         blockJSRequests: false,
-        // Minimal critical selectors - only what's absolutely needed for first paint
+        // Critical selectors for first paint
         forceInclude: [
-          'html', 
-          'body'
+          'html',
+          'body',
+          '.btn',
+          '.card',
+          '[data-theme]'
         ],
         strict: false,
-        maxEmbeddedBase64Length: 500, // Reduced to minimize inline data
+        maxEmbeddedBase64Length: 1000,
         keepLargerMediaQueries: false,
         propertiesToRemove: [
           '(.*)transition(.*)',
@@ -304,12 +308,7 @@ export default defineConfig(({ mode }) => ({
           'cursor',
           'pointer-events',
           'user-select',
-          'outline',
-          'box-shadow',
-          '(.*)transform(.*)',
-          'will-change',
-          'perspective',
-          'backface-visibility'
+          'will-change'
         ]
       }
     }),

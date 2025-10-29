@@ -64,22 +64,6 @@ export const initLayoutOptimization = () => {
   // Use IntersectionObserver for visibility checks instead of scroll listeners
   // This prevents forced reflows from getBoundingClientRect calls
   
-  // Debounce resize handlers globally
-  let resizeTimeout: NodeJS.Timeout;
-  const originalAddEventListener = window.addEventListener;
-  
-  window.addEventListener = function(
-    type: string,
-    listener: EventListenerOrEventListenerObject,
-    options?: boolean | AddEventListenerOptions
-  ) {
-    if (type === 'resize' && typeof listener === 'function') {
-      const debouncedListener = (event: Event) => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => listener(event), 100);
-      };
-      return originalAddEventListener.call(this, type, debouncedListener, options);
-    }
-    return originalAddEventListener.call(this, type, listener, options);
-  };
+  // Simple initialization - avoid modifying global event listeners
+  console.log('✅ Layout optimization initialized');
 };
