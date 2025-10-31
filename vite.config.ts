@@ -3,7 +3,6 @@ import reactSWC from "@vitejs/plugin-react-swc"
 import { defineConfig } from "vite"
 import { VitePWA } from 'vite-plugin-pwa'
 import { componentTagger } from "lovable-tagger"
-import critical from 'rollup-plugin-critical'
 
 // Plugin to add preload hints and resource hints for critical resources
 const preloadCriticalPlugin = () => ({
@@ -259,59 +258,6 @@ export default defineConfig(({ mode }) => ({
     reactSWC(),
     mode === 'development' && componentTagger(),
     mode === 'production' && preloadCriticalPlugin(),
-    mode === 'production' && critical({
-      inline: true,
-      minify: true,
-      extract: true, // Extract critical CSS to reduce main CSS size
-      base: 'dist/',
-      width: 1920,
-      height: 1080,
-      dimensions: [{
-        width: 375,
-        height: 667
-      }, {
-        width: 414,
-        height: 896
-      }, {
-        width: 768,
-        height: 1024
-      }, {
-        width: 1920,
-        height: 1080
-      }],
-      ignore: {
-        atrule: ['@font-face', '@keyframes'],
-        decl: (node: any, value: any) => {
-          // Keep inline data URLs
-          return /base64|data:image/.test(value);
-        }
-      },
-      penthouse: {
-        timeout: 180000,
-        pageLoadSkipTimeout: 40000,
-        renderWaitTime: 5000,
-        blockJSRequests: false,
-        // Critical selectors for first paint
-        forceInclude: [
-          'html',
-          'body',
-          '.btn',
-          '.card',
-          '[data-theme]'
-        ],
-        strict: false,
-        maxEmbeddedBase64Length: 1000,
-        keepLargerMediaQueries: false,
-        propertiesToRemove: [
-          '(.*)transition(.*)',
-          '(.*)animation(.*)',
-          'cursor',
-          'pointer-events',
-          'user-select',
-          'will-change'
-        ]
-      }
-    }),
     mode === 'production' && deferCSSPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
