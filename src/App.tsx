@@ -13,7 +13,10 @@ import { MainLayout } from "@/components/layout/MainLayout";
 import { SimpleProtectedRoute } from "@/components/auth/SimpleProtectedRoute";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
+import { PerformanceDashboard } from "@/components/performance/PerformanceDashboard";
 import { OptimizedPageLoader } from "@/components/layout/OptimizedPageLoader";
+import { injectCriticalCSS } from "@/lib/critical-css";
+import { setupSupabaseHints, setupFontHints } from "@/lib/resource-hints";
 import Auth from "@/pages/Auth";
 
 const PageLoader = memo(() => <OptimizedPageLoader type="default" />);
@@ -87,6 +90,15 @@ offlineDB.init().catch(console.error);
 function App() {
   useEffect(() => {
     performanceMonitor.start('app-initialization');
+    
+    // Inject critical CSS
+    injectCriticalCSS();
+    
+    // Setup resource hints
+    setupFontHints();
+    if (import.meta.env.VITE_SUPABASE_URL) {
+      setupSupabaseHints(import.meta.env.VITE_SUPABASE_URL);
+    }
     
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('message', (event) => {
@@ -201,6 +213,7 @@ function App() {
                         </Suspense>
                       </ErrorBoundary>
                       <PerformanceMonitor />
+                      <PerformanceDashboard />
                     </div>
                   </BrowserRouter>
                 </PermissionsProvider>
