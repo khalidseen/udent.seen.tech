@@ -169,9 +169,12 @@ export default defineConfig(({ mode }) => ({
             return 'icons';
           }
           
-          // Charts - merge into single chunk for better caching
-          if (id.includes('recharts') || id.includes('chart.js') || id.includes('react-chartjs')) {
-            return 'charts';
+          // Charts - split by library to avoid circular dependencies
+          if (id.includes('recharts')) {
+            return 'recharts';
+          }
+          if (id.includes('chart.js') || id.includes('react-chartjs')) {
+            return 'chartjs';
           }
           
           // Forms - only load on form pages
