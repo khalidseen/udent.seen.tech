@@ -237,12 +237,10 @@ export default defineConfig(({ mode }) => ({
       'react-dom',
       'react-router-dom',
       '@tanstack/react-query',
-      'zustand',
-      'date-fns',
-      'clsx',
-      'tailwind-merge'
+      '@supabase/supabase-js',
     ],
     exclude: [
+      'lucide-react',
       '@huggingface/transformers',
       'three',
       '@react-three/fiber',

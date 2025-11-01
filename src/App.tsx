@@ -1,27 +1,23 @@
 import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { GlobalProvider } from "@/contexts/GlobalContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { SettingsProvider } from "@/contexts/SettingsContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PermissionsProvider } from "@/contexts/PermissionsContext";
 import { CurrencyProvider } from "@/contexts/CurrencyContext";
-import { useEffect, lazy, Suspense } from "react";
+import { useEffect, lazy, Suspense, memo } from "react";
 import { toast } from "sonner";
 import { performanceMonitor } from "@/lib/performance-monitor";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SimpleProtectedRoute } from "@/components/auth/SimpleProtectedRoute";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
+import { OptimizedPageLoader } from "@/components/layout/OptimizedPageLoader";
 import Auth from "@/pages/Auth";
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-  </div>
-);
+const PageLoader = memo(() => <OptimizedPageLoader type="default" />);
+PageLoader.displayName = "PageLoader";
 
 const initializeOfflineDB = async () => {
   try {
@@ -88,24 +84,6 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 import { offlineDB } from "@/lib/offline-db";
 offlineDB.init().catch(console.error);
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 10,
-      gcTime: 1000 * 60 * 60,
-      retry: 1,
-      refetchOnWindowFocus: false,
-      refetchOnReconnect: false,
-      refetchOnMount: false,
-      networkMode: 'offlineFirst',
-    },
-    mutations: {
-      retry: 0,
-      networkMode: 'offlineFirst',
-    },
-  },
-});
-
 function App() {
   useEffect(() => {
     performanceMonitor.start('app-initialization');
@@ -139,24 +117,23 @@ function App() {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <GlobalProvider>
       <LanguageProvider>
         <SettingsProvider>
           <SidebarProvider>
             <ThemeProvider>
               <CurrencyProvider>
                 <PermissionsProvider>
-                  <TooltipProvider>
-                    <BrowserRouter 
-                      future={{
-                        v7_startTransition: true,
-                        v7_relativeSplatPath: true
-                      }}
-                    >
-                      <div className="min-h-screen bg-background">
-                        <ErrorBoundary>
-                          <Suspense fallback={<PageLoader />}>
-                            <Routes>
+                  <BrowserRouter 
+                    future={{
+                      v7_startTransition: true,
+                      v7_relativeSplatPath: true
+                    }}
+                  >
+                    <div className="min-h-screen bg-background">
+                      <ErrorBoundary>
+                        <Suspense fallback={<PageLoader />}>
+                          <Routes>
                               <Route path="/auth" element={<Auth />} />
                               
                               <Route path="/" element={
@@ -220,21 +197,19 @@ function App() {
                               </Route>
                               
                               <Route path="*" element={<NotFound />} />
-                            </Routes>
-                          </Suspense>
-                        </ErrorBoundary>
-                        <Toaster />
-                        <PerformanceMonitor />
-                      </div>
-                    </BrowserRouter>
-                  </TooltipProvider>
+                          </Routes>
+                        </Suspense>
+                      </ErrorBoundary>
+                      <PerformanceMonitor />
+                    </div>
+                  </BrowserRouter>
                 </PermissionsProvider>
               </CurrencyProvider>
             </ThemeProvider>
           </SidebarProvider>
         </SettingsProvider>
       </LanguageProvider>
-    </QueryClientProvider>
+    </GlobalProvider>
   );
 }
 
