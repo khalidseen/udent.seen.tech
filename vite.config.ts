@@ -210,10 +210,12 @@ export default defineConfig(({ mode }) => ({
         const criticalChunks = ['react-core', 'react', 'router', 'query', 'supabase', 'ui-components'];
         const deferredChunks = ['recharts', 'chartjs', 'forms', '3d-libs', 'heavy-libs', 'ai-libs'];
         
-        // Filter: include critical, exclude deferred
-        const filtered = deps.filter(dep => 
-          !deferredChunks.some(chunk => dep.includes(chunk))
-        );
+        // Filter: exclude non-JS/data URLs and deferred chunks
+        const filtered = deps
+          .filter((dep) => !dep.startsWith('data:'))
+          .filter((dep) => /\.m?js($|\?)/.test(dep))
+          .filter((dep) => !/\.css($|\?)/.test(dep) && !/\.wasm($|\?)/.test(dep))
+          .filter((dep) => !deferredChunks.some((chunk) => dep.includes(chunk)));
         
         // Sort: critical first, then others
         return filtered.sort((a, b) => {
@@ -261,6 +263,12 @@ export default defineConfig(({ mode }) => ({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,woff2}'],
         globIgnores: ['**/*.wasm', '**/ort-wasm*', '**/teeth/**'],
         navigateFallback: null,
+        manifestTransforms: [
+          async (entries) => {
+            const manifest = entries.filter((e) => e.url && !e.url.startsWith('http'))
+            return { manifest }
+          }
+        ],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
