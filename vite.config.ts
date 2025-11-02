@@ -151,17 +151,9 @@ export default defineConfig(({ mode }) => ({
             return 'supabase';
           }
           
-          // Split UI components by usage frequency
-          // High frequency UI components
-          if (id.includes('@radix-ui/react-dialog') || 
-              id.includes('@radix-ui/react-dropdown-menu') ||
-              id.includes('@radix-ui/react-toast')) {
-            return 'ui-core';
-          }
-          
-          // Low frequency UI components
+          // UI components - keep them together to avoid circular dependencies
           if (id.includes('@radix-ui')) {
-            return 'ui-extended';
+            return 'ui-components';
           }
           
           // Icons - separate chunk
@@ -215,8 +207,8 @@ export default defineConfig(({ mode }) => ({
       polyfill: true, // Keep polyfill for compatibility
       resolveDependencies: (filename, deps) => {
         // Preload core chunks, defer heavy/specialized chunks
-        const criticalChunks = ['react-core', 'react', 'router', 'query', 'supabase', 'ui-core'];
-        const deferredChunks = ['charts', 'forms', '3d-libs', 'heavy-libs', 'ai-libs'];
+        const criticalChunks = ['react-core', 'react', 'router', 'query', 'supabase', 'ui-components'];
+        const deferredChunks = ['recharts', 'chartjs', 'forms', '3d-libs', 'heavy-libs', 'ai-libs'];
         
         // Filter: include critical, exclude deferred
         const filtered = deps.filter(dep => 
@@ -267,7 +259,8 @@ export default defineConfig(({ mode }) => ({
       workbox: {
         maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,json,woff2}'],
-        globIgnores: ['**/*.wasm', '**/ort-wasm*'],
+        globIgnores: ['**/*.wasm', '**/ort-wasm*', '**/teeth/**'],
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
