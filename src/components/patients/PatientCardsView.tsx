@@ -108,7 +108,7 @@ export default function PatientCardsView({ patients, onAddTreatment }: PatientCa
                 <div className="flex items-center gap-4">
                   <div className="flex items-center gap-2 text-sm">
                     <Calendar className="w-4 h-4 text-muted-foreground" />
-                    <span className="font-medium">{getAge(patient.date_of_birth)} سنة</span>
+                    <span className="font-medium">{`${getAge(patient.date_of_birth)} سنة`}</span>
                   </div>
                   {patient.blood_type && (
                     <div className="flex items-center gap-2 text-sm">
@@ -145,7 +145,7 @@ export default function PatientCardsView({ patients, onAddTreatment }: PatientCa
                 {/* تاريخ التسجيل */}
                 <div className="pt-2 border-t border-border/50">
                   <p className="text-xs text-muted-foreground">
-                    تاريخ التسجيل: {format(new Date(patient.created_at), 'yyyy/MM/dd', { locale: ar })}
+                    {`تاريخ التسجيل: ${format(new Date(patient.created_at), 'yyyy/MM/dd', { locale: ar })}`}
                   </p>
                 </div>
               </CardContent>
