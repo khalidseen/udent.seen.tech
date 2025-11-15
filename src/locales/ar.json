@@ -51,7 +51,8 @@
     "advanced3D": "النماذج ثلاثية الأبعاد المتقدمة"
   },
   "actions": {
-    "addAppointment": "إضافة موعد"
+    "addAppointment": "إضافة موعد",
+    "addPatient": "إضافة مريض"
   },
   "header": {
     "search": "البحث في النظام...",
