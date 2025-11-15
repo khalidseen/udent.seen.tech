@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings as SettingsIcon, Building, Shield, Bell, Monitor, Database, LayoutDashboard, Link, Coins } from "lucide-react";
+import { Settings as SettingsIcon, Building, Shield, Bell, Monitor, Database, LayoutDashboard, Link, Coins, Activity } from "lucide-react";
 
 // Import settings components
 import { InterfaceSettings } from "@/components/settings/InterfaceSettings";
@@ -11,6 +11,7 @@ import { NotificationSettings } from "@/components/settings/NotificationSettings
 import { DashboardCardsSettings } from "@/components/settings/DashboardCardsSettings";
 import { DashboardLinkValidationSettings } from "@/components/settings/DashboardLinkValidationSettings";
 import CurrencySettings from "@/components/settings/CurrencySettings";
+import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("interface");
@@ -38,6 +39,12 @@ export default function Settings() {
     icon: Link,
     description: "فحص صحة روابط لوحة التحكم والتحقق من صحتها",
     component: DashboardLinkValidationSettings
+  }, {
+    value: "performance",
+    label: "الأداء",
+    icon: Activity,
+    description: "مراقبة أداء التطبيق واستهلاك الموارد",
+    component: PerformanceSettings
   }, {
     value: "clinic",
     label: "العيادة",
@@ -78,7 +85,7 @@ export default function Settings() {
             <CardDescription>اختر القسم الذي تريد تعديل إعداداته</CardDescription>
           </CardHeader>
           <CardContent>
-            <TabsList className="grid grid-cols-2 md:grid-cols-6 h-auto p-1">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto p-1">
               {settingsTabs.map(tab => {
               const IconComponent = tab.icon;
               return <TabsTrigger key={tab.value} value={tab.value} className="flex flex-col gap-2 h-16 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">

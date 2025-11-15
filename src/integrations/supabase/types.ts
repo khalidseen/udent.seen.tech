@@ -329,7 +329,7 @@ export type Database = {
           endpoint: string
           error_message: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           method: string
           request_params: Json | null
           response_time_ms: number | null
@@ -343,7 +343,7 @@ export type Database = {
           endpoint: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           method: string
           request_params?: Json | null
           response_time_ms?: number | null
@@ -357,7 +357,7 @@ export type Database = {
           endpoint?: string
           error_message?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           method?: string
           request_params?: Json | null
           response_time_ms?: number | null
@@ -395,7 +395,7 @@ export type Database = {
           preferred_date: string
           preferred_time: string
           rejection_reason: string | null
-          request_ip: unknown | null
+          request_ip: unknown
           request_user_agent: string | null
           status: string
           updated_at: string
@@ -414,7 +414,7 @@ export type Database = {
           preferred_date: string
           preferred_time: string
           rejection_reason?: string | null
-          request_ip?: unknown | null
+          request_ip?: unknown
           request_user_agent?: string | null
           status?: string
           updated_at?: string
@@ -433,7 +433,7 @@ export type Database = {
           preferred_date?: string
           preferred_time?: string
           rejection_reason?: string | null
-          request_ip?: unknown | null
+          request_ip?: unknown
           request_user_agent?: string | null
           status?: string
           updated_at?: string
@@ -498,7 +498,7 @@ export type Database = {
       audit_log: {
         Row: {
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_data: Json | null
           old_data: Json | null
           operation: string
@@ -509,7 +509,7 @@ export type Database = {
         }
         Insert: {
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
           operation: string
@@ -520,7 +520,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
           operation?: string
@@ -946,7 +946,7 @@ export type Database = {
           license_number: string | null
           message: string | null
           phone: string | null
-          request_ip: unknown | null
+          request_ip: unknown
           request_user_agent: string | null
           reviewed_at: string | null
           specialization: string | null
@@ -967,7 +967,7 @@ export type Database = {
           license_number?: string | null
           message?: string | null
           phone?: string | null
-          request_ip?: unknown | null
+          request_ip?: unknown
           request_user_agent?: string | null
           reviewed_at?: string | null
           specialization?: string | null
@@ -988,7 +988,7 @@ export type Database = {
           license_number?: string | null
           message?: string | null
           phone?: string | null
-          request_ip?: unknown | null
+          request_ip?: unknown
           request_user_agent?: string | null
           reviewed_at?: string | null
           specialization?: string | null
@@ -2325,7 +2325,7 @@ export type Database = {
           event_type: string
           geolocation: Json | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           new_data: Json | null
           old_data: Json | null
           operation: string | null
@@ -2350,7 +2350,7 @@ export type Database = {
           event_type: string
           geolocation?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
           operation?: string | null
@@ -2375,7 +2375,7 @@ export type Database = {
           event_type?: string
           geolocation?: Json | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           new_data?: Json | null
           old_data?: Json | null
           operation?: string | null
@@ -3127,10 +3127,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      can_manage_role_assignments: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      can_manage_role_assignments: { Args: never; Returns: boolean }
       check_appointment_request_rate_limit: {
         Args: { ip_address: unknown }
         Returns: boolean
@@ -3161,10 +3158,7 @@ export type Database = {
         }
         Returns: Json
       }
-      detect_suspicious_activities: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      detect_suspicious_activities: { Args: never; Returns: undefined }
       enhanced_rate_limit_check: {
         Args: {
           ip_address: unknown
@@ -3174,14 +3168,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      generate_api_key: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      generate_automatic_notifications: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      generate_api_key: { Args: never; Returns: string }
+      generate_automatic_notifications: { Args: never; Returns: undefined }
       generate_invoice_number: {
         Args: { clinic_id_param: string }
         Returns: string
@@ -3190,12 +3178,9 @@ export type Database = {
         Args: { clinic_id_param: string }
         Returns: string
       }
-      get_audit_statistics: {
-        Args: { days_back?: number }
-        Returns: Json
-      }
+      get_audit_statistics: { Args: { days_back?: number }; Returns: Json }
       get_clinic_stats_batch: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           appointment_count: number
           clinic_id: string
@@ -3205,7 +3190,7 @@ export type Database = {
         }[]
       }
       get_current_user_profile: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           clinic_id: string | null
           created_at: string
@@ -3220,6 +3205,12 @@ export type Database = {
           updated_at: string
           user_id: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       get_dashboard_dismissed: {
         Args: { p_profile_id: string }
@@ -3230,7 +3221,7 @@ export type Database = {
         Returns: Json
       }
       get_user_accessible_clinics: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: {
           access_type: string
           clinic_id: string
@@ -3246,10 +3237,7 @@ export type Database = {
         Args: { user_id_param?: string }
         Returns: Json
       }
-      get_user_current_clinic: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_user_current_clinic: { Args: never; Returns: string }
       get_user_effective_permissions: {
         Args: { user_id_param?: string }
         Returns: {
@@ -3297,10 +3285,7 @@ export type Database = {
         Args: { permission_key_param: string; user_id_param: string }
         Returns: boolean
       }
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_super_admin: { Args: never; Returns: boolean }
       log_security_event: {
         Args: { details: Json; event_type: string }
         Returns: undefined
@@ -3309,10 +3294,7 @@ export type Database = {
         Args: { p_profile_id: string; p_value: boolean }
         Returns: undefined
       }
-      switch_user_clinic: {
-        Args: { new_clinic_id: string }
-        Returns: boolean
-      }
+      switch_user_clinic: { Args: { new_clinic_id: string }; Returns: boolean }
       update_usage_metric: {
         Args: {
           clinic_id_param: string
