@@ -2617,6 +2617,30 @@ export type Database = {
         }
         Relationships: []
       }
+      system_health_pings: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json | null
+          ping_type: string
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          ping_type?: string
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          ping_type?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       temporary_permissions: {
         Row: {
           created_at: string | null
@@ -3144,6 +3168,7 @@ export type Database = {
         Args: { _role: string; _user_id: string }
         Returns: boolean
       }
+      cleanup_old_health_pings: { Args: never; Returns: undefined }
       create_clinic_with_owner: {
         Args: {
           address?: string
