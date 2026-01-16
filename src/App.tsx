@@ -15,6 +15,7 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { PerformanceMonitor } from "@/components/performance/PerformanceMonitor";
 import { PerformanceDashboard } from "@/components/performance/PerformanceDashboard";
 import { OptimizedPageLoader } from "@/components/layout/OptimizedPageLoader";
+import { DatabaseKeepAlive } from "@/components/system/DatabaseKeepAlive";
 import { injectCriticalCSS } from "@/lib/critical-css";
 import { setupSupabaseHints, setupFontHints } from "@/lib/resource-hints";
 import Auth from "@/pages/Auth";
@@ -212,6 +213,7 @@ function App() {
                           </Routes>
                         </Suspense>
                       </ErrorBoundary>
+                      <DatabaseKeepAlive />
                       <PerformanceMonitor />
                       <PerformanceDashboard />
                     </div>
