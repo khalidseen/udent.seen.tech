@@ -338,7 +338,7 @@ export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
                 <CardTitle className="text-base">أسطح السن التفاعلية</CardTitle>
               </CardHeader>
               <CardContent className="flex justify-center">
-                <ToothSurfaceSVG surfaces={surfaces} onSurfaceClick={handleSurfaceClick} />
+                <ToothSurfaceSVG surfaces={surfaces} onSurfaceClick={handleSurfaceClick} toothNumber={toothNumber} />
               </CardContent>
             </Card>
           </TabsContent>
