@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import {
   MessageSquare, Key, Phone, Globe, Shield, CheckCircle2,
   XCircle, Loader2, Copy, ExternalLink, RefreshCw, Eye, EyeOff,
-  ArrowRight, ArrowLeft, Webhook
+  ArrowRight, ArrowLeft, Webhook, Send
 } from "lucide-react";
 
 interface WhatsAppConfig {
