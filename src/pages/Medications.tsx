@@ -40,23 +40,6 @@ const Medications = () => {
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
   const { toast } = useToast();
 
-  const { data: medications = [], isLoading, refetch } = useQuery({
-    queryKey: ['medications'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('medications')
-        .select('*')
-        .order('trade_name');
-      
-      if (error) {
-        console.error('Error fetching medications:', error);
-        throw error;
-      }
-      
-      return data as Medication[];
-    }
-  });
-
   // Get clinic_id for insertions
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -66,6 +49,23 @@ const Medications = () => {
       return data;
     }
   });
+
+  const { data: medications = [], isLoading, refetch } = useQuery({
+    queryKey: ['medications', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('medications')
+        .select('*')
+        .eq('clinic_id', profile!.id)
+        .order('trade_name');
+      
+      if (error) throw error;
+      return data as Medication[];
+    },
+    enabled: !!profile?.id
+  });
+
+
 
   const filteredMedications = medications.filter(medication => {
     const matchesSearch = 

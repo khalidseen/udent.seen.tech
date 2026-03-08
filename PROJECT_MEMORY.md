@@ -27,6 +27,8 @@
 | 2026-03-08 | إزالة مسار مكرر `/ai-insights` (أبقينا `/ai-insights-page`) | `App.tsx` |
 | 2026-03-08 | إصلاح 7 روابط خاطئة في بطاقات لوحة التحكم + إضافة إحصائيات DB | `Index.tsx`, `dashboardValidation.ts` |
 | 2026-03-08 | دمج 10 صفحات مكررة → redirects للنسخ المتقدمة | `Invoices`, `Payments`, `Notifications`, `NotificationTemplates`, `MedicalRecords`, `DentalTreatments`, `Reports`, `Users`, `Permissions`, `SecurityAudit` |
+| 2026-03-08 | حذف 3 مكونات مواعيد مكررة + إصلاح الشهر الثابت | `AddAppointmentDialog`, `AddAppointmentDrawer`, `NewAppointmentPage`, `AppointmentList` |
+| 2026-03-08 | إضافة فلتر clinic_id لـ 8 صفحات (تسريب بيانات) | `Doctors`, `DoctorAssistants`, `Secretaries`, `Inventory`, `Medications`, `Prescriptions`, `PurchaseOrders`, `StockMovements` |
 | سابقاً | إصلاح إحصائيات المرضى | `Index.tsx` |
 | سابقاً | تفعيل أزرار تعديل/حفظ المرضى | `PatientProfile.tsx`, `EditPatient.tsx` |
 

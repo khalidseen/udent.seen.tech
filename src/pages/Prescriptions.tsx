@@ -31,8 +31,18 @@ const Prescriptions = () => {
   const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
 
+  const { data: profile } = useQuery({
+    queryKey: ['current-profile'],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    }
+  });
+
+  const clinicId = profile?.id;
+
   const { data: prescriptions, isLoading, refetch } = useQuery({
-    queryKey: ['prescriptions'],
+    queryKey: ['prescriptions', clinicId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('prescriptions')
@@ -44,11 +54,11 @@ const Prescriptions = () => {
             date_of_birth
           )
         `)
+        .eq('clinic_id', clinicId!)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Calculate age from date_of_birth
       return data?.map((prescription: any) => ({
         ...prescription,
         patients: prescription.patients ? {
@@ -59,6 +69,7 @@ const Prescriptions = () => {
         } : null
       })) as Prescription[];
     },
+    enabled: !!clinicId
   });
 
   const filteredPrescriptions = prescriptions?.filter(prescription =>

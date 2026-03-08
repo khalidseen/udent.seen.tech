@@ -18,6 +18,7 @@ interface Secretary {
   full_name: string;
   email: string;
   phone: string | null;
+  clinic_id: string | null;
   created_at: string;
 }
 
@@ -33,17 +34,29 @@ export default function Secretaries() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  const { data: profile } = useQuery({
+    queryKey: ['current-profile'],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    }
+  });
+
+  const clinicId = profile?.id;
+
   const { data: secretaries, isLoading, refetch } = useQuery({
-    queryKey: ['secretaries'],
+    queryKey: ['secretaries', clinicId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('secretaries')
         .select('*')
+        .eq('clinic_id', clinicId!)
         .order('full_name', { ascending: true });
 
       if (error) throw error;
       return data as Secretary[];
-    }
+    },
+    enabled: !!clinicId
   });
 
   const filteredSecretaries = secretaries?.filter(secretary =>
@@ -114,7 +127,8 @@ export default function Secretaries() {
       const secretaryData = {
         full_name: formData.full_name,
         email: formData.email,
-        phone: formData.phone || null
+        phone: formData.phone || null,
+        ...(editingSecretary ? {} : { clinic_id: clinicId })
       };
 
       if (editingSecretary) {
