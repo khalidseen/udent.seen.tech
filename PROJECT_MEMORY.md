@@ -26,6 +26,7 @@
 | 2026-03-08 | حذف ملفات ميتة ومؤقتة (12 ملف) | layout/*.tmp, pages/dead files |
 | 2026-03-08 | إزالة مسار مكرر `/ai-insights` (أبقينا `/ai-insights-page`) | `App.tsx` |
 | 2026-03-08 | إصلاح 7 روابط خاطئة في بطاقات لوحة التحكم + إضافة إحصائيات DB | `Index.tsx`, `dashboardValidation.ts` |
+| 2026-03-08 | دمج 10 صفحات مكررة → redirects للنسخ المتقدمة | `Invoices`, `Payments`, `Notifications`, `NotificationTemplates`, `MedicalRecords`, `DentalTreatments`, `Reports`, `Users`, `Permissions`, `SecurityAudit` |
 | سابقاً | إصلاح إحصائيات المرضى | `Index.tsx` |
 | سابقاً | تفعيل أزرار تعديل/حفظ المرضى | `PatientProfile.tsx`, `EditPatient.tsx` |
 
