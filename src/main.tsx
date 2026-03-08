@@ -1,108 +1,41 @@
-import React from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { setupGlobalErrorHandling } from './lib/error-handler'
-import { initializeMonitoring } from './services/monitoring'
-import { initializeDatabaseSchema } from './lib/database-init'
-import { registerServiceWorker } from './lib/service-worker-register'
-import { setupLazyLoading } from './lib/image-optimizer'
-import { initLayoutOptimization } from './lib/prevent-layout-thrashing'
 
-// 🔍 Initialize Error Monitoring (Sentry)
-initializeMonitoring();
+const root = createRoot(document.getElementById("root")!);
+root.render(<App />);
 
-// Setup global error handling for Chrome extensions and other errors
-setupGlobalErrorHandling();
+// Defer non-critical initialization
+window.addEventListener('load', () => {
+  // Lazy load image optimization
+  import('./lib/image-optimizer').then(m => m.setupLazyLoading());
+  
+  // Initialize offline DB
+  import('./lib/offline-db').then(m => m.offlineDB.init().catch(() => {}));
+  
+  // Database schema init (delay for auth)
+  setTimeout(() => {
+    import('./lib/database-init').then(m => 
+      m.initializeDatabaseSchema().catch(() => {})
+    );
+  }, 2000);
+}, { once: true });
 
-// Initialize layout optimization to prevent forced reflows
-initLayoutOptimization();
-
-// Enable concurrent features for better performance
-const container = document.getElementById("root")!;
-const root = createRoot(container);
-
-// Service Worker Registration - ONLY IN PRODUCTION
-if ('serviceWorker' in navigator) {
-  if (import.meta.env.PROD) {
-    // Production: Register optimized Service Worker with timeout protection
-    try {
-      const swTimeout = setTimeout(() => {
-        console.warn('⚠️ SW registration timeout - continuing without SW');
-      }, 5000);
-      
-      registerServiceWorker()
-        .then(() => clearTimeout(swTimeout))
-        .catch((error) => {
-          clearTimeout(swTimeout);
-          console.error('❌ SW registration failed:', error);
-        });
-    } catch (error) {
-      console.error('❌ SW initialization error:', error);
-    }
-  } else {
-    // Development: Force unregister ALL service workers
-    window.addEventListener('load', async () => {
-      try {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        for (const registration of registrations) {
-          await registration.unregister();
-          console.log('🔴 DEV: SW unregistered:', registration.scope);
-        }
-        
-        // Clear all caches
-        const cacheNames = await caches.keys();
-        for (const cacheName of cacheNames) {
-          await caches.delete(cacheName);
-          console.log('🗑️ DEV: Cache deleted:', cacheName);
-        }
-        
-        console.log('✅ DEV MODE: All SW and caches cleared');
-      } catch (error) {
-        console.error('❌ Error clearing SW:', error);
-      }
-    });
-  }
+// Service Worker - production only
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  window.addEventListener('load', () => {
+    import('./lib/service-worker-register').then(m => 
+      m.registerServiceWorker().catch(() => {})
+    );
+  }, { once: true });
 }
 
-// Setup lazy loading for images
-window.addEventListener('load', () => {
-  setupLazyLoading();
-});
-
-// Prevent Chrome extension port errors from affecting the app
+// Suppress Chrome extension errors
 window.addEventListener('error', (event) => {
-  if (event.message && (
-    event.message.includes('Extension context invalidated') ||
-    event.message.includes('chrome-extension') ||
-    event.message.includes('Attempting to use a disconnected port')
-  )) {
+  if (event.message?.includes('Extension context') || 
+      event.message?.includes('chrome-extension') ||
+      event.message?.includes('disconnected port')) {
     event.preventDefault();
-    console.debug('Suppressed Chrome extension error:', event.message);
     return false;
   }
 });
-
-// تأخير تهيئة قاعدة البيانات حتى يتم التحقق من Auth
-const delayedDatabaseInit = () => {
-  // انتظر 1 ثانية للسماح لـ Auth بالتهيئة أولاً
-  setTimeout(() => {
-    initializeDatabaseSchema().catch(error => {
-      console.error('Failed to initialize database schema:', error);
-    });
-  }, 1000);
-};
-
-// تهيئة قاعدة البيانات بعد تحميل الصفحة
-window.addEventListener('load', delayedDatabaseInit);
-
-// Only use StrictMode in development
-const AppWrapper = process.env.NODE_ENV === 'development' 
-  ? React.StrictMode 
-  : React.Fragment;
-
-root.render(
-  <AppWrapper>
-    <App />
-  </AppWrapper>
-);
