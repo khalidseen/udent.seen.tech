@@ -150,7 +150,7 @@ export default function PatientProfile() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {stats?.balance?.toFixed(2) || '0.00'} ريال
+              <CurrencyAmount amount={stats?.balance || 0} />
             </div>
             <p className="text-xs text-muted-foreground">
               {Number(stats?.balance || 0) > 0 ? 'مبلغ مستحق' : 'لا توجد مستحقات'}
