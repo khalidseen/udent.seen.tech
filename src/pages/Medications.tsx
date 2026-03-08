@@ -65,15 +65,7 @@ const Medications = () => {
     enabled: !!profile?.id
   });
 
-  // Get clinic_id for insertions
-  const { data: profile } = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_current_user_profile');
-      if (error) throw error;
-      return data;
-    }
-  });
+
 
   const filteredMedications = medications.filter(medication => {
     const matchesSearch = 
