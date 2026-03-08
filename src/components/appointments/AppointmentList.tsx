@@ -19,6 +19,7 @@ import EditAppointmentDialog from "./EditAppointmentDialog";
 import PostAppointmentActions from "./PostAppointmentActions";
 import CalendarView from "./CalendarView";
 import AddAppointmentPopup from "./AddAppointmentPopup";
+import AppointmentReminders from "./AppointmentReminders";
 import { toast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 interface Appointment {
