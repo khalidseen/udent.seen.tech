@@ -6,10 +6,7 @@ import { prefetchRoute } from "@/App";
 import { triggerHaptic } from "@/lib/haptics";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface MobileBottomNavProps {
-  onMoreClick: () => void;
-}
-
+export const MobileBottomNav = memo(() => {
 const leftItems = [
   { title: "الرئيسية", url: "/", icon: Home },
   { title: "المواعيد", url: "/appointments", icon: Calendar },
