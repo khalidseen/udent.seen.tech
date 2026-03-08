@@ -1,25 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { 
-  Save, Activity, FileText, Heart, Zap, Clock, Stethoscope,
-  AlertTriangle, CalendarDays
+  Save, AlertTriangle, CalendarDays, ChevronDown, Clock
 } from "lucide-react";
 import { ToothSurfaceSVG, SURFACE_CONDITION_CYCLE } from './ToothSurfaceSVG';
 import { DentalTreatmentRecord } from '@/hooks/useDentalChart';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
-// ICD-10 Dental Codes
 const ICD10_CODES = [
   { code: 'K02.0', label: 'تسوس محدود في الميناء' },
   { code: 'K02.1', label: 'تسوس ممتد إلى العاج' },
@@ -33,10 +30,8 @@ const ICD10_CODES = [
   { code: 'K05.1', label: 'التهاب لثة مزمن' },
   { code: 'K05.3', label: 'التهاب دواعم مزمن' },
   { code: 'K08.1', label: 'فقدان أسنان بسبب حادث أو خلع' },
-  { code: 'K08.4', label: 'فقدان أسنان جزئي' },
   { code: 'S02.5', label: 'كسر في السن' },
   { code: 'K03.0', label: 'تآكل الأسنان' },
-  { code: 'K00.6', label: 'اضطرابات بزوغ الأسنان' },
 ];
 
 const CONDITION_OPTIONS = [
@@ -53,16 +48,60 @@ const CONDITION_OPTIONS = [
 ];
 
 const STATUS_OPTIONS = [
-  { value: 'planned', label: 'مخطط' },
-  { value: 'in_progress', label: 'قيد العلاج' },
-  { value: 'completed', label: 'مكتمل' },
-  { value: 'cancelled', label: 'ملغي' },
+  { value: 'planned', label: 'مخطط', color: 'bg-amber-100 text-amber-800 border-amber-300' },
+  { value: 'in_progress', label: 'قيد العلاج', color: 'bg-blue-100 text-blue-800 border-blue-300' },
+  { value: 'completed', label: 'مكتمل', color: 'bg-green-100 text-green-800 border-green-300' },
+  { value: 'cancelled', label: 'ملغي', color: 'bg-muted text-muted-foreground border-border' },
 ];
+
+// Treatment presets by diagnosis
+const TREATMENT_PRESETS: Record<string, { label: string; plan: string }[]> = {
+  caries: [
+    { label: 'حشوة أمامية (كمبوزت)', plan: 'حشوة كمبوزت أمامية — تنظيف التسوس وترميم بالكمبوزت' },
+    { label: 'حشوة خلفية (كمبوزت)', plan: 'حشوة كمبوزت خلفية — إزالة التسوس وحشو بالكمبوزت' },
+    { label: 'حشوة GIC', plan: 'حشوة GIC — إزالة التسوس وحشو بالأيونومر الزجاجي' },
+    { label: 'تاج بعد حشو كبير', plan: 'حشو + تحضير تاج — التسوس واسع يحتاج تغطية بتاج' },
+  ],
+  root_canal: [
+    { label: 'فتح + تنظيف أقنية', plan: 'فتح حجرة اللب وتنظيف الأقنية الجذرية — الجلسة الأولى' },
+    { label: 'حشو أقنية', plan: 'حشو الأقنية الجذرية بالـ Gutta Percha — الجلسة النهائية' },
+    { label: 'إعادة علاج عصب', plan: 'إعادة علاج عصب — إزالة الحشو القديم وإعادة التنظيف والحشو' },
+    { label: 'Pulpotomy', plan: 'بتر اللب — إزالة اللب التاجي والحفاظ على اللب الجذري' },
+  ],
+  missing: [
+    { label: 'جسر ثابت', plan: 'جسر ثابت — تحضير الأسنان المجاورة وتركيب جسر' },
+    { label: 'زراعة', plan: 'زراعة سنية — وضع غرسة تيتانيوم + تاج خزفي' },
+    { label: 'طقم جزئي متحرك', plan: 'طقم جزئي متحرك — أخذ طبعة وتصنيع طقم' },
+  ],
+  fractured: [
+    { label: 'ترميم كمبوزت', plan: 'ترميم الكسر بالكمبوزت — بناء السن المكسور' },
+    { label: 'تاج خزفي', plan: 'تحضير السن وتركيب تاج خزفي كامل' },
+    { label: 'خلع', plan: 'خلع السن المكسور — الكسر غير قابل للترميم' },
+  ],
+  crown: [
+    { label: 'تاج PFM', plan: 'تاج بورسلان على معدن (PFM) — تحضير وأخذ طبعة' },
+    { label: 'تاج زيركون', plan: 'تاج زيركون كامل — تحضير وأخذ طبعة رقمية' },
+    { label: 'تاج E-max', plan: 'تاج E-max — تحضير وتركيب تاج خزفي بالكامل' },
+  ],
+  implant: [
+    { label: 'وضع الغرسة', plan: 'وضع الغرسة التيتانيومية — المرحلة الجراحية الأولى' },
+    { label: 'تركيب الدعامة', plan: 'تركيب الدعامة (Abutment) — بعد فترة الالتئام' },
+    { label: 'تركيب التاج النهائي', plan: 'تركيب التاج النهائي على الزراعة' },
+  ],
+  periapical_lesion: [
+    { label: 'علاج عصب + متابعة', plan: 'علاج عصب وتنظيف الآفة الذروية مع متابعة شعاعية' },
+    { label: 'جراحة ذروية', plan: 'جراحة قطع ذروة الجذر (Apicoectomy)' },
+  ],
+  periodontal_disease: [
+    { label: 'تقليح وتنعيم جذور', plan: 'تقليح وتنعيم جذور (SRP) — علاج دواعم غير جراحي' },
+    { label: 'جراحة لثوية', plan: 'جراحة شريحة لثوية لتنظيف الجيوب العميقة' },
+  ],
+};
 
 interface ToothRecordDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  toothNumber: string; // FDI number like "18", "11", etc.
+  toothNumber: string;
   existingRecord?: DentalTreatmentRecord | null;
   patientId: string;
   onSave: (data: Omit<DentalTreatmentRecord, 'id' | 'clinic_id'> & { id?: string }) => void;
@@ -71,16 +110,8 @@ interface ToothRecordDialogProps {
 }
 
 export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
-  isOpen,
-  onClose,
-  toothNumber,
-  existingRecord,
-  patientId,
-  onSave,
-  isSaving,
-  toothHistory = [],
+  isOpen, onClose, toothNumber, existingRecord, patientId, onSave, isSaving, toothHistory = [],
 }) => {
-  // Form state
   const [diagnosis, setDiagnosis] = useState('sound');
   const [icdCode, setIcdCode] = useState('');
   const [treatmentPlan, setTreatmentPlan] = useState('');
@@ -89,28 +120,19 @@ export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
   const [treatmentDate, setTreatmentDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [followUpDate, setFollowUpDate] = useState('');
   const [estimatedCost, setEstimatedCost] = useState('');
-
-  // Surfaces
-  const [surfaces, setSurfaces] = useState({
-    mesial: 'sound', distal: 'sound', buccal: 'sound',
-    lingual: 'sound', occlusal: 'sound',
-  });
-
-  // Clinical measurements
+  const [surfaces, setSurfaces] = useState({ mesial: 'sound', distal: 'sound', buccal: 'sound', lingual: 'sound', occlusal: 'sound' });
   const [mobility, setMobility] = useState(0);
   const [probingDepths, setProbingDepths] = useState([2, 2, 2, 2, 2, 2]);
   const [bleeding, setBleeding] = useState(false);
   const [recession, setRecession] = useState([0, 0, 0, 0, 0, 0]);
   const [plaqueIndex, setPlaqueIndex] = useState(0);
-
-  // Root details
   const [rootCount, setRootCount] = useState(1);
   const [endoTreatment, setEndoTreatment] = useState(false);
   const [endoDate, setEndoDate] = useState('');
   const [endoMaterial, setEndoMaterial] = useState('');
   const [rootConditions, setRootConditions] = useState<string[]>(['healthy']);
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
-  // Load existing record
   useEffect(() => {
     if (existingRecord) {
       setDiagnosis(existingRecord.diagnosis || 'sound');
@@ -118,48 +140,34 @@ export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
       setStatus(existingRecord.status || 'planned');
       setNotes(existingRecord.notes || '');
       setTreatmentDate(existingRecord.treatment_date || format(new Date(), 'yyyy-MM-dd'));
-      
-      // Parse surfaces from tooth_surface field
       if (existingRecord.tooth_surface) {
         try {
-          const parsed = JSON.parse(existingRecord.tooth_surface);
-          if (parsed.surfaces) setSurfaces(parsed.surfaces);
-          if (parsed.icdCode) setIcdCode(parsed.icdCode);
-          if (parsed.mobility !== undefined) setMobility(parsed.mobility);
-          if (parsed.probingDepths) setProbingDepths(parsed.probingDepths);
-          if (parsed.bleeding !== undefined) setBleeding(parsed.bleeding);
-          if (parsed.recession) setRecession(parsed.recession);
-          if (parsed.rootCount) setRootCount(parsed.rootCount);
-          if (parsed.endoTreatment !== undefined) setEndoTreatment(parsed.endoTreatment);
-          if (parsed.endoDate) setEndoDate(parsed.endoDate);
-          if (parsed.endoMaterial) setEndoMaterial(parsed.endoMaterial);
-          if (parsed.rootConditions) setRootConditions(parsed.rootConditions);
-          if (parsed.followUpDate) setFollowUpDate(parsed.followUpDate);
-          if (parsed.estimatedCost) setEstimatedCost(parsed.estimatedCost);
-          if (parsed.plaqueIndex !== undefined) setPlaqueIndex(parsed.plaqueIndex);
-        } catch { /* ignore parse errors */ }
+          const p = JSON.parse(existingRecord.tooth_surface);
+          if (p.surfaces) setSurfaces(p.surfaces);
+          if (p.icdCode) setIcdCode(p.icdCode);
+          if (p.mobility !== undefined) setMobility(p.mobility);
+          if (p.probingDepths) setProbingDepths(p.probingDepths);
+          if (p.bleeding !== undefined) setBleeding(p.bleeding);
+          if (p.recession) setRecession(p.recession);
+          if (p.rootCount) setRootCount(p.rootCount);
+          if (p.endoTreatment !== undefined) setEndoTreatment(p.endoTreatment);
+          if (p.endoDate) setEndoDate(p.endoDate);
+          if (p.endoMaterial) setEndoMaterial(p.endoMaterial);
+          if (p.rootConditions) setRootConditions(p.rootConditions);
+          if (p.followUpDate) setFollowUpDate(p.followUpDate);
+          if (p.estimatedCost) setEstimatedCost(p.estimatedCost);
+          if (p.plaqueIndex !== undefined) setPlaqueIndex(p.plaqueIndex);
+        } catch { /* ignore */ }
       }
     } else {
-      // Reset defaults
-      setDiagnosis('sound');
-      setIcdCode('');
-      setTreatmentPlan('');
-      setStatus('planned');
-      setNotes('');
-      setTreatmentDate(format(new Date(), 'yyyy-MM-dd'));
-      setFollowUpDate('');
-      setEstimatedCost('');
+      setDiagnosis('sound'); setIcdCode(''); setTreatmentPlan(''); setStatus('planned');
+      setNotes(''); setTreatmentDate(format(new Date(), 'yyyy-MM-dd'));
+      setFollowUpDate(''); setEstimatedCost('');
       setSurfaces({ mesial: 'sound', distal: 'sound', buccal: 'sound', lingual: 'sound', occlusal: 'sound' });
-      setMobility(0);
-      setProbingDepths([2, 2, 2, 2, 2, 2]);
-      setBleeding(false);
-      setRecession([0, 0, 0, 0, 0, 0]);
-      setPlaqueIndex(0);
-      setRootCount(1);
-      setEndoTreatment(false);
-      setEndoDate('');
-      setEndoMaterial('');
-      setRootConditions(['healthy']);
+      setMobility(0); setProbingDepths([2,2,2,2,2,2]); setBleeding(false);
+      setRecession([0,0,0,0,0,0]); setPlaqueIndex(0);
+      setRootCount(1); setEndoTreatment(false); setEndoDate(''); setEndoMaterial('');
+      setRootConditions(['healthy']); setAdvancedOpen(false);
     }
   }, [existingRecord, toothNumber, isOpen]);
 
@@ -171,37 +179,18 @@ export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
 
   const handleSave = () => {
     const clinicalData = JSON.stringify({
-      surfaces,
-      icdCode,
-      mobility,
-      probingDepths,
-      bleeding,
-      recession,
-      plaqueIndex,
-      rootCount,
-      endoTreatment,
-      endoDate,
-      endoMaterial,
-      rootConditions,
-      followUpDate,
-      estimatedCost,
+      surfaces, icdCode, mobility, probingDepths, bleeding, recession, plaqueIndex,
+      rootCount, endoTreatment, endoDate, endoMaterial, rootConditions, followUpDate, estimatedCost,
     });
-
     onSave({
-      id: existingRecord?.id,
-      patient_id: patientId,
-      tooth_number: toothNumber,
-      numbering_system: 'fdi',
-      diagnosis,
-      treatment_plan: treatmentPlan,
-      status,
-      tooth_surface: clinicalData,
-      notes,
-      treatment_date: treatmentDate,
+      id: existingRecord?.id, patient_id: patientId, tooth_number: toothNumber,
+      numbering_system: 'fdi', diagnosis, treatment_plan: treatmentPlan,
+      status, tooth_surface: clinicalData, notes, treatment_date: treatmentDate,
     });
   };
 
   const probingLabels = ['MB', 'B', 'DB', 'ML', 'L', 'DL'];
+  const presets = TREATMENT_PRESETS[diagnosis] || [];
 
   const getDepthColor = (depth: number) => {
     if (depth <= 3) return 'text-green-600 border-green-300';
@@ -211,434 +200,335 @@ export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold flex items-center gap-3">
             <span className="text-2xl">🦷</span>
-            <span>سجل السن رقم {toothNumber} (FDI)</span>
-            {existingRecord && (
-              <Badge variant="outline" className="text-xs">
-                سجل موجود
-              </Badge>
-            )}
+            <span>سجل السن {toothNumber}</span>
+            {existingRecord && <Badge variant="outline" className="text-xs">سجل موجود</Badge>}
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="diagnosis" className="w-full" dir="rtl">
-          <TabsList className="grid w-full grid-cols-6 h-auto">
-            <TabsTrigger value="diagnosis" className="text-xs py-2">
-              <Stethoscope className="w-3.5 h-3.5 ml-1" />
-              التشخيص
-            </TabsTrigger>
-            <TabsTrigger value="surfaces" className="text-xs py-2">
-              <Activity className="w-3.5 h-3.5 ml-1" />
-              الأسطح
-            </TabsTrigger>
-            <TabsTrigger value="clinical" className="text-xs py-2">
-              <Heart className="w-3.5 h-3.5 ml-1" />
-              القياسات
-            </TabsTrigger>
-            <TabsTrigger value="roots" className="text-xs py-2">
-              <Zap className="w-3.5 h-3.5 ml-1" />
-              الجذور
-            </TabsTrigger>
-            <TabsTrigger value="treatment" className="text-xs py-2">
-              <FileText className="w-3.5 h-3.5 ml-1" />
-              خطة العلاج
-            </TabsTrigger>
-            <TabsTrigger value="history" className="text-xs py-2">
-              <Clock className="w-3.5 h-3.5 ml-1" />
-              التاريخ
-            </TabsTrigger>
-          </TabsList>
+        <div className="space-y-5">
+          {/* ===== Section 1: Quick Diagnosis Buttons ===== */}
+          <div className="space-y-3">
+            <Label className="text-sm font-semibold">التشخيص السريع</Label>
+            <div className="flex flex-wrap gap-2">
+              {CONDITION_OPTIONS.map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setDiagnosis(opt.value)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border-2 transition-all
+                    ${diagnosis === opt.value 
+                      ? 'ring-2 ring-offset-1 ring-primary scale-105 shadow-sm' 
+                      : 'opacity-70 hover:opacity-100'}`}
+                  style={{
+                    borderColor: opt.color,
+                    backgroundColor: diagnosis === opt.value ? opt.color + '20' : 'transparent',
+                  }}
+                >
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: opt.color }} />
+                  {opt.label}
+                </button>
+              ))}
+            </div>
 
-          {/* Diagnosis Tab */}
-          <TabsContent value="diagnosis" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Stethoscope className="w-5 h-5 text-primary" />
-                  التشخيص الأساسي
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>الحالة الأساسية</Label>
-                    <Select value={diagnosis} onValueChange={setDiagnosis}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {CONDITION_OPTIONS.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>
-                            <div className="flex items-center gap-2">
-                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: opt.color }} />
-                              {opt.label}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+            {/* Status + Date row */}
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex gap-1.5">
+                {STATUS_OPTIONS.map(opt => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setStatus(opt.value)}
+                    className={`px-3 py-1 rounded-md text-xs font-medium border transition-all
+                      ${status === opt.value ? opt.color + ' ring-1 ring-primary' : 'bg-background text-muted-foreground border-border hover:bg-muted'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+              <Input type="date" value={treatmentDate} onChange={e => setTreatmentDate(e.target.value)} className="w-40 h-8 text-xs" />
+            </div>
 
-                  <div className="space-y-2">
-                    <Label>حالة العلاج</Label>
-                    <Select value={status} onValueChange={setStatus}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {STATUS_OPTIONS.map(opt => (
-                          <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+            {/* ICD-10 */}
+            <Select value={icdCode} onValueChange={setIcdCode}>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="رمز ICD-10 (اختياري)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">بدون رمز</SelectItem>
+                {ICD10_CODES.map(c => (
+                  <SelectItem key={c.code} value={c.code}>
+                    <span className="font-mono text-xs ml-2">{c.code}</span> — {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {diagnosis !== 'sound' && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                <span className="text-amber-700 dark:text-amber-400">
+                  يحتاج متابعة — {CONDITION_OPTIONS.find(o => o.value === diagnosis)?.label}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <Separator />
+
+          {/* ===== Section 2: Surface SVG + Basic Measurements ===== */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex flex-col items-center">
+              <Label className="text-sm font-semibold mb-2">أسطح السن</Label>
+              <ToothSurfaceSVG surfaces={surfaces} onSurfaceClick={handleSurfaceClick} toothNumber={toothNumber} />
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">الحركة (Miller)</Label>
+                <div className="flex gap-1">
+                  {[0, 1, 2, 3].map(v => (
+                    <button
+                      key={v}
+                      onClick={() => setMobility(v)}
+                      className={`w-10 h-8 rounded text-xs font-bold border transition-all
+                        ${mobility === v 
+                          ? v === 0 ? 'bg-green-100 border-green-400 text-green-700' 
+                            : v <= 1 ? 'bg-yellow-100 border-yellow-400 text-yellow-700'
+                            : 'bg-red-100 border-red-400 text-red-700'
+                          : 'bg-background border-border text-muted-foreground hover:bg-muted'}`}
+                    >
+                      {v}
+                    </button>
+                  ))}
                 </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Checkbox id="bop" checked={bleeding} onCheckedChange={v => setBleeding(v as boolean)} />
+                <Label htmlFor="bop" className="text-xs flex items-center gap-1">
+                  <span className="text-red-500">●</span> نزيف عند السبر (BOP)
+                </Label>
+              </div>
+            </div>
+          </div>
 
-                <div className="space-y-2">
-                  <Label>رمز ICD-10</Label>
-                  <Select value={icdCode} onValueChange={setIcdCode}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر رمز التصنيف الدولي..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">بدون رمز</SelectItem>
-                      {ICD10_CODES.map(code => (
-                        <SelectItem key={code.code} value={code.code}>
-                          <span className="font-mono text-xs ml-2">{code.code}</span> — {code.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+          <Separator />
+
+          {/* ===== Section 3: Treatment Presets + Plan + Notes ===== */}
+          <div className="space-y-3">
+            {presets.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm font-semibold">خيارات العلاج السريعة</Label>
+                <div className="flex flex-wrap gap-2">
+                  {presets.map((p, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setTreatmentPlan(p.plan)}
+                      className={`px-3 py-1.5 rounded-lg text-xs border transition-all
+                        ${treatmentPlan === p.plan 
+                          ? 'bg-primary/10 border-primary text-primary font-medium' 
+                          : 'bg-background border-border text-foreground hover:bg-muted'}`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
                 </div>
+              </div>
+            )}
 
-                <div className="space-y-2">
-                  <Label>تاريخ التشخيص</Label>
-                  <Input type="date" value={treatmentDate} onChange={e => setTreatmentDate(e.target.value)} />
-                </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">خطة العلاج</Label>
+              <Textarea
+                value={treatmentPlan} onChange={e => setTreatmentPlan(e.target.value)}
+                placeholder="وصف خطة العلاج..." rows={2} className="resize-none text-sm"
+              />
+            </div>
 
-                {diagnosis !== 'sound' && (
-                  <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
-                    <AlertTriangle className="w-4 h-4 text-amber-600" />
-                    <span className="text-sm text-amber-700 dark:text-amber-400">
-                      هذا السن يحتاج متابعة - الحالة: {CONDITION_OPTIONS.find(o => o.value === diagnosis)?.label}
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <div className="space-y-1.5">
+              <Label className="text-xs">الملاحظات</Label>
+              <Textarea
+                value={notes} onChange={e => setNotes(e.target.value)}
+                placeholder="ملاحظات سريرية..." rows={2} className="resize-none text-sm"
+              />
+            </div>
 
-          {/* Surfaces Tab - Interactive SVG */}
-          <TabsContent value="surfaces" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">أسطح السن التفاعلية</CardTitle>
-              </CardHeader>
-              <CardContent className="flex justify-center">
-                <ToothSurfaceSVG surfaces={surfaces} onSurfaceClick={handleSurfaceClick} toothNumber={toothNumber} />
-              </CardContent>
-            </Card>
-          </TabsContent>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label className="text-xs flex items-center gap-1"><CalendarDays className="w-3 h-3" /> المتابعة</Label>
+                <Input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)} className="h-8 text-xs" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">التكلفة (ر.س)</Label>
+                <Input type="number" min="0" value={estimatedCost} onChange={e => setEstimatedCost(e.target.value)} placeholder="0" className="h-8 text-xs" />
+              </div>
+            </div>
+          </div>
 
-          {/* Clinical Measurements Tab */}
-          <TabsContent value="clinical" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Heart className="w-5 h-5 text-red-500" />
-                  القياسات السريرية
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Mobility */}
-                <div className="space-y-2">
-                  <Label>درجة حركة السن (Miller)</Label>
-                  <Select value={mobility.toString()} onValueChange={v => setMobility(parseInt(v))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">0 — لا توجد حركة (طبيعي)</SelectItem>
-                      <SelectItem value="1">I — حركة شدقية لسانية &lt; 1mm</SelectItem>
-                      <SelectItem value="2">II — حركة شدقية لسانية &gt; 1mm</SelectItem>
-                      <SelectItem value="3">III — حركة عمودية (سن متحرك بشدة)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Probing Depths */}
-                <div className="space-y-3">
-                  <Label className="flex items-center gap-2">
-                    عمق الجيوب اللثوية (mm)
-                    <span className="text-xs text-muted-foreground">( ≤3 طبيعي | 4-5 معتدل | ≥6 شديد )</span>
-                  </Label>
-                  <div className="grid grid-cols-6 gap-2">
-                    {probingDepths.map((depth, i) => (
-                      <div key={i} className="text-center">
-                        <div className="text-xs text-muted-foreground mb-1 font-medium">{probingLabels[i]}</div>
-                        <Input
-                          type="number" min="0" max="15" value={depth}
-                          onChange={e => {
-                            const v = [...probingDepths];
-                            v[i] = parseInt(e.target.value) || 0;
-                            setProbingDepths(v);
-                          }}
-                          className={`text-center text-sm font-bold ${getDepthColor(depth)}`}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  {probingDepths.some(d => d > 3) && (
-                    <div className="flex items-center gap-2 p-2 rounded bg-red-50 dark:bg-red-950/30 border border-red-200 text-sm text-red-700 dark:text-red-400">
-                      <AlertTriangle className="w-4 h-4" />
-                      يوجد جيوب لثوية أعمق من 3mm — يحتاج تقييم دواعم
+          {/* ===== Section 4: Collapsible Advanced ===== */}
+          <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
+            <CollapsibleTrigger asChild>
+              <button className="flex items-center gap-2 w-full py-2 px-3 rounded-lg border bg-muted/50 hover:bg-muted transition-colors text-sm font-medium text-muted-foreground">
+                <ChevronDown className={`w-4 h-4 transition-transform ${advancedOpen ? 'rotate-180' : ''}`} />
+                قياسات متقدمة (جيوب لثوية، انحسار، جذور)
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pt-3 space-y-4">
+              {/* Probing Depths */}
+              <div className="space-y-2">
+                <Label className="text-xs flex items-center gap-1">
+                  عمق الجيوب (mm)
+                  <span className="text-muted-foreground">(≤3 طبيعي | 4-5 معتدل | ≥6 شديد)</span>
+                </Label>
+                <div className="grid grid-cols-6 gap-1.5">
+                  {probingDepths.map((depth, i) => (
+                    <div key={i} className="text-center">
+                      <div className="text-[10px] text-muted-foreground mb-0.5">{probingLabels[i]}</div>
+                      <Input type="number" min="0" max="15" value={depth}
+                        onChange={e => { const v = [...probingDepths]; v[i] = parseInt(e.target.value) || 0; setProbingDepths(v); }}
+                        className={`text-center text-xs h-7 font-bold ${getDepthColor(depth)}`}
+                      />
                     </div>
-                  )}
+                  ))}
                 </div>
+              </div>
 
-                {/* Bleeding */}
-                <div className="flex items-center gap-3 p-3 rounded-lg border">
-                  <Checkbox id="bleeding" checked={bleeding} onCheckedChange={v => setBleeding(v as boolean)} />
-                  <Label htmlFor="bleeding" className="flex items-center gap-1">
-                    <span className="text-red-500">●</span> نزيف عند السبر (BOP)
-                  </Label>
+              {/* Recession */}
+              <div className="space-y-2">
+                <Label className="text-xs">انحسار اللثة (mm)</Label>
+                <div className="grid grid-cols-6 gap-1.5">
+                  {recession.map((val, i) => (
+                    <div key={i} className="text-center">
+                      <div className="text-[10px] text-muted-foreground mb-0.5">{probingLabels[i]}</div>
+                      <Input type="number" min="0" max="10" value={val}
+                        onChange={e => { const v = [...recession]; v[i] = parseInt(e.target.value) || 0; setRecession(v); }}
+                        className="text-center text-xs h-7"
+                      />
+                    </div>
+                  ))}
                 </div>
+              </div>
 
-                {/* Recession */}
-                <div className="space-y-3">
-                  <Label>انحسار اللثة (mm)</Label>
-                  <div className="grid grid-cols-6 gap-2">
-                    {recession.map((val, i) => (
-                      <div key={i} className="text-center">
-                        <div className="text-xs text-muted-foreground mb-1">{probingLabels[i]}</div>
-                        <Input
-                          type="number" min="0" max="10" value={val}
-                          onChange={e => {
-                            const v = [...recession];
-                            v[i] = parseInt(e.target.value) || 0;
-                            setRecession(v);
-                          }}
-                          className="text-center text-sm"
-                        />
-                      </div>
-                    ))}
+              {/* Plaque Index */}
+              <div className="space-y-1">
+                <Label className="text-xs">مؤشر اللويحة</Label>
+                <div className="flex gap-1">
+                  {[0,1,2,3].map(v => (
+                    <button key={v} onClick={() => setPlaqueIndex(v)}
+                      className={`px-3 py-1 rounded text-xs border transition-all
+                        ${plaqueIndex === v ? 'bg-primary/10 border-primary text-primary font-medium' : 'bg-background border-border text-muted-foreground hover:bg-muted'}`}
+                    >{v}</button>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Roots */}
+              <div className="space-y-3">
+                <Label className="text-xs font-semibold">الجذور وعلاج العصب</Label>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-xs">عدد الجذور:</Label>
+                    <div className="flex gap-1">
+                      {[1,2,3,4].map(v => (
+                        <button key={v} onClick={() => {
+                          setRootCount(v);
+                          setRootConditions(prev => { const a=[...prev]; while(a.length<v) a.push('healthy'); return a.slice(0,v); });
+                        }}
+                          className={`w-7 h-7 rounded text-xs font-bold border transition-all
+                            ${rootCount === v ? 'bg-primary/10 border-primary text-primary' : 'bg-background border-border text-muted-foreground hover:bg-muted'}`}
+                        >{v}</button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-
-                {/* Plaque Index */}
-                <div className="space-y-2">
-                  <Label>مؤشر اللويحة (Plaque Index)</Label>
-                  <Select value={plaqueIndex.toString()} onValueChange={v => setPlaqueIndex(parseInt(v))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">0 — لا توجد لويحة</SelectItem>
-                      <SelectItem value="1">1 — لويحة خفيفة (بالمسبار فقط)</SelectItem>
-                      <SelectItem value="2">2 — لويحة متوسطة (مرئية)</SelectItem>
-                      <SelectItem value="3">3 — لويحة كثيفة</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Roots Tab */}
-          <TabsContent value="roots" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-purple-500" />
-                  تفاصيل الجذور وعلاج العصب
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label>عدد الجذور</Label>
-                    <Select value={rootCount.toString()} onValueChange={v => {
-                      const count = parseInt(v);
-                      setRootCount(count);
-                      setRootConditions(prev => {
-                        const arr = [...prev];
-                        while (arr.length < count) arr.push('healthy');
-                        return arr.slice(0, count);
-                      });
-                    }}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">جذر واحد</SelectItem>
-                        <SelectItem value="2">جذران</SelectItem>
-                        <SelectItem value="3">ثلاثة جذور</SelectItem>
-                        <SelectItem value="4">أربعة جذور</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center gap-3 p-3 rounded-lg border">
+                  <div className="flex items-center gap-2">
                     <Checkbox id="endo" checked={endoTreatment} onCheckedChange={v => setEndoTreatment(v as boolean)} />
-                    <Label htmlFor="endo">تم علاج العصب</Label>
+                    <Label htmlFor="endo" className="text-xs">تم علاج العصب</Label>
                   </div>
                 </div>
 
-                {/* Individual root conditions */}
-                <div className="space-y-3">
-                  <Label>حالة كل جذر</Label>
-                  <div className="grid grid-cols-2 gap-3">
-                    {rootConditions.slice(0, rootCount).map((cond, i) => (
-                      <div key={i} className="space-y-1">
-                        <Label className="text-xs text-muted-foreground">الجذر {i + 1}</Label>
-                        <Select value={cond} onValueChange={v => {
-                          const arr = [...rootConditions];
-                          arr[i] = v;
-                          setRootConditions(arr);
-                        }}>
-                          <SelectTrigger><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="healthy">سليم</SelectItem>
-                            <SelectItem value="infected">ملتهب</SelectItem>
-                            <SelectItem value="treated">معالج</SelectItem>
-                            <SelectItem value="fractured">مكسور</SelectItem>
-                            <SelectItem value="resorbed">ممتص</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    ))}
-                  </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  {rootConditions.slice(0, rootCount).map((cond, i) => (
+                    <div key={i} className="space-y-0.5">
+                      <Label className="text-[10px] text-muted-foreground">الجذر {i+1}</Label>
+                      <Select value={cond} onValueChange={v => { const a=[...rootConditions]; a[i]=v; setRootConditions(a); }}>
+                        <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="healthy">سليم</SelectItem>
+                          <SelectItem value="infected">ملتهب</SelectItem>
+                          <SelectItem value="treated">معالج</SelectItem>
+                          <SelectItem value="fractured">مكسور</SelectItem>
+                          <SelectItem value="resorbed">ممتص</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  ))}
                 </div>
 
                 {endoTreatment && (
-                  <>
-                    <Separator />
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>تاريخ علاج العصب</Label>
-                        <Input type="date" value={endoDate} onChange={e => setEndoDate(e.target.value)} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>المادة المستخدمة</Label>
-                        <Select value={endoMaterial} onValueChange={setEndoMaterial}>
-                          <SelectTrigger><SelectValue placeholder="اختر..." /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="gutta_percha">Gutta Percha</SelectItem>
-                            <SelectItem value="mta">MTA</SelectItem>
-                            <SelectItem value="bioceramic">Bioceramic</SelectItem>
-                            <SelectItem value="resilon">Resilon</SelectItem>
-                            <SelectItem value="other">أخرى</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs">تاريخ علاج العصب</Label>
+                      <Input type="date" value={endoDate} onChange={e => setEndoDate(e.target.value)} className="h-7 text-xs" />
                     </div>
-                  </>
+                    <div className="space-y-1">
+                      <Label className="text-xs">المادة</Label>
+                      <Select value={endoMaterial} onValueChange={setEndoMaterial}>
+                        <SelectTrigger className="h-7 text-xs"><SelectValue placeholder="اختر..." /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="gutta_percha">Gutta Percha</SelectItem>
+                          <SelectItem value="mta">MTA</SelectItem>
+                          <SelectItem value="bioceramic">Bioceramic</SelectItem>
+                          <SelectItem value="resilon">Resilon</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
 
-          {/* Treatment Plan Tab */}
-          <TabsContent value="treatment" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-blue-500" />
-                  خطة العلاج والملاحظات
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>خطة العلاج</Label>
-                  <Textarea
-                    value={treatmentPlan}
-                    onChange={e => setTreatmentPlan(e.target.value)}
-                    placeholder="وصف خطة العلاج المقترحة..."
-                    rows={4}
-                    className="resize-none"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label>الملاحظات السريرية</Label>
-                  <Textarea
-                    value={notes}
-                    onChange={e => setNotes(e.target.value)}
-                    placeholder="ملاحظات إضافية، حالة المريض، تعليمات..."
-                    rows={4}
-                    className="resize-none"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-1">
-                      <CalendarDays className="w-4 h-4" />
-                      تاريخ المتابعة
-                    </Label>
-                    <Input type="date" value={followUpDate} onChange={e => setFollowUpDate(e.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>التكلفة التقديرية (ر.س)</Label>
-                    <Input
-                      type="number" min="0"
-                      value={estimatedCost}
-                      onChange={e => setEstimatedCost(e.target.value)}
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* History Tab */}
-          <TabsContent value="history" className="space-y-4 mt-4">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-muted-foreground" />
-                  تاريخ السجلات
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {toothHistory.length === 0 ? (
-                  <p className="text-center text-muted-foreground py-8">لا توجد سجلات سابقة لهذا السن</p>
-                ) : (
-                  <div className="space-y-3">
-                    {toothHistory.map((record: any, i: number) => (
-                      <div key={record.id || i} className="flex items-start gap-3 p-3 rounded-lg border">
-                        <div className="w-2 h-2 mt-2 rounded-full" style={{
-                          backgroundColor: CONDITION_OPTIONS.find(o => o.value === record.diagnosis)?.color || '#9E9E9E'
-                        }} />
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium text-sm">
-                              {CONDITION_OPTIONS.find(o => o.value === record.diagnosis)?.label || record.diagnosis}
-                            </span>
-                            <Badge variant="outline" className="text-xs">
-                              {STATUS_OPTIONS.find(o => o.value === record.status)?.label || record.status}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">{record.treatment_plan}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {record.treatment_date && format(new Date(record.treatment_date), 'PPP', { locale: ar })}
-                          </p>
-                        </div>
+          {/* ===== Section 5: History (inline, collapsed by default) ===== */}
+          {toothHistory.length > 0 && (
+            <Collapsible>
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center gap-2 w-full py-2 px-3 rounded-lg border bg-muted/50 hover:bg-muted transition-colors text-sm font-medium text-muted-foreground">
+                  <Clock className="w-4 h-4" />
+                  السجلات السابقة ({toothHistory.length})
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-2 space-y-2">
+                {toothHistory.map((record: any, i: number) => (
+                  <div key={record.id || i} className="flex items-start gap-2 p-2 rounded-lg border text-xs">
+                    <div className="w-2 h-2 mt-1.5 rounded-full shrink-0" style={{
+                      backgroundColor: CONDITION_OPTIONS.find(o => o.value === record.diagnosis)?.color || '#9E9E9E'
+                    }} />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{CONDITION_OPTIONS.find(o => o.value === record.diagnosis)?.label || record.diagnosis}</span>
+                        <Badge variant="outline" className="text-[10px] h-4">
+                          {STATUS_OPTIONS.find(o => o.value === record.status)?.label || record.status}
+                        </Badge>
                       </div>
-                    ))}
+                      {record.treatment_plan && <p className="text-muted-foreground mt-0.5">{record.treatment_plan}</p>}
+                      {record.treatment_date && (
+                        <p className="text-muted-foreground">{format(new Date(record.treatment_date), 'PPP', { locale: ar })}</p>
+                      )}
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+          )}
+        </div>
 
         {/* Save/Cancel */}
         <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>إلغاء</Button>
-          <Button onClick={handleSave} disabled={isSaving} className="min-w-[120px]">
-            <Save className="w-4 h-4 ml-2" />
-            {isSaving ? 'جاري الحفظ...' : 'حفظ السجل'}
+          <Button variant="outline" onClick={onClose} size="sm">إلغاء</Button>
+          <Button onClick={handleSave} disabled={isSaving} size="sm" className="min-w-[100px]">
+            <Save className="w-4 h-4 ml-1" />
+            {isSaving ? 'جاري الحفظ...' : 'حفظ'}
           </Button>
         </div>
       </DialogContent>
