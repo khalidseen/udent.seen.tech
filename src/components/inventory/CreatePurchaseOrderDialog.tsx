@@ -37,91 +37,81 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const { data: supplies } = useQuery({
-    queryKey: ['medical-supplies-list'],
+  const { data: profile } = useQuery({
+    queryKey: ['current-profile-po'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('medical_supplies')
-        .select('id, name, unit_cost, unit')
-        .eq('is_active', true)
-        .order('name');
-      
-      if (error) throw error;
+      const { data } = await supabase.rpc('get_current_user_profile');
       return data;
     }
   });
 
+  const { data: supplies } = useQuery({
+    queryKey: ['medical-supplies-list', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('medical_supplies')
+        .select('id, name, unit_cost, unit')
+        .eq('clinic_id', profile!.id)
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.id
+  });
+
   const addItem = () => {
-    const newItem: OrderItem = {
+    setItems([...items, {
       id: Date.now().toString(),
       supply_name: "",
       quantity: 1,
       unit_cost: 0,
       line_total: 0
-    };
-    setItems([...items, newItem]);
+    }]);
   };
 
-  const removeItem = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
-  };
+  const removeItem = (id: string) => setItems(items.filter(item => item.id !== id));
 
   const updateItem = (id: string, field: keyof OrderItem, value: any) => {
     setItems(items.map(item => {
-      if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
-        if (field === 'quantity' || field === 'unit_cost') {
-          updatedItem.line_total = updatedItem.quantity * updatedItem.unit_cost;
-        }
-        return updatedItem;
+      if (item.id !== id) return item;
+      const updatedItem = { ...item, [field]: value };
+      if (field === 'quantity' || field === 'unit_cost') {
+        updatedItem.line_total = updatedItem.quantity * updatedItem.unit_cost;
       }
-      return item;
+      return updatedItem;
     }));
   };
 
   const selectSupply = (itemId: string, supplyId: string) => {
     const supply = supplies?.find(s => s.id === supplyId);
     if (supply) {
-      updateItem(itemId, 'supply_id', supplyId);
-      updateItem(itemId, 'supply_name', supply.name);
-      updateItem(itemId, 'unit_cost', Number(supply.unit_cost));
+      setItems(items.map(item => {
+        if (item.id !== itemId) return item;
+        const unitCost = Number(supply.unit_cost);
+        return { ...item, supply_id: supplyId, supply_name: supply.name, unit_cost: unitCost, line_total: item.quantity * unitCost };
+      }));
     }
   };
 
-  const calculateTotal = () => {
-    return items.reduce((sum, item) => sum + item.line_total, 0);
-  };
+  const calculateTotal = () => items.reduce((sum, item) => sum + item.line_total, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!supplier || items.length === 0) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء الحقول المطلوبة وإضافة عنصر واحد على الأقل",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: "يرجى ملء الحقول المطلوبة وإضافة عنصر واحد على الأقل", variant: "destructive" });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Get current user profile for clinic_id
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .single();
-
       if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
 
-      // Generate order number
       const { data: orderNumber, error: numberError } = await supabase
         .rpc('generate_purchase_order_number', { clinic_id_param: profile.id });
-
       if (numberError) throw numberError;
 
-      // Create purchase order
-      const totalAmount = calculateTotal();
       const { data: order, error: orderError } = await supabase
         .from('purchase_orders')
         .insert({
@@ -130,7 +120,7 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
           supplier,
           supplier_contact: supplierContact || null,
           expected_delivery: expectedDelivery || null,
-          total_amount: totalAmount,
+          total_amount: calculateTotal(),
           notes: notes || null
         })
         .select()
@@ -138,7 +128,6 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
 
       if (orderError) throw orderError;
 
-      // Create order items
       const orderItems = items.map(item => ({
         purchase_order_id: order.id,
         supply_id: item.supply_id || null,
@@ -151,30 +140,20 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
       const { error: itemsError } = await supabase
         .from('purchase_order_items')
         .insert(orderItems);
-
       if (itemsError) throw itemsError;
 
       onOrderCreated();
       onClose();
       resetForm();
-      
     } catch (error: any) {
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء إنشاء أمر الشراء",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: error.message || "حدث خطأ أثناء إنشاء أمر الشراء", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const resetForm = () => {
-    setSupplier("");
-    setSupplierContact("");
-    setExpectedDelivery("");
-    setNotes("");
-    setItems([]);
+    setSupplier(""); setSupplierContact(""); setExpectedDelivery(""); setNotes(""); setItems([]);
   };
 
   return (
@@ -187,53 +166,29 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="supplier">المورد *</Label>
-              <Input
-                id="supplier"
-                value={supplier}
-                onChange={(e) => setSupplier(e.target.value)}
-                placeholder="اسم المورد"
-                required
-              />
+              <Label>المورد *</Label>
+              <Input value={supplier} onChange={(e) => setSupplier(e.target.value)} placeholder="اسم المورد" required />
             </div>
-
             <div>
-              <Label htmlFor="supplierContact">تواصل المورد</Label>
-              <Input
-                id="supplierContact"
-                value={supplierContact}
-                onChange={(e) => setSupplierContact(e.target.value)}
-                placeholder="هاتف أو إيميل المورد"
-              />
+              <Label>تواصل المورد</Label>
+              <Input value={supplierContact} onChange={(e) => setSupplierContact(e.target.value)} placeholder="هاتف أو إيميل" />
             </div>
-
             <div>
-              <Label htmlFor="expectedDelivery">تاريخ التسليم المتوقع</Label>
-              <Input
-                id="expectedDelivery"
-                type="date"
-                value={expectedDelivery}
-                onChange={(e) => setExpectedDelivery(e.target.value)}
-              />
+              <Label>تاريخ التسليم المتوقع</Label>
+              <Input type="date" value={expectedDelivery} onChange={(e) => setExpectedDelivery(e.target.value)} />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="notes">ملاحظات</Label>
-            <Textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="ملاحظات إضافية..."
-            />
+            <Label>ملاحظات</Label>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="ملاحظات إضافية..." />
           </div>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>عناصر أمر الشراء</CardTitle>
               <Button type="button" onClick={addItem} size="sm">
-                <Plus className="w-4 h-4 ml-2" />
-                إضافة عنصر
+                <Plus className="w-4 h-4 ml-2" /> إضافة عنصر
               </Button>
             </CardHeader>
             <CardContent>
@@ -245,7 +200,7 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
                       <TableHead>الكمية</TableHead>
                       <TableHead>السعر</TableHead>
                       <TableHead>المجموع</TableHead>
-                      <TableHead>الإجراءات</TableHead>
+                      <TableHead></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -253,50 +208,28 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
                       <TableRow key={item.id}>
                         <TableCell>
                           <div className="space-y-2">
-                            <Select onValueChange={(value) => selectSupply(item.id, value)}>
-                              <SelectTrigger>
-                                <SelectValue placeholder="اختر المستلزم" />
-                              </SelectTrigger>
+                            <Select onValueChange={(v) => selectSupply(item.id, v)}>
+                              <SelectTrigger><SelectValue placeholder="اختر المستلزم" /></SelectTrigger>
                               <SelectContent>
-                                 {supplies?.map((supply) => (
-                                  <SelectItem key={supply.id} value={supply.id}>
-                                    {supply.name} - <CurrencyAmount amount={Number(supply.unit_cost)} />
+                                {supplies?.map((s) => (
+                                  <SelectItem key={s.id} value={s.id}>
+                                    {s.name} - <CurrencyAmount amount={Number(s.unit_cost)} />
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                            <Input
-                              value={item.supply_name}
-                              onChange={(e) => updateItem(item.id, 'supply_name', e.target.value)}
-                              placeholder="أو أدخل اسم المستلزم"
-                            />
+                            <Input value={item.supply_name} onChange={(e) => updateItem(item.id, 'supply_name', e.target.value)} placeholder="أو أدخل اسم المستلزم" />
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Input
-                            type="number"
-                            min="1"
-                            value={item.quantity}
-                            onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))}
-                          />
+                          <Input type="number" min="1" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', Number(e.target.value))} />
                         </TableCell>
                         <TableCell>
-                          <Input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={item.unit_cost}
-                            onChange={(e) => updateItem(item.id, 'unit_cost', Number(e.target.value))}
-                          />
+                          <Input type="number" min="0" step="0.01" value={item.unit_cost} onChange={(e) => updateItem(item.id, 'unit_cost', Number(e.target.value))} />
                         </TableCell>
                         <TableCell><CurrencyAmount amount={item.line_total} /></TableCell>
                         <TableCell>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeItem(item.id)}
-                          >
+                          <Button type="button" variant="outline" size="sm" onClick={() => removeItem(item.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </TableCell>
@@ -312,10 +245,8 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
 
               {items.length > 0 && (
                 <div className="mt-4 flex justify-end">
-                  <div className="text-right">
-                    <div className="text-xl font-bold">
-                      المجموع الكلي: <CurrencyAmount amount={calculateTotal()} />
-                    </div>
+                  <div className="text-xl font-bold">
+                    المجموع الكلي: <CurrencyAmount amount={calculateTotal()} />
                   </div>
                 </div>
               )}
@@ -323,9 +254,7 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
           </Card>
 
           <div className="flex justify-end space-x-2 space-x-reverse">
-            <Button type="button" variant="outline" onClick={onClose}>
-              إلغاء
-            </Button>
+            <Button type="button" variant="outline" onClick={onClose}>إلغاء</Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "جاري الحفظ..." : "إنشاء أمر الشراء"}
             </Button>
