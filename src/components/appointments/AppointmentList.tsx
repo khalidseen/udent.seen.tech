@@ -408,6 +408,7 @@ const AppointmentList = () => {
                               {appointment.patients?.full_name || 'غير محدد'}
                             </button>
                           </td>
+                          <td className="p-3 text-muted-foreground">{(appointment as any).doctors?.full_name ? `د. ${(appointment as any).doctors.full_name}` : '-'}</td>
                           <td className="p-3">{formatDate(appointment.appointment_date)}</td>
                           <td className="p-3">{appointment.duration} دقيقة</td>
                           <td className="p-3">{appointment.treatment_type || '-'}</td>
