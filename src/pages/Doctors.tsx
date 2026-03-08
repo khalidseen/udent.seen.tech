@@ -10,7 +10,6 @@ import { PageToolbar } from "@/components/layout/PageToolbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import AddDoctorDialog from "@/components/doctors/AddDoctorDialog";
-import DatabaseTestButton from "@/components/debug/DatabaseTestButton";
 
 interface Doctor {
   id: string;
@@ -108,7 +107,6 @@ const Doctors = () => {
         showAdvancedFilter={false}
         actions={
           <div className="flex gap-2">
-            <DatabaseTestButton />
             <Button onClick={handleCreate}>
               <Plus className="w-4 h-4 ml-2" />
               إضافة طبيب جديد

@@ -49,7 +49,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettingsHook";
 import styles from "./Index.module.css";
-import { printDashboardValidationReport, validateDashboardCards } from "@/utils/dashboardValidation";
+import { validateDashboardCards } from "@/utils/dashboardValidation";
 // import { DashboardValidator } from "@/components/dashboard/DashboardValidator"; // تم نقله إلى الإعدادات
 // import { SmartNotificationSystem } from "@/components/dashboard/SmartNotificationSystem"; // مُعطل مؤقتاً
 
@@ -226,152 +226,11 @@ function Index() {
   const [draggedCard, setDraggedCard] = useState<ActionCard | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // تحميل البيانات من localStorage أو قاعدة البيانات
+  // تحميل البيانات الافتراضية
   useEffect(() => {
-    let mounted = true;
-    
-    const loadDashboardCards = async () => {
-      try {
-        // مسح البيانات القديمة لضمان ظهور التحديثات الجديدة
-        localStorage.removeItem('dashboard_cards');
-        
-        if (mounted) {
-          console.log('تم تحديث مربعات لوحة التحكم - استخدام البيانات الجديدة');
-          // استخدام البيانات الجديدة مباشرة
-          localStorage.setItem('dashboard_cards', JSON.stringify(defaultCards));
-          setActionCards(defaultCards);
-          
-          // التحقق من صحة الربط للبطاقات الجديدة
-          printDashboardValidationReport(defaultCards);
-        }
-      } catch (error) {
-        console.error('Error loading dashboard cards:', error);
-        if (mounted) {
-          localStorage.setItem('dashboard_cards', JSON.stringify(defaultCards));
-          setActionCards(defaultCards);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadDashboardCards();
-    
-    return () => {
-      mounted = false;
-    };
-  }, []); // Empty dependency array - only run once
-
-  const loadDashboardCards = async () => {
-    try {
-      // أولاً محاولة التحميل من localStorage
-      const savedCards = localStorage.getItem('dashboard_cards');
-      if (savedCards) {
-        const parsedCards = JSON.parse(savedCards);
-        // دمج البطاقات الجديدة من defaultCards إذا لم تكن موجودة
-        defaultCards.forEach((defCard) => {
-          if (!parsedCards.some((c: ActionCard) => c.id === defCard.id)) {
-            parsedCards.push(defCard);
-          }
-        });
-        // تحديث الخصائص (color, icon) من defaultCards دائماً
-        const loadedCards = parsedCards.map((item: Partial<ActionCard>) => {
-          const defaultCard = defaultCards.find(card => card.id === item.id);
-          return {
-            ...item,
-            color: defaultCard?.color || "bg-gray-500",
-            icon: defaultCard?.icon || Settings
-          } as ActionCard;
-        });
-        setActionCards(loadedCards);
-        localStorage.setItem('dashboard_cards', JSON.stringify(loadedCards));
-        setLoading(false);
-        return;
-      }
-
-      // استخدام البيانات الافتراضية مباشرة
-      const data = null;
-      const error = true;
-
-      if (error) {
-        console.log('Database not ready, using default cards');
-        // حفظ البيانات الافتراضية في localStorage
-        localStorage.setItem('dashboard_cards', JSON.stringify(defaultCards));
-        setActionCards(defaultCards);
-      } else if (data && data.length > 0) {
-        // تحويل البيانات من قاعدة البيانات إلى تنسيق المكون
-        const loadedCards = data.map((item: Partial<ActionCard>) => {
-          const defaultCard = defaultCards.find(card => card.id === item.id);
-          return {
-            id: item.id,
-            title: item.title,
-            description: item.description,
-            route: item.route,
-            color: defaultCard?.color || "bg-gray-500",
-            icon: defaultCard?.icon || Settings,
-            order_index: item.order_index
-          } as ActionCard;
-        });
-        // دمج البطاقات الجديدة من defaultCards إذا لم تكن موجودة
-        defaultCards.forEach((defCard) => {
-          if (!loadedCards.some((c: ActionCard) => c.id === defCard.id)) {
-            loadedCards.push(defCard);
-          }
-        });
-        setActionCards(loadedCards);
-        // حفظ في localStorage للمرة القادمة
-        localStorage.setItem('dashboard_cards', JSON.stringify(loadedCards));
-      } else {
-        // إنشاء البيانات الافتراضية
-        localStorage.setItem('dashboard_cards', JSON.stringify(defaultCards));
-        setActionCards(defaultCards);
-        await initializeDefaultCards();
-      }
-    } catch (error) {
-      console.error('Error loading dashboard cards:', error);
-      localStorage.setItem('dashboard_cards', JSON.stringify(defaultCards));
-      setActionCards(defaultCards);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const initializeDefaultCards = async () => {
-    try {
-      // أولاً إنشاء الجدول إذا لم يكن موجوداً
-      await createDashboardCardsTable();
-      
-      const cardsToInsert = defaultCards.map(card => ({
-        id: card.id,
-        title: card.title,
-        description: card.description,
-        route: card.route,
-        order_index: card.order_index
-      }));
-
-      const { error } = await supabase
-        .from('profiles')
-        .select('id')
-        .limit(1); // فقط للتحقق من الاتصال
-
-      if (error) {
-        console.error('Error initializing cards:', error);
-      }
-    } catch (error) {
-      console.error('Error initializing default cards:', error);
-    }
-  };
-
-  const createDashboardCardsTable = async () => {
-    try {
-      // تخطي إنشاء الجدول - غير مطلوب
-      console.log('Skipping table creation');
-    } catch (error) {
-      console.error('Error creating dashboard_cards table:', error);
-    }
-  };
+    setActionCards(defaultCards);
+    setLoading(false);
+  }, []);
 
   // دوال السحب والإفلات
   const handleDragStart = (e: React.DragEvent, card: ActionCard) => {
@@ -411,24 +270,7 @@ function Index() {
 
   const saveCardsOrder = async (cards: ActionCard[]) => {
     try {
-      // حفظ في localStorage أولاً
       localStorage.setItem('dashboard_cards', JSON.stringify(cards));
-
-      // محاولة الحفظ في قاعدة البيانات
-      try {
-        const updates = cards.map(card => ({
-          id: card.id,
-          order_index: card.order_index
-        }));
-
-        for (const update of updates) {
-          // تخطي تحديث قاعدة البيانات وحفظ محلياً فقط
-          console.log('Skipping database update for:', update.id);
-        }
-      } catch (dbError) {
-        console.log('Database save failed, but localStorage updated');
-      }
-
       toast({
         title: "تم الحفظ بنجاح",
         description: "تم حفظ ترتيب المربعات الجديد",
