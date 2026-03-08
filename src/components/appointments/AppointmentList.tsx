@@ -7,9 +7,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle, CalendarDays, List } from "lucide-react";
+import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle, CalendarDays, List, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageToolbar } from "@/components/layout/PageToolbar";
@@ -45,6 +46,7 @@ const AppointmentList = () => {
   const {
     t
   } = useLanguage();
+  const navigate = useNavigate();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -310,12 +312,114 @@ const AppointmentList = () => {
             <CalendarView />
           </div>
         </TabsContent>
-        {/* ...existing code... */}
-        <TabsContent value="cards" className="space-y-6">
-          {/* ...existing code... */}
+        <TabsContent value="cards" className="space-y-4">
+          {filteredAppointments.length === 0 ? (
+            <Card><CardContent className="py-8 text-center text-muted-foreground">لا توجد مواعيد</CardContent></Card>
+          ) : (
+            filteredAppointments.map((appointment) => (
+              <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2 flex-1">
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="font-medium">{appointment.patients?.full_name || 'مريض غير محدد'}</span>
+                        {appointment.patients?.id && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs"
+                            onClick={() => navigate(`/patients/${appointment.patients!.id}`)}
+                          >
+                            <ExternalLink className="w-3 h-3 ml-1" />
+                            الملف
+                          </Button>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {formatDate(appointment.appointment_date)}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {appointment.duration} دقيقة
+                        </span>
+                      </div>
+                      {appointment.treatment_type && (
+                        <div className="text-sm text-muted-foreground">نوع العلاج: {appointment.treatment_type}</div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(appointment.status)}
+                      {appointment.status === 'scheduled' && (
+                        <Button size="sm" variant="outline" onClick={() => handleCompleteAppointment(appointment.id)}>
+                          <CheckCircle className="w-4 h-4 ml-1" /> إتمام
+                        </Button>
+                      )}
+                      <Button size="sm" variant="ghost" onClick={() => { setEditingAppointment(appointment); setEditDialogOpen(true); }}>
+                        <Edit className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </TabsContent>
-        <TabsContent value="list" className="space-y-6">
-          {/* ...existing code... */}
+        <TabsContent value="list" className="space-y-4">
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="border-b bg-muted/50">
+                    <tr>
+                      <th className="text-right p-3 font-medium">المريض</th>
+                      <th className="text-right p-3 font-medium">التاريخ</th>
+                      <th className="text-right p-3 font-medium">المدة</th>
+                      <th className="text-right p-3 font-medium">العلاج</th>
+                      <th className="text-right p-3 font-medium">الحالة</th>
+                      <th className="text-right p-3 font-medium">إجراءات</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredAppointments.length === 0 ? (
+                      <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">لا توجد مواعيد</td></tr>
+                    ) : (
+                      filteredAppointments.map((appointment) => (
+                        <tr key={appointment.id} className="border-b hover:bg-muted/30 transition-colors">
+                          <td className="p-3">
+                            <button
+                              className="text-primary hover:underline font-medium"
+                              onClick={() => appointment.patients?.id && navigate(`/patients/${appointment.patients.id}`)}
+                            >
+                              {appointment.patients?.full_name || 'غير محدد'}
+                            </button>
+                          </td>
+                          <td className="p-3">{formatDate(appointment.appointment_date)}</td>
+                          <td className="p-3">{appointment.duration} دقيقة</td>
+                          <td className="p-3">{appointment.treatment_type || '-'}</td>
+                          <td className="p-3">{getStatusBadge(appointment.status)}</td>
+                          <td className="p-3">
+                            <div className="flex items-center gap-1">
+                              {appointment.status === 'scheduled' && (
+                                <Button size="sm" variant="outline" onClick={() => handleCompleteAppointment(appointment.id)}>
+                                  <CheckCircle className="w-3 h-3" />
+                                </Button>
+                              )}
+                              <Button size="sm" variant="ghost" onClick={() => { setEditingAppointment(appointment); setEditDialogOpen(true); }}>
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
       <EditAppointmentDialog appointment={editingAppointment} open={editDialogOpen} onOpenChange={setEditDialogOpen} onAppointmentUpdated={fetchAppointments} />
