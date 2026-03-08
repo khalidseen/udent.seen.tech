@@ -29,6 +29,9 @@
 | 2026-03-08 | دمج 10 صفحات مكررة → redirects للنسخ المتقدمة | `Invoices`, `Payments`, `Notifications`, `NotificationTemplates`, `MedicalRecords`, `DentalTreatments`, `Reports`, `Users`, `Permissions`, `SecurityAudit` |
 | 2026-03-08 | حذف 3 مكونات مواعيد مكررة + إصلاح الشهر الثابت | `AddAppointmentDialog`, `AddAppointmentDrawer`, `NewAppointmentPage`, `AppointmentList` |
 | 2026-03-08 | إضافة فلتر clinic_id لـ 8 صفحات (تسريب بيانات) | `Doctors`, `DoctorAssistants`, `Secretaries`, `Inventory`, `Medications`, `Prescriptions`, `PurchaseOrders`, `StockMovements` |
+| 2026-03-08 | إضافة فلتر clinic_id لـ ServicePrices + AdvancedUserManagement | `ServicePrices.tsx`, `AdvancedUserManagement.tsx` |
+| 2026-03-08 | إزالة debug panel + console.logs من AdvancedUserManagement | `AdvancedUserManagement.tsx` |
+| 2026-03-08 | فحص شامل لجميع الصفحات المتبقية (مالية، إشعارات، تقارير، إعدادات، AI) | جميع الصفحات |
 | سابقاً | إصلاح إحصائيات المرضى | `Index.tsx` |
 | سابقاً | تفعيل أزرار تعديل/حفظ المرضى | `PatientProfile.tsx`, `EditPatient.tsx` |
 
