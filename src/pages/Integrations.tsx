@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, Key, FileText, TrendingUp, BarChart3, Building2, Settings, PieChart } from 'lucide-react';
+import { Activity, Key, FileText, TrendingUp, BarChart3, Building2, Settings, PieChart, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OverviewTab from '@/components/integrations/OverviewTab';
 import LogsTab from '@/components/integrations/LogsTab';
@@ -10,6 +10,7 @@ import ClinicAnalyticsDashboard from '@/components/integrations/ClinicAnalyticsD
 import MultiClinicDashboard from '@/components/integrations/MultiClinicDashboard';
 import ClinicRemoteControl from '@/components/integrations/ClinicRemoteControl';
 import AggregatedAnalytics from '@/components/integrations/AggregatedAnalytics';
+import AdminClinicCreator from '@/components/integrations/AdminClinicCreator';
 import { useClinicContext } from '@/hooks/useClinicContext';
 import { useMultiClinicAnalytics } from '@/hooks/useMultiClinicAnalytics';
 
@@ -173,7 +174,7 @@ const Integrations = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-        <TabsList className={`grid w-full ${isMultiClinic ? 'grid-cols-7' : 'grid-cols-5'}`}>
+        <TabsList className={`grid w-full ${isMultiClinic ? 'grid-cols-8' : 'grid-cols-6'}`}>
           <TabsTrigger value="overview" className="gap-2">
             <Activity className="w-4 h-4" />
             نظرة عامة
@@ -190,6 +191,10 @@ const Integrations = () => {
               تحليلات مجمّعة
             </TabsTrigger>
           )}
+          <TabsTrigger value="create-clinic" className="gap-2">
+            <Plus className="w-4 h-4" />
+            عيادة جديدة
+          </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
             <BarChart3 className="w-4 h-4" />
             التحليلات
@@ -242,6 +247,10 @@ const Integrations = () => {
             />
           </TabsContent>
         )}
+
+        <TabsContent value="create-clinic" className="mt-6">
+          <AdminClinicCreator />
+        </TabsContent>
 
         <TabsContent value="analytics" className="mt-6">
           <ClinicAnalyticsDashboard clinicId={currentClinic?.id || null} />
