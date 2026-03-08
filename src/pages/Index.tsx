@@ -44,7 +44,8 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettingsHook";
@@ -216,6 +217,7 @@ function Index() {
   const { toast } = useToast();
   const settings = useSettings(); // Move this before conditional rendering
 
+  const { user } = useAuth();
   const [actionCards, setActionCards] = useState<ActionCard[]>(defaultCards);
   const [editingCard, setEditingCard] = useState<string | null>(null);
   const [editData, setEditData] = useState<{ title: string; description: string; route: string }>({ 
@@ -225,6 +227,41 @@ function Index() {
   });
   const [draggedCard, setDraggedCard] = useState<ActionCard | null>(null);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<{
+    active_patients: number;
+    today_appointments: number;
+    total_debt: number;
+    low_stock_items: number;
+    pending_invoices: number;
+    this_month_revenue: number;
+  } | null>(null);
+
+  // تحميل الإحصائيات من DB
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (!user) return;
+      try {
+        // Get clinic_id from profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (profile) {
+          const { data, error } = await supabase.rpc('get_dashboard_stats_optimized', {
+            clinic_id_param: profile.id
+          });
+          if (!error && data) {
+            setStats(data as any);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard stats:', err);
+      }
+    };
+    fetchStats();
+  }, [user]);
 
   // تحميل البيانات الافتراضية
   useEffect(() => {
@@ -589,7 +626,53 @@ function Index() {
   return (
     <PageContainer>
       <div className="space-y-6">
-        {/* تم نقل مكون التحقق من صحة الربط إلى الإعدادات → فحص الروابط */}
+        {/* إحصائيات سريعة من قاعدة البيانات */}
+        {stats && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/patients')}>
+              <CardContent className="p-4 text-center">
+                <Users className="w-6 h-6 mx-auto mb-2 text-primary" />
+                <p className="text-2xl font-bold">{stats.active_patients}</p>
+                <p className="text-xs text-muted-foreground">مرضى نشطون</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/appointments')}>
+              <CardContent className="p-4 text-center">
+                <Calendar className="w-6 h-6 mx-auto mb-2 text-blue-500" />
+                <p className="text-2xl font-bold">{stats.today_appointments}</p>
+                <p className="text-xs text-muted-foreground">مواعيد اليوم</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/financial-overview')}>
+              <CardContent className="p-4 text-center">
+                <TrendingUp className="w-6 h-6 mx-auto mb-2 text-green-500" />
+                <p className="text-2xl font-bold">{stats.this_month_revenue?.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">إيرادات الشهر</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/invoice-management')}>
+              <CardContent className="p-4 text-center">
+                <Receipt className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
+                <p className="text-2xl font-bold">{stats.pending_invoices}</p>
+                <p className="text-xs text-muted-foreground">فواتير معلقة</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/financial-overview')}>
+              <CardContent className="p-4 text-center">
+                <DollarSign className="w-6 h-6 mx-auto mb-2 text-red-500" />
+                <p className="text-2xl font-bold">{stats.total_debt?.toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground">ديون مستحقة</p>
+              </CardContent>
+            </Card>
+            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/inventory')}>
+              <CardContent className="p-4 text-center">
+                <Package className="w-6 h-6 mx-auto mb-2 text-orange-500" />
+                <p className="text-2xl font-bold">{stats.low_stock_items}</p>
+                <p className="text-xs text-muted-foreground">مخزون منخفض</p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Dashboard Action Cards */}
         {settings.showDashboardBoxes && (
@@ -599,10 +682,6 @@ function Index() {
             {actionCards.map(renderCard)}
           </div>
         )}
-
-        {/* نظام الإشعارات الذكي - مُعطل مؤقتاً */}
-        {/* يمكن تفعيله عبر إلغاء التعليق أدناه */}
-        {/* <SmartNotificationSystem /> */}
       </div>
     </PageContainer>
   );
