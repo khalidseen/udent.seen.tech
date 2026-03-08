@@ -143,14 +143,8 @@ function App() {
                   <Route path="settings" element={<Settings />} />
                   <Route path="doctors" element={<Doctors />} />
                   <Route path="doctors/:doctorId" element={<DoctorProfile />} />
-                  <Route path="medical-records" element={<MedicalRecords />} />
-                  <Route path="dental-treatments" element={<DentalTreatments />} />
-                  <Route path="reports" element={<Reports />} />
-                  <Route path="notifications" element={<Notifications />} />
                   <Route path="doctor-assistants" element={<DoctorAssistants />} />
                   <Route path="secretaries" element={<Secretaries />} />
-                  <Route path="invoices" element={<Invoices />} />
-                  <Route path="payments" element={<Payments />} />
                   <Route path="financial-overview" element={<FinancialOverview />} />
                   <Route path="treatment-plans" element={<TreatmentPlans />} />
                   <Route path="financial-reports" element={<FinancialReports />} />
@@ -177,14 +171,10 @@ function App() {
                   <Route path="subscription-plans" element={<SubscriptionPlans />} />
                   <Route path="subscription" element={<SubscriptionManagement />} />
                   <Route path="integrations" element={<Integrations />} />
-                  <Route path="permissions" element={<Permissions />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="profile/:userId" element={<Profile />} />
-                  <Route path="users" element={<Users />} />
                   <Route path="financial-transactions" element={<PatientFinancialTransactions />} />
                   <Route path="service-prices" element={<ServicePrices />} />
-                  <Route path="security-audit" element={<SecurityAudit />} />
-                  <Route path="notification-templates" element={<NotificationTemplates />} />
                   <Route path="dental-lab" element={<DentalLabManagement />} />
                   <Route path="smart-scheduling" element={<SmartScheduling />} />
                   <Route path="communication-center" element={<CommunicationCenter />} />
