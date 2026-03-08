@@ -121,7 +121,7 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">الفواتير</h3>
-          <Button size="sm">
+          <Button size="sm" onClick={() => window.location.href = `/invoices?patient=${patientId}`}>
             <Plus className="w-4 h-4 mr-2" />
             فاتورة جديدة
           </Button>

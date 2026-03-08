@@ -34,7 +34,7 @@ export function PatientPrescriptions({ patientId }: PatientPrescriptionsProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">الوصفات الطبية</h3>
-        <Button size="sm">
+        <Button size="sm" onClick={() => window.location.href = `/prescriptions?patient=${patientId}`}>
           <Plus className="w-4 h-4 mr-2" />
           وصفة جديدة
         </Button>

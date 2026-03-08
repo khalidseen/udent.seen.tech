@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,8 @@ import { AnatomicalDentalChart } from "@/components/dental/AnatomicalDentalChart
 export default function PatientProfile() {
   const { patientId } = useParams<{ patientId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get('tab') || 'workflow';
 
   const { data: patient, isLoading } = useQuery({
     queryKey: ['patient', patientId],
@@ -158,7 +160,7 @@ export default function PatientProfile() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="workflow" className="space-y-4">
+      <Tabs defaultValue={initialTab} className="space-y-4">
         <TabsList className="grid grid-cols-9 w-full">
           <TabsTrigger value="workflow">
             <Activity className="h-4 w-4 ml-2" />
