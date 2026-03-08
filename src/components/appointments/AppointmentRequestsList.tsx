@@ -606,6 +606,20 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
           })}
         </div>
       )}
+
+      {/* Approve Request Dialog */}
+      {selectedRequest && (
+        <ApproveRequestDialog
+          open={approveDialogOpen}
+          onOpenChange={setApproveDialogOpen}
+          patientName={selectedRequest.patient_name}
+          preferredDate={selectedRequest.preferred_date}
+          preferredTime={selectedRequest.preferred_time}
+          doctors={doctors}
+          onConfirm={handleApproveConfirm}
+          loading={processingRequest === selectedRequest.id}
+        />
+      )}
     </div>
   );
 };
