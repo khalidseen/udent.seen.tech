@@ -846,7 +846,7 @@ const NewAppointmentForm = () => {
             <div className="text-sm">
               <div className="flex justify-between items-center py-3 border-b border-border">
                 <span className="text-muted-foreground">التاريخ الحالي:</span>
-                <span className="font-medium text-foreground">{new Date().toLocaleDateString('ar-EG')}</span>
+                <span className="font-medium text-foreground">{new Date().toLocaleDateString()}</span>
               </div>
               <div className="flex justify-between items-center py-3 border-b border-border">
                 <span className="text-muted-foreground">إجمالي المرضى:</span>

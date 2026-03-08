@@ -214,7 +214,7 @@ export const SmartNotificationSystem: React.FC = () => {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground">
-                      {new Date(notification.scheduled_for).toLocaleDateString('ar-SA', {
+                      {new Date(notification.scheduled_for).toLocaleDateString(undefined, {
                         weekday: 'short',
                         year: 'numeric',
                         month: 'short',

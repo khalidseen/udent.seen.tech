@@ -69,7 +69,7 @@ const ViewPrescriptionDialog = ({ open, onOpenChange, prescription }: ViewPrescr
     message += `👤 *المريض:* ${(prescriptionDetails as any)?.patients?.full_name || 'المريض'}\n`;
     message += `👨‍⚕️ *الطبيب:* ${doctorName}\n`;
     message += `🏥 *العيادة:* ${prescriptionDetails?.clinic_name || ''}\n`;
-    message += `📅 *التاريخ:* ${new Date(prescriptionDetails?.prescription_date || '').toLocaleDateString('ar-IQ')}\n`;
+    message += `📅 *التاريخ:* ${new Date(prescriptionDetails?.prescription_date || '').toLocaleDateString()}\n`;
     message += `🩺 *التشخيص:* ${diagnosis}\n\n`;
     
     message += `💊 *الأدوية:*\n`;
@@ -157,7 +157,7 @@ const ViewPrescriptionDialog = ({ open, onOpenChange, prescription }: ViewPrescr
               <div>
                 <label className="text-sm font-semibold text-slate-500">تاريخ الفحص</label>
                 <p className="text-lg font-medium text-slate-900 pt-1">
-                  {new Date(prescriptionDetails.prescription_date).toLocaleDateString('ar-IQ')}
+                  {new Date(prescriptionDetails.prescription_date).toLocaleDateString()}
                 </p>
               </div>
               <div className="sm:col-span-3">

@@ -88,7 +88,7 @@ export function SmartNotificationSystem() {
             await offlineSupabase.insert('notifications', {
               clinic_id: clinicId,
               title: 'تذكير موعد غداً',
-              message: `موعد المريض ${patient.full_name} غداً في ${new Date(appointment.appointment_date).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })}`,
+              message: `موعد المريض ${patient.full_name} غداً في ${new Date(appointment.appointment_date).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`,
               type: 'appointment',
               priority: 'medium',
               scheduled_for: new Date(appointment.appointment_date).toISOString(),

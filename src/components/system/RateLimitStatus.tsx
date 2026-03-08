@@ -91,7 +91,7 @@ export const RateLimitStatus = ({
             )}
             {!info.isBlocked && (
               <p className="text-xs text-muted-foreground">
-                يتم إعادة التعيين في {new Date(info.resetTime).toLocaleTimeString('ar-SA')}
+                يتم إعادة التعيين في {new Date(info.resetTime).toLocaleTimeString()}
               </p>
             )}
           </div>
@@ -120,7 +120,7 @@ export const RateLimitStatus = ({
         <AlertTitle>تحذير</AlertTitle>
         <AlertDescription>
           لديك {info.remaining} طلب متبقي فقط. سيتم إعادة التعيين في{' '}
-          {new Date(info.resetTime).toLocaleTimeString('ar-SA')}.
+          {new Date(info.resetTime).toLocaleTimeString()}.
         </AlertDescription>
       </Alert>
     );

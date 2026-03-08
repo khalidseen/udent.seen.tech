@@ -187,7 +187,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ apiKeys, webhooks, apiLogs, s
                     <Clock className="w-3 h-3" />
                     {log.response_time}ms
                   </span>
-                  <span>{new Date(log.timestamp).toLocaleTimeString('ar-SA')}</span>
+                  <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
                 </div>
               </div>
             ))}
@@ -223,7 +223,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ apiKeys, webhooks, apiLogs, s
                     <div className="flex-1">
                       <div className="font-medium mb-1">{key.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        آخر استخدام: {key.last_used ? new Date(key.last_used).toLocaleDateString('ar-SA') : 'لم يتم الاستخدام'}
+                        آخر استخدام: {key.last_used ? new Date(key.last_used).toLocaleDateString() : 'لم يتم الاستخدام'}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">

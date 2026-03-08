@@ -499,9 +499,9 @@ export const getCommonTemplateVariables = (
   tooth_number: toothNumber,
   patient_name: patientName || '',
   doctor_name: doctorName || '',
-  date: date || new Date().toLocaleDateString('ar-SA'),
-  today: new Date().toLocaleDateString('ar-SA'),
-  time: new Date().toLocaleTimeString('ar-SA', { 
+  date: date || new Date().toLocaleDateString(),
+  today: new Date().toLocaleDateString(),
+  time: new Date().toLocaleTimeString(undefined, { 
     hour12: true, 
     hour: '2-digit', 
     minute: '2-digit' 

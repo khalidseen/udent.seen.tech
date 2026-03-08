@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { formatDateUtil } from '@/utils/formatters';
 import {
   Dialog,
   DialogContent,
@@ -269,7 +270,7 @@ const AppointmentBookingDialog: React.FC<AppointmentBookingDialogProps> = ({
               {getNextAvailableSlots().map((slot, index) => (
                 <div key={index} className="bg-white p-3 rounded border">
                   <div className="font-medium text-sm mb-2">
-                    {new Date(slot.date).toLocaleDateString('ar-SA', { 
+                    {formatDateUtil(new Date(slot.date), { 
                       weekday: 'long', 
                       month: 'long', 
                       day: 'numeric' 
@@ -344,7 +345,7 @@ const AppointmentBookingDialog: React.FC<AppointmentBookingDialogProps> = ({
                               <div className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-gray-500" />
                                 <span>
-                                  {new Date(appointment.date).toLocaleDateString('ar-SA')}
+                                  {formatDateUtil(new Date(appointment.date))}
                                 </span>
                               </div>
                               <div className="flex items-center gap-2">

@@ -192,7 +192,7 @@ const Prescriptions = () => {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground">تاريخ الوصفة:</p>
                     <p className="text-sm">
-                      {new Date(prescription.prescription_date).toLocaleDateString('ar-IQ')}
+                      {new Date(prescription.prescription_date).toLocaleDateString()}
                     </p>
                   </div>
                   <div className="flex gap-2 pt-2">

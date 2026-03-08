@@ -418,11 +418,11 @@ export const AdvancedPermissionsManagement = () => {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          {new Date(assignment.assigned_at).toLocaleDateString('ar-SA')}
+                          {new Date(assignment.assigned_at).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
                           {assignment.expires_at 
-                            ? new Date(assignment.expires_at).toLocaleDateString('ar-SA')
+                            ? new Date(assignment.expires_at).toLocaleDateString()
                             : 'دائم'
                           }
                         </TableCell>

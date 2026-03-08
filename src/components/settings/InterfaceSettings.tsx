@@ -6,11 +6,11 @@ import { Slider } from "@/components/ui/slider";
 import { useSettings } from "@/hooks/useSettingsHook";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Monitor, Moon, Sun, Languages, Type, Layout, Grid } from "lucide-react";
+import { Monitor, Moon, Sun, Languages, Type, Layout, Grid, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function InterfaceSettings() {
-  const { t } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const { theme, setTheme } = useTheme();
   const {
     fontWeight,
@@ -24,28 +24,105 @@ export function InterfaceSettings() {
     boxesPerRow,
     setBoxesPerRow,
     boxSize,
-    setBoxSize
-  ,
-  linkValidationAlertEnabled,
-  setLinkValidationAlertEnabled
+    setBoxSize,
+    linkValidationAlertEnabled,
+    setLinkValidationAlertEnabled,
+    timeFormat,
+    setTimeFormat,
   } = useSettings();
+
+  const isAr = language === 'ar';
 
   return (
     <div className="space-y-6">
+      {/* إعدادات اللغة */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Languages className="h-5 w-5" />
+            {isAr ? 'اللغة' : 'Language'}
+          </CardTitle>
+          <CardDescription>
+            {isAr ? 'اختر لغة واجهة النظام' : 'Choose the system interface language'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>{isAr ? 'لغة الواجهة' : 'Interface Language'}</Label>
+            <Select value={language} onValueChange={(val) => setLanguage(val as 'ar' | 'en')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ar">
+                  <div className="flex items-center gap-2">
+                    <span>🇸🇦</span>
+                    العربية
+                  </div>
+                </SelectItem>
+                <SelectItem value="en">
+                  <div className="flex items-center gap-2">
+                    <span>🇺🇸</span>
+                    English
+                  </div>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* إعدادات الوقت */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Clock className="h-5 w-5" />
+            {isAr ? 'تنسيق الوقت' : 'Time Format'}
+          </CardTitle>
+          <CardDescription>
+            {isAr ? 'اختر طريقة عرض الوقت في النظام' : 'Choose how time is displayed in the system'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>{isAr ? 'نظام الوقت' : 'Time System'}</Label>
+            <Select value={timeFormat} onValueChange={(val) => setTimeFormat(val as '12' | '24')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="12">
+                  {isAr ? '12 ساعة (صباحاً/مساءً)' : '12-hour (AM/PM)'}
+                </SelectItem>
+                <SelectItem value="24">
+                  {isAr ? '24 ساعة' : '24-hour'}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {isAr
+                ? `مثال: ${new Date().toLocaleTimeString(language === 'ar' ? 'ar-IQ' : 'en-US', { hour: '2-digit', minute: '2-digit', hour12: timeFormat === '12' })}`
+                : `Example: ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: timeFormat === '12' })}`
+              }
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* إعدادات المظهر */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Monitor className="h-5 w-5" />
-            إعدادات المظهر
+            {isAr ? 'إعدادات المظهر' : 'Appearance Settings'}
           </CardTitle>
           <CardDescription>
-            تخصيص مظهر واجهة النظام
+            {isAr ? 'تخصيص مظهر واجهة النظام' : 'Customize the system interface appearance'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>السمة</Label>
+            <Label>{isAr ? 'السمة' : 'Theme'}</Label>
             <Select value={theme} onValueChange={setTheme}>
               <SelectTrigger>
                 <SelectValue />
@@ -54,19 +131,19 @@ export function InterfaceSettings() {
                 <SelectItem value="light">
                   <div className="flex items-center gap-2">
                     <Sun className="h-4 w-4" />
-                    فاتح
+                    {isAr ? 'فاتح' : 'Light'}
                   </div>
                 </SelectItem>
                 <SelectItem value="dark">
                   <div className="flex items-center gap-2">
                     <Moon className="h-4 w-4" />
-                    داكن
+                    {isAr ? 'داكن' : 'Dark'}
                   </div>
                 </SelectItem>
                 <SelectItem value="system">
                   <div className="flex items-center gap-2">
                     <Monitor className="h-4 w-4" />
-                    تلقائي
+                    {isAr ? 'تلقائي' : 'System'}
                   </div>
                 </SelectItem>
               </SelectContent>
@@ -76,15 +153,15 @@ export function InterfaceSettings() {
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Type className="h-4 w-4" />
-              سماكة الخط
+              {isAr ? 'سماكة الخط' : 'Font Weight'}
             </Label>
             <Select value={fontWeight} onValueChange={setFontWeight}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="normal">عادي</SelectItem>
-                <SelectItem value="bold">عريض</SelectItem>
+                <SelectItem value="normal">{isAr ? 'عادي' : 'Normal'}</SelectItem>
+                <SelectItem value="bold">{isAr ? 'عريض' : 'Bold'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -96,37 +173,37 @@ export function InterfaceSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Layout className="h-5 w-5" />
-            إعدادات الشريط الجانبي
+            {isAr ? 'إعدادات الشريط الجانبي' : 'Sidebar Settings'}
           </CardTitle>
           <CardDescription>
-            تخصيص مظهر وسلوك الشريط الجانبي
+            {isAr ? 'تخصيص مظهر وسلوك الشريط الجانبي' : 'Customize sidebar appearance and behavior'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>حجم أيقونات الشريط الجانبي</Label>
+            <Label>{isAr ? 'حجم أيقونات الشريط الجانبي' : 'Sidebar Icon Size'}</Label>
             <Select value={sidebarIconSize} onValueChange={setSidebarIconSize}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="small">صغير</SelectItem>
-                <SelectItem value="medium">متوسط</SelectItem>
-                <SelectItem value="large">كبير</SelectItem>
+                <SelectItem value="small">{isAr ? 'صغير' : 'Small'}</SelectItem>
+                <SelectItem value="medium">{isAr ? 'متوسط' : 'Medium'}</SelectItem>
+                <SelectItem value="large">{isAr ? 'كبير' : 'Large'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label>حجم الأيقونات عند الطي</Label>
+            <Label>{isAr ? 'حجم الأيقونات عند الطي' : 'Collapsed Icon Size'}</Label>
             <Select value={collapsedIconSize} onValueChange={setCollapsedIconSize}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="small">صغير</SelectItem>
-                <SelectItem value="medium">متوسط</SelectItem>
-                <SelectItem value="large">كبير</SelectItem>
+                <SelectItem value="small">{isAr ? 'صغير' : 'Small'}</SelectItem>
+                <SelectItem value="medium">{isAr ? 'متوسط' : 'Medium'}</SelectItem>
+                <SelectItem value="large">{isAr ? 'كبير' : 'Large'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -138,18 +215,18 @@ export function InterfaceSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Grid className="h-5 w-5" />
-            إعدادات لوحة القيادة
+            {isAr ? 'إعدادات لوحة القيادة' : 'Dashboard Settings'}
           </CardTitle>
           <CardDescription>
-            تخصيص عرض البيانات في لوحة القيادة
+            {isAr ? 'تخصيص عرض البيانات في لوحة القيادة' : 'Customize data display in the dashboard'}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label>إظهار صناديق لوحة القيادة</Label>
+              <Label>{isAr ? 'إظهار صناديق لوحة القيادة' : 'Show Dashboard Boxes'}</Label>
               <p className="text-sm text-muted-foreground">
-                عرض الإحصائيات في شكل صناديق
+                {isAr ? 'عرض الإحصائيات في شكل صناديق' : 'Display statistics as boxes'}
               </p>
             </div>
             <Switch
@@ -161,7 +238,7 @@ export function InterfaceSettings() {
           {showDashboardBoxes && (
             <>
               <div className="space-y-2">
-                <Label>عدد الصناديق في الصف: {boxesPerRow}</Label>
+                <Label>{isAr ? `عدد الصناديق في الصف: ${boxesPerRow}` : `Boxes per row: ${boxesPerRow}`}</Label>
                 <Slider
                   value={[boxesPerRow]}
                   onValueChange={([value]) => setBoxesPerRow(value)}
@@ -173,7 +250,7 @@ export function InterfaceSettings() {
               </div>
 
               <div className="space-y-2">
-                <Label>حجم الصناديق: {boxSize}px</Label>
+                <Label>{isAr ? `حجم الصناديق: ${boxSize}px` : `Box size: ${boxSize}px`}</Label>
                 <Slider
                   value={[boxSize]}
                   onValueChange={([value]) => setBoxSize(value)}
@@ -188,9 +265,11 @@ export function InterfaceSettings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <Label>تنبيه فحص صحة الربط في لوحة القيادة</Label>
+              <Label>{isAr ? 'تنبيه فحص صحة الربط في لوحة القيادة' : 'Dashboard Link Health Alert'}</Label>
               <p className="text-sm text-muted-foreground">
-                إظهار تنبيه في الإعدادات فقط عندما يوجد رابط خاطئ. يمكن إلغاؤه من لوحة التحكم.
+                {isAr
+                  ? 'إظهار تنبيه في الإعدادات فقط عندما يوجد رابط خاطئ. يمكن إلغاؤه من لوحة التحكم.'
+                  : 'Show alert in settings only when broken links exist. Can be dismissed from dashboard.'}
               </p>
             </div>
             <Switch
@@ -204,11 +283,10 @@ export function InterfaceSettings() {
               size="sm"
               onClick={() => {
                 localStorage.removeItem('dashboard_link_validation_dismissed');
-                // Force a small reload to ensure dashboard reads the change
                 window.location.reload();
               }}
             >
-              إعادة إظهار تحذيرات لوحة التحكم
+              {isAr ? 'إعادة إظهار تحذيرات لوحة التحكم' : 'Reset Dashboard Warnings'}
             </Button>
           </div>
         </CardContent>

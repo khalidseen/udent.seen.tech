@@ -278,7 +278,7 @@ const CommunicationDialog: React.FC<CommunicationDialogProps> = ({
                   <div className="text-sm text-gray-600">آخر تواصل</div>
                   <div className="font-medium">
                     {messages.length > 0 
-                      ? new Date(messages[messages.length - 1].timestamp).toLocaleDateString('ar-SA')
+                      ? new Date(messages[messages.length - 1].timestamp).toLocaleDateString()
                       : 'لا يوجد'
                     }
                   </div>

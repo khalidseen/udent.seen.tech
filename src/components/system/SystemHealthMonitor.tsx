@@ -17,6 +17,7 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { usePermissions } from '@/hooks/usePermissions';
+import { formatTimeUtil } from '@/utils/formatters';
 
 interface SystemHealth {
   database: 'healthy' | 'warning' | 'error';
@@ -205,7 +206,7 @@ export const SystemHealthMonitor: React.FC = () => {
           </Button>
         </CardTitle>
         <CardDescription>
-          آخر فحص: {lastUpdate.toLocaleTimeString('ar-SA')}
+          آخر فحص: {formatTimeUtil(lastUpdate)}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -247,7 +248,7 @@ export const SystemHealthMonitor: React.FC = () => {
           <div className="flex items-center justify-between">
             <span className="text-sm text-muted-foreground">آخر فحص</span>
             <span className="font-medium">
-              {systemHealth.lastCheck.toLocaleTimeString('ar-SA')}
+              {formatTimeUtil(systemHealth.lastCheck)}
             </span>
           </div>
         </div>

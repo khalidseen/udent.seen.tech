@@ -56,7 +56,7 @@ export const useUpdatePatientFinancials = () => {
           .eq('id', data.patientId)
           .single();
 
-        const paymentNote = `\n[دفعة: ${formatAmount(data.payment_amount || 0)} - ${new Date().toLocaleDateString('ar-SA')} - ${data.payment_note}]`;
+        const paymentNote = `\n[دفعة: ${formatAmount(data.payment_amount || 0)} - ${new Date().toLocaleDateString()} - ${data.payment_note}]`;
         updateData.notes = (currentPatient?.notes || '') + paymentNote;
       }
 
@@ -125,7 +125,7 @@ export const useAddPatientCharges = () => {
       }
 
       // إضافة ملاحظة الرسوم الجديدة
-      const chargeNote = `\n[رسوم: ${formatAmount(amount)} - ${new Date().toLocaleDateString('ar-SA')} - ${description}]`;
+      const chargeNote = `\n[رسوم: ${formatAmount(amount)} - ${new Date().toLocaleDateString()} - ${description}]`;
       const updatedNotes = (currentPatient.notes || '') + chargeNote;
 
       // تحديث المريض

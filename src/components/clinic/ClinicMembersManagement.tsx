@@ -222,7 +222,7 @@ export function ClinicMembersManagement({ clinicId, clinicName }: ClinicMembersM
                       </div>
                       <p className="text-sm text-muted-foreground">{member.email}</p>
                       <p className="text-xs text-muted-foreground">
-                        انضم في: {new Date(member.joined_at).toLocaleDateString('ar-SA')}
+                        انضم في: {new Date(member.joined_at).toLocaleDateString()}
                       </p>
                     </div>
                   </div>

@@ -182,8 +182,8 @@ const ApiKeysTab: React.FC<ApiKeysTabProps> = ({
                       </Badge>
                     </div>
                     <CardDescription>
-                      تم الإنشاء: {new Date(apiKey.created_at).toLocaleDateString('ar-SA')}
-                      {apiKey.last_used && ` • آخر استخدام: ${new Date(apiKey.last_used).toLocaleDateString('ar-SA')}`}
+                      تم الإنشاء: {new Date(apiKey.created_at).toLocaleDateString()}
+                      {apiKey.last_used && ` • آخر استخدام: ${new Date(apiKey.last_used).toLocaleDateString()}`}
                     </CardDescription>
                   </div>
                   <DropdownMenu>

@@ -132,7 +132,7 @@ export function PerformanceSettings() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center gap-2">
-            <Badge variant="outline">آخر تحديث: {new Date().toLocaleTimeString('ar-EG')}</Badge>
+            <Badge variant="outline">آخر تحديث: {new Date().toLocaleTimeString()}</Badge>
             <Badge variant="secondary">وضع التطوير</Badge>
           </div>
         </CardContent>

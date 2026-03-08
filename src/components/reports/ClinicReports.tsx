@@ -140,7 +140,7 @@ const ClinicReports = () => {
       // Calculate appointments by month
       const monthCounts = appointments.reduce((acc, apt) => {
         const date = new Date(apt.appointment_date);
-        const month = date.toLocaleDateString('ar', { month: 'long' });
+        const month = date.toLocaleDateString(undefined, { month: 'long' });
         acc[month] = (acc[month] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
@@ -186,7 +186,7 @@ const ClinicReports = () => {
           apt.appointment_date.split('T')[0] === date
         ).length;
         return {
-          date: new Date(date).toLocaleDateString('ar', { weekday: 'short' }),
+          date: new Date(date).toLocaleDateString(undefined, { weekday: 'short' }),
           count
         };
       });
