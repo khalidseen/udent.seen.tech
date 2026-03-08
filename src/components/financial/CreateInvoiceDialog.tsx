@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -34,14 +34,22 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
     { service_name: "", description: "", quantity: 1, unit_price: 0 }
   ]);
 
-  const { data: patients } = useQuery({
-    queryKey: ['patients-for-invoice'],
+  useEffect(() => {
+    if (preselectedPatientId) setPatientId(preselectedPatientId);
+  }, [preselectedPatientId]);
+
+  const { data: profile } = useQuery({
+    queryKey: ['current-profile-for-invoice'],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    },
+    enabled: open,
+  });
+
+  const { data: patients } = useQuery({
+    queryKey: ['patients-for-invoice', profile?.id],
+    queryFn: async () => {
       if (!profile) return [];
       const { data } = await supabase
         .from('patients')
@@ -51,7 +59,24 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
         .order('full_name');
       return data || [];
     },
-    enabled: open,
+    enabled: open && !!profile,
+  });
+
+  // Fetch service prices for quick-add
+  const { data: servicePrices } = useQuery({
+    queryKey: ['service-prices-for-invoice', profile?.id],
+    queryFn: async () => {
+      if (!profile) return [];
+      const { data } = await supabase
+        .from('service_prices')
+        .select('id, service_name, base_price, service_category')
+        .eq('clinic_id', profile.id)
+        .eq('is_active', true)
+        .order('service_category')
+        .order('service_name');
+      return data || [];
+    },
+    enabled: open && !!profile,
   });
 
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
@@ -59,13 +84,21 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
   const taxAmount = (subtotal - discountAmount) * (taxPercentage / 100);
   const totalAmount = subtotal - discountAmount + taxAmount;
 
+  const invalidateAllFinancialQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    queryClient.invalidateQueries({ queryKey: ['payments'] });
+    queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
+    queryClient.invalidateQueries({ queryKey: ['financial-dashboard-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['financial-transactions'] });
+    queryClient.invalidateQueries({ queryKey: ['financial-reports'] });
+    queryClient.invalidateQueries({ queryKey: ['pending-invoices'] });
+    queryClient.invalidateQueries({ queryKey: ['recent-invoices'] });
+    queryClient.invalidateQueries({ queryKey: ['invoice-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['treatment-plans-financial'] });
+  };
+
   const createInvoiceMutation = useMutation({
     mutationFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
       if (!profile) throw new Error('Profile not found');
 
       // Generate invoice number
@@ -118,9 +151,7 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
     },
     onSuccess: () => {
       toast.success('تم إنشاء الفاتورة بنجاح');
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-dashboard-stats'] });
+      invalidateAllFinancialQueries();
       resetForm();
       onOpenChange(false);
     },
@@ -140,6 +171,15 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
 
   const addItem = () => {
     setItems([...items, { service_name: "", description: "", quantity: 1, unit_price: 0 }]);
+  };
+
+  const addServiceItem = (service: { service_name: string; base_price: number }) => {
+    setItems([...items.filter(i => i.service_name), {
+      service_name: service.service_name,
+      description: "",
+      quantity: 1,
+      unit_price: Number(service.base_price),
+    }]);
   };
 
   const removeItem = (index: number) => {
@@ -177,6 +217,27 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
               <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
             </div>
           </div>
+
+          {/* Quick Add from Service Prices */}
+          {servicePrices && servicePrices.length > 0 && (
+            <div>
+              <Label className="text-sm font-semibold">إضافة سريعة من أسعار الخدمات</Label>
+              <div className="flex flex-wrap gap-1 mt-1">
+                {servicePrices.map(sp => (
+                  <Button
+                    key={sp.id}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="text-xs"
+                    onClick={() => addServiceItem(sp)}
+                  >
+                    {sp.service_name} ({Number(sp.base_price).toLocaleString()})
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Items */}
           <div className="space-y-3">

@@ -11,6 +11,7 @@ import { CurrencyAmount } from "@/components/ui/currency-display";
 import { CreateInvoiceDialog } from "./CreateInvoiceDialog";
 import { CreatePaymentDialog } from "./CreatePaymentDialog";
 import { useNavigate } from "react-router-dom";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 
 export function InvoiceManager() {
   const navigate = useNavigate();
@@ -23,11 +24,7 @@ export function InvoiceManager() {
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices'],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
+      const { data: profile } = await supabase.rpc('get_current_user_profile');
       if (!profile) throw new Error('Profile not found');
 
       const { data, error } = await supabase
@@ -91,145 +88,147 @@ export function InvoiceManager() {
   const totalPending = invoices?.reduce((s, i) => s + Number(i.balance_due || 0), 0) || 0;
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">إدارة الفواتير</h2>
-          <p className="text-muted-foreground">عرض وإدارة جميع الفواتير</p>
+    <PermissionGuard requiredPermissions={['financial.view', 'invoices.view', 'financial.manage']}>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">إدارة الفواتير</h2>
+            <p className="text-muted-foreground">عرض وإدارة جميع الفواتير</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/payment-management')}>
+              <CreditCard className="ml-2 h-4 w-4" /> المدفوعات
+            </Button>
+            <Button onClick={() => setShowCreateInvoice(true)}>
+              <Plus className="ml-2 h-4 w-4" /> فاتورة جديدة
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/payment-management')}>
-            <CreditCard className="ml-2 h-4 w-4" /> المدفوعات
-          </Button>
-          <Button onClick={() => setShowCreateInvoice(true)}>
-            <Plus className="ml-2 h-4 w-4" /> فاتورة جديدة
-          </Button>
-        </div>
-      </div>
 
-      {/* Statistics */}
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي الفواتير</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{invoices?.length || 0}</div>
-            <p className="text-xs text-muted-foreground"><CurrencyAmount amount={totalInvoiced} /></p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">المدفوعة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">{invoices?.filter(i => i.status === 'paid').length || 0}</div>
-            <p className="text-xs text-muted-foreground"><CurrencyAmount amount={totalPaid} /></p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">المعلقة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning">{invoices?.filter(i => i.status === 'pending').length || 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">المبالغ المستحقة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive"><CurrencyAmount amount={totalPending} /></div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <div className="flex gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="بحث برقم الفاتورة أو اسم المريض..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pr-10" />
-        </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">الكل</SelectItem>
-            <SelectItem value="pending">معلقة</SelectItem>
-            <SelectItem value="paid">مدفوعة</SelectItem>
-            <SelectItem value="overdue">متأخرة</SelectItem>
-            <SelectItem value="cancelled">ملغاة</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Invoices List */}
-      <div className="grid gap-3">
-        {filteredInvoices?.map((invoice: any) => (
-          <Card key={invoice.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between gap-4">
-                <div className="space-y-1 flex-1 min-w-0">
-                  <div className="flex items-center gap-3 flex-wrap">
-                    <h3 className="font-semibold">{invoice.invoice_number}</h3>
-                    <Badge className={getStatusColor(invoice.status)}>{getStatusText(invoice.status)}</Badge>
-                  </div>
-                  <button
-                    onClick={() => navigate(`/patient/${invoice.patient_id}`)}
-                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                  >
-                    <User className="h-3 w-3" /> {invoice.patient?.full_name}
-                  </button>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(invoice.issue_date).toLocaleDateString('ar-IQ')} | استحقاق: {new Date(invoice.due_date).toLocaleDateString('ar-IQ')}
-                  </p>
-                </div>
-
-                <div className="text-left space-y-1 shrink-0">
-                  <p className="text-sm text-muted-foreground">الإجمالي</p>
-                  <p className="text-lg font-bold"><CurrencyAmount amount={invoice.total_amount} /></p>
-                  {invoice.balance_due > 0 && (
-                    <p className="text-sm text-destructive">متبقي: <CurrencyAmount amount={invoice.balance_due} /></p>
-                  )}
-                </div>
-
-                <div className="flex flex-col gap-1 shrink-0">
-                  <Button variant="outline" size="sm" onClick={() => navigate(`/patient/${invoice.patient_id}?tab=financials`)}>
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                  {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
-                    <Button size="sm" onClick={() => handlePayInvoice(invoice)}>
-                      <CreditCard className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
+        {/* Statistics */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">إجمالي الفواتير</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{invoices?.length || 0}</div>
+              <p className="text-xs text-muted-foreground"><CurrencyAmount amount={totalInvoiced} /></p>
             </CardContent>
           </Card>
-        ))}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">المدفوعة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success">{invoices?.filter(i => i.status === 'paid').length || 0}</div>
+              <p className="text-xs text-muted-foreground"><CurrencyAmount amount={totalPaid} /></p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">المعلقة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-warning">{invoices?.filter(i => i.status === 'pending').length || 0}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">المبالغ المستحقة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive"><CurrencyAmount amount={totalPending} /></div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Filters */}
+        <div className="flex gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input placeholder="بحث برقم الفاتورة أو اسم المريض..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pr-10" />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">الكل</SelectItem>
+              <SelectItem value="pending">معلقة</SelectItem>
+              <SelectItem value="paid">مدفوعة</SelectItem>
+              <SelectItem value="overdue">متأخرة</SelectItem>
+              <SelectItem value="cancelled">ملغاة</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Invoices List */}
+        <div className="grid gap-3">
+          {filteredInvoices?.map((invoice: any) => (
+            <Card key={invoice.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="space-y-1 flex-1 min-w-0">
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="font-semibold">{invoice.invoice_number}</h3>
+                      <Badge className={getStatusColor(invoice.status)}>{getStatusText(invoice.status)}</Badge>
+                    </div>
+                    <button
+                      onClick={() => navigate(`/patient/${invoice.patient_id}`)}
+                      className="text-sm text-primary hover:underline flex items-center gap-1"
+                    >
+                      <User className="h-3 w-3" /> {invoice.patient?.full_name}
+                    </button>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(invoice.issue_date).toLocaleDateString('ar-IQ')} | استحقاق: {new Date(invoice.due_date).toLocaleDateString('ar-IQ')}
+                    </p>
+                  </div>
+
+                  <div className="text-left space-y-1 shrink-0">
+                    <p className="text-sm text-muted-foreground">الإجمالي</p>
+                    <p className="text-lg font-bold"><CurrencyAmount amount={invoice.total_amount} /></p>
+                    {invoice.balance_due > 0 && (
+                      <p className="text-sm text-destructive">متبقي: <CurrencyAmount amount={invoice.balance_due} /></p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col gap-1 shrink-0">
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/patient/${invoice.patient_id}?tab=financials`)}>
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
+                      <Button size="sm" onClick={() => handlePayInvoice(invoice)}>
+                        <CreditCard className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {(!filteredInvoices || filteredInvoices.length === 0) && (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">لا توجد فواتير</h3>
+              <p className="text-muted-foreground mb-4">ابدأ بإنشاء فاتورة جديدة</p>
+              <Button onClick={() => setShowCreateInvoice(true)}>
+                <Plus className="ml-2 h-4 w-4" /> إنشاء فاتورة
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <CreateInvoiceDialog open={showCreateInvoice} onOpenChange={setShowCreateInvoice} />
+        <CreatePaymentDialog
+          open={showCreatePayment}
+          onOpenChange={(open) => { setShowCreatePayment(open); if (!open) setSelectedInvoiceForPayment(null); }}
+          preselectedPatientId={selectedInvoiceForPayment?.patientId}
+          preselectedInvoiceId={selectedInvoiceForPayment?.invoiceId}
+        />
       </div>
-
-      {(!filteredInvoices || filteredInvoices.length === 0) && (
-        <Card>
-          <CardContent className="p-12 text-center">
-            <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-            <h3 className="text-lg font-semibold mb-2">لا توجد فواتير</h3>
-            <p className="text-muted-foreground mb-4">ابدأ بإنشاء فاتورة جديدة</p>
-            <Button onClick={() => setShowCreateInvoice(true)}>
-              <Plus className="ml-2 h-4 w-4" /> إنشاء فاتورة
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      <CreateInvoiceDialog open={showCreateInvoice} onOpenChange={setShowCreateInvoice} />
-      <CreatePaymentDialog
-        open={showCreatePayment}
-        onOpenChange={(open) => { setShowCreatePayment(open); if (!open) setSelectedInvoiceForPayment(null); }}
-        preselectedPatientId={selectedInvoiceForPayment?.patientId}
-        preselectedInvoiceId={selectedInvoiceForPayment?.invoiceId}
-      />
-    </div>
+    </PermissionGuard>
   );
 }

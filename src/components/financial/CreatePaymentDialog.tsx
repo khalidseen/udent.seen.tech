@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -26,14 +26,23 @@ export function CreatePaymentDialog({ open, onOpenChange, preselectedPatientId, 
   const [notes, setNotes] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
 
-  const { data: patients } = useQuery({
-    queryKey: ['patients-for-payment'],
+  useEffect(() => {
+    if (preselectedPatientId) setPatientId(preselectedPatientId);
+    if (preselectedInvoiceId) setInvoiceId(preselectedInvoiceId);
+  }, [preselectedPatientId, preselectedInvoiceId]);
+
+  const { data: profile } = useQuery({
+    queryKey: ['current-profile-for-payment'],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    },
+    enabled: open,
+  });
+
+  const { data: patients } = useQuery({
+    queryKey: ['patients-for-payment', profile?.id],
+    queryFn: async () => {
       if (!profile) return [];
       const { data } = await supabase
         .from('patients')
@@ -43,7 +52,7 @@ export function CreatePaymentDialog({ open, onOpenChange, preselectedPatientId, 
         .order('full_name');
       return data || [];
     },
-    enabled: open,
+    enabled: open && !!profile,
   });
 
   const { data: pendingInvoices } = useQuery({
@@ -64,13 +73,21 @@ export function CreatePaymentDialog({ open, onOpenChange, preselectedPatientId, 
 
   const selectedInvoice = pendingInvoices?.find(i => i.id === invoiceId);
 
+  const invalidateAllFinancialQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['payments'] });
+    queryClient.invalidateQueries({ queryKey: ['invoices'] });
+    queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
+    queryClient.invalidateQueries({ queryKey: ['financial-transactions'] });
+    queryClient.invalidateQueries({ queryKey: ['financial-dashboard-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['financial-reports'] });
+    queryClient.invalidateQueries({ queryKey: ['pending-invoices'] });
+    queryClient.invalidateQueries({ queryKey: ['recent-invoices'] });
+    queryClient.invalidateQueries({ queryKey: ['invoice-stats'] });
+    queryClient.invalidateQueries({ queryKey: ['treatment-plans-financial'] });
+  };
+
   const createPaymentMutation = useMutation({
     mutationFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
       if (!profile) throw new Error('Profile not found');
 
       const { error } = await supabase
@@ -91,11 +108,7 @@ export function CreatePaymentDialog({ open, onOpenChange, preselectedPatientId, 
     },
     onSuccess: () => {
       toast.success('تم تسجيل الدفعة بنجاح');
-      queryClient.invalidateQueries({ queryKey: ['payments'] });
-      queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-summary'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-transactions'] });
-      queryClient.invalidateQueries({ queryKey: ['financial-dashboard-stats'] });
+      invalidateAllFinancialQueries();
       resetForm();
       onOpenChange(false);
     },

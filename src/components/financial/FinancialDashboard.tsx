@@ -8,15 +8,9 @@ export function FinancialDashboard() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['financial-dashboard-stats'],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
+      const { data: profile } = await supabase.rpc('get_current_user_profile');
       if (!profile) throw new Error('Profile not found');
 
-      // جمع إحصائيات مالية شاملة
       const [invoicesResult, paymentsResult, patientsResult] = await Promise.all([
         supabase
           .from('invoices')
@@ -61,12 +55,12 @@ export function FinancialDashboard() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <DollarSign className="h-4 w-4 text-green-600" />
+            <DollarSign className="h-4 w-4 text-success" />
             إجمالي الإيرادات
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-green-600">
+          <div className="text-2xl font-bold text-success">
             <CurrencyAmount amount={stats?.totalRevenue || 0} />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
@@ -95,12 +89,12 @@ export function FinancialDashboard() {
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-red-600" />
+            <TrendingUp className="h-4 w-4 text-destructive" />
             المبالغ المستحقة
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-red-600">
+          <div className="text-2xl font-bold text-destructive">
             <CurrencyAmount amount={stats?.totalPending || 0} />
           </div>
           <p className="text-xs text-muted-foreground mt-1">
