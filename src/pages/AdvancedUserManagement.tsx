@@ -64,6 +64,11 @@ const AdvancedUserManagement = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      
+      // Get current user's clinic_id
+      const { data: profile } = await supabase.rpc('get_current_user_profile');
+      if (!profile) throw new Error('Profile not found');
+
       const { data, error } = await supabase
         .from('profiles')
         .select(`
@@ -75,6 +80,7 @@ const AdvancedUserManagement = () => {
           updated_at,
           status
         `)
+        .eq('clinic_id', profile.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
