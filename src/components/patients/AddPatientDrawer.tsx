@@ -426,6 +426,8 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
             </Button>
           </div>
         </div>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   );
