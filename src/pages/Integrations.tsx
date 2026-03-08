@@ -174,7 +174,7 @@ const Integrations = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} dir="rtl">
-        <TabsList className={`grid w-full ${isMultiClinic ? 'grid-cols-7' : 'grid-cols-5'}`}>
+        <TabsList className={`grid w-full ${isMultiClinic ? 'grid-cols-8' : 'grid-cols-6'}`}>
           <TabsTrigger value="overview" className="gap-2">
             <Activity className="w-4 h-4" />
             نظرة عامة
@@ -191,6 +191,10 @@ const Integrations = () => {
               تحليلات مجمّعة
             </TabsTrigger>
           )}
+          <TabsTrigger value="create-clinic" className="gap-2">
+            <Plus className="w-4 h-4" />
+            عيادة جديدة
+          </TabsTrigger>
           <TabsTrigger value="analytics" className="gap-2">
             <BarChart3 className="w-4 h-4" />
             التحليلات
