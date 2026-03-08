@@ -67,7 +67,7 @@ export function FinancialReports() {
       const { data: patients } = patientIds.length > 0
         ? await supabase.from('patients').select('id, full_name').in('id', patientIds)
         : { data: [] };
-      const patientMap = new Map(patients?.map(p => [p.id, p.full_name]) || []);
+      const patientMap = new Map((patients || []).map(p => [p.id, p.full_name] as const));
 
       const totalInvoiced = invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
       const totalPaid = payments.filter(p => p.status === 'completed').reduce((sum, pay) => sum + Number(pay.amount || 0), 0);

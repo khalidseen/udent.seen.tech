@@ -67,7 +67,7 @@ export function FinancialDashboard() {
       const { data: recentPatients } = recentPatientIds.length > 0
         ? await supabase.from('patients').select('id, full_name').in('id', recentPatientIds)
         : { data: [] };
-      const patientMap = new Map(recentPatients?.map(p => [p.id, p.full_name]) || []);
+      const patientMap = new Map((recentPatients || []).map(p => [p.id, p.full_name] as const));
 
       const totalRevenue = invoicesResult.data?.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0) || 0;
       const totalPaid = invoicesResult.data?.reduce((sum, inv) => sum + Number(inv.paid_amount || 0), 0) || 0;
