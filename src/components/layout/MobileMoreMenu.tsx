@@ -93,7 +93,7 @@ export const MobileMoreMenu = memo<MobileMoreMenuProps>(({ open, onOpenChange })
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[85vh] rounded-t-2xl px-0 overflow-y-auto">
+      <SheetContent side="right" className="w-[85vw] max-w-sm px-0 overflow-y-auto">
         <SheetHeader className="px-4 pb-2">
           <SheetTitle className="text-right">القائمة</SheetTitle>
         </SheetHeader>
