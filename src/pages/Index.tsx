@@ -49,7 +49,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettingsHook";
 import styles from "./Index.module.css";
-import { printDashboardValidationReport, validateDashboardCards } from "@/utils/dashboardValidation";
+import { validateDashboardCards } from "@/utils/dashboardValidation";
 // import { DashboardValidator } from "@/components/dashboard/DashboardValidator"; // تم نقله إلى الإعدادات
 // import { SmartNotificationSystem } from "@/components/dashboard/SmartNotificationSystem"; // مُعطل مؤقتاً
 
@@ -270,24 +270,7 @@ function Index() {
 
   const saveCardsOrder = async (cards: ActionCard[]) => {
     try {
-      // حفظ في localStorage أولاً
       localStorage.setItem('dashboard_cards', JSON.stringify(cards));
-
-      // محاولة الحفظ في قاعدة البيانات
-      try {
-        const updates = cards.map(card => ({
-          id: card.id,
-          order_index: card.order_index
-        }));
-
-        for (const update of updates) {
-          // تخطي تحديث قاعدة البيانات وحفظ محلياً فقط
-          console.log('Skipping database update for:', update.id);
-        }
-      } catch (dbError) {
-        console.log('Database save failed, but localStorage updated');
-      }
-
       toast({
         title: "تم الحفظ بنجاح",
         description: "تم حفظ ترتيب المربعات الجديد",
