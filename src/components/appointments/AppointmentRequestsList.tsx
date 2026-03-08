@@ -11,6 +11,8 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Clock, User, Phone, Mail, MapPin, FileText, Check, X, MessageCircle, Calendar, Star, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ApproveRequestDialog, { ApprovalData } from "./ApproveRequestDialog";
+import { useDoctors } from "@/hooks/useDoctors";
 interface AppointmentRequest {
   id: string;
   patient_name: string;
