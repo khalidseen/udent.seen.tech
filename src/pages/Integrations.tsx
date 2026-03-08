@@ -13,77 +13,43 @@ import AggregatedAnalytics from '@/components/integrations/AggregatedAnalytics';
 import AdminClinicCreator from '@/components/integrations/AdminClinicCreator';
 import { useClinicContext } from '@/hooks/useClinicContext';
 import { useMultiClinicAnalytics } from '@/hooks/useMultiClinicAnalytics';
-
-interface ApiKey {
-  id: string;
-  name: string;
-  key: string;
-  permissions: string[];
-  is_active: boolean;
-  last_used?: string;
-  created_at: string;
-}
-
-interface WebhookData {
-  id: string;
-  name: string;
-  url: string;
-  events: string[];
-  secret: string;
-  is_active: boolean;
-  success_count: number;
-  failure_count: number;
-  created_at: string;
-}
-
-interface ApiLog {
-  id: string;
-  endpoint: string;
-  method: string;
-  status: number;
-  response_time: number;
-  ip_address: string;
-  timestamp: string;
-}
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const Integrations = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const { currentClinic } = useClinicContext();
   const multiClinic = useMultiClinicAnalytics();
-
   const isMultiClinic = multiClinic.clinics.length > 1;
 
-  // Mock data for overview
-  const [apiKeys] = useState<ApiKey[]>([
-    {
-      id: '1', name: 'Production API Key', key: 'udent_live_abc123xyz789def456ghi',
-      permissions: ['patients.read', 'appointments.read', 'invoices.read'],
-      is_active: true, last_used: '2024-01-20T10:30:00Z', created_at: '2024-01-01T00:00:00Z',
+  // Real stats from DB
+  const { data: realStats } = useQuery({
+    queryKey: ['integration-stats', currentClinic?.id],
+    queryFn: async () => {
+      if (!currentClinic?.id) return { totalRequests: 0, successRate: 0, avgResponseTime: 0, activeKeys: 0, activeWebhooks: 0 };
+      
+      const [logsRes, keysRes] = await Promise.all([
+        supabase.from('api_logs').select('status_code, response_time_ms', { count: 'exact' }).eq('clinic_id', currentClinic.id),
+        supabase.from('api_keys').select('id', { count: 'exact', head: true }).eq('clinic_id', currentClinic.id).eq('is_active', true),
+      ]);
+
+      const logs = logsRes.data || [];
+      const total = logsRes.count || 0;
+      const successful = logs.filter(l => l.status_code && l.status_code >= 200 && l.status_code < 300).length;
+      const avgTime = logs.length > 0 ? Math.round(logs.reduce((s, l) => s + (l.response_time_ms || 0), 0) / logs.length) : 0;
+
+      return {
+        totalRequests: total,
+        successRate: total > 0 ? Math.round((successful / total) * 1000) / 10 : 0,
+        avgResponseTime: avgTime,
+        activeKeys: keysRes.count || 0,
+        activeWebhooks: 0,
+      };
     },
-  ]);
+    enabled: !!currentClinic?.id,
+  });
 
-  const [webhooks] = useState<WebhookData[]>([
-    {
-      id: '1', name: 'Patient Events Webhook', url: 'https://example.com/webhooks/patients',
-      events: ['patient.created', 'patient.updated'], secret: 'whsec_abc123xyz789',
-      is_active: true, success_count: 1245, failure_count: 5, created_at: '2024-01-05T00:00:00Z',
-    },
-  ]);
-
-  const [apiLogs] = useState<ApiLog[]>([
-    { id: '1', endpoint: '/api/v1/patients', method: 'GET', status: 200, response_time: 145, ip_address: '192.168.1.100', timestamp: '2024-01-21T16:30:00Z' },
-    { id: '2', endpoint: '/api/v1/appointments', method: 'POST', status: 201, response_time: 234, ip_address: '192.168.1.101', timestamp: '2024-01-21T16:28:00Z' },
-  ]);
-
-  const stats = {
-    totalRequests: 15420,
-    successRate: 99.7,
-    avgResponseTime: 187,
-    activeKeys: apiKeys.filter(k => k.is_active).length,
-    activeWebhooks: webhooks.filter(w => w.is_active).length,
-  };
-
-  const refreshLogs = () => console.log('Refreshing logs...');
+  const stats = realStats || { totalRequests: 0, successRate: 0, avgResponseTime: 0, activeKeys: 0, activeWebhooks: 0 };
 
   const handleSelectClinic = (clinicId: string) => {
     setActiveTab('remote-control');
@@ -115,7 +81,7 @@ const Integrations = () => {
               {isMultiClinic ? multiClinic.aggregated.activeClinics : stats.totalRequests.toLocaleString()}
             </div>
             <p className="text-xs text-muted-foreground">
-              {isMultiClinic ? `من ${multiClinic.aggregated.totalClinics} عيادة` : 'في آخر 30 يوم'}
+              {isMultiClinic ? `من ${multiClinic.aggregated.totalClinics} عيادة` : 'من سجلات API'}
             </p>
           </CardContent>
         </Card>
@@ -132,7 +98,7 @@ const Integrations = () => {
               {isMultiClinic ? multiClinic.aggregated.totalPatients.toLocaleString() : `${stats.successRate}%`}
             </div>
             <p className="text-xs text-muted-foreground">
-              {isMultiClinic ? 'عبر جميع العيادات' : 'أداء ممتاز'}
+              {isMultiClinic ? 'عبر جميع العيادات' : stats.totalRequests > 0 ? 'من السجلات الفعلية' : 'لا توجد بيانات'}
             </p>
           </CardContent>
         </Card>
@@ -149,7 +115,7 @@ const Integrations = () => {
               {isMultiClinic ? multiClinic.aggregated.thisMonthRevenue.toLocaleString() : stats.activeKeys}
             </div>
             <p className="text-xs text-muted-foreground">
-              {isMultiClinic ? 'الإجمالي: ' + multiClinic.aggregated.totalRevenue.toLocaleString() : `من ${apiKeys.length} إجمالاً`}
+              {isMultiClinic ? 'الإجمالي: ' + multiClinic.aggregated.totalRevenue.toLocaleString() : 'مفاتيح فعالة'}
             </p>
           </CardContent>
         </Card>
@@ -157,16 +123,16 @@ const Integrations = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              {isMultiClinic ? 'المواعيد (30 يوم)' : 'Webhooks النشطة'}
+              {isMultiClinic ? 'المواعيد (30 يوم)' : 'متوسط الاستجابة'}
             </CardTitle>
             <BarChart3 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {isMultiClinic ? multiClinic.aggregated.totalAppointments.toLocaleString() : stats.activeWebhooks}
+              {isMultiClinic ? multiClinic.aggregated.totalAppointments.toLocaleString() : `${stats.avgResponseTime}ms`}
             </div>
             <p className="text-xs text-muted-foreground">
-              {isMultiClinic ? 'آخر 30 يوم' : `من ${webhooks.length} إجمالاً`}
+              {isMultiClinic ? 'آخر 30 يوم' : 'وقت الاستجابة'}
             </p>
           </CardContent>
         </Card>
@@ -223,7 +189,7 @@ const Integrations = () => {
               onSelectClinic={handleSelectClinic}
             />
           ) : (
-            <OverviewTab apiKeys={apiKeys} webhooks={webhooks} apiLogs={apiLogs} stats={stats} />
+            <OverviewTab apiKeys={[]} webhooks={[]} apiLogs={[]} stats={stats} />
           )}
         </TabsContent>
 
@@ -261,7 +227,7 @@ const Integrations = () => {
         </TabsContent>
 
         <TabsContent value="logs" className="mt-6">
-          <LogsTab apiLogs={apiLogs} onRefresh={refreshLogs} />
+          <IntegrationLogsTab clinicId={currentClinic?.id || null} />
         </TabsContent>
 
         <TabsContent value="documentation" className="mt-6">
@@ -282,6 +248,34 @@ const Integrations = () => {
       </Tabs>
     </div>
   );
+};
+
+// Wrapper that fetches real logs and passes to LogsTab
+const IntegrationLogsTab = ({ clinicId }: { clinicId: string | null }) => {
+  const { data: apiLogs = [], refetch } = useQuery({
+    queryKey: ['api-logs', clinicId],
+    queryFn: async () => {
+      if (!clinicId) return [];
+      const { data } = await supabase
+        .from('api_logs')
+        .select('*')
+        .eq('clinic_id', clinicId)
+        .order('created_at', { ascending: false })
+        .limit(100);
+      return (data || []).map(log => ({
+        id: log.id,
+        endpoint: log.endpoint,
+        method: log.method,
+        status: log.status_code || 0,
+        response_time: log.response_time_ms || 0,
+        ip_address: String(log.ip_address || ''),
+        timestamp: log.created_at,
+      }));
+    },
+    enabled: !!clinicId,
+  });
+
+  return <LogsTab apiLogs={apiLogs} onRefresh={() => refetch()} />;
 };
 
 export default Integrations;
