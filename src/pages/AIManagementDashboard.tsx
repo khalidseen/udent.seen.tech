@@ -2,334 +2,150 @@ import React from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Brain, 
-  Zap, 
-  Target, 
-  Cpu,
-  BarChart3,
-  Settings,
-  Play,
-  Pause,
-  RefreshCw
-} from "lucide-react";
+import { Brain, Target, BarChart3, Zap, Image, FileText, Stethoscope } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const AIManagementDashboard = () => {
-  const aiModules = [
-    { 
-      name: "التشخيص الذكي", 
-      status: "نشط", 
-      accuracy: "94%", 
-      icon: Target,
-      color: "bg-green-50 border-green-200"
-    },
-    { 
-      name: "تحليل الأشعة", 
-      status: "نشط", 
-      accuracy: "91%", 
-      icon: Brain,
-      color: "bg-blue-50 border-blue-200"
-    },
-    { 
-      name: "التنبؤ بالعلاج", 
-      status: "قيد التطوير", 
-      accuracy: "87%", 
-      icon: Zap,
-      color: "bg-yellow-50 border-yellow-200"
-    },
-    { 
-      name: "معالجة اللغة", 
-      status: "نشط", 
-      accuracy: "96%", 
-      icon: Cpu,
-      color: "bg-purple-50 border-purple-200"
-    }
-  ];
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['ai-dashboard-stats'],
+    queryFn: async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
 
-  const recentAnalyses = [
-    { patient: "أحمد محمد", analysis: "تحليل أشعة", result: "طبيعي", confidence: 94, time: "منذ 5 دقائق" },
-    { patient: "فاطمة علي", analysis: "تشخيص ذكي", result: "يتطلب متابعة", confidence: 87, time: "منذ 15 دقيقة" },
-    { patient: "محمد خالد", analysis: "تحليل نص", result: "تحليل مكتمل", confidence: 92, time: "منذ 30 دقيقة" }
-  ];
+      if (!profile) return { analyses: 0, images: 0, treatments: 0, records: 0, recentAnalyses: [] };
+      const clinicId = profile.id;
+
+      const [analyses, images, treatments, records] = await Promise.all([
+        supabase.from('ai_analysis_results').select('id', { count: 'exact', head: true }).eq('clinic_id', clinicId),
+        supabase.from('medical_images').select('id', { count: 'exact', head: true }).eq('clinic_id', clinicId),
+        supabase.from('dental_treatments').select('id', { count: 'exact', head: true }).eq('clinic_id', clinicId),
+        supabase.from('medical_records').select('id', { count: 'exact', head: true }).eq('clinic_id', clinicId),
+      ]);
+
+      const { data: recentAnalyses } = await supabase
+        .from('ai_analysis_results')
+        .select('*, medical_images(title, patient_id)')
+        .eq('clinic_id', clinicId)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      return {
+        analyses: analyses.count || 0,
+        images: images.count || 0,
+        treatments: treatments.count || 0,
+        records: records.count || 0,
+        recentAnalyses: recentAnalyses || [],
+      };
+    },
+  });
+
+  const StatCard = ({ label, value, icon: Icon, color }: { label: string; value: number; icon: any; color: string }) => (
+    <Card>
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-muted-foreground">{label}</p>
+            {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{value}</p>}
+          </div>
+          <Icon className={`h-8 w-8 ${color}`} />
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <PageContainer>
       <PageHeader 
         title="قائمة الذكاء الاصطناعي" 
-        description="إدارة ومراقبة أنظمة الذكاء الاصطناعي والتعلم الآلي"
+        description="إحصائيات استخدام الذكاء الاصطناعي والتحليلات في النظام"
       />
       
       <div className="space-y-6">
-        {/* System Status */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">الوحدات النشطة</p>
-                  <p className="text-2xl font-bold">3</p>
-                </div>
-                <Brain className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">معدل الدقة</p>
-                  <p className="text-2xl font-bold">92%</p>
-                </div>
-                <Target className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">التحليلات اليوم</p>
-                  <p className="text-2xl font-bold">847</p>
-                </div>
-                <BarChart3 className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">وقت الاستجابة</p>
-                  <p className="text-2xl font-bold">1.2ث</p>
-                </div>
-                <Zap className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard label="تحليلات AI" value={stats?.analyses || 0} icon={Brain} color="text-primary" />
+          <StatCard label="الصور الطبية" value={stats?.images || 0} icon={Image} color="text-blue-600" />
+          <StatCard label="العلاجات" value={stats?.treatments || 0} icon={Stethoscope} color="text-green-600" />
+          <StatCard label="السجلات الطبية" value={stats?.records || 0} icon={FileText} color="text-purple-600" />
         </div>
 
-        <Tabs defaultValue="modules" className="space-y-4">
+        <Tabs defaultValue="analyses" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="modules">الوحدات</TabsTrigger>
-            <TabsTrigger value="analytics">التحليلات</TabsTrigger>
-            <TabsTrigger value="training">التدريب</TabsTrigger>
-            <TabsTrigger value="settings">الإعدادات</TabsTrigger>
+            <TabsTrigger value="analyses">التحليلات الأخيرة</TabsTrigger>
+            <TabsTrigger value="capabilities">قدرات النظام</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="modules">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {aiModules.map((module, index) => {
-                const IconComponent = module.icon;
-                return (
-                  <Card key={index} className={module.color}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <IconComponent className="h-5 w-5" />
-                          {module.name}
-                        </div>
-                        <Badge variant={module.status === "نشط" ? "default" : "secondary"}>
-                          {module.status}
-                        </Badge>
-                      </CardTitle>
-                      <CardDescription>
-                        دقة النظام: {module.accuracy}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <Play className="h-3 w-3 mr-2" />
-                          تشغيل
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Pause className="h-3 w-3 mr-2" />
-                          إيقاف
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Settings className="h-3 w-3 mr-2" />
-                          إعدادات
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="analytics">
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>التحليلات الأخيرة</CardTitle>
-                  <CardDescription>آخر التحليلات التي تم إجراؤها بواسطة الذكاء الاصطناعي</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {recentAnalyses.map((analysis, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <Brain className="h-5 w-5 text-blue-600" />
+          <TabsContent value="analyses">
+            <Card>
+              <CardHeader>
+                <CardTitle>آخر تحليلات الذكاء الاصطناعي</CardTitle>
+                <CardDescription>التحليلات التي أجراها النظام من قاعدة البيانات</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoading ? (
+                  <div className="space-y-3">{[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}</div>
+                ) : (stats?.recentAnalyses?.length || 0) === 0 ? (
+                  <div className="text-center py-12">
+                    <Brain className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">لا توجد تحليلات بعد</h3>
+                    <p className="text-sm text-muted-foreground">لم يتم إجراء أي تحليلات AI في النظام</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {stats?.recentAnalyses?.map((analysis: any) => (
+                      <div key={analysis.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+                            <Brain className="h-5 w-5 text-primary" />
                           </div>
                           <div>
-                            <p className="font-medium">{analysis.patient}</p>
-                            <p className="text-sm text-muted-foreground">{analysis.analysis}</p>
+                            <p className="font-medium">{analysis.analysis_type}</p>
+                            <p className="text-sm text-muted-foreground">نموذج: {analysis.ai_model}</p>
                           </div>
                         </div>
                         <div className="flex items-center gap-4">
-                          <div className="text-center">
-                            <p className="font-medium">{analysis.result}</p>
-                            <p className="text-xs text-muted-foreground">ثقة: {analysis.confidence}%</p>
-                          </div>
-                          <span className="text-sm text-muted-foreground">{analysis.time}</span>
+                          {analysis.confidence_score && (
+                            <Badge variant="outline">ثقة: {Math.round(analysis.confidence_score * 100)}%</Badge>
+                          )}
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(analysis.created_at).toLocaleDateString('ar-IQ')}
+                          </span>
                         </div>
                       </div>
                     ))}
                   </div>
-                </CardContent>
-              </Card>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>الأداء اليومي</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-64 flex items-center justify-center text-muted-foreground">
-                      [مخطط الأداء اليومي]
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>معدل الدقة</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="h-64 flex items-center justify-center text-muted-foreground">
-                      [مخطط معدل الدقة]
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
-          <TabsContent value="training">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>نماذج التدريب</CardTitle>
-                  <CardDescription>النماذج المتاحة للتدريب والتحسين</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {[
-                      { name: "نموذج تشخيص التسوس", version: "v2.1", status: "مدرب" },
-                      { name: "نموذج تحليل الأشعة", version: "v1.8", status: "قيد التدريب" },
-                      { name: "نموذج التنبؤ بالعلاج", version: "v1.3", status: "جديد" }
-                    ].map((model, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded">
-                        <div>
-                          <p className="font-medium">{model.name}</p>
-                          <p className="text-sm text-muted-foreground">{model.version}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge variant={model.status === "مدرب" ? "default" : "secondary"}>
-                            {model.status}
-                          </Badge>
-                          <Button size="sm" variant="outline">
-                            <RefreshCw className="h-3 w-3" />
-                          </Button>
-                        </div>
+          <TabsContent value="capabilities">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { name: "التشخيص الذكي", desc: "تحليل الأعراض واقتراح التشخيصات", icon: Target, status: "متاح", active: true },
+                { name: "تحليل الصور الطبية", desc: "تحليل الأشعة والصور السنية بالذكاء الاصطناعي", icon: Image, status: "متاح", active: true },
+                { name: "التنبؤ بالعلاج", desc: "اقتراح خطط علاجية بناءً على البيانات", icon: Zap, status: "قيد التطوير", active: false },
+                { name: "تحليل البيانات", desc: "تحليل إحصائي للبيانات السريرية", icon: BarChart3, status: "متاح", active: true },
+              ].map((mod, i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <CardTitle className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <mod.icon className="h-5 w-5" />
+                        {mod.name}
                       </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>بيانات التدريب</CardTitle>
-                  <CardDescription>إحصائيات بيانات التدريب المتاحة</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span>صور أشعة</span>
-                      <span className="font-bold">12,456</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>تقارير طبية</span>
-                      <span className="font-bold">8,923</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>تشخيصات مؤكدة</span>
-                      <span className="font-bold">15,678</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>حالات متابعة</span>
-                      <span className="font-bold">6,789</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>إعدادات عامة</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span>تشغيل تلقائي</span>
-                      <Button size="sm" variant="outline">تفعيل</Button>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>الحد الأدنى للثقة</span>
-                      <span className="font-bold">85%</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>فترة إعادة التدريب</span>
-                      <span className="font-bold">30 يوم</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>إعدادات الأمان</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span>تشفير البيانات</span>
-                      <Badge variant="default">مفعل</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>سجل العمليات</span>
-                      <Badge variant="default">مفعل</Badge>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span>النسخ الاحتياطي</span>
-                      <Badge variant="default">يومي</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                      <Badge variant={mod.active ? "default" : "secondary"}>{mod.status}</Badge>
+                    </CardTitle>
+                    <CardDescription>{mod.desc}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
             </div>
           </TabsContent>
         </Tabs>

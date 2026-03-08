@@ -2,188 +2,138 @@ import React from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Package, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Package, Plus, Eye, Edit, Download, Upload, Trash } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dental3DModelsManagement = () => {
+  const { data: models, isLoading } = useQuery({
+    queryKey: ['dental-3d-models'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('dental_3d_models')
+        .select('*')
+        .eq('is_active', true)
+        .order('created_at', { ascending: false });
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const totalModels = models?.length || 0;
+  const modelTypes = models?.reduce((acc, m) => {
+    acc[m.model_type] = (acc[m.model_type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>) || {};
+
+  const totalSize = models?.reduce((s, m) => s + (m.file_size || 0), 0) || 0;
+  const formatSize = (bytes: number) => {
+    if (bytes >= 1073741824) return `${(bytes / 1073741824).toFixed(1)} GB`;
+    if (bytes >= 1048576) return `${(bytes / 1048576).toFixed(1)} MB`;
+    if (bytes >= 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${bytes} B`;
+  };
+
+  const typeLabels: Record<string, string> = {
+    tooth: 'أسنان',
+    implant: 'زراعات',
+    crown: 'تيجان',
+    bridge: 'جسور',
+    orthodontic: 'تقويم',
+    default: 'عام',
+  };
+
   return (
     <PageContainer>
       <PageHeader 
         title="إدارة النماذج ثلاثية الأبعاد" 
-        description="إدارة وتنظيم مكتبة النماذج ثلاثية الأبعاد"
+        description="عرض مكتبة النماذج ثلاثية الأبعاد المتاحة في النظام"
       />
       
       <div className="space-y-6">
-        <div className="flex gap-4">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            نموذج جديد
-          </Button>
-          <Button variant="outline">
-            <Upload className="h-4 w-4 mr-2" />
-            رفع نماذج
-          </Button>
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            تصدير المكتبة
-          </Button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-muted-foreground">إجمالي النماذج</p>
-                  <p className="text-2xl font-bold">156</p>
+                  {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{totalModels}</p>}
                 </div>
-                <Package className="h-8 w-8 text-blue-600" />
+                <Package className="h-8 w-8 text-primary" />
               </div>
             </CardContent>
           </Card>
-          
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">نماذج الأسنان</p>
-                  <p className="text-2xl font-bold">89</p>
+                  <p className="text-sm text-muted-foreground">أنواع النماذج</p>
+                  {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{Object.keys(modelTypes).length}</p>}
                 </div>
-                <Package className="h-8 w-8 text-green-600" />
+                <Package className="h-8 w-8 text-accent-foreground" />
               </div>
             </CardContent>
           </Card>
-          
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-muted-foreground">أدوات التقويم</p>
-                  <p className="text-2xl font-bold">34</p>
+                  <p className="text-sm text-muted-foreground">إجمالي الحجم</p>
+                  {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{formatSize(totalSize)}</p>}
                 </div>
-                <Package className="h-8 w-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">قوالب جاهزة</p>
-                  <p className="text-2xl font-bold">33</p>
-                </div>
-                <Package className="h-8 w-8 text-yellow-600" />
+                <Package className="h-8 w-8 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[
-            { name: "ضرس علوي", category: "أسنان خلفية", size: "2.4 MB", downloads: 45 },
-            { name: "قاطع أمامي", category: "أسنان أمامية", size: "1.8 MB", downloads: 67 },
-            { name: "جسر أسنان", category: "جسور", size: "3.2 MB", downloads: 23 },
-            { name: "تاج ذهبي", category: "تيجان", size: "2.1 MB", downloads: 34 },
-            { name: "زراعة تيتانيوم", category: "زراعات", size: "2.8 MB", downloads: 56 },
-            { name: "تقويم شفاف", category: "تقويم", size: "4.1 MB", downloads: 78 },
-            { name: "جهاز تثبيت", category: "أجهزة", size: "1.5 MB", downloads: 29 },
-            { name: "نموذج فك كامل", category: "فكوك", size: "8.3 MB", downloads: 12 }
-          ].map((model, index) => (
-            <Card key={index}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="h-5 w-5" />
-                  {model.name}
-                </CardTitle>
-                <CardDescription>{model.category}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">الحجم:</span>
-                    <span className="text-sm">{model.size}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">التحميلات:</span>
-                    <span className="text-sm">{model.downloads}</span>
-                  </div>
-                  <div className="flex gap-1">
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Eye className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Edit className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Download className="h-3 w-3" />
-                    </Button>
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Trash className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Models Grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <Card key={i}><CardContent className="p-6"><Skeleton className="h-24 w-full" /></CardContent></Card>
+            ))}
+          </div>
+        ) : totalModels === 0 ? (
           <Card>
-            <CardHeader>
-              <CardTitle>الفئات الأكثر استخداماً</CardTitle>
-              <CardDescription>النماذج الأكثر تحميلاً</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {[
-                  { category: "أسنان أمامية", count: 23, usage: 85 },
-                  { category: "تقويم", count: 18, usage: 72 },
-                  { category: "زراعات", count: 15, usage: 65 },
-                  { category: "تيجان", count: 12, usage: 58 }
-                ].map((cat, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{cat.category}</p>
-                      <p className="text-sm text-muted-foreground">{cat.count} نموذج</p>
+            <CardContent className="p-12 text-center">
+              <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">لا توجد نماذج ثلاثية الأبعاد</h3>
+              <p className="text-sm text-muted-foreground">لم يتم إضافة أي نماذج بعد في قاعدة البيانات</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {models?.map((model) => (
+              <Card key={model.id}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Package className="h-5 w-5" />
+                    {model.model_name}
+                  </CardTitle>
+                  <CardDescription>
+                    {typeLabels[model.model_type] || model.model_type} • سن {model.tooth_number}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">الحجم:</span>
+                      <span>{model.file_size ? formatSize(model.file_size) : 'غير محدد'}</span>
                     </div>
-                    <div className="text-center">
-                      <p className="font-bold">{cat.usage}%</p>
-                      <p className="text-xs text-muted-foreground">معدل الاستخدام</p>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">نظام الترقيم:</span>
+                      <span>{model.numbering_system}</span>
                     </div>
                   </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>إحصائيات المكتبة</CardTitle>
-              <CardDescription>معلومات شاملة عن مكتبة النماذج</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span>إجمالي الحجم:</span>
-                  <span className="font-bold">2.4 GB</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>آخر تحديث:</span>
-                  <span className="font-bold">منذ يومين</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>النماذج المفضلة:</span>
-                  <span className="font-bold">23</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>النماذج المشتركة:</span>
-                  <span className="font-bold">45</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </PageContainer>
   );
