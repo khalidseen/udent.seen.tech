@@ -1,4 +1,0 @@
-import { Navigate } from "react-router-dom";
-export default function Users() {
-  return <Navigate to="/advanced-user-management" replace />;
-}
