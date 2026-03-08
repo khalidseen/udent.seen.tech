@@ -62,9 +62,11 @@ const DayDetailModal = ({
   const getStatusBadge = (status: string) => {
     const statusConfig = {
       scheduled: { label: 'مجدول', variant: 'default' as const, color: 'bg-primary' },
+      confirmed: { label: 'مؤكد', variant: 'default' as const, color: 'bg-blue-600' },
       completed: { label: 'مكتمل', variant: 'secondary' as const, color: 'bg-green-500' },
-      cancelled: { label: 'ملغي', variant: 'destructive' as const, color: 'bg-red-500' },
-      no_show: { label: 'لم يحضر', variant: 'outline' as const, color: 'bg-orange-500' }
+      cancelled: { label: 'ملغي', variant: 'destructive' as const, color: 'bg-destructive' },
+      no_show: { label: 'لم يحضر', variant: 'outline' as const, color: 'bg-orange-500' },
+      rescheduled: { label: 'معاد جدولته', variant: 'outline' as const, color: 'bg-yellow-500' }
     };
     
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.scheduled;
@@ -237,7 +239,7 @@ const DayDetailModal = ({
                             تعديل
                           </Button>
                           
-                          {appointment.status === 'scheduled' && (
+                          {(appointment.status === 'scheduled' || appointment.status === 'confirmed') && (
                             <>
                               <Button 
                                 size="sm"

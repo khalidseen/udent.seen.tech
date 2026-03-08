@@ -130,7 +130,7 @@ const AppointmentList = () => {
     
     let matchesDate = true;
     if (dateFilter) {
-      const appointmentDateStr = new Date(appointment.created_at).toISOString().split('T')[0];
+      const appointmentDateStr = new Date(appointment.appointment_date).toISOString().split('T')[0];
       matchesDate = appointmentDateStr === dateFilter;
     }
     const matchesPatientName = !patientNameFilter || appointment.patients?.full_name.toLowerCase().includes(patientNameFilter.toLowerCase());

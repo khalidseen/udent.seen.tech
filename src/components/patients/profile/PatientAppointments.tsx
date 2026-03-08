@@ -1,17 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 interface PatientAppointmentsProps {
   patientId: string;
 }
 
 export function PatientAppointments({ patientId }: PatientAppointmentsProps) {
+  const navigate = useNavigate();
+
   const { data: appointments, isLoading } = useQuery({
     queryKey: ['patient-appointments', patientId],
     queryFn: async () => {
@@ -28,33 +31,37 @@ export function PatientAppointments({ patientId }: PatientAppointmentsProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'scheduled': return 'bg-blue-500';
+      case 'scheduled': return 'bg-primary';
+      case 'confirmed': return 'bg-blue-600';
       case 'completed': return 'bg-green-500';
-      case 'cancelled': return 'bg-red-500';
-      case 'no-show': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+      case 'cancelled': return 'bg-destructive';
+      case 'no_show': return 'bg-orange-500';
+      case 'rescheduled': return 'bg-yellow-500';
+      default: return 'bg-muted';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
       case 'scheduled': return 'مجدول';
+      case 'confirmed': return 'مؤكد';
       case 'completed': return 'مكتمل';
       case 'cancelled': return 'ملغي';
-      case 'no-show': return 'لم يحضر';
+      case 'no_show': return 'لم يحضر';
+      case 'rescheduled': return 'معاد جدولته';
       default: return status;
     }
   };
 
   if (isLoading) {
-    return <div className="text-center py-8">جاري التحميل...</div>;
+    return <div className="text-center py-8 text-muted-foreground">جاري التحميل...</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">المواعيد</h3>
-        <Button size="sm" onClick={() => window.location.href = `/appointments?patient=${patientId}`}>
+        <Button size="sm" onClick={() => navigate('/appointments')}>
           <Plus className="w-4 h-4 mr-2" />
           حجز موعد جديد
         </Button>
