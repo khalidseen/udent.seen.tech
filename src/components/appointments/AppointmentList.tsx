@@ -185,37 +185,37 @@ const AppointmentList = () => {
           <h1 className="text-3xl font-bold text-primary mb-2 flex items-center gap-2">
             <CalendarDays className="w-7 h-7 text-primary" /> تقويم المواعيد
           </h1>
-          <div className="text-lg text-muted-foreground">سبتمبر 2025</div>
+          <div className="text-lg text-muted-foreground">{format(today, "MMMM yyyy", { locale: ar })}</div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <Card className="bg-blue-50 border-blue-200">
+          <Card className="bg-primary/5 border-primary/20">
             <CardContent className="py-4 text-center">
               <div className="text-xs text-muted-foreground mb-1">اليوم</div>
-              <div className="text-2xl font-bold text-blue-700">0</div>
+              <div className="text-2xl font-bold text-primary">0</div>
             </CardContent>
           </Card>
-          <Card className="bg-primary/10 border-primary">
+          <Card className="bg-primary/10 border-primary/30">
             <CardContent className="py-4 text-center">
               <div className="text-xs text-muted-foreground mb-1">إجمالي المواعيد</div>
               <div className="text-2xl font-bold text-primary">0</div>
             </CardContent>
           </Card>
-          <Card className="bg-yellow-50 border-yellow-200">
+          <Card className="bg-accent/50 border-accent">
             <CardContent className="py-4 text-center">
               <div className="text-xs text-muted-foreground mb-1">مجدول</div>
-              <div className="text-2xl font-bold text-yellow-700">0</div>
+              <div className="text-2xl font-bold text-accent-foreground">0</div>
             </CardContent>
           </Card>
-          <Card className="bg-green-50 border-green-200">
+          <Card className="bg-secondary border-secondary">
             <CardContent className="py-4 text-center">
               <div className="text-xs text-muted-foreground mb-1">مكتمل</div>
-              <div className="text-2xl font-bold text-green-700">0</div>
+              <div className="text-2xl font-bold text-secondary-foreground">0</div>
             </CardContent>
           </Card>
-          <Card className="bg-red-50 border-red-200">
+          <Card className="bg-destructive/10 border-destructive/30">
             <CardContent className="py-4 text-center">
               <div className="text-xs text-muted-foreground mb-1">ملغي</div>
-              <div className="text-2xl font-bold text-red-700">0</div>
+              <div className="text-2xl font-bold text-destructive">0</div>
             </CardContent>
           </Card>
         </div>
@@ -234,37 +234,37 @@ const AppointmentList = () => {
         <h1 className="text-3xl font-bold text-primary mb-2 flex items-center gap-2">
           <CalendarDays className="w-7 h-7 text-primary" /> تقويم المواعيد
         </h1>
-        <div className="text-lg text-muted-foreground">سبتمبر 2025</div>
+        <div className="text-lg text-muted-foreground">{format(today, "MMMM yyyy", { locale: ar })}</div>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-        <Card className="bg-blue-50 border-blue-200">
+        <Card className="bg-primary/5 border-primary/20">
           <CardContent className="py-4 text-center">
             <div className="text-xs text-muted-foreground mb-1">اليوم</div>
-            <div className="text-2xl font-bold text-blue-700">{todayAppointments.length}</div>
+            <div className="text-2xl font-bold text-primary">{todayAppointments.length}</div>
           </CardContent>
         </Card>
-        <Card className="bg-primary/10 border-primary">
+        <Card className="bg-primary/10 border-primary/30">
           <CardContent className="py-4 text-center">
             <div className="text-xs text-muted-foreground mb-1">إجمالي المواعيد</div>
             <div className="text-2xl font-bold text-primary">{totalAppointments}</div>
           </CardContent>
         </Card>
-        <Card className="bg-yellow-50 border-yellow-200">
+        <Card className="bg-accent/50 border-accent">
           <CardContent className="py-4 text-center">
             <div className="text-xs text-muted-foreground mb-1">مجدول</div>
-            <div className="text-2xl font-bold text-yellow-700">{scheduled}</div>
+            <div className="text-2xl font-bold text-accent-foreground">{scheduled}</div>
           </CardContent>
         </Card>
-        <Card className="bg-green-50 border-green-200">
+        <Card className="bg-secondary border-secondary">
           <CardContent className="py-4 text-center">
             <div className="text-xs text-muted-foreground mb-1">مكتمل</div>
-            <div className="text-2xl font-bold text-green-700">{completed}</div>
+            <div className="text-2xl font-bold text-secondary-foreground">{completed}</div>
           </CardContent>
         </Card>
-        <Card className="bg-red-50 border-red-200">
+        <Card className="bg-destructive/10 border-destructive/30">
           <CardContent className="py-4 text-center">
             <div className="text-xs text-muted-foreground mb-1">ملغي</div>
-            <div className="text-2xl font-bold text-red-700">{cancelled}</div>
+            <div className="text-2xl font-bold text-destructive">{cancelled}</div>
           </CardContent>
         </Card>
       </div>
