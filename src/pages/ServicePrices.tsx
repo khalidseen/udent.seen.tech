@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus, Edit, Trash2, DollarSign } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 
 interface ServicePrice {
   id: string;
@@ -135,16 +136,9 @@ export default function ServicePrices() {
       if (error) throw error;
 
       refetch();
-      toast({
-        title: "تم الحذف",
-        description: "تم حذف الخدمة بنجاح",
-      });
+      toast({ title: "تم الحذف", description: "تم حذف الخدمة بنجاح" });
     } catch (error: any) {
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء حذف الخدمة",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: error.message || "حدث خطأ أثناء حذف الخدمة", variant: "destructive" });
     }
   };
 
@@ -152,23 +146,14 @@ export default function ServicePrices() {
     e.preventDefault();
     
     if (!formData.service_name || !formData.base_price) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: "يرجى ملء جميع الحقول المطلوبة", variant: "destructive" });
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      // Get current user profile for clinic_id
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .single();
-
+      const { data: profile } = await supabase.rpc('get_current_user_profile');
       if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
 
       const serviceData = {
@@ -186,34 +171,20 @@ export default function ServicePrices() {
           .from('service_prices')
           .update(serviceData)
           .eq('id', editingService.id);
-
         if (error) throw error;
-
-        toast({
-          title: "تم التحديث",
-          description: "تم تحديث الخدمة بنجاح",
-        });
+        toast({ title: "تم التحديث", description: "تم تحديث الخدمة بنجاح" });
       } else {
         const { error } = await supabase
           .from('service_prices')
           .insert(serviceData);
-
         if (error) throw error;
-
-        toast({
-          title: "تم الإضافة",
-          description: "تم إضافة الخدمة بنجاح",
-        });
+        toast({ title: "تم الإضافة", description: "تم إضافة الخدمة بنجاح" });
       }
 
       setIsDialogOpen(false);
       refetch();
     } catch (error: any) {
-      toast({
-        title: "خطأ",
-        description: error.message || "حدث خطأ أثناء حفظ الخدمة",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: error.message || "حدث خطأ أثناء حفظ الخدمة", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -228,229 +199,157 @@ export default function ServicePrices() {
   }, {} as Record<string, ServicePrice[]>);
 
   return (
-    <PageContainer>
-      <PageHeader 
-        title="أسعار الخدمات"
-        description="إدارة أسعار الخدمات والعلاجات"
-        action={
-          <Button onClick={handleCreate}>
-            <Plus className="w-4 h-4 ml-2" />
-            خدمة جديدة
-          </Button>
-        }
-      />
+    <PermissionGuard requiredPermissions={['financial.view', 'financial.manage', 'settings.manage']}>
+      <PageContainer>
+        <PageHeader 
+          title="أسعار الخدمات"
+          description="إدارة أسعار الخدمات والعلاجات"
+          action={
+            <Button onClick={handleCreate}>
+              <Plus className="w-4 h-4 ml-2" />
+              خدمة جديدة
+            </Button>
+          }
+        />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">إجمالي الخدمات</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{services?.length || 0}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">خدمات نشطة</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">
-              {services?.filter(s => s.is_active).length || 0}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">متوسط السعر</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${services?.length ? (services.reduce((sum, s) => sum + Number(s.base_price), 0) / services.length).toFixed(2) : '0.00'}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {isLoading ? (
-        <Card>
-          <CardContent className="py-8">
-            <div className="text-center">جاري التحميل...</div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {Object.entries(groupedServices || {}).map(([category, categoryServices]) => (
-            <Card key={category}>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  {getCategoryLabel(category)}
-                  <Badge variant="secondary">{categoryServices.length}</Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>اسم الخدمة</TableHead>
-                      <TableHead>السعر</TableHead>
-                      <TableHead>الوصف</TableHead>
-                      <TableHead>الحالة</TableHead>
-                      <TableHead>الإجراءات</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {categoryServices.map((service) => (
-                      <TableRow key={service.id}>
-                        <TableCell className="font-medium">{service.service_name}</TableCell>
-                        <TableCell>
-                          {getCurrencySymbol(service.currency)} {Number(service.base_price).toFixed(2)}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate">
-                          {service.description || '-'}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={service.is_active ? "default" : "secondary"}>
-                            {service.is_active ? "نشط" : "غير نشط"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEdit(service)}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleDelete(service.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editingService ? "تعديل الخدمة" : "إضافة خدمة جديدة"}
-            </DialogTitle>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="service_name">اسم الخدمة</Label>
-              <Input
-                id="service_name"
-                value={formData.service_name}
-                onChange={(e) => setFormData({ ...formData, service_name: e.target.value })}
-                placeholder="أدخل اسم الخدمة"
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="service_category">فئة الخدمة</Label>
-              <Select
-                value={formData.service_category}
-                onValueChange={(value) => setFormData({ ...formData, service_category: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {serviceCategories.map((category) => (
-                    <SelectItem key={category.value} value={category.value}>
-                      {category.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label htmlFor="base_price">السعر</Label>
-                <Input
-                  id="base_price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.base_price}
-                  onChange={(e) => setFormData({ ...formData, base_price: e.target.value })}
-                  placeholder="0.00"
-                  required
-                />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">إجمالي الخدمات</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{services?.length || 0}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">خدمات نشطة</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success">
+                {services?.filter(s => s.is_active).length || 0}
               </div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">متوسط السعر</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                ${services?.length ? (services.reduce((sum, s) => sum + Number(s.base_price), 0) / services.length).toFixed(2) : '0.00'}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
+        {isLoading ? (
+          <Card><CardContent className="py-8"><div className="text-center">جاري التحميل...</div></CardContent></Card>
+        ) : (
+          <div className="space-y-4">
+            {Object.entries(groupedServices || {}).map(([category, categoryServices]) => (
+              <Card key={category}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    {getCategoryLabel(category)}
+                    <Badge variant="secondary">{categoryServices.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>اسم الخدمة</TableHead>
+                        <TableHead>السعر</TableHead>
+                        <TableHead>الوصف</TableHead>
+                        <TableHead>الحالة</TableHead>
+                        <TableHead>الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {categoryServices.map((service) => (
+                        <TableRow key={service.id}>
+                          <TableCell className="font-medium">{service.service_name}</TableCell>
+                          <TableCell>{getCurrencySymbol(service.currency)} {Number(service.base_price).toFixed(2)}</TableCell>
+                          <TableCell className="max-w-xs truncate">{service.description || '-'}</TableCell>
+                          <TableCell>
+                            <Badge variant={service.is_active ? "default" : "secondary"}>
+                              {service.is_active ? "نشط" : "غير نشط"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="outline" size="sm" onClick={() => handleEdit(service)}><Edit className="w-4 h-4" /></Button>
+                              <Button variant="outline" size="sm" onClick={() => handleDelete(service.id)}><Trash2 className="w-4 h-4" /></Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>{editingService ? "تعديل الخدمة" : "إضافة خدمة جديدة"}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="currency">العملة</Label>
-                <Select
-                  value={formData.currency}
-                  onValueChange={(value) => setFormData({ ...formData, currency: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                <Label htmlFor="service_name">اسم الخدمة</Label>
+                <Input id="service_name" value={formData.service_name} onChange={(e) => setFormData({ ...formData, service_name: e.target.value })} placeholder="أدخل اسم الخدمة" required />
+              </div>
+              <div>
+                <Label htmlFor="service_category">فئة الخدمة</Label>
+                <Select value={formData.service_category} onValueChange={(value) => setFormData({ ...formData, service_category: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    {currencies.map((currency) => (
-                      <SelectItem key={currency.value} value={currency.value}>
-                        {currency.label}
-                      </SelectItem>
+                    {serviceCategories.map((category) => (
+                      <SelectItem key={category.value} value={category.value}>{category.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div>
-              <Label htmlFor="description">الوصف</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="وصف الخدمة (اختياري)"
-                rows={3}
-              />
-            </div>
-
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <Switch
-                id="is_active"
-                checked={formData.is_active}
-                onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
-              />
-              <Label htmlFor="is_active">خدمة نشطة</Label>
-            </div>
-
-            <div className="flex justify-end space-x-2 space-x-reverse">
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                إلغاء
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "جاري الحفظ..." : editingService ? "تحديث" : "إضافة"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </PageContainer>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="base_price">السعر</Label>
+                  <Input id="base_price" type="number" step="0.01" min="0" value={formData.base_price} onChange={(e) => setFormData({ ...formData, base_price: e.target.value })} placeholder="0.00" required />
+                </div>
+                <div>
+                  <Label htmlFor="currency">العملة</Label>
+                  <Select value={formData.currency} onValueChange={(value) => setFormData({ ...formData, currency: value })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {currencies.map((currency) => (
+                        <SelectItem key={currency.value} value={currency.value}>{currency.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="description">الوصف</Label>
+                <Textarea id="description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="وصف الخدمة (اختياري)" rows={3} />
+              </div>
+              <div className="flex items-center space-x-2 space-x-reverse">
+                <Switch id="is_active" checked={formData.is_active} onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })} />
+                <Label htmlFor="is_active">خدمة نشطة</Label>
+              </div>
+              <div className="flex justify-end space-x-2 space-x-reverse">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>إلغاء</Button>
+                <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "جاري الحفظ..." : editingService ? "تحديث" : "إضافة"}</Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </PageContainer>
+    </PermissionGuard>
   );
 }

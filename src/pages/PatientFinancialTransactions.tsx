@@ -10,6 +10,7 @@ import { ar } from "date-fns/locale";
 import { useState } from "react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
 import { useNavigate } from "react-router-dom";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 
 export default function PatientFinancialTransactions() {
   const navigate = useNavigate();
@@ -18,11 +19,7 @@ export default function PatientFinancialTransactions() {
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['financial-transactions', filterPeriod],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
+      const { data: profile } = await supabase.rpc('get_current_user_profile');
       if (!profile) throw new Error('Profile not found');
 
       const now = new Date();
@@ -35,7 +32,6 @@ export default function PatientFinancialTransactions() {
         default: startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
       }
 
-      // Fetch payments and invoices in parallel
       const [paymentsRes, invoicesRes] = await Promise.all([
         supabase
           .from('payments')
@@ -114,114 +110,116 @@ export default function PatientFinancialTransactions() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">سجل المعاملات المالية</h1>
-          <p className="text-muted-foreground">تتبع شامل لجميع المعاملات المالية</p>
+    <PermissionGuard requiredPermissions={['financial.view', 'financial.manage']}>
+      <div className="container mx-auto p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">سجل المعاملات المالية</h1>
+            <p className="text-muted-foreground">تتبع شامل لجميع المعاملات المالية</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/invoice-management')}>
+              <Receipt className="ml-2 h-4 w-4" /> الفواتير
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/payment-management')}>
+              <DollarSign className="ml-2 h-4 w-4" /> المدفوعات
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/invoice-management')}>
-            <Receipt className="ml-2 h-4 w-4" /> الفواتير
-          </Button>
-          <Button variant="outline" onClick={() => navigate('/payment-management')}>
-            <DollarSign className="ml-2 h-4 w-4" /> المدفوعات
-          </Button>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-success" />المدفوعات المستلمة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success"><CurrencyAmount amount={transactions?.stats.totalIncome || 0} /></div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2"><Receipt className="h-4 w-4 text-blue-600" />الفواتير الصادرة</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600"><CurrencyAmount amount={transactions?.stats.totalInvoiced || 0} /></div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingDown className="h-4 w-4 text-destructive" />المستحقات</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive"><CurrencyAmount amount={transactions?.stats.totalOutstanding || 0} /></div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2"><DollarSign className="h-4 w-4 text-primary" />صافي الدخل</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary"><CurrencyAmount amount={transactions?.stats.netIncome || 0} /></div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Filter */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-success" />المدفوعات المستلمة</CardTitle>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5" />الفترة الزمنية</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success"><CurrencyAmount amount={transactions?.stats.totalIncome || 0} /></div>
+            <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+              <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="week">آخر أسبوع</SelectItem>
+                <SelectItem value="month">آخر شهر</SelectItem>
+                <SelectItem value="quarter">آخر 3 أشهر</SelectItem>
+                <SelectItem value="year">آخر سنة</SelectItem>
+              </SelectContent>
+            </Select>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2"><Receipt className="h-4 w-4 text-blue-600" />الفواتير الصادرة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600"><CurrencyAmount amount={transactions?.stats.totalInvoiced || 0} /></div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingDown className="h-4 w-4 text-destructive" />المستحقات</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive"><CurrencyAmount amount={transactions?.stats.totalOutstanding || 0} /></div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2"><DollarSign className="h-4 w-4 text-primary" />صافي الدخل</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary"><CurrencyAmount amount={transactions?.stats.netIncome || 0} /></div>
-          </CardContent>
-        </Card>
-      </div>
 
-      {/* Filter */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5" />الفترة الزمنية</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="week">آخر أسبوع</SelectItem>
-              <SelectItem value="month">آخر شهر</SelectItem>
-              <SelectItem value="quarter">آخر 3 أشهر</SelectItem>
-              <SelectItem value="year">آخر سنة</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
-
-      {/* Transactions List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>المدفوعات ({transactions?.payments.length || 0})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!transactions?.payments.length ? (
-            <p className="text-center text-muted-foreground py-8">لا توجد معاملات في الفترة المحددة</p>
-          ) : (
-            <div className="space-y-3">
-              {transactions.payments.map((payment: any) => (
-                <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className={`p-2 rounded-full ${getMethodColor(payment.payment_method)}`}>
-                      <DollarSign className="h-4 w-4" />
-                    </div>
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <button onClick={() => navigate(`/patient/${payment.patient_id}`)} className="font-medium text-primary hover:underline flex items-center gap-1">
-                          <User className="h-3 w-3" /> {payment.patient_name}
-                        </button>
-                        <Badge variant="outline" className={getMethodColor(payment.payment_method)}>{getMethodText(payment.payment_method)}</Badge>
+        {/* Transactions List */}
+        <Card>
+          <CardHeader>
+            <CardTitle>المدفوعات ({transactions?.payments.length || 0})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!transactions?.payments.length ? (
+              <p className="text-center text-muted-foreground py-8">لا توجد معاملات في الفترة المحددة</p>
+            ) : (
+              <div className="space-y-3">
+                {transactions.payments.map((payment: any) => (
+                  <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className={`p-2 rounded-full ${getMethodColor(payment.payment_method)}`}>
+                        <DollarSign className="h-4 w-4" />
                       </div>
-                      <p className="text-sm text-muted-foreground">{format(new Date(payment.payment_date), 'PPP', { locale: ar })}</p>
-                      {payment.invoice_number && (
-                        <p className="text-xs text-muted-foreground">فاتورة: {payment.invoice_number}</p>
-                      )}
+                      <div className="space-y-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button onClick={() => navigate(`/patient/${payment.patient_id}`)} className="font-medium text-primary hover:underline flex items-center gap-1">
+                            <User className="h-3 w-3" /> {payment.patient_name}
+                          </button>
+                          <Badge variant="outline" className={getMethodColor(payment.payment_method)}>{getMethodText(payment.payment_method)}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{format(new Date(payment.payment_date), 'PPP', { locale: ar })}</p>
+                        {payment.invoice_number && (
+                          <p className="text-xs text-muted-foreground">فاتورة: {payment.invoice_number}</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-lg font-bold text-success shrink-0">
+                      +<CurrencyAmount amount={Number(payment.amount)} />
                     </div>
                   </div>
-                  <div className="text-lg font-bold text-success shrink-0">
-                    +<CurrencyAmount amount={Number(payment.amount)} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </PermissionGuard>
   );
 }

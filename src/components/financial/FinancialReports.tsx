@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FileSpreadsheet, Download } from "lucide-react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
 import { formatDateUtil } from "@/utils/formatters";
+import { PermissionGuard } from "@/components/auth/PermissionGuard";
 
 export function FinancialReports() {
   const [reportType, setReportType] = useState<string>("monthly");
@@ -15,15 +16,9 @@ export function FinancialReports() {
   const { data: reportData, isLoading } = useQuery({
     queryKey: ['financial-reports', reportType, period],
     queryFn: async () => {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
+      const { data: profile } = await supabase.rpc('get_current_user_profile');
       if (!profile) throw new Error('Profile not found');
 
-      // حساب تواريخ الفترة بناءً على الاختيار
       const now = new Date();
       let startDate: Date;
       let endDate: Date = now;
@@ -46,34 +41,34 @@ export function FinancialReports() {
           startDate = new Date(now.getFullYear(), now.getMonth(), 1);
       }
 
-      // جلب البيانات المالية
-      const { data: invoices } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('clinic_id', profile.id)
-        .gte('issue_date', startDate.toISOString())
-        .lte('issue_date', endDate.toISOString());
+      const [invoicesRes, paymentsRes] = await Promise.all([
+        supabase
+          .from('invoices')
+          .select('*')
+          .eq('clinic_id', profile.id)
+          .gte('issue_date', startDate.toISOString())
+          .lte('issue_date', endDate.toISOString()),
+        supabase
+          .from('payments')
+          .select('*')
+          .eq('clinic_id', profile.id)
+          .gte('payment_date', startDate.toISOString())
+          .lte('payment_date', endDate.toISOString()),
+      ]);
 
-      const { data: payments } = await supabase
-        .from('payments')
-        .select('*')
-        .eq('clinic_id', profile.id)
-        .gte('payment_date', startDate.toISOString())
-        .lte('payment_date', endDate.toISOString());
+      const invoices = invoicesRes.data || [];
+      const payments = paymentsRes.data || [];
 
-      const totalInvoiced = invoices?.reduce((sum, inv) => 
-        sum + Number(inv.total_amount || 0), 0) || 0;
-      const totalPaid = payments?.reduce((sum, pay) => 
-        sum + Number(pay.amount || 0), 0) || 0;
-      const totalPending = invoices?.reduce((sum, inv) => 
-        sum + Number(inv.balance_due || 0), 0) || 0;
+      const totalInvoiced = invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+      const totalPaid = payments.reduce((sum, pay) => sum + Number(pay.amount || 0), 0);
+      const totalPending = invoices.reduce((sum, inv) => sum + Number(inv.balance_due || 0), 0);
 
       return {
         totalInvoiced,
         totalPaid,
         totalPending,
-        invoicesCount: invoices?.length || 0,
-        paymentsCount: payments?.length || 0,
+        invoicesCount: invoices.length,
+        paymentsCount: payments.length,
         period: `${formatDateUtil(startDate)} - ${formatDateUtil(endDate)}`,
       };
     },
@@ -84,120 +79,84 @@ export function FinancialReports() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Report Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5" />
-            إعدادات التقرير
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">نوع التقرير</label>
-              <Select value={reportType} onValueChange={setReportType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">تقرير شهري</SelectItem>
-                  <SelectItem value="quarterly">تقرير ربع سنوي</SelectItem>
-                  <SelectItem value="yearly">تقرير سنوي</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">الفترة</label>
-              <Select value={period} onValueChange={setPeriod}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="current">الفترة الحالية</SelectItem>
-                  <SelectItem value="last-month">الشهر الماضي</SelectItem>
-                  <SelectItem value="last-quarter">الربع الأخير</SelectItem>
-                  <SelectItem value="year">هذا العام</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex items-end">
-              <Button className="w-full">
-                <Download className="w-4 h-4 mr-2" />
-                تصدير التقرير
-              </Button>
-            </div>
-          </div>
-
-          <div className="text-sm text-muted-foreground">
-            {reportData?.period}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Report Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <PermissionGuard requiredPermissions={['financial.view', 'reports.view', 'financial.manage']}>
+      <div className="space-y-6">
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">إجمالي الفواتير</CardTitle>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5" />
+              إعدادات التقرير
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              <CurrencyAmount amount={reportData?.totalInvoiced || 0} />
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">نوع التقرير</label>
+                <Select value={reportType} onValueChange={setReportType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="monthly">تقرير شهري</SelectItem>
+                    <SelectItem value="quarterly">تقرير ربع سنوي</SelectItem>
+                    <SelectItem value="yearly">تقرير سنوي</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">الفترة</label>
+                <Select value={period} onValueChange={setPeriod}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="current">الفترة الحالية</SelectItem>
+                    <SelectItem value="last-month">الشهر الماضي</SelectItem>
+                    <SelectItem value="last-quarter">الربع الأخير</SelectItem>
+                    <SelectItem value="year">هذا العام</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-end">
+                <Button className="w-full">
+                  <Download className="w-4 h-4 mr-2" />
+                  تصدير التقرير
+                </Button>
+              </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              {reportData?.invoicesCount} فاتورة
-            </p>
+            <div className="text-sm text-muted-foreground">{reportData?.period}</div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">المدفوعات</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              <CurrencyAmount amount={reportData?.totalPaid || 0} />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {reportData?.paymentsCount} دفعة
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">المبالغ المستحقة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              <CurrencyAmount amount={reportData?.totalPending || 0} />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              مبالغ معلقة
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">معدل التحصيل</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {reportData?.totalInvoiced 
-                ? ((reportData.totalPaid / reportData.totalInvoiced) * 100).toFixed(1)
-                : 0}%
-            </div>
-            <p className="text-xs text-muted-foreground">
-              من الإجمالي
-            </p>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">إجمالي الفواتير</CardTitle></CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold"><CurrencyAmount amount={reportData?.totalInvoiced || 0} /></div>
+              <p className="text-xs text-muted-foreground">{reportData?.invoicesCount} فاتورة</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">المدفوعات</CardTitle></CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success"><CurrencyAmount amount={reportData?.totalPaid || 0} /></div>
+              <p className="text-xs text-muted-foreground">{reportData?.paymentsCount} دفعة</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">المبالغ المستحقة</CardTitle></CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-destructive"><CurrencyAmount amount={reportData?.totalPending || 0} /></div>
+              <p className="text-xs text-muted-foreground">مبالغ معلقة</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3"><CardTitle className="text-sm font-medium">معدل التحصيل</CardTitle></CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">
+                {reportData?.totalInvoiced ? ((reportData.totalPaid / reportData.totalInvoiced) * 100).toFixed(1) : 0}%
+              </div>
+              <p className="text-xs text-muted-foreground">من الإجمالي</p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </PermissionGuard>
   );
 }
