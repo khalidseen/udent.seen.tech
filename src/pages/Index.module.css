@@ -4,7 +4,6 @@
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
-/* فئات للشبكة بعدد أعمدة مختلف */
 .dashboardGrid.dashboard-grid-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
@@ -29,14 +28,37 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
+/* Stats grid */
+.statsGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+@media (min-width: 768px) {
+  .statsGrid {
+    gap: 1rem;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .statsGrid {
+    gap: 1.25rem;
+  }
+}
+
+/* Responsive dashboard grid */
 @media (max-width: 768px) {
   .dashboardGrid {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
   .dashboardGrid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.625rem;
   }
 }

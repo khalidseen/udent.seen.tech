@@ -1,50 +1,20 @@
 import { PageContainer } from "@/components/layout/PageContainer";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { 
-  UserPlus, 
-  Calendar, 
-  FileText, 
-  DollarSign, 
-  Package, 
-  Stethoscope,
-  Brain,
-  Settings,
-  BarChart3,
-  Users,
-  Activity,
-  Edit,
-  Save,
-  X,
-  GripVertical,
-  Link as LinkIcon,
-  Pill,
-  Receipt,
-  Bell,
-  Shield,
-  Crown,
-  CreditCard,
-  UserCheck,
-  ClipboardList,
-  Box,
-  TrendingUp,
-  Boxes,
-  ShoppingCart,
-  Archive,
-  Calendar as CalendarIcon,
-  FileTextIcon,
-  Globe,
-  Share2,
-  Copy,
-  MessageCircle,
-  Smartphone
+  UserPlus, Calendar, FileText, DollarSign, Package, Stethoscope,
+  Brain, Settings, BarChart3, Users, Activity, Edit, Save, X,
+  GripVertical, Link as LinkIcon, Pill, Receipt, Bell, Shield,
+  Crown, CreditCard, UserCheck, ClipboardList, Box, TrendingUp,
+  Boxes, ShoppingCart, Archive, Calendar as CalendarIcon,
+  FileTextIcon, Globe, Share2, Copy, MessageCircle, Smartphone,
+  ArrowUpRight, AlertTriangle
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -52,8 +22,7 @@ import { useSettings } from "@/hooks/useSettingsHook";
 import styles from "./Index.module.css";
 import { validateDashboardCards } from "@/utils/dashboardValidation";
 import { TodayAppointmentsWidget } from "@/components/dashboard/TodayAppointmentsWidget";
-// import { DashboardValidator } from "@/components/dashboard/DashboardValidator"; // تم نقله إلى الإعدادات
-// import { SmartNotificationSystem } from "@/components/dashboard/SmartNotificationSystem"; // مُعطل مؤقتاً
+import { cn } from "@/lib/utils";
 
 interface ActionCard {
   id: string;
@@ -61,201 +30,60 @@ interface ActionCard {
   description: string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
+  gradient: string;
   route: string;
   order_index?: number;
 }
 
 const defaultCards: ActionCard[] = [
-  {
-    id: "patients-list",
-    title: "قائمة المرضى",
-    description: "عرض وإدارة جميع المرضى المسجلين في النظام",
-    icon: Users,
-    color: "bg-emerald-500",
-    route: "/patients",
-    order_index: 1
-  },
-  {
-    id: "appointments",
-    title: "المواعيد",
-    description: "عرض وإدارة مواعيد المرضى",
-    icon: Calendar,
-    color: "bg-blue-500",
-    route: "/appointments",
-    order_index: 2
-  },
-  {
-    id: "new-appointment",
-    title: "حجز موعد جديد",
-    description: "حجز موعد جديد للمريض",
-    icon: CalendarIcon,
-    color: "bg-green-500",
-    route: "/appointments/new",
-    order_index: 3
-  },
-  {
-    id: "public-booking",
-    title: "رابط الحجز العام",
-    description: "رابط مباشر للحجز عبر الإنترنت للمرضى",
-    icon: Globe,
-    color: "bg-lime-600",
-    route: "/book",
-    order_index: 4
-  },
-  {
-    id: "medical-records",
-    title: "السجلات الطبية",
-    description: "إدارة السجلات الطبية للمرضى",
-    icon: FileText,
-    color: "bg-purple-500",
-    route: "/advanced-medical-records",
-    order_index: 5
-  },
-  {
-    id: "dental-treatments",
-    title: "العلاجات السنية",
-    description: "إدارة العلاجات والإجراءات السنية",
-    icon: Stethoscope,
-    color: "bg-red-500",
-    route: "/dental-treatments-management",
-    order_index: 6
-  },
-  {
-    id: "invoices",
-    title: "الفواتير",
-    description: "إدارة الفواتير والمدفوعات",
-    icon: Receipt,
-    color: "bg-yellow-500",
-    route: "/invoice-management",
-    order_index: 7
-  },
-  {
-    id: "inventory",
-    title: "المخزون",
-    description: "إدارة المخزون والإمدادات الطبية",
-    icon: Box,
-    color: "bg-orange-500",
-    route: "/inventory",
-    order_index: 8
-  },
-  {
-    id: "doctors",
-    title: "إدارة الأطباء",
-    description: "إدارة بيانات الأطباء والاختصاصات",
-    icon: UserCheck,
-    color: "bg-blue-600",
-    route: "/doctors",
-    order_index: 9
-  },
-  {
-    id: "ai-insights",
-    title: "التحليل الذكي",
-    description: "تحليل ذكي وتشخيص متقدم بالذكاء الاصطناعي",
-    icon: Brain,
-    color: "bg-indigo-500",
-    route: "/ai-insights-page",
-    order_index: 10
-  },
-  {
-    id: "medications",
-    title: "الأدوية",
-    description: "إدارة قاعدة بيانات الأدوية",
-    icon: Pill,
-    color: "bg-rose-500",
-    route: "/medications",
-    order_index: 11
-  },
-  {
-    id: "prescriptions",
-    title: "الوصفات الطبية",
-    description: "إنشاء وإدارة الوصفات الطبية",
-    icon: ClipboardList,
-    color: "bg-emerald-600",
-    route: "/prescriptions",
-    order_index: 12
-  },
-  {
-    id: "reports",
-    title: "التقارير",
-    description: "تقارير شاملة وإحصائيات مفصلة",
-    icon: BarChart3,
-    color: "bg-teal-500",
-    route: "/detailed-reports",
-    order_index: 13
-  },
-  {
-    id: "notifications",
-    title: "الإشعارات",
-    description: "إدارة الإشعارات والتنبيهات",
-    icon: Bell,
-    color: "bg-lime-500",
-    route: "/advanced-notification-management",
-    order_index: 14
-  },
-  {
-    id: "users",
-    title: "إدارة المستخدمين",
-    description: "إدارة المستخدمين والصلاحيات",
-    icon: Users,
-    color: "bg-slate-500",
-    route: "/advanced-user-management",
-    order_index: 15
-  },
-  {
-    id: "settings",
-    title: "الإعدادات",
-    description: "إعدادات النظام والتكوين العام",
-    icon: Settings,
-    color: "bg-gray-500",
-    route: "/settings",
-    order_index: 16
-  }
+  { id: "patients-list", title: "قائمة المرضى", description: "عرض وإدارة جميع المرضى", icon: Users, color: "text-emerald-600", gradient: "from-emerald-500/10 to-emerald-500/5", route: "/patients", order_index: 1 },
+  { id: "appointments", title: "المواعيد", description: "عرض وإدارة مواعيد المرضى", icon: Calendar, color: "text-blue-600", gradient: "from-blue-500/10 to-blue-500/5", route: "/appointments", order_index: 2 },
+  { id: "new-appointment", title: "حجز موعد جديد", description: "حجز موعد جديد للمريض", icon: CalendarIcon, color: "text-green-600", gradient: "from-green-500/10 to-green-500/5", route: "/appointments/new", order_index: 3 },
+  { id: "public-booking", title: "رابط الحجز العام", description: "رابط مباشر للحجز عبر الإنترنت", icon: Globe, color: "text-lime-600", gradient: "from-lime-500/10 to-lime-500/5", route: "/book", order_index: 4 },
+  { id: "medical-records", title: "السجلات الطبية", description: "إدارة السجلات الطبية للمرضى", icon: FileText, color: "text-purple-600", gradient: "from-purple-500/10 to-purple-500/5", route: "/advanced-medical-records", order_index: 5 },
+  { id: "dental-treatments", title: "العلاجات السنية", description: "إدارة العلاجات والإجراءات السنية", icon: Stethoscope, color: "text-red-600", gradient: "from-red-500/10 to-red-500/5", route: "/dental-treatments-management", order_index: 6 },
+  { id: "invoices", title: "الفواتير", description: "إدارة الفواتير والمدفوعات", icon: Receipt, color: "text-yellow-600", gradient: "from-yellow-500/10 to-yellow-500/5", route: "/invoice-management", order_index: 7 },
+  { id: "inventory", title: "المخزون", description: "إدارة المخزون والإمدادات", icon: Box, color: "text-orange-600", gradient: "from-orange-500/10 to-orange-500/5", route: "/inventory", order_index: 8 },
+  { id: "doctors", title: "إدارة الأطباء", description: "إدارة بيانات الأطباء", icon: UserCheck, color: "text-blue-700", gradient: "from-blue-600/10 to-blue-600/5", route: "/doctors", order_index: 9 },
+  { id: "ai-insights", title: "التحليل الذكي", description: "تحليل ذكي بالذكاء الاصطناعي", icon: Brain, color: "text-indigo-600", gradient: "from-indigo-500/10 to-indigo-500/5", route: "/ai-insights-page", order_index: 10 },
+  { id: "medications", title: "الأدوية", description: "إدارة قاعدة بيانات الأدوية", icon: Pill, color: "text-rose-600", gradient: "from-rose-500/10 to-rose-500/5", route: "/medications", order_index: 11 },
+  { id: "prescriptions", title: "الوصفات الطبية", description: "إنشاء وإدارة الوصفات الطبية", icon: ClipboardList, color: "text-emerald-700", gradient: "from-emerald-600/10 to-emerald-600/5", route: "/prescriptions", order_index: 12 },
+  { id: "reports", title: "التقارير", description: "تقارير شاملة وإحصائيات", icon: BarChart3, color: "text-teal-600", gradient: "from-teal-500/10 to-teal-500/5", route: "/detailed-reports", order_index: 13 },
+  { id: "notifications", title: "الإشعارات", description: "إدارة الإشعارات والتنبيهات", icon: Bell, color: "text-amber-600", gradient: "from-amber-500/10 to-amber-500/5", route: "/advanced-notification-management", order_index: 14 },
+  { id: "users", title: "إدارة المستخدمين", description: "إدارة المستخدمين والصلاحيات", icon: Users, color: "text-slate-600", gradient: "from-slate-500/10 to-slate-500/5", route: "/advanced-user-management", order_index: 15 },
+  { id: "settings", title: "الإعدادات", description: "إعدادات النظام والتكوين", icon: Settings, color: "text-gray-600", gradient: "from-gray-500/10 to-gray-500/5", route: "/settings", order_index: 16 },
+];
+
+const statItems = [
+  { key: "active_patients", label: "مرضى نشطون", icon: Users, color: "text-primary", bgColor: "bg-primary/10", route: "/patients" },
+  { key: "today_appointments", label: "مواعيد اليوم", icon: Calendar, color: "text-blue-600", bgColor: "bg-blue-500/10", route: "/appointments" },
+  { key: "this_month_revenue", label: "إيرادات الشهر", icon: TrendingUp, color: "text-green-600", bgColor: "bg-green-500/10", route: "/financial-overview", format: true },
+  { key: "pending_invoices", label: "فواتير معلقة", icon: Receipt, color: "text-yellow-600", bgColor: "bg-yellow-500/10", route: "/invoice-management" },
+  { key: "total_debt", label: "ديون مستحقة", icon: DollarSign, color: "text-red-600", bgColor: "bg-red-500/10", route: "/financial-overview", format: true },
+  { key: "low_stock_items", label: "مخزون منخفض", icon: AlertTriangle, color: "text-orange-600", bgColor: "bg-orange-500/10", route: "/inventory" },
 ];
 
 function Index() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const settings = useSettings(); // Move this before conditional rendering
-
+  const settings = useSettings();
   const { user } = useAuth();
   const [actionCards, setActionCards] = useState<ActionCard[]>(defaultCards);
   const [editingCard, setEditingCard] = useState<string | null>(null);
-  const [editData, setEditData] = useState<{ title: string; description: string; route: string }>({ 
-    title: "", 
-    description: "",
-    route: ""
-  });
+  const [editData, setEditData] = useState({ title: "", description: "", route: "" });
   const [draggedCard, setDraggedCard] = useState<ActionCard | null>(null);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<{
-    active_patients: number;
-    today_appointments: number;
-    total_debt: number;
-    low_stock_items: number;
-    pending_invoices: number;
-    this_month_revenue: number;
-  } | null>(null);
+  const [stats, setStats] = useState<Record<string, number> | null>(null);
 
-  // تحميل الإحصائيات من DB
   useEffect(() => {
     const fetchStats = async () => {
       if (!user) return;
       try {
-        // Get clinic_id from profile
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
+        const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).maybeSingle();
         if (profile) {
-          const { data, error } = await supabase.rpc('get_dashboard_stats_optimized', {
-            clinic_id_param: profile.id
-          });
-          if (!error && data) {
-            setStats(data as any);
-          }
+          const { data, error } = await supabase.rpc('get_dashboard_stats_optimized', { clinic_id_param: profile.id });
+          if (!error && data) setStats(data as any);
         }
       } catch (err) {
         console.error('Failed to load dashboard stats:', err);
@@ -264,13 +92,11 @@ function Index() {
     fetchStats();
   }, [user]);
 
-  // تحميل البيانات الافتراضية
   useEffect(() => {
     setActionCards(defaultCards);
     setLoading(false);
   }, []);
 
-  // دوال السحب والإفلات
   const handleDragStart = (e: React.DragEvent, card: ActionCard) => {
     setDraggedCard(card);
     e.dataTransfer.effectAllowed = "move";
@@ -283,100 +109,32 @@ function Index() {
 
   const handleDrop = async (e: React.DragEvent, targetCard: ActionCard) => {
     e.preventDefault();
-    
     if (!draggedCard || draggedCard.id === targetCard.id) return;
-
-    const draggedIndex = actionCards.findIndex(card => card.id === draggedCard.id);
-    const targetIndex = actionCards.findIndex(card => card.id === targetCard.id);
-
+    const draggedIndex = actionCards.findIndex(c => c.id === draggedCard.id);
+    const targetIndex = actionCards.findIndex(c => c.id === targetCard.id);
     const newCards = [...actionCards];
     newCards.splice(draggedIndex, 1);
     newCards.splice(targetIndex, 0, draggedCard);
-
-    // تحديث order_index للبطاقات
-    const updatedCards = newCards.map((card, index) => ({
-      ...card,
-      order_index: index + 1
-    }));
-
+    const updatedCards = newCards.map((card, i) => ({ ...card, order_index: i + 1 }));
     setActionCards(updatedCards);
     setDraggedCard(null);
-
-    // حفظ الترتيب الجديد في قاعدة البيانات
-    await saveCardsOrder(updatedCards);
+    localStorage.setItem('dashboard_cards', JSON.stringify(updatedCards));
+    toast({ title: "تم الحفظ بنجاح", description: "تم حفظ ترتيب المربعات الجديد" });
   };
 
-  const saveCardsOrder = async (cards: ActionCard[]) => {
-    try {
-      localStorage.setItem('dashboard_cards', JSON.stringify(cards));
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم حفظ ترتيب المربعات الجديد",
-      });
-    } catch (error) {
-      console.error('Error saving cards order:', error);
-      toast({
-        title: "خطأ في الحفظ",
-        description: "حدث خطأ أثناء حفظ ترتيب المربعات",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // دوال التحرير
   const startEditing = (card: ActionCard) => {
     setEditingCard(card.id);
-    setEditData({ 
-      title: card.title, 
-      description: card.description,
-      route: card.route
-    });
+    setEditData({ title: card.title, description: card.description, route: card.route });
   };
 
-  const saveEdit = async () => {
+  const saveEdit = () => {
     if (!editingCard) return;
-    
-    try {
-      // تحديث في الحالة المحلية
-      const updatedCards = actionCards.map(card => 
-        card.id === editingCard 
-          ? { 
-              ...card, 
-              title: editData.title, 
-              description: editData.description,
-              route: editData.route
-            }
-          : card
-      );
-
-      setActionCards(updatedCards);
-      
-      // حفظ في localStorage أولاً
-      localStorage.setItem('dashboard_cards', JSON.stringify(updatedCards));
-
-      // محاولة التحديث في قاعدة البيانات
-      try {
-        // تخطي تحديث قاعدة البيانات وحفظ محلياً فقط
-        console.log('Skipping database update for card:', editingCard);
-      } catch (dbError) {
-        console.log('Database update failed, but localStorage updated');
-      }
-      
-      setEditingCard(null);
-      setEditData({ title: "", description: "", route: "" });
-
-      toast({
-        title: "تم الحفظ بنجاح",
-        description: "تم حفظ تغييرات المربع",
-      });
-    } catch (error) {
-      console.error('Error saving card:', error);
-      toast({
-        title: "خطأ في الحفظ",
-        description: "حدث خطأ أثناء حفظ التغييرات",
-        variant: "destructive",
-      });
-    }
+    const updatedCards = actionCards.map(c => c.id === editingCard ? { ...c, title: editData.title, description: editData.description, route: editData.route } : c);
+    setActionCards(updatedCards);
+    localStorage.setItem('dashboard_cards', JSON.stringify(updatedCards));
+    setEditingCard(null);
+    setEditData({ title: "", description: "", route: "" });
+    toast({ title: "تم الحفظ بنجاح", description: "تم حفظ تغييرات المربع" });
   };
 
   const cancelEdit = () => {
@@ -385,18 +143,9 @@ function Index() {
   };
 
   const shareBookingLink = () => {
-    const currentDomain = window.location.origin;
-    const bookingUrl = `${currentDomain}/book`;
-    
+    const bookingUrl = `${window.location.origin}/book`;
     if (navigator.share) {
-      navigator.share({
-        title: 'رابط حجز المواعيد',
-        text: 'احجز موعدك في العيادة مباشرة عبر هذا الرابط',
-        url: bookingUrl
-      }).catch((error) => {
-        console.log('Error sharing:', error);
-        copyToClipboard(bookingUrl);
-      });
+      navigator.share({ title: 'رابط حجز المواعيد', text: 'احجز موعدك في العيادة', url: bookingUrl }).catch(() => copyToClipboard(bookingUrl));
     } else {
       copyToClipboard(bookingUrl);
     }
@@ -404,286 +153,182 @@ function Index() {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
-      toast({
-        title: "تم النسخ",
-        description: "تم نسخ رابط الحجز إلى الحافظة",
-      });
-    }).catch(() => {
-      // Fallback for older browsers
-      const textArea = document.createElement('textarea');
-      textArea.value = text;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textArea);
-      toast({
-        title: "تم النسخ",
-        description: "تم نسخ رابط الحجز إلى الحافظة",
-      });
+      toast({ title: "تم النسخ", description: "تم نسخ رابط الحجز إلى الحافظة" });
     });
   };
 
   const shareViaWhatsApp = () => {
-    const currentDomain = window.location.origin;
-    const bookingUrl = `${currentDomain}/book`;
-    const message = `مرحباً! 🦷\n\nيمكنك حجز موعدك في العيادة مباشرة عبر هذا الرابط:\n${bookingUrl}\n\nنتطلع لخدمتك 😊`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
+    const bookingUrl = `${window.location.origin}/book`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(`مرحباً! 🦷\nيمكنك حجز موعدك عبر:\n${bookingUrl}`)}`, '_blank');
   };
 
   const shareViaSMS = () => {
-    const currentDomain = window.location.origin;
-    const bookingUrl = `${currentDomain}/book`;
-    const message = `احجز موعدك في العيادة عبر هذا الرابط: ${bookingUrl}`;
-    const smsUrl = `sms:?body=${encodeURIComponent(message)}`;
-    window.location.href = smsUrl;
+    const bookingUrl = `${window.location.origin}/book`;
+    window.location.href = `sms:?body=${encodeURIComponent(`احجز موعدك: ${bookingUrl}`)}`;
   };
 
   if (loading) {
     return (
       <PageContainer>
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">جاري تحميل البيانات...</div>
+          <div className="animate-pulse text-muted-foreground">جاري تحميل البيانات...</div>
         </div>
       </PageContainer>
     );
   }
 
-  const renderCard = (card: ActionCard) => {
-    return (
-      <Card 
-        key={card.id}
-        draggable={editingCard !== card.id}
-        onDragStart={(e) => handleDragStart(e, card)}
-        onDragOver={handleDragOver}
-        onDrop={(e) => handleDrop(e, card)}
-        style={{ minHeight: `${settings.boxSize}px` }}
-        className={`transition-all duration-300 relative ${editingCard === card.id ? "ring-2 ring-blue-500 shadow-lg" : "cursor-pointer md:hover:shadow-lg md:hover:scale-105 active:scale-95"} ${draggedCard?.id === card.id ? "opacity-50 rotate-3 scale-105" : ""} ${editingCard !== card.id ? "md:hover:ring-1 md:hover:ring-gray-200" : ""}`}
-        onClick={() => {
-          if (editingCard !== card.id) {
-            // التحقق من صحة الرابط قبل التنقل
-            const validation = validateDashboardCards([card]);
-            if (validation.valid.length > 0) {
-              console.log(`✅ التنقل إلى: ${card.title} → ${card.route}`);
-              navigate(card.route);
-            } else {
-              console.error(`❌ رابط خاطئ: ${card.title} → ${card.route}`);
-              toast({
-                title: "رابط خاطئ",
-                description: `الرابط ${card.route} غير متاح`,
-                variant: "destructive",
-              });
-            }
-          }
-        }}
-      >
-        {/* أزرار المشاركة في الزاوية العلوية اليسرى - خاصة بمربع الحجز العام */}
-        {card.id === 'public-booking' && (
-          <div className="absolute top-2 left-2 flex flex-col gap-1 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                shareViaWhatsApp();
-              }}
-              className="text-green-600 hover:text-green-700 hover:bg-green-50 active:text-green-800 p-1.5 rounded-lg transition-all duration-200 w-8 h-8"
-              title="مشاركة عبر الواتساب"
-            >
-              <MessageCircle className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                shareViaSMS();
-              }}
-              className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 active:text-orange-800 p-1.5 rounded-lg transition-all duration-200 w-8 h-8"
-              title="مشاركة عبر الرسائل النصية"
-            >
-              <Smartphone className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                shareBookingLink();
-              }}
-              className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 active:text-blue-800 p-1.5 rounded-lg transition-all duration-200 w-8 h-8"
-              title="مشاركة رابط الحجز"
-            >
-              <Share2 className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-        <CardHeader className="pb-2 md:pb-3 p-3 md:p-6">
-          <div className="flex items-center">
-            <div className={`p-2 md:p-3 rounded-lg ${card.color} text-white`}>
-              <card.icon className="w-4 h-4 md:w-6 md:h-6" />
-            </div>
-          </div>
-          {editingCard === card.id ? (
-            <div className="mt-3 space-y-2">
-              <Input
-                value={editData.title}
-                onChange={(e) => setEditData(prev => ({ ...prev, title: e.target.value }))}
-                className="text-sm md:text-lg font-semibold"
-                placeholder="عنوان المربع"
-                onClick={(e) => e.stopPropagation()}
-              />
-            </div>
-          ) : (
-            <CardTitle className="text-sm md:text-lg font-semibold mt-3 leading-tight">
-              {card.title}
-            </CardTitle>
-          )}
-        </CardHeader>
-        <CardContent className="p-3 md:p-6 pt-0">
-          {editingCard === card.id ? (
-            <div className="space-y-2">
-              <Textarea
-                value={editData.description}
-                onChange={(e) => setEditData(prev => ({ ...prev, description: e.target.value }))}
-                className="text-xs md:text-sm resize-none"
-                rows={2}
-                placeholder="وصف المربع"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <div className="flex items-center gap-1 md:gap-2">
-                <LinkIcon className="w-3 h-3 md:w-4 md:h-4 text-gray-500 flex-shrink-0" />
-                <Input
-                  value={editData.route}
-                  onChange={(e) => setEditData(prev => ({ ...prev, route: e.target.value }))}
-                  className="text-xs md:text-sm"
-                  placeholder="الرابط (مثل: /patients)"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-              <div className="flex items-center justify-end gap-1 mt-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    saveEdit();
-                  }}
-                  className="text-green-600 hover:text-green-700 active:text-green-800 p-1 md:p-2"
-                  title="حفظ التغييرات"
-                >
-                  <Save className="w-3 h-3 md:w-4 md:h-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    cancelEdit();
-                  }}
-                  className="text-red-600 hover:text-red-700 active:text-red-800 p-1 md:p-2"
-                  title="إلغاء التحرير"
-                >
-                  <X className="w-3 h-3 md:w-4 md:h-4" />
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <CardDescription className="text-xs md:text-sm text-gray-600 leading-tight">
-                {card.description}
-              </CardDescription>
-              <div className="flex items-center justify-end gap-3 mt-2">
-                {/* أزرار التحكم - التعديل والسحب */}
-                <div className="flex items-center gap-2">
-                  <div 
-                    className="cursor-grab hover:cursor-grabbing text-gray-400 hover:text-gray-600 p-2 rounded-lg transition-colors"
-                    title="اسحب لإعادة الترتيب"
-                  >
-                    <GripVertical className="w-4 h-4" />
-                  </div>
-                  
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      startEditing(card);
-                    }}
-                    className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 active:text-gray-800 p-2 rounded-lg transition-all duration-200"
-                    title="تحرير المحتوى"
-                  >
-                    <Edit className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
-    );
+  const navigateToCard = (card: ActionCard) => {
+    if (editingCard === card.id) return;
+    const validation = validateDashboardCards([card as any]);
+    if (validation.valid.length > 0) {
+      navigate(card.route);
+    } else {
+      toast({ title: "رابط خاطئ", description: `الرابط ${card.route} غير متاح`, variant: "destructive" });
+    }
   };
 
   return (
     <PageContainer>
-      <div className="space-y-6">
-        {/* إحصائيات سريعة من قاعدة البيانات */}
+      <div className="space-y-5 md:space-y-6">
+        
+        {/* Stats Section */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/patients')}>
-              <CardContent className="p-4 text-center">
-                <Users className="w-6 h-6 mx-auto mb-2 text-primary" />
-                <p className="text-2xl font-bold">{stats.active_patients}</p>
-                <p className="text-xs text-muted-foreground">مرضى نشطون</p>
-              </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/appointments')}>
-              <CardContent className="p-4 text-center">
-                <Calendar className="w-6 h-6 mx-auto mb-2 text-blue-500" />
-                <p className="text-2xl font-bold">{stats.today_appointments}</p>
-                <p className="text-xs text-muted-foreground">مواعيد اليوم</p>
-              </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/financial-overview')}>
-              <CardContent className="p-4 text-center">
-                <TrendingUp className="w-6 h-6 mx-auto mb-2 text-green-500" />
-                <p className="text-2xl font-bold">{stats.this_month_revenue?.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">إيرادات الشهر</p>
-              </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/invoice-management')}>
-              <CardContent className="p-4 text-center">
-                <Receipt className="w-6 h-6 mx-auto mb-2 text-yellow-500" />
-                <p className="text-2xl font-bold">{stats.pending_invoices}</p>
-                <p className="text-xs text-muted-foreground">فواتير معلقة</p>
-              </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/financial-overview')}>
-              <CardContent className="p-4 text-center">
-                <DollarSign className="w-6 h-6 mx-auto mb-2 text-red-500" />
-                <p className="text-2xl font-bold">{stats.total_debt?.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">ديون مستحقة</p>
-              </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={() => navigate('/inventory')}>
-              <CardContent className="p-4 text-center">
-                <Package className="w-6 h-6 mx-auto mb-2 text-orange-500" />
-                <p className="text-2xl font-bold">{stats.low_stock_items}</p>
-                <p className="text-xs text-muted-foreground">مخزون منخفض</p>
-              </CardContent>
-            </Card>
+          <div className={styles.statsGrid}>
+            {statItems.map((item) => {
+              const value = stats[item.key];
+              return (
+                <Card
+                  key={item.key}
+                  className="cursor-pointer border-border/40 hover:border-border hover:shadow-md transition-all duration-200 overflow-hidden group"
+                  onClick={() => navigate(item.route)}
+                >
+                  <CardContent className="p-3 md:p-4">
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <div className={cn("p-1.5 md:p-2 rounded-lg", item.bgColor)}>
+                        <item.icon className={cn("w-3.5 h-3.5 md:w-4 md:h-4", item.color)} />
+                      </div>
+                      <ArrowUpRight className="w-3 h-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-auto" />
+                    </div>
+                    <p className="text-lg md:text-2xl font-bold text-foreground leading-none mb-1">
+                      {item.format ? value?.toLocaleString() : value}
+                    </p>
+                    <p className="text-[10px] md:text-xs text-muted-foreground leading-tight">{item.label}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         )}
 
-        {/* مواعيد اليوم */}
+        {/* Today's Appointments */}
         <TodayAppointmentsWidget />
 
-        {/* Dashboard Action Cards */}
+        {/* Action Cards Grid */}
         {settings.showDashboardBoxes && (
-          <div 
-            className={`${styles.dashboardGrid} dashboard-grid-${settings.boxesPerRow}`}
-          >
-            {actionCards.map(renderCard)}
+          <div className={cn(styles.dashboardGrid, `dashboard-grid-${settings.boxesPerRow}`)}>
+            {actionCards.map((card) => (
+              <Card
+                key={card.id}
+                draggable={editingCard !== card.id}
+                onDragStart={(e) => handleDragStart(e, card)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, card)}
+                onClick={() => navigateToCard(card)}
+                className={cn(
+                  "relative overflow-hidden transition-all duration-200 group",
+                  editingCard === card.id
+                    ? "ring-2 ring-primary shadow-lg"
+                    : "cursor-pointer hover:shadow-md hover:border-border active:scale-[0.98]",
+                  draggedCard?.id === card.id && "opacity-50 rotate-1 scale-105",
+                  "border-border/40"
+                )}
+              >
+                {/* Gradient overlay */}
+                <div className={cn("absolute inset-0 bg-gradient-to-br opacity-60", card.gradient)} />
+
+                {/* Booking share buttons */}
+                {card.id === 'public-booking' && editingCard !== card.id && (
+                  <div className="absolute top-2 left-2 flex gap-1 z-10">
+                    {[
+                      { fn: shareViaWhatsApp, icon: MessageCircle, cls: "text-green-600 hover:bg-green-50" },
+                      { fn: shareViaSMS, icon: Smartphone, cls: "text-orange-600 hover:bg-orange-50" },
+                      { fn: shareBookingLink, icon: Share2, cls: "text-blue-600 hover:bg-blue-50" },
+                    ].map((action, i) => (
+                      <Button key={i} variant="ghost" size="sm"
+                        onClick={(e) => { e.stopPropagation(); action.fn(); }}
+                        className={cn("p-1.5 h-7 w-7 rounded-md", action.cls)}
+                      >
+                        <action.icon className="w-3.5 h-3.5" />
+                      </Button>
+                    ))}
+                  </div>
+                )}
+
+                <div className="relative z-[1]">
+                  <CardHeader className="p-3 md:p-4 pb-1.5 md:pb-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className={cn("p-2 md:p-2.5 rounded-xl bg-background/80 shadow-sm border border-border/30")}>
+                        <card.icon className={cn("w-4 h-4 md:w-5 md:h-5", card.color)} />
+                      </div>
+                      {editingCard !== card.id && (
+                        <ArrowUpRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mr-auto" />
+                      )}
+                    </div>
+
+                    {editingCard === card.id ? (
+                      <div className="mt-2 space-y-2">
+                        <Input value={editData.title} onChange={(e) => setEditData(p => ({ ...p, title: e.target.value }))}
+                          className="text-sm font-semibold" placeholder="عنوان المربع" onClick={(e) => e.stopPropagation()} />
+                      </div>
+                    ) : (
+                      <CardTitle className="text-xs md:text-sm font-semibold mt-2 leading-tight text-foreground">
+                        {card.title}
+                      </CardTitle>
+                    )}
+                  </CardHeader>
+
+                  <CardContent className="p-3 md:p-4 pt-0">
+                    {editingCard === card.id ? (
+                      <div className="space-y-2">
+                        <Textarea value={editData.description} onChange={(e) => setEditData(p => ({ ...p, description: e.target.value }))}
+                          className="text-xs resize-none" rows={2} placeholder="وصف المربع" onClick={(e) => e.stopPropagation()} />
+                        <div className="flex items-center gap-1">
+                          <LinkIcon className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+                          <Input value={editData.route} onChange={(e) => setEditData(p => ({ ...p, route: e.target.value }))}
+                            className="text-xs" placeholder="/route" onClick={(e) => e.stopPropagation()} />
+                        </div>
+                        <div className="flex items-center justify-end gap-1 mt-1">
+                          <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); saveEdit(); }}
+                            className="text-green-600 hover:text-green-700 p-1 h-7 w-7">
+                            <Save className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); cancelEdit(); }}
+                            className="text-destructive hover:text-destructive p-1 h-7 w-7">
+                            <X className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-[10px] md:text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                          {card.description}
+                        </p>
+                        <div className="flex items-center justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="cursor-grab hover:cursor-grabbing text-muted-foreground hover:text-foreground p-1 rounded transition-colors"
+                            title="اسحب لإعادة الترتيب">
+                            <GripVertical className="w-3.5 h-3.5" />
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); startEditing(card); }}
+                            className="text-muted-foreground hover:text-foreground p-1 h-7 w-7" title="تحرير">
+                            <Edit className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </div>
+              </Card>
+            ))}
           </div>
         )}
       </div>
