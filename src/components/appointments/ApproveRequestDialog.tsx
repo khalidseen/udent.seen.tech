@@ -51,7 +51,7 @@ const ApproveRequestDialog = ({
   loading
 }: ApproveRequestDialogProps) => {
   const [data, setData] = useState<ApprovalData>({
-    doctorId: 'none',
+    doctorId: '',
     duration: 30,
     treatmentType: 'استشارة',
     date: preferredDate,
@@ -125,13 +125,13 @@ const ApproveRequestDialog = ({
             </Select>
           </div>
 
-          <Button onClick={handleConfirm} disabled={loading} className="w-full">
+          <Button onClick={handleConfirm} disabled={loading || !data.doctorId} className="w-full">
             {loading ? (
               <Loader2 className="w-4 h-4 ml-2 animate-spin" />
             ) : (
               <Check className="w-4 h-4 ml-2" />
             )}
-            {loading ? 'جاري الإنشاء...' : 'تأكيد وإنشاء الموعد'}
+            {loading ? 'جاري الإنشاء...' : !data.doctorId ? 'اختر طبيبًا أولاً' : 'تأكيد وإنشاء الموعد'}
           </Button>
         </div>
       </DialogContent>
