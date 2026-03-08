@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,18 +10,12 @@ import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
-import { UserPlus, Save, Plus, X } from "lucide-react";
+import { UserPlus, Save, Plus, X, CheckCircle, Calendar } from "lucide-react";
 import { cacheHelpers } from "@/lib/optimized-queries";
+import { defaultPatientFormData, validatePatientData } from "@/utils/patientDefaults";
 
 interface AddPatientDrawerProps {
   onPatientAdded?: () => void;
-}
-
-interface Patient {
-  id: string;
-  full_name: string;
-  phone?: string;
-  email?: string;
 }
 
 const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
