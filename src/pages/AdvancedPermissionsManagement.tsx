@@ -16,7 +16,7 @@ interface RoleHierarchy {
   role_name: string;
   level: number;
   description_ar: string | null;
-  permissions: Record<string, boolean> | null;
+  permissions: any;
 }
 
 interface PermissionItem {
