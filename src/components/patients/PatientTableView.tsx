@@ -176,9 +176,11 @@ const PatientTableView = ({ patients, onAddTreatment }: PatientTableViewProps) =
                       >
                         <Activity className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Edit className="w-4 h-4" />
-                      </Button>
+                      <Link to={`/patients/edit/${patient.id}`}>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </Link>
                       <Button 
                         variant="ghost" 
                         size="sm" 

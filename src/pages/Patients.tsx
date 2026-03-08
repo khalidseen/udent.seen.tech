@@ -1,4 +1,6 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { usePatients, useClinicId } from '@/hooks/usePatients';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Button } from "@/components/ui/button";
@@ -108,9 +110,27 @@ export default function Patients() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // إحصائيات من الخادم
-  const statsQuery = usePatients({ clinicId, limit: 0 });
-  const allPatientsCount = statsQuery.data?.total || 0;
+  // إحصائيات حقيقية من الخادم
+  const { data: patientStats } = useQuery({
+    queryKey: ['patient-status-stats', clinicId],
+    queryFn: async () => {
+      if (!clinicId) return { total: 0, active: 0, inactive: 0, archived: 0 };
+      const [totalRes, activeRes, inactiveRes, archivedRes] = await Promise.all([
+        supabase.from('patients').select('*', { count: 'exact', head: true }).eq('clinic_id', clinicId),
+        supabase.from('patients').select('*', { count: 'exact', head: true }).eq('clinic_id', clinicId).eq('patient_status', 'active'),
+        supabase.from('patients').select('*', { count: 'exact', head: true }).eq('clinic_id', clinicId).eq('patient_status', 'inactive'),
+        supabase.from('patients').select('*', { count: 'exact', head: true }).eq('clinic_id', clinicId).eq('patient_status', 'archived'),
+      ]);
+      return {
+        total: totalRes.count || 0,
+        active: activeRes.count || 0,
+        inactive: inactiveRes.count || 0,
+        archived: archivedRes.count || 0,
+      };
+    },
+    enabled: !!clinicId,
+    staleTime: 2 * 60 * 1000,
+  });
 
   return (
     <PageContainer>
@@ -121,10 +141,10 @@ export default function Patients() {
 
       {/* إحصائيات المرضى */}
       <PatientStatsCards
-        totalPatients={allPatientsCount}
-        activePatients={totalCount}
-        inactivePatients={0}
-        archivedPatients={0}
+        totalPatients={patientStats?.total || 0}
+        activePatients={patientStats?.active || 0}
+        inactivePatients={patientStats?.inactive || 0}
+        archivedPatients={patientStats?.archived || 0}
       />
 
       <Card className="border-border/60">

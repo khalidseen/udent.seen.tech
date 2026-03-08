@@ -167,9 +167,11 @@ export default function PatientCardsView({ patients, onAddTreatment }: PatientCa
                     <Activity className="w-4 h-4" />
                     علاج
                   </Button>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <Edit className="w-4 h-4" />
-                  </Button>
+                  <Link to={`/patients/edit/${patient.id}`}>
+                    <Button variant="outline" size="sm" className="gap-2">
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                  </Link>
                 </div>
                 
                 <PatientCardActions patientId={patient.id} stats={stats} />
