@@ -8,12 +8,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Save, AlertTriangle } from "lucide-react";
+import { Save, AlertTriangle, Stethoscope } from "lucide-react";
 
 interface EditAppointment {
   id: string;
   patient_id: string;
   clinic_id?: string;
+  doctor_id?: string;
   appointment_date: string;
   duration: number;
   status: string;
@@ -24,6 +25,10 @@ interface EditAppointment {
     full_name: string;
     phone?: string;
     email?: string;
+  };
+  doctors?: {
+    id: string;
+    full_name: string;
   };
 }
 
@@ -61,6 +66,7 @@ const EditAppointmentDialog = ({
 }: EditAppointmentDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [activeDoctors, setActiveDoctors] = useState<{id: string; full_name: string; specialization: string | null}[]>([]);
   const [formData, setFormData] = useState({
     appointment_date: '',
     appointment_time: '',
@@ -69,7 +75,8 @@ const EditAppointmentDialog = ({
     treatment_type: '',
     notes: '',
     patient_phone: '',
-    patient_email: ''
+    patient_email: '',
+    doctor_id: ''
   });
 
   useEffect(() => {
@@ -83,9 +90,23 @@ const EditAppointmentDialog = ({
         treatment_type: appointment.treatment_type || '',
         notes: appointment.notes || '',
         patient_phone: appointment.patients?.phone || '',
-        patient_email: appointment.patients?.email || ''
+        patient_email: appointment.patients?.email || '',
+        doctor_id: appointment.doctor_id || ''
       });
       setConflictWarning(null);
+
+      // Fetch doctors for this clinic
+      if (appointment.clinic_id) {
+        supabase
+          .from('doctors')
+          .select('id, full_name, specialization')
+          .eq('clinic_id', appointment.clinic_id)
+          .eq('status', 'active')
+          .order('full_name')
+          .then(({ data }) => {
+            if (data) setActiveDoctors(data);
+          });
+      }
     }
   }, [appointment]);
 
@@ -149,8 +170,9 @@ const EditAppointmentDialog = ({
           duration: formData.duration,
           status: formData.status,
           treatment_type: formData.treatment_type || null,
-          notes: formData.notes || null
-        })
+          notes: formData.notes || null,
+          doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null
+        } as any)
         .eq('id', appointment.id);
 
       if (appointmentError) throw appointmentError;
@@ -256,6 +278,22 @@ const EditAppointmentDialog = ({
               <SelectContent>
                 {TREATMENT_TYPES.map((t) => (
                   <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Doctor Selection */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1"><Stethoscope className="w-3 h-3" /> الطبيب المعالج</Label>
+            <Select value={formData.doctor_id} onValueChange={(value) => handleChange('doctor_id', value)}>
+              <SelectTrigger><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">بدون طبيب محدد</SelectItem>
+                {activeDoctors.map((doctor) => (
+                  <SelectItem key={doctor.id} value={doctor.id}>
+                    د. {doctor.full_name} {doctor.specialization ? `- ${doctor.specialization}` : ''}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
