@@ -16,7 +16,8 @@ import { toast } from "@/hooks/use-toast";
 import {
   CalendarPlus, Clock, User, Stethoscope, UserPlus, FileText,
   Search, Phone, Mail, X, FileUser, AlertTriangle, CheckCircle2,
-  ArrowLeft, ArrowRight, Calendar, Shield, DollarSign, Activity
+  ArrowLeft, ArrowRight, Calendar, Shield, DollarSign, Activity,
+  FileBarChart, RotateCcw
 } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -45,31 +46,14 @@ interface ExistingAppointment {
   patients?: { full_name: string };
 }
 
-const TREATMENT_TYPES = [
-  { value: 'فحص عام ودوري', label: 'فحص عام ودوري', icon: '🔍', duration: 30 },
-  { value: 'تنظيف الأسنان', label: 'تنظيف الأسنان', icon: '🪥', duration: 45 },
-  { value: 'حشو الأسنان', label: 'حشو الأسنان', icon: '🦷', duration: 45 },
-  { value: 'خلع الأسنان', label: 'خلع الأسنان', icon: '🔧', duration: 30 },
-  { value: 'علاج عصب', label: 'علاج عصب', icon: '💉', duration: 60 },
-  { value: 'تركيب تاج', label: 'تركيب تاج', icon: '👑', duration: 60 },
-  { value: 'تركيب جسر', label: 'تركيب جسر', icon: '🌉', duration: 90 },
-  { value: 'زراعة أسنان', label: 'زراعة أسنان', icon: '🔩', duration: 120 },
-  { value: 'تقويم الأسنان', label: 'تقويم الأسنان', icon: '📐', duration: 45 },
-  { value: 'تبييض الأسنان', label: 'تبييض الأسنان', icon: '✨', duration: 60 },
-  { value: 'جراحة فموية', label: 'جراحة فموية', icon: '🏥', duration: 90 },
-  { value: 'علاج اللثة', label: 'علاج اللثة', icon: '🩺', duration: 45 },
-  { value: 'علاج أطفال', label: 'علاج أطفال', icon: '👶', duration: 30 },
-  { value: 'طوارئ', label: 'طوارئ', icon: '🚨', duration: 30 },
-  { value: 'متابعة', label: 'متابعة', icon: '🔄', duration: 15 },
-  { value: 'استشارة', label: 'استشارة', icon: '💬', duration: 30 },
-  { value: 'أخرى', label: 'أخرى', icon: '📋', duration: 30 },
-];
+import { TREATMENT_TYPES } from "@/constants/treatmentTypes";
 
 const STEPS = [
   { id: 1, title: 'المريض', icon: User },
   { id: 2, title: 'الموعد', icon: Calendar },
   { id: 3, title: 'التفاصيل', icon: Stethoscope },
   { id: 4, title: 'مراجعة', icon: CheckCircle2 },
+  { id: 5, title: 'تم', icon: CheckCircle2 },
 ];
 
 const NewAppointmentForm = () => {
@@ -84,6 +68,7 @@ const NewAppointmentForm = () => {
   const [clinicId, setClinicId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [savedPatientId, setSavedPatientId] = useState<string | null>(null);
   const [todayAppointments, setTodayAppointments] = useState<ExistingAppointment[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
 
@@ -193,13 +178,20 @@ const NewAppointmentForm = () => {
     const startTime = new Date(`${date}T${time}:00`);
     const endTime = new Date(startTime.getTime() + duration * 60000);
 
-    const { data: existing } = await supabase
+    let query = supabase
       .from('appointments')
       .select('id, appointment_date, duration, patients(full_name)')
       .eq('clinic_id', clinicId)
       .gte('appointment_date', `${date}T00:00:00`)
       .lte('appointment_date', `${date}T23:59:59`)
       .in('status', ['scheduled', 'confirmed']);
+
+    // Filter by doctor if selected
+    if (formData.doctor_id && formData.doctor_id !== 'none') {
+      query = query.eq('doctor_id', formData.doctor_id);
+    }
+
+    const { data: existing } = await query;
 
     if (existing && existing.length > 0) {
       const conflicts = existing.filter(apt => {
@@ -216,7 +208,7 @@ const NewAppointmentForm = () => {
     } else {
       setConflictWarning(null);
     }
-  }, [clinicId]);
+  }, [clinicId, formData.doctor_id]);
 
   const handleChange = (field: string, value: string | boolean) => {
     if (field === 'treatment_type' && typeof value === 'string') {
@@ -255,7 +247,7 @@ const NewAppointmentForm = () => {
         if (patientType === 'existing') return !!formData.patient_id;
         return !!newPatientData.full_name.trim();
       case 2:
-        return !!formData.appointment_date && !!formData.appointment_time;
+        return !!formData.appointment_date && !!formData.appointment_time && !!formData.doctor_id && formData.doctor_id !== 'none';
       case 3:
         return !!formData.chief_complaint.trim();
       default:
@@ -305,7 +297,7 @@ const NewAppointmentForm = () => {
       const { error } = await supabase.from('appointments').insert({
         patient_id: finalPatientId,
         clinic_id: clinicId,
-        doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null,
+        doctor_id: formData.doctor_id,
         appointment_date: appointmentDateTime,
         duration: parseInt(formData.duration),
         treatment_type: formData.treatment_type || null,
@@ -315,12 +307,14 @@ const NewAppointmentForm = () => {
 
       if (error) throw error;
 
+      setSavedPatientId(finalPatientId);
+
       toast({
         title: '✅ تم بنجاح',
         description: patientType === 'new' ? 'تم إضافة المريض وحجز الموعد بنجاح' : 'تم حجز الموعد بنجاح',
       });
 
-      navigate('/appointments');
+      setCurrentStep(5);
     } catch (error: unknown) {
       toast({
         title: 'خطأ',
@@ -556,12 +550,11 @@ const NewAppointmentForm = () => {
       {/* Doctor Selection */}
       <div className="space-y-2">
         <Label className="text-base font-semibold flex items-center gap-1">
-          <Stethoscope className="w-4 h-4" /> الطبيب المعالج
+          <Stethoscope className="w-4 h-4" /> الطبيب المعالج *
         </Label>
         <Select value={formData.doctor_id} onValueChange={v => handleChange('doctor_id', v)}>
           <SelectTrigger className="h-12 text-base border-2"><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="none">بدون طبيب محدد</SelectItem>
             {activeDoctors.map(doc => (
               <SelectItem key={doc.id} value={doc.id}>
                 د. {doc.full_name} {doc.specialization ? `- ${doc.specialization}` : ''}
@@ -569,6 +562,9 @@ const NewAppointmentForm = () => {
             ))}
           </SelectContent>
         </Select>
+        {!formData.doctor_id && (
+          <p className="text-xs text-destructive mt-1">يجب اختيار طبيب لإكمال الحجز</p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -805,6 +801,56 @@ const NewAppointmentForm = () => {
     );
   };
 
+  const renderStep5 = () => {
+    const resetAndBookAnother = () => {
+      setFormData({
+        patient_id: '', doctor_id: '', appointment_date: '', appointment_time: '',
+        duration: '30', treatment_type: '', notes: '', emergency_level: 'routine',
+        chief_complaint: '', estimated_cost: '', requires_anesthesia: false, follow_up_required: false,
+      });
+      setNewPatientData({
+        full_name: '', phone: '', email: '', date_of_birth: '', gender: '',
+        address: '', medical_history: '', blood_type: '', emergency_contact: '',
+        emergency_phone: '', insurance_info: '',
+      });
+      setPatientType('existing');
+      setSelectedPatient(null);
+      setPatientSearchTerm('');
+      setConflictWarning(null);
+      setSavedPatientId(null);
+      setCurrentStep(1);
+    };
+
+    return (
+      <div className="text-center py-8 space-y-8">
+        <div>
+          <CheckCircle2 className="w-20 h-20 text-green-500 mx-auto mb-4" />
+          <h3 className="text-2xl font-bold text-foreground">تم حجز الموعد بنجاح! 🎉</h3>
+          <p className="text-muted-foreground mt-2">ماذا تريد أن تفعل الآن؟</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto">
+          <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={() => navigate('/appointments')}>
+            <Calendar className="w-5 h-5" />
+            <span className="text-sm">عرض المواعيد</span>
+          </Button>
+          <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={() => navigate(`/invoices?patient=${savedPatientId}`)}>
+            <FileBarChart className="w-5 h-5" />
+            <span className="text-sm">إنشاء فاتورة</span>
+          </Button>
+          <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={() => navigate(`/patients?id=${savedPatientId}`)}>
+            <FileUser className="w-5 h-5" />
+            <span className="text-sm">ملف المريض</span>
+          </Button>
+          <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={resetAndBookAnother}>
+            <RotateCcw className="w-5 h-5" />
+            <span className="text-sm">حجز موعد آخر</span>
+          </Button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <PageContainer>
       <div className="max-w-5xl mx-auto">
@@ -824,8 +870,9 @@ const NewAppointmentForm = () => {
         </div>
 
         {/* Steps Indicator */}
+        {currentStep <= 4 && (
         <div className="flex items-center justify-between mb-8 bg-card border-2 border-border rounded-2xl p-4">
-          {STEPS.map((step, index) => {
+          {STEPS.filter(s => s.id <= 4).map((step, index) => {
             const StepIcon = step.icon;
             const isActive = currentStep === step.id;
             const isDone = currentStep > step.id;
@@ -850,7 +897,7 @@ const NewAppointmentForm = () => {
                   )}
                   <span className="font-medium text-sm hidden md:block">{step.title}</span>
                 </div>
-                {index < STEPS.length - 1 && (
+                {index < 3 && (
                   <div className={cn(
                     "flex-1 h-0.5 mx-2",
                     isDone ? "bg-primary" : "bg-border"
@@ -860,6 +907,7 @@ const NewAppointmentForm = () => {
             );
           })}
         </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Content */}
@@ -877,10 +925,12 @@ const NewAppointmentForm = () => {
                 {currentStep === 2 && renderStep2()}
                 {currentStep === 3 && renderStep3()}
                 {currentStep === 4 && renderStep4()}
+                {currentStep === 5 && renderStep5()}
               </CardContent>
             </Card>
 
             {/* Navigation */}
+            {currentStep <= 4 && (
             <div className="flex items-center justify-between mt-6">
               <Button
                 variant="outline"
@@ -913,6 +963,7 @@ const NewAppointmentForm = () => {
                 </Button>
               )}
             </div>
+            )}
           </div>
 
           {/* Sidebar */}

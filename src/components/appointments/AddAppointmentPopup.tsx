@@ -24,24 +24,7 @@ interface Patient {
   phone: string;
 }
 
-const TREATMENT_TYPES = [
-  { value: 'فحص عام', label: 'فحص عام' },
-  { value: 'تنظيف الأسنان', label: 'تنظيف الأسنان' },
-  { value: 'حشو الأسنان', label: 'حشو الأسنان' },
-  { value: 'خلع الأسنان', label: 'خلع الأسنان' },
-  { value: 'علاج عصب', label: 'علاج عصب' },
-  { value: 'تركيب تاج', label: 'تركيب تاج' },
-  { value: 'تركيب جسر', label: 'تركيب جسر' },
-  { value: 'زراعة أسنان', label: 'زراعة أسنان' },
-  { value: 'تقويم الأسنان', label: 'تقويم الأسنان' },
-  { value: 'تبييض الأسنان', label: 'تبييض الأسنان' },
-  { value: 'جراحة فموية', label: 'جراحة فموية' },
-  { value: 'علاج اللثة', label: 'علاج اللثة' },
-  { value: 'طوارئ', label: 'طوارئ' },
-  { value: 'متابعة', label: 'متابعة' },
-  { value: 'استشارة', label: 'استشارة' },
-  { value: 'أخرى', label: 'أخرى' },
-];
+import { TREATMENT_TYPES } from "@/constants/treatmentTypes";
 
 const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselectedDate }: AddAppointmentPopupProps) => {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -153,13 +136,20 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
     const startTime = new Date(`${date}T${time}:00`);
     const endTime = new Date(startTime.getTime() + duration * 60000);
     
-    const { data: existing } = await supabase
+    let query = supabase
       .from('appointments')
       .select('id, appointment_date, duration, patients(full_name)')
       .eq('clinic_id', clinicId)
       .gte('appointment_date', `${date}T00:00:00`)
       .lte('appointment_date', `${date}T23:59:59`)
       .in('status', ['scheduled', 'confirmed']);
+
+    // Filter by selected doctor
+    if (formData.doctor_id && formData.doctor_id !== 'none') {
+      query = query.eq('doctor_id', formData.doctor_id);
+    }
+
+    const { data: existing } = await query;
 
     if (existing && existing.length > 0) {
       const conflicts = existing.filter(apt => {
@@ -177,13 +167,18 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
     } else {
       setConflictWarning(null);
     }
-  }, [clinicId]);
+  }, [clinicId, formData.doctor_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.appointment_date || !formData.appointment_time) {
       toast({ title: 'خطأ', description: 'يجب إدخال تاريخ ووقت الموعد', variant: 'destructive' });
+      return;
+    }
+
+    if (!formData.doctor_id || formData.doctor_id === 'none') {
+      toast({ title: 'خطأ', description: 'يجب اختيار الطبيب المعالج', variant: 'destructive' });
       return;
     }
 
@@ -239,7 +234,7 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
         .insert([{
           patient_id,
           clinic_id: clinicId,
-          doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null,
+          doctor_id: formData.doctor_id,
           appointment_date: appointmentDateTime,
           duration: parseInt(formData.duration),
           treatment_type: formData.treatment_type || null,
@@ -350,11 +345,10 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
               
               {/* Doctor Selection */}
               <div className="space-y-2">
-                <Label>الطبيب المعالج</Label>
+                <Label>الطبيب المعالج *</Label>
                 <Select value={formData.doctor_id} onValueChange={(value) => handleFormChange('doctor_id', value)}>
                   <SelectTrigger className="h-11"><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
                   <SelectContent className="bg-background border border-border z-50">
-                    <SelectItem value="none">بدون طبيب محدد</SelectItem>
                     {activeDoctors.map((doctor) => (
                       <SelectItem key={doctor.id} value={doctor.id}>
                         د. {doctor.full_name} {doctor.specialization ? `- ${doctor.specialization}` : ''}
@@ -362,6 +356,9 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
                     ))}
                   </SelectContent>
                 </Select>
+                {!formData.doctor_id && (
+                  <p className="text-xs text-destructive">مطلوب</p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

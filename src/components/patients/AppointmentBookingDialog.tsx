@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { formatDateUtil } from '@/utils/formatters';
 import {
   Dialog,
@@ -24,7 +24,6 @@ import {
   Clock,
   Plus,
   User,
-  MapPin,
   Calendar,
   CheckCircle,
   XCircle,
@@ -32,6 +31,8 @@ import {
 } from 'lucide-react';
 import { Patient } from '@/hooks/usePatients';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+import { TREATMENT_TYPES } from '@/constants/treatmentTypes';
 
 interface AppointmentBookingDialogProps {
   open: boolean;
@@ -39,17 +40,37 @@ interface AppointmentBookingDialogProps {
   patient: Patient;
 }
 
-interface Appointment {
+interface DBAppointment {
   id: string;
-  date: string;
-  time: string;
+  appointment_date: string;
   duration: number;
-  type: 'checkup' | 'treatment' | 'consultation' | 'emergency' | 'followup';
-  doctor: string;
-  status: 'scheduled' | 'confirmed' | 'completed' | 'cancelled';
-  notes?: string;
-  location: string;
+  treatment_type: string | null;
+  doctor_id: string | null;
+  status: string;
+  notes: string | null;
+  doctors?: { full_name: string } | null;
 }
+
+const statusLabels: Record<string, string> = {
+  scheduled: 'مجدول',
+  confirmed: 'مؤكد',
+  completed: 'مكتمل',
+  cancelled: 'ملغي',
+};
+
+const statusColors: Record<string, string> = {
+  scheduled: 'bg-yellow-100 text-yellow-800',
+  confirmed: 'bg-blue-100 text-blue-800',
+  completed: 'bg-green-100 text-green-800',
+  cancelled: 'bg-red-100 text-red-800',
+};
+
+const statusIcons: Record<string, React.ElementType> = {
+  scheduled: AlertCircle,
+  confirmed: CheckCircle,
+  completed: CheckCircle,
+  cancelled: XCircle,
+};
 
 const AppointmentBookingDialog: React.FC<AppointmentBookingDialogProps> = ({
   open,
@@ -57,348 +78,221 @@ const AppointmentBookingDialog: React.FC<AppointmentBookingDialogProps> = ({
   patient
 }) => {
   const { toast } = useToast();
-  const [appointments, setAppointments] = useState<Appointment[]>([
-    {
-      id: '1',
-      date: '2024-01-25',
-      time: '10:00',
-      duration: 60,
-      type: 'checkup',
-      doctor: 'د. أحمد محمد',
-      status: 'scheduled',
-      notes: 'فحص دوري',
-      location: 'العيادة الرئيسية'
-    },
-    {
-      id: '2',
-      date: '2024-02-01',
-      time: '14:30',
-      duration: 90,
-      type: 'treatment',
-      doctor: 'د. سارة علي',
-      status: 'confirmed',
-      notes: 'علاج تسوس الضرس العلوي',
-      location: 'قسم العلاج'
-    }
-  ]);
-
+  const [appointments, setAppointments] = useState<DBAppointment[]>([]);
+  const [doctors, setDoctors] = useState<{id: string; full_name: string; specialization: string | null}[]>([]);
+  const [clinicId, setClinicId] = useState<string | null>(null);
   const [showNewAppointment, setShowNewAppointment] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [newAppointment, setNewAppointment] = useState({
     date: '',
     time: '',
-    duration: 60,
-    type: 'checkup' as Appointment['type'],
-    doctor: '',
+    duration: 30,
+    treatment_type: '',
+    doctor_id: '',
     notes: '',
-    location: 'العيادة الرئيسية'
   });
 
-  const appointmentTypes = {
-    checkup: 'فحص دوري',
-    treatment: 'علاج',
-    consultation: 'استشارة',
-    emergency: 'طوارئ',
-    followup: 'متابعة'
-  };
+  // Fetch clinic ID
+  useEffect(() => {
+    const fetch = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
+      if (profile) setClinicId(profile.id);
+    };
+    if (open) fetch();
+  }, [open]);
 
-  const statusLabels = {
-    scheduled: 'مجدول',
-    confirmed: 'مؤكد',
-    completed: 'مكتمل',
-    cancelled: 'ملغي'
-  };
+  // Fetch doctors
+  useEffect(() => {
+    if (!clinicId || !open) return;
+    const fetchDoctors = async () => {
+      const { data } = await supabase
+        .from('doctors')
+        .select('id, full_name, specialization')
+        .eq('clinic_id', clinicId)
+        .eq('status', 'active')
+        .order('full_name');
+      if (data) setDoctors(data);
+    };
+    fetchDoctors();
+  }, [clinicId, open]);
 
-  const statusColors = {
-    scheduled: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-blue-100 text-blue-800',
-    completed: 'bg-green-100 text-green-800',
-    cancelled: 'bg-red-100 text-red-800'
-  };
+  // Fetch patient appointments
+  const fetchAppointments = useCallback(async () => {
+    if (!clinicId || !open) return;
+    const { data } = await supabase
+      .from('appointments')
+      .select('id, appointment_date, duration, treatment_type, doctor_id, status, notes, doctors(full_name)')
+      .eq('clinic_id', clinicId)
+      .eq('patient_id', patient.id)
+      .order('appointment_date', { ascending: false })
+      .limit(20);
+    if (data) setAppointments(data as DBAppointment[]);
+  }, [clinicId, open, patient.id]);
 
-  const statusIcons = {
-    scheduled: AlertCircle,
-    confirmed: CheckCircle,
-    completed: CheckCircle,
-    cancelled: XCircle
-  };
+  useEffect(() => { fetchAppointments(); }, [fetchAppointments]);
 
-  const doctors = [
-    'د. أحمد محمد',
-    'د. سارة علي',
-    'د. محمد حسن',
-    'د. فاطمة خالد',
-    'د. عمر يوسف'
-  ];
-
-  const timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '12:00', '12:30', '14:00', '14:30', '15:00', '15:30',
-    '16:00', '16:30', '17:00', '17:30', '18:00', '18:30'
-  ];
-
-  const handleCreateAppointment = () => {
-    if (!newAppointment.date || !newAppointment.time || !newAppointment.doctor) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة",
-        variant: "destructive"
-      });
+  const handleCreateAppointment = async () => {
+    if (!newAppointment.date || !newAppointment.time || !newAppointment.doctor_id) {
+      toast({ title: "خطأ", description: "يرجى ملء التاريخ والوقت واختيار الطبيب", variant: "destructive" });
       return;
     }
+    if (!clinicId) return;
 
-    const appointment: Appointment = {
-      id: Date.now().toString(),
-      ...newAppointment,
-      status: 'scheduled'
-    };
+    setLoading(true);
+    try {
+      const appointmentDateTime = `${newAppointment.date}T${newAppointment.time}:00`;
+      const { error } = await supabase.from('appointments').insert({
+        patient_id: patient.id,
+        clinic_id: clinicId,
+        doctor_id: newAppointment.doctor_id,
+        appointment_date: appointmentDateTime,
+        duration: newAppointment.duration,
+        treatment_type: newAppointment.treatment_type || null,
+        notes: newAppointment.notes || null,
+        status: 'scheduled',
+      } as any);
 
-    setAppointments(prev => [...prev, appointment]);
-    setNewAppointment({
-      date: '',
-      time: '',
-      duration: 60,
-      type: 'checkup',
-      doctor: '',
-      notes: '',
-      location: 'العيادة الرئيسية'
-    });
-    setShowNewAppointment(false);
+      if (error) throw error;
 
-    toast({
-      title: "تم إنشاء الموعد",
-      description: "تم حجز الموعد بنجاح"
-    });
-  };
-
-  const handleCancelAppointment = (id: string) => {
-    setAppointments(prev => 
-      prev.map(app => 
-        app.id === id ? { ...app, status: 'cancelled' as const } : app
-      )
-    );
-    
-    toast({
-      title: "تم إلغاء الموعد",
-      description: "تم إلغاء الموعد بنجاح"
-    });
-  };
-
-  const handleConfirmAppointment = (id: string) => {
-    setAppointments(prev => 
-      prev.map(app => 
-        app.id === id ? { ...app, status: 'confirmed' as const } : app
-      )
-    );
-    
-    toast({
-      title: "تم تأكيد الموعد",
-      description: "تم تأكيد الموعد بنجاح"
-    });
-  };
-
-  const getNextAvailableSlots = () => {
-    const today = new Date();
-    const slots = [];
-    
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() + i);
-      
-      const dateStr = date.toISOString().split('T')[0];
-      const dayAppointments = appointments.filter(app => app.date === dateStr);
-      const availableSlots = timeSlots.filter(time => 
-        !dayAppointments.some(app => app.time === time)
-      );
-      
-      if (availableSlots.length > 0) {
-        slots.push({
-          date: dateStr,
-          availableSlots: availableSlots.slice(0, 3)
-        });
-      }
+      setNewAppointment({ date: '', time: '', duration: 30, treatment_type: '', doctor_id: '', notes: '' });
+      setShowNewAppointment(false);
+      toast({ title: "تم إنشاء الموعد", description: "تم حجز الموعد بنجاح" });
+      fetchAppointments();
+    } catch (error: unknown) {
+      toast({ title: "خطأ", description: error instanceof Error ? error.message : 'حدث خطأ', variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
-    
-    return slots.slice(0, 3);
   };
+
+  const handleStatusChange = async (id: string, newStatus: string) => {
+    const { error } = await supabase.from('appointments').update({ status: newStatus }).eq('id', id);
+    if (error) {
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: newStatus === 'cancelled' ? "تم إلغاء الموعد" : "تم تأكيد الموعد" });
+      fetchAppointments();
+    }
+  };
+
+  const scheduled = appointments.filter(a => a.status === 'scheduled').length;
+  const confirmed = appointments.filter(a => a.status === 'confirmed').length;
+  const completed = appointments.filter(a => a.status === 'completed').length;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5 text-blue-600" />
+            <CalendarDays className="h-5 w-5 text-primary" />
             حجز المواعيد - {patient.full_name}
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* إحصائيات سريعة */}
+          {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {appointments.filter(a => a.status === 'scheduled').length}
-              </div>
-              <div className="text-sm text-blue-700">مواعيد مجدولة</div>
+            <div className="bg-muted/50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-foreground">{scheduled}</div>
+              <div className="text-sm text-muted-foreground">مجدولة</div>
             </div>
-            <div className="bg-green-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {appointments.filter(a => a.status === 'confirmed').length}
-              </div>
-              <div className="text-sm text-green-700">مواعيد مؤكدة</div>
+            <div className="bg-muted/50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-foreground">{confirmed}</div>
+              <div className="text-sm text-muted-foreground">مؤكدة</div>
             </div>
-            <div className="bg-purple-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-purple-600">
-                {appointments.filter(a => a.status === 'completed').length}
-              </div>
-              <div className="text-sm text-purple-700">مواعيد مكتملة</div>
+            <div className="bg-muted/50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-foreground">{completed}</div>
+              <div className="text-sm text-muted-foreground">مكتملة</div>
             </div>
-            <div className="bg-orange-50 p-4 rounded-lg text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {appointments.length}
-              </div>
-              <div className="text-sm text-orange-700">إجمالي المواعيد</div>
+            <div className="bg-muted/50 p-4 rounded-lg text-center">
+              <div className="text-2xl font-bold text-foreground">{appointments.length}</div>
+              <div className="text-sm text-muted-foreground">إجمالي</div>
             </div>
           </div>
 
-          {/* أوقات متاحة سريعة */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium mb-3 flex items-center gap-2">
-              <Clock className="h-4 w-4" />
-              أقرب الأوقات المتاحة
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {getNextAvailableSlots().map((slot, index) => (
-                <div key={index} className="bg-white p-3 rounded border">
-                  <div className="font-medium text-sm mb-2">
-                    {formatDateUtil(new Date(slot.date), { 
-                      weekday: 'long', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {slot.availableSlots.map(time => (
-                      <Button
-                        key={time}
-                        size="sm"
-                        variant="outline"
-                        className="h-6 text-xs"
-                        onClick={() => {
-                          setNewAppointment(prev => ({
-                            ...prev,
-                            date: slot.date,
-                            time: time
-                          }));
-                          setShowNewAppointment(true);
-                        }}
-                      >
-                        {time}
-                      </Button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* زر حجز موعد جديد */}
+          {/* New appointment button */}
           <div className="flex justify-between items-center">
-            <h3 className="text-lg font-semibold">المواعيد القادمة</h3>
+            <h3 className="text-lg font-semibold text-foreground">المواعيد</h3>
             <Button onClick={() => setShowNewAppointment(true)}>
               <Plus className="h-4 w-4 mr-2" />
               حجز موعد جديد
             </Button>
           </div>
 
-          {/* قائمة المواعيد */}
+          {/* Appointments list */}
           <div className="space-y-4">
             {appointments.length === 0 ? (
-              <div className="text-center py-8 bg-gray-50 rounded-lg">
-                <CalendarDays className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                <p className="text-gray-600 mb-4">لا توجد مواعيد محجوزة</p>
+              <div className="text-center py-8 bg-muted/30 rounded-lg">
+                <CalendarDays className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground mb-4">لا توجد مواعيد محجوزة</p>
                 <Button onClick={() => setShowNewAppointment(true)}>
                   <Plus className="h-4 w-4 mr-2" />
                   حجز أول موعد
                 </Button>
               </div>
             ) : (
-              appointments
-                .sort((a, b) => new Date(a.date + ' ' + a.time).getTime() - new Date(b.date + ' ' + b.time).getTime())
-                .map((appointment) => {
-                  const StatusIcon = statusIcons[appointment.status];
-                  return (
-                    <Card key={appointment.id}>
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <Badge className={statusColors[appointment.status]}>
-                                <StatusIcon className="h-3 w-3 mr-1" />
-                                {statusLabels[appointment.status]}
-                              </Badge>
-                              <Badge variant="outline">
-                                {appointmentTypes[appointment.type]}
-                              </Badge>
-                            </div>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                              <div className="flex items-center gap-2">
-                                <Calendar className="h-4 w-4 text-gray-500" />
-                                <span>
-                                  {formatDateUtil(new Date(appointment.date))}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-gray-500" />
-                                <span>{appointment.time} ({appointment.duration} دقيقة)</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <User className="h-4 w-4 text-gray-500" />
-                                <span>{appointment.doctor}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <MapPin className="h-4 w-4 text-gray-500" />
-                                <span>{appointment.location}</span>
-                              </div>
-                            </div>
-                            
-                            {appointment.notes && (
-                              <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                                {appointment.notes}
-                              </div>
+              appointments.map((appointment) => {
+                const StatusIcon = statusIcons[appointment.status] || AlertCircle;
+                const aptDate = new Date(appointment.appointment_date);
+                return (
+                  <Card key={appointment.id}>
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <Badge className={statusColors[appointment.status] || ''}>
+                              <StatusIcon className="h-3 w-3 mr-1" />
+                              {statusLabels[appointment.status] || appointment.status}
+                            </Badge>
+                            {appointment.treatment_type && (
+                              <Badge variant="outline">{appointment.treatment_type}</Badge>
                             )}
                           </div>
-                          
-                          <div className="flex gap-2 ml-4">
-                            {appointment.status === 'scheduled' && (
-                              <Button
-                                size="sm"
-                                onClick={() => handleConfirmAppointment(appointment.id)}
-                              >
-                                تأكيد
-                              </Button>
-                            )}
-                            {appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleCancelAppointment(appointment.id)}
-                                className="text-red-600 hover:bg-red-50"
-                              >
-                                إلغاء
-                              </Button>
-                            )}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span>{formatDateUtil(aptDate)}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span>{aptDate.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })} ({appointment.duration} دقيقة)</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <span>{appointment.doctors ? `د. ${(appointment.doctors as any).full_name}` : 'غير محدد'}</span>
+                            </div>
                           </div>
+                          {appointment.notes && (
+                            <div className="mt-2 text-sm text-muted-foreground bg-muted/50 p-2 rounded">
+                              {appointment.notes}
+                            </div>
+                          )}
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })
+                        <div className="flex gap-2 ml-4">
+                          {appointment.status === 'scheduled' && (
+                            <Button size="sm" onClick={() => handleStatusChange(appointment.id, 'confirmed')}>
+                              تأكيد
+                            </Button>
+                          )}
+                          {appointment.status !== 'cancelled' && appointment.status !== 'completed' && (
+                            <Button size="sm" variant="outline" onClick={() => handleStatusChange(appointment.id, 'cancelled')}
+                              className="text-destructive hover:bg-destructive/10">
+                              إلغاء
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
             )}
           </div>
         </div>
 
-        {/* نموذج حجز موعد جديد */}
+        {/* New appointment form dialog */}
         {showNewAppointment && (
           <Dialog open={showNewAppointment} onOpenChange={setShowNewAppointment}>
             <DialogContent className="max-w-2xl">
@@ -408,109 +302,66 @@ const AppointmentBookingDialog: React.FC<AppointmentBookingDialogProps> = ({
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="date">تاريخ الموعد *</Label>
+                  <Label>تاريخ الموعد *</Label>
                   <Input
-                    id="date"
                     type="date"
                     value={newAppointment.date}
                     onChange={(e) => setNewAppointment(prev => ({ ...prev, date: e.target.value }))}
                     min={new Date().toISOString().split('T')[0]}
                   />
                 </div>
-                
                 <div className="space-y-2">
-                  <Label htmlFor="time">وقت الموعد *</Label>
-                  <Select
+                  <Label>وقت الموعد *</Label>
+                  <Input
+                    type="time"
                     value={newAppointment.time}
-                    onValueChange={(value) => setNewAppointment(prev => ({ ...prev, time: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر الوقت" />
-                    </SelectTrigger>
+                    onChange={(e) => setNewAppointment(prev => ({ ...prev, time: e.target.value }))}
+                    min="08:00" max="22:00"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>نوع العلاج</Label>
+                  <Select value={newAppointment.treatment_type} onValueChange={v => setNewAppointment(prev => ({ ...prev, treatment_type: v }))}>
+                    <SelectTrigger><SelectValue placeholder="اختر نوع العلاج" /></SelectTrigger>
                     <SelectContent>
-                      {timeSlots.map(time => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
+                      {TREATMENT_TYPES.map(t => (
+                        <SelectItem key={t.value} value={t.value}>{t.icon} {t.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                
                 <div className="space-y-2">
-                  <Label htmlFor="type">نوع الموعد</Label>
-                  <Select
-                    value={newAppointment.type}
-                    onValueChange={(value: Appointment['type']) => 
-                      setNewAppointment(prev => ({ ...prev, type: value }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
+                  <Label>المدة (دقيقة)</Label>
+                  <Select value={newAppointment.duration.toString()} onValueChange={v => setNewAppointment(prev => ({ ...prev, duration: parseInt(v) }))}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {Object.entries(appointmentTypes).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="duration">مدة الموعد (دقيقة)</Label>
-                  <Select
-                    value={newAppointment.duration.toString()}
-                    onValueChange={(value) => 
-                      setNewAppointment(prev => ({ ...prev, duration: parseInt(value) }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
+                      <SelectItem value="15">15 دقيقة</SelectItem>
                       <SelectItem value="30">30 دقيقة</SelectItem>
+                      <SelectItem value="45">45 دقيقة</SelectItem>
                       <SelectItem value="60">60 دقيقة</SelectItem>
                       <SelectItem value="90">90 دقيقة</SelectItem>
                       <SelectItem value="120">120 دقيقة</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="doctor">الطبيب *</Label>
-                  <Select
-                    value={newAppointment.doctor}
-                    onValueChange={(value) => setNewAppointment(prev => ({ ...prev, doctor: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر الطبيب" />
-                    </SelectTrigger>
+                <div className="space-y-2 md:col-span-2">
+                  <Label>الطبيب المعالج *</Label>
+                  <Select value={newAppointment.doctor_id} onValueChange={v => setNewAppointment(prev => ({ ...prev, doctor_id: v }))}>
+                    <SelectTrigger><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
                     <SelectContent>
-                      {doctors.map(doctor => (
-                        <SelectItem key={doctor} value={doctor}>
-                          {doctor}
+                      {doctors.map(doc => (
+                        <SelectItem key={doc.id} value={doc.id}>
+                          د. {doc.full_name} {doc.specialization ? `- ${doc.specialization}` : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="location">المكان</Label>
-                  <Input
-                    id="location"
-                    value={newAppointment.location}
-                    onChange={(e) => setNewAppointment(prev => ({ ...prev, location: e.target.value }))}
-                  />
-                </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="notes">ملاحظات</Label>
+                <Label>ملاحظات</Label>
                 <Textarea
-                  id="notes"
                   value={newAppointment.notes}
                   onChange={(e) => setNewAppointment(prev => ({ ...prev, notes: e.target.value }))}
                   placeholder="أضف أي ملاحظات إضافية..."
@@ -518,11 +369,9 @@ const AppointmentBookingDialog: React.FC<AppointmentBookingDialogProps> = ({
               </div>
               
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => setShowNewAppointment(false)}>
-                  إلغاء
-                </Button>
-                <Button onClick={handleCreateAppointment}>
-                  حجز الموعد
+                <Button variant="outline" onClick={() => setShowNewAppointment(false)}>إلغاء</Button>
+                <Button onClick={handleCreateAppointment} disabled={loading}>
+                  {loading ? 'جاري الحفظ...' : 'حجز الموعد'}
                 </Button>
               </div>
             </DialogContent>
