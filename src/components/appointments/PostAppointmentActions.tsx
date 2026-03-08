@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Activity, FileText, Save } from "lucide-react";
+import { Activity, FileText, Save, Receipt, Calendar, Pill } from "lucide-react";
 
 interface Appointment {
   id: string;
@@ -24,6 +25,7 @@ interface PostAppointmentActionsProps {
 }
 
 const PostAppointmentActions = ({ appointment, onActionsCompleted }: PostAppointmentActionsProps) => {
+  const navigate = useNavigate();
   const [treatmentDialogOpen, setTreatmentDialogOpen] = useState(false);
   const [notesDialogOpen, setNotesDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -166,7 +168,7 @@ const PostAppointmentActions = ({ appointment, onActionsCompleted }: PostAppoint
   ];
 
   return (
-    <div className="flex space-x-2 space-x-reverse">
+    <div className="flex flex-wrap gap-2">
       {/* Add Treatment Dialog */}
       <Dialog open={treatmentDialogOpen} onOpenChange={setTreatmentDialogOpen}>
         <DialogTrigger asChild>
@@ -310,6 +312,34 @@ const PostAppointmentActions = ({ appointment, onActionsCompleted }: PostAppoint
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Quick Navigation Actions */}
+      <Button 
+        size="sm" 
+        variant="outline"
+        onClick={() => navigate(`/appointments/new?patient=${appointment.patient_id}`)}
+      >
+        <Calendar className="w-4 h-4 ml-1" />
+        موعد متابعة
+      </Button>
+
+      <Button 
+        size="sm" 
+        variant="outline"
+        onClick={() => navigate(`/invoices?patient=${appointment.patient_id}`)}
+      >
+        <Receipt className="w-4 h-4 ml-1" />
+        إنشاء فاتورة
+      </Button>
+
+      <Button 
+        size="sm" 
+        variant="outline"
+        onClick={() => navigate(`/prescriptions?patient=${appointment.patient_id}`)}
+      >
+        <Pill className="w-4 h-4 ml-1" />
+        وصفة طبية
+      </Button>
     </div>
   );
 };
