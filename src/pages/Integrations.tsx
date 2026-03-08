@@ -248,6 +248,10 @@ const Integrations = () => {
           </TabsContent>
         )}
 
+        <TabsContent value="create-clinic" className="mt-6">
+          <AdminClinicCreator />
+        </TabsContent>
+
         <TabsContent value="analytics" className="mt-6">
           <ClinicAnalyticsDashboard clinicId={currentClinic?.id || null} />
         </TabsContent>
