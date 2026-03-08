@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,44 +10,20 @@ import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from "sonner";
-import { UserPlus, Save, Plus, X } from "lucide-react";
+import { UserPlus, Save, Plus, X, CheckCircle, Calendar } from "lucide-react";
 import { cacheHelpers } from "@/lib/optimized-queries";
+import { defaultPatientFormData, validatePatientData } from "@/utils/patientDefaults";
 
 interface AddPatientDrawerProps {
   onPatientAdded?: () => void;
 }
 
-interface Patient {
-  id: string;
-  full_name: string;
-  phone?: string;
-  email?: string;
-}
-
 const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  // تم إلغاء البحث عن المرضى الموجودين
-  // const [searchQuery, setSearchQuery] = useState('');
-  // const [existingPatients, setExistingPatients] = useState<Patient[]>([]);
-  // const [showExistingPatients, setShowExistingPatients] = useState(false);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    phone: '',
-    email: '',
-    date_of_birth: '',
-    gender: '',
-    address: '',
-    medical_history: '',
-    notes: '',
-    emergency_contact: '',
-    emergency_phone: '',
-    patient_status: 'active',
-    insurance_info: '',
-    blood_type: '',
-    occupation: '',
-    marital_status: ''
-  });
+  const [successState, setSuccessState] = useState<{ id: string; name: string } | null>(null);
+  const [formData, setFormData] = useState({ ...defaultPatientFormData });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
@@ -54,26 +31,8 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   };
 
   const resetForm = () => {
-    setFormData({
-      full_name: '',
-      phone: '',
-      email: '',
-      date_of_birth: '',
-      gender: '',
-      address: '',
-      medical_history: '',
-      notes: '',
-      emergency_contact: '',
-      emergency_phone: '',
-      patient_status: 'active',
-      insurance_info: '',
-      blood_type: '',
-      occupation: '',
-      marital_status: ''
-    });
-    // تم إلغاء البحث
-    // setSearchQuery('');
-    // setShowExistingPatients(false);
+    setFormData({ ...defaultPatientFormData });
+    setSuccessState(null);
   };
 
   // تم حذف وظيفة searchExistingPatients لأنها لم تعد مطلوبة
@@ -81,21 +40,18 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.full_name.trim()) {
-      toast.error('يجب إدخال اسم المريض');
+    const validationError = validatePatientData(formData);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
     setLoading(true);
     
     try {
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('يجب تسجيل الدخول أولاً');
-      }
+      if (!user) throw new Error('يجب تسجيل الدخول أولاً');
 
-      // احضار ملف المستخدم من قاعدة البيانات
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id, full_name, role')
@@ -103,52 +59,41 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         .maybeSingle();
 
       if (profileError || !profile) {
-        console.error('Profile fetch error:', profileError);
         throw new Error('تعذر العثور على ملف المستخدم. تأكد من إكمال التسجيل.');
       }
 
-      if (!profile) {
-        throw new Error('لم يتم العثور على ملف المستخدم أو فشل في إنشاؤه');
-      }
-
-      const { error: insertError } = await supabase
+      const { data: insertedPatient, error: insertError } = await supabase
         .from('patients')
-        .insert([
-          {
-            clinic_id: profile.id,
-            full_name: formData.full_name,
-            phone: formData.phone || null,
-            email: formData.email || null,
-            date_of_birth: formData.date_of_birth || null,
-            gender: formData.gender || null,
-            address: formData.address || null,
-            medical_history: formData.medical_history || null,
-            notes: formData.notes || null,
-            emergency_contact: formData.emergency_contact || null,
-            emergency_phone: formData.emergency_phone || null,
-            patient_status: formData.patient_status || 'active',
-            insurance_info: formData.insurance_info || null,
-            blood_type: formData.blood_type || null,
-            occupation: formData.occupation || null,
-            marital_status: formData.marital_status || null
-          }
-        ]);
+        .insert([{
+          clinic_id: profile.id,
+          full_name: formData.full_name.trim(),
+          phone: formData.phone || null,
+          email: formData.email || null,
+          date_of_birth: formData.date_of_birth || null,
+          gender: formData.gender || null,
+          address: formData.address || null,
+          medical_history: formData.medical_history || null,
+          notes: formData.notes || null,
+          emergency_contact: formData.emergency_contact || null,
+          emergency_phone: formData.emergency_phone || null,
+          patient_status: formData.patient_status || 'active',
+          insurance_info: formData.insurance_info || null,
+          blood_type: formData.blood_type || null,
+          occupation: formData.occupation || null,
+          marital_status: formData.marital_status || null
+        }])
+        .select('id, full_name')
+        .single();
 
       if (insertError) throw insertError;
 
-      // إلغاء جميع استعلامات المرضى لإجبار إعادة التحميل
       await queryClient.invalidateQueries({ queryKey: ['patients'] });
       await queryClient.invalidateQueries({ queryKey: ['clinic-id'] });
-      
-      // مسح الكاش المحلي
       cacheHelpers.clearCache('patients');
 
-      toast.success('تم إضافة المريض بنجاح');
-
-      resetForm();
-      setOpen(false);
+      // Show success state instead of closing
+      setSuccessState({ id: insertedPatient.id, name: insertedPatient.full_name });
       
-      // استدعاء callback للتحديث
       if (onPatientAdded) {
         onPatientAdded();
       }
@@ -158,6 +103,19 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBookAppointment = () => {
+    if (successState) {
+      setOpen(false);
+      resetForm();
+      navigate(`/appointments/new?patient=${successState.id}`);
+    }
+  };
+
+  const handleClose = () => {
+    resetForm();
+    setOpen(false);
   };
 
   return (
@@ -172,6 +130,35 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         <VisuallyHidden>
           <DialogTitle>إضافة مريض جديد</DialogTitle>
         </VisuallyHidden>
+        {successState ? (
+          /* Success Screen */
+          <div className="flex flex-col items-center justify-center h-full p-8 space-y-6">
+            <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold text-foreground">تم إضافة المريض بنجاح!</h2>
+              <p className="text-muted-foreground text-lg">{successState.name}</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+              <Button
+                onClick={handleBookAppointment}
+                className="flex-1 h-14 text-base gap-2"
+              >
+                <Calendar className="w-5 h-5" />
+                حجز موعد الآن
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="flex-1 h-14 text-base"
+              >
+                إغلاق
+              </Button>
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Custom Header with Close Button */}
         <div className="sticky top-0 z-50 bg-background border-b border-border p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -185,7 +172,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
             variant="outline"
             size="icon"
             onClick={() => setOpen(false)}
-            className="h-10 w-10 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 dark:hover:border-red-700 dark:hover:text-red-300"
+            className="h-10 w-10 border-destructive/30 text-destructive hover:bg-destructive/10"
           >
             <X className="h-5 w-5" />
           </Button>
@@ -439,6 +426,8 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
             </Button>
           </div>
         </div>
+        </>
+        )}
       </DialogContent>
     </Dialog>
   );

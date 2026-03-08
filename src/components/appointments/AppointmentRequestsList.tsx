@@ -11,6 +11,8 @@ import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Clock, User, Phone, Mail, MapPin, FileText, Check, X, MessageCircle, Calendar, Star, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import ApproveRequestDialog, { ApprovalData } from "./ApproveRequestDialog";
+import { useDoctors } from "@/hooks/useDoctors";
 interface AppointmentRequest {
   id: string;
   patient_name: string;
@@ -30,6 +32,11 @@ const AppointmentRequestsList = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [clinicId, setClinicId] = useState<string | undefined>(undefined);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<AppointmentRequest | null>(null);
+  
+  const { data: doctors } = useDoctors(clinicId);
 
   // WhatsApp message sending function
   const sendWhatsAppMessage = (phone: string, message: string) => {
@@ -114,6 +121,7 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
         return;
       }
       console.log('Profile ID:', profile.id);
+      setClinicId(profile.id);
       const {
         data,
         error
@@ -136,85 +144,75 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
   useEffect(() => {
     fetchRequests();
   }, []);
-  const handleApprove = async (request: AppointmentRequest) => {
+  const openApproveDialog = (request: AppointmentRequest) => {
+    setSelectedRequest(request);
+    setApproveDialogOpen(true);
+  };
+
+  const handleApproveConfirm = async (approvalData: ApprovalData) => {
+    if (!selectedRequest) return;
+    const request = selectedRequest;
     setProcessingRequest(request.id);
     try {
-      // Get current user's clinic ID
-      const {
-        data: {
-          user
-        }
-      } = await supabase.auth.getUser();
+      const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const {
-        data: profile
-      } = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
+      const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
       if (!profile) return;
 
-      // First, check if a patient with the same name and phone already exists
+      // Check if patient exists
       let patientId = null;
       if (request.patient_phone) {
-        const {
-          data: existingPatient
-        } = await supabase.from('patients').select('id').eq('clinic_id', profile.id).eq('phone', request.patient_phone).single();
-        if (existingPatient) {
-          patientId = existingPatient.id;
-        }
+        const { data: existingPatient } = await supabase
+          .from('patients').select('id')
+          .eq('clinic_id', profile.id).eq('phone', request.patient_phone).single();
+        if (existingPatient) patientId = existingPatient.id;
       }
 
-      // If no existing patient found, create a new one
+      // Create patient if not found
       if (!patientId) {
-        const {
-          data: newPatient,
-          error: patientError
-        } = await supabase.from('patients').insert({
-          clinic_id: profile.id,
-          full_name: request.patient_name,
-          phone: request.patient_phone,
-          email: request.patient_email,
-          address: request.patient_address,
-          medical_history: `طلب موعد: ${request.condition_description}`
-        }).select('id').single();
-        if (patientError) {
-          console.error('Error creating patient:', patientError);
-          throw new Error('فشل في إنشاء بيانات المريض');
-        }
+        const { data: newPatient, error: patientError } = await supabase
+          .from('patients').insert({
+            clinic_id: profile.id,
+            full_name: request.patient_name,
+            phone: request.patient_phone,
+            email: request.patient_email,
+            address: request.patient_address,
+            medical_history: `طلب موعد: ${request.condition_description}`
+          }).select('id').single();
+        if (patientError) throw new Error('فشل في إنشاء بيانات المريض');
         patientId = newPatient.id;
       }
 
-      // Create the actual appointment
-      const {
-        data: appointment,
-        error: appointmentError
-      } = await supabase.from('appointments').insert({
-        clinic_id: profile.id,
-        patient_id: patientId,
-        appointment_date: `${request.preferred_date}T${request.preferred_time}+00:00`,
-        duration: 30,
-        treatment_type: "استشارة",
-        status: "scheduled",
-        notes: `طلب من الموقع - ${request.condition_description}`
-      }).select().single();
+      // Create appointment with approval data
+      const { data: appointment, error: appointmentError } = await supabase
+        .from('appointments').insert({
+          clinic_id: profile.id,
+          patient_id: patientId,
+          doctor_id: approvalData.doctorId !== 'none' ? approvalData.doctorId : null,
+          appointment_date: `${approvalData.date}T${approvalData.time}+00:00`,
+          duration: approvalData.duration,
+          treatment_type: approvalData.treatmentType,
+          status: "scheduled",
+          notes: `طلب من الموقع - ${request.condition_description}`
+        }).select().single();
       if (appointmentError) throw appointmentError;
 
-      // Update the request status
+      // Update request status
       const { error: updateError } = await supabase
         .from('appointment_requests')
-        .update({ 
-          status: 'approved',
-          approved_appointment_id: appointment.id 
-        })
+        .update({ status: 'approved', approved_appointment_id: appointment.id })
         .eq('id', request.id);
-
       if (updateError) throw updateError;
 
-      // Send WhatsApp confirmation
+      // Send WhatsApp
       if (request.patient_phone) {
         const message = generateWhatsAppMessage(request, 'approval');
         sendWhatsAppMessage(request.patient_phone, message);
       }
 
-      toast.success("تم قبول طلب الموعد وإرسال رسالة واتساب للمريض");
+      toast.success("تم قبول طلب الموعد وإنشاء موعد بالبيانات المحددة");
+      setApproveDialogOpen(false);
+      setSelectedRequest(null);
       fetchRequests();
     } catch (error) {
       console.error('Error approving request:', error);
@@ -518,7 +516,7 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
                   {request.status === 'pending' && (
                     <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                       <Button 
-                        onClick={() => handleApprove(request)} 
+                        onClick={() => openApproveDialog(request)} 
                         disabled={processingRequest === request.id}
                         className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
                       >
@@ -607,6 +605,20 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
             );
           })}
         </div>
+      )}
+
+      {/* Approve Request Dialog */}
+      {selectedRequest && (
+        <ApproveRequestDialog
+          open={approveDialogOpen}
+          onOpenChange={setApproveDialogOpen}
+          patientName={selectedRequest.patient_name}
+          preferredDate={selectedRequest.preferred_date}
+          preferredTime={selectedRequest.preferred_time}
+          doctors={doctors}
+          onConfirm={handleApproveConfirm}
+          loading={processingRequest === selectedRequest.id}
+        />
       )}
     </div>
   );

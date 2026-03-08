@@ -43,7 +43,13 @@ export const QuickActionCenter: React.FC = () => {
       description: t("quickActions.addPatientDesc"),
       icon: <Users className="w-4 h-4" />,
       action: () => {
-        navigate('/patients');
+        // Trigger the AddPatientDrawer by clicking its trigger button
+        const trigger = document.getElementById('add-patient-trigger');
+        if (trigger) {
+          trigger.click();
+        } else {
+          navigate('/patients');
+        }
       },
       permission: 'patients.create',
       priority: 'high',
