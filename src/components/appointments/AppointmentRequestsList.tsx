@@ -516,7 +516,7 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
                   {request.status === 'pending' && (
                     <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                       <Button 
-                        onClick={() => handleApprove(request)} 
+                        onClick={() => openApproveDialog(request)} 
                         disabled={processingRequest === request.id}
                         className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-lg"
                       >
