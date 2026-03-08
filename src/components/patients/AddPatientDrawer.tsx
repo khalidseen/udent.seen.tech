@@ -40,21 +40,18 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.full_name.trim()) {
-      toast.error('يجب إدخال اسم المريض');
+    const validationError = validatePatientData(formData);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
     setLoading(true);
     
     try {
-      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('يجب تسجيل الدخول أولاً');
-      }
+      if (!user) throw new Error('يجب تسجيل الدخول أولاً');
 
-      // احضار ملف المستخدم من قاعدة البيانات
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id, full_name, role')
@@ -62,52 +59,41 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         .maybeSingle();
 
       if (profileError || !profile) {
-        console.error('Profile fetch error:', profileError);
         throw new Error('تعذر العثور على ملف المستخدم. تأكد من إكمال التسجيل.');
       }
 
-      if (!profile) {
-        throw new Error('لم يتم العثور على ملف المستخدم أو فشل في إنشاؤه');
-      }
-
-      const { error: insertError } = await supabase
+      const { data: insertedPatient, error: insertError } = await supabase
         .from('patients')
-        .insert([
-          {
-            clinic_id: profile.id,
-            full_name: formData.full_name,
-            phone: formData.phone || null,
-            email: formData.email || null,
-            date_of_birth: formData.date_of_birth || null,
-            gender: formData.gender || null,
-            address: formData.address || null,
-            medical_history: formData.medical_history || null,
-            notes: formData.notes || null,
-            emergency_contact: formData.emergency_contact || null,
-            emergency_phone: formData.emergency_phone || null,
-            patient_status: formData.patient_status || 'active',
-            insurance_info: formData.insurance_info || null,
-            blood_type: formData.blood_type || null,
-            occupation: formData.occupation || null,
-            marital_status: formData.marital_status || null
-          }
-        ]);
+        .insert([{
+          clinic_id: profile.id,
+          full_name: formData.full_name.trim(),
+          phone: formData.phone || null,
+          email: formData.email || null,
+          date_of_birth: formData.date_of_birth || null,
+          gender: formData.gender || null,
+          address: formData.address || null,
+          medical_history: formData.medical_history || null,
+          notes: formData.notes || null,
+          emergency_contact: formData.emergency_contact || null,
+          emergency_phone: formData.emergency_phone || null,
+          patient_status: formData.patient_status || 'active',
+          insurance_info: formData.insurance_info || null,
+          blood_type: formData.blood_type || null,
+          occupation: formData.occupation || null,
+          marital_status: formData.marital_status || null
+        }])
+        .select('id, full_name')
+        .single();
 
       if (insertError) throw insertError;
 
-      // إلغاء جميع استعلامات المرضى لإجبار إعادة التحميل
       await queryClient.invalidateQueries({ queryKey: ['patients'] });
       await queryClient.invalidateQueries({ queryKey: ['clinic-id'] });
-      
-      // مسح الكاش المحلي
       cacheHelpers.clearCache('patients');
 
-      toast.success('تم إضافة المريض بنجاح');
-
-      resetForm();
-      setOpen(false);
+      // Show success state instead of closing
+      setSuccessState({ id: insertedPatient.id, name: insertedPatient.full_name });
       
-      // استدعاء callback للتحديث
       if (onPatientAdded) {
         onPatientAdded();
       }
@@ -117,6 +103,19 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBookAppointment = () => {
+    if (successState) {
+      setOpen(false);
+      resetForm();
+      navigate(`/appointments/new?patient=${successState.id}`);
+    }
+  };
+
+  const handleClose = () => {
+    resetForm();
+    setOpen(false);
   };
 
   return (
