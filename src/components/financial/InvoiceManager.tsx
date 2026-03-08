@@ -52,7 +52,7 @@ export function InvoiceManager() {
   const filteredInvoices = invoices?.filter(inv => {
     const matchesSearch = !searchTerm || 
       inv.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inv.patients?.full_name?.toLowerCase().includes(searchTerm.toLowerCase());
+      inv.patient?.full_name?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -179,7 +179,7 @@ export function InvoiceManager() {
                     onClick={() => navigate(`/patient/${invoice.patient_id}`)}
                     className="text-sm text-primary hover:underline flex items-center gap-1"
                   >
-                    <User className="h-3 w-3" /> {invoice.patients?.full_name}
+                    <User className="h-3 w-3" /> {invoice.patient?.full_name}
                   </button>
                   <p className="text-xs text-muted-foreground">
                     {new Date(invoice.issue_date).toLocaleDateString('ar-IQ')} | استحقاق: {new Date(invoice.due_date).toLocaleDateString('ar-IQ')}

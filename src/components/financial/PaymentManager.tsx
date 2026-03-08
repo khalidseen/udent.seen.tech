@@ -57,8 +57,8 @@ export function PaymentManager() {
 
   const filteredPayments = payments?.filter(p => {
     const matchesSearch = !searchTerm ||
-      p.patients?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.invoices?.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase());
+      p.patient?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.invoice?.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesMethod = methodFilter === 'all' || p.payment_method === methodFilter;
     return matchesSearch && matchesMethod;
   });
@@ -201,10 +201,10 @@ export function PaymentManager() {
                     onClick={() => navigate(`/patient/${payment.patient_id}`)}
                     className="text-sm text-primary hover:underline flex items-center gap-1"
                   >
-                    <User className="h-3 w-3" /> {payment.patients?.full_name}
+                    <User className="h-3 w-3" /> {payment.patient?.full_name}
                   </button>
-                  {payment.invoices?.invoice_number && (
-                    <p className="text-xs text-muted-foreground">فاتورة: {payment.invoices.invoice_number}</p>
+                  {payment.invoice?.invoice_number && (
+                    <p className="text-xs text-muted-foreground">فاتورة: {payment.invoice.invoice_number}</p>
                   )}
                   <p className="text-xs text-muted-foreground">{new Date(payment.payment_date).toLocaleDateString('ar-IQ')}</p>
                   {payment.notes && <p className="text-xs text-muted-foreground truncate">{payment.notes}</p>}
