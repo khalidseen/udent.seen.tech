@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Activity, Key, FileText, TrendingUp, BarChart3, Building2, Settings, PieChart } from 'lucide-react';
+import { Activity, Key, FileText, TrendingUp, BarChart3, Building2, Settings, PieChart, Plus } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import OverviewTab from '@/components/integrations/OverviewTab';
 import LogsTab from '@/components/integrations/LogsTab';
@@ -10,6 +10,7 @@ import ClinicAnalyticsDashboard from '@/components/integrations/ClinicAnalyticsD
 import MultiClinicDashboard from '@/components/integrations/MultiClinicDashboard';
 import ClinicRemoteControl from '@/components/integrations/ClinicRemoteControl';
 import AggregatedAnalytics from '@/components/integrations/AggregatedAnalytics';
+import AdminClinicCreator from '@/components/integrations/AdminClinicCreator';
 import { useClinicContext } from '@/hooks/useClinicContext';
 import { useMultiClinicAnalytics } from '@/hooks/useMultiClinicAnalytics';
 
