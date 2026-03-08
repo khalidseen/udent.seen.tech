@@ -1,361 +1,317 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { 
   ConditionType,
-  ComprehensiveToothRecord,
   ToothNumberingSystem,
   INTERNATIONAL_COLOR_SYSTEM,
   CONDITION_LABELS_AR
 } from "@/types/dental-enhanced";
-import { 
-  ANATOMICAL_POSITIONS,
-  ToothTemplate,
-  PatientToothImage,
-  AnatomicalChartProps
-} from "@/types/anatomical-dental";
-import { AnatomicalTooth } from "./AnatomicalTooth";
+import { AnatomicalChartProps } from "@/types/anatomical-dental";
 import { ToothRecordDialog } from "./ToothRecordDialog";
-import { LinearToothComponent } from "./LinearToothComponent";
 import { ColorLegend } from "./ColorLegend";
+import { useDentalChart, DentalTreatmentRecord } from "@/hooks/useDentalChart";
+import { Activity, AlertTriangle, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
+
+// FDI tooth layout
+const UPPER_RIGHT = ['18','17','16','15','14','13','12','11'];
+const UPPER_LEFT = ['21','22','23','24','25','26','27','28'];
+const LOWER_RIGHT = ['48','47','46','45','44','43','42','41'];
+const LOWER_LEFT = ['31','32','33','34','35','36','37','38'];
+
+// FDI → Universal conversion
+const FDI_TO_UNIVERSAL: Record<string, string> = {};
+const UNIVERSAL_NUMS = [
+  ...['18','17','16','15','14','13','12','11'].map((f, i) => [f, String(i + 1)]),
+  ...['21','22','23','24','25','26','27','28'].map((f, i) => [f, String(i + 9)]),
+  ...['31','32','33','34','35','36','37','38'].map((f, i) => [f, String(24 - i)]),
+  ...['41','42','43','44','45','46','47','48'].map((f, i) => [f, String(25 + i)]),
+];
+UNIVERSAL_NUMS.forEach(([fdi, uni]) => { FDI_TO_UNIVERSAL[fdi] = uni; });
+
+const getDisplayNumber = (fdi: string, system: ToothNumberingSystem): string => {
+  if (system === ToothNumberingSystem.FDI) return fdi;
+  if (system === ToothNumberingSystem.UNIVERSAL) return FDI_TO_UNIVERSAL[fdi] || fdi;
+  return fdi;
+};
+
+const getConditionFromDiagnosis = (diagnosis?: string): string => {
+  if (!diagnosis) return 'sound';
+  return diagnosis;
+};
+
+const getConditionColor = (diagnosis: string): string => {
+  return (INTERNATIONAL_COLOR_SYSTEM as any)[diagnosis] || INTERNATIONAL_COLOR_SYSTEM.sound;
+};
+
+const getToothType = (fdi: string): string => {
+  const lastDigit = fdi.slice(-1);
+  switch (lastDigit) {
+    case '1': case '2': return 'قاطع';
+    case '3': return 'ناب';
+    case '4': case '5': return 'ضاحك';
+    case '6': case '7': case '8': return 'طاحن';
+    default: return 'سن';
+  }
+};
+
+const getQuadrant = (fdi: string): 'UL' | 'UR' | 'LL' | 'LR' => {
+  const q = fdi[0];
+  if (q === '1') return 'UR';
+  if (q === '2') return 'UL';
+  if (q === '3') return 'LL';
+  return 'LR';
+};
+
+const getToothImagePath = (fdi: string): string | null => {
+  const quadrant = getQuadrant(fdi);
+  const lastDigit = fdi.slice(-1);
+  
+  switch (quadrant) {
+    case 'UL': return `/teeth/U%20L/${parseInt(lastDigit) * 11}.png`;
+    case 'UR': return `/teeth/U%20R/${parseInt(lastDigit) * 111}.png`;
+    case 'LL': return `/teeth/L%20L/${lastDigit}.png`;
+    case 'LR': return `/teeth/L%20R/${lastDigit}.png`;
+  }
+};
+
+// Individual Tooth Component
+const ToothItem: React.FC<{
+  fdi: string;
+  displayNumber: string;
+  isLower: boolean;
+  condition: string;
+  conditionLabel: string;
+  status?: string;
+  onClick: () => void;
+}> = ({ fdi, displayNumber, isLower, condition, conditionLabel, status, onClick }) => {
+  const imagePath = getToothImagePath(fdi);
+  const color = getConditionColor(condition);
+  const quadrant = getQuadrant(fdi);
+
+  return (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            className={`relative group cursor-pointer transition-all duration-200 hover:scale-110 hover:z-10 flex-shrink-0
+              ${isLower ? 'flex flex-col-reverse' : 'flex flex-col'}`}
+            onClick={onClick}
+          >
+            {/* Tooth number */}
+            <div className={`text-[10px] font-bold text-center text-muted-foreground ${isLower ? 'mt-0.5' : 'mb-0.5'}`}>
+              {displayNumber}
+            </div>
+
+            {/* Tooth image */}
+            <div className="relative w-[52px] h-[68px]" style={{ margin: 0 }}>
+              {imagePath ? (
+                <img
+                  src={imagePath}
+                  alt={`سن ${fdi}`}
+                  className={`w-full h-full object-contain ${isLower ? 'rotate-180' : ''}`}
+                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                />
+              ) : (
+                <svg viewBox="0 0 24 24" className={`w-full h-full ${isLower ? 'rotate-180' : ''}`}>
+                  <path d="M12 2C12 2 8 4 8 8V16C8 20 12 22 12 22C12 22 16 20 16 16V8C16 4 12 2 12 2Z" fill={color} />
+                </svg>
+              )}
+
+              {/* Condition indicator dot */}
+              {condition !== 'sound' && (
+                <div
+                  className="absolute bottom-0 left-0 w-3 h-3 rounded-full border-2 border-white shadow-sm"
+                  style={{ backgroundColor: color }}
+                />
+              )}
+
+              {/* Status badge */}
+              {status === 'planned' && (
+                <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-amber-400 border border-white" />
+              )}
+              {status === 'in_progress' && (
+                <div className="absolute top-0 right-0 w-2.5 h-2.5 rounded-full bg-blue-400 border border-white" />
+              )}
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent side={isLower ? 'bottom' : 'top'} className="text-right">
+          <div className="space-y-1">
+            <p className="font-bold">سن {fdi} — {getToothType(fdi)}</p>
+            <p className="text-xs">الحالة: {conditionLabel}</p>
+            {status && <p className="text-xs">العلاج: {status === 'planned' ? 'مخطط' : status === 'in_progress' ? 'قيد العلاج' : status === 'completed' ? 'مكتمل' : status}</p>}
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
 export const AnatomicalDentalChart: React.FC<AnatomicalChartProps> = ({
   patientId,
   onToothSelect,
-  onSaveRecord
 }) => {
-  // حالات النظام
   const [selectedTooth, setSelectedTooth] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
-  const [toothRecords, setToothRecords] = useState<Map<string, ComprehensiveToothRecord>>(new Map());
-  const [numberingSystem, setNumberingSystem] = useState<ToothNumberingSystem>(ToothNumberingSystem.UNIVERSAL);
+  const [numberingSystem, setNumberingSystem] = useState<ToothNumberingSystem>(ToothNumberingSystem.FDI);
   const [showAlternativeNumbers, setShowAlternativeNumbers] = useState(false);
-  
-  // إدارة الصور
-  const [toothTemplates, setToothTemplates] = useState<Map<string, ToothTemplate>>(new Map());
-  const [patientImages, setPatientImages] = useState<Map<string, PatientToothImage>>(new Map());
-  const [showPatientImages, setShowPatientImages] = useState<Map<string, boolean>>(new Map());
-  
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // تحميل الصور المحفوظة
-  useEffect(() => {
-    loadToothTemplates();
-    loadPatientImages();
-  }, [patientId]);
+  const {
+    toothRecordsMap,
+    statistics,
+    isLoading,
+    saveToothRecord,
+    isSaving,
+    getToothHistory,
+  } = useDentalChart(patientId || '');
 
-  const loadToothTemplates = async () => {
-    const templates = new Map();
-    setToothTemplates(templates);
-  };
-
-  const loadPatientImages = async () => {
-    const images = new Map();
-    setPatientImages(images);
-  };
-
-  // معالج رفع صور المريض
-  const handlePatientImageUpload = (data: { 
-    toothId: string; 
-    imageData: string; 
-    metadata: {
-      toothNumber: string;
-      quadrant: string;
-      editedAt: string;
-      patientId?: string;
-      originalImage?: string;
-    }
-  }) => {
-    const { toothId, imageData, metadata } = data;
-    
-    // إنشاء سجل صورة المريض
-    const patientImage = {
-      id: `${patientId || 'demo'}-${toothId}-${Date.now()}`,
-      patientId: patientId || 'demo',
-      toothNumber: toothId,
-      imageUrl: imageData,
-      createdAt: new Date(),
-      clinicianId: 'current-user',
-      description: `صورة محررة للسن ${metadata.toothNumber} في ${metadata.quadrant}`
-    };
-    
-    // حفظ الصورة في الحالة
-    setPatientImages(prev => new Map(prev.set(toothId, patientImage)));
-    setShowPatientImages(prev => new Map(prev.set(toothId, true)));
-    
-    console.log('✅ تم حفظ صورة السن المحررة:', toothId, 'للمريض:', patientId);
-  };
-
-  // تبديل نوع الصورة المعروضة
-  const toggleImageType = (toothNumber: string) => {
-    setShowPatientImages(prev => {
-      const newMap = new Map(prev);
-      newMap.set(toothNumber, !prev.get(toothNumber));
-      return newMap;
-    });
-  };
-
-  // وظائف تحويل ترقيم الأسنان
-  const convertToothNumber = (universalNumber: string, targetSystem: ToothNumberingSystem): string => {
-    const toothNum = parseInt(universalNumber);
-    
-    switch (targetSystem) {
-      case ToothNumberingSystem.FDI:
-        // تحويل من Universal إلى FDI
-        if (toothNum >= 1 && toothNum <= 8) return `1${toothNum}`;  // أعلى يمين
-        if (toothNum >= 9 && toothNum <= 16) return `2${17 - toothNum}`;  // أعلى يسار
-        if (toothNum >= 17 && toothNum <= 24) return `3${25 - toothNum}`;  // أسفل يسار
-        if (toothNum >= 25 && toothNum <= 32) return `4${toothNum - 24}`;  // أسفل يمين
-        break;
-        
-      case ToothNumberingSystem.PALMER:
-        // تحويل من Universal إلى Palmer
-        if (toothNum >= 1 && toothNum <= 8) return `${toothNum}⌐`;  // أعلى يمين
-        if (toothNum >= 9 && toothNum <= 16) return `${17 - toothNum}⌐`;  // أعلى يسار
-        if (toothNum >= 17 && toothNum <= 24) return `${25 - toothNum}⌐`;  // أسفل يسار
-        if (toothNum >= 25 && toothNum <= 32) return `${toothNum - 24}⌐`;  // أسفل يمين
-        break;
-        
-      case ToothNumberingSystem.UNIVERSAL:
-      default:
-        return universalNumber;
-    }
-    
-    return universalNumber;
-  };
-
-  // دالة لتحويل ترقيم النظام الحالي إلى Universal
-  const convertToUniversal = (toothNumber: string, quadrant: string): string => {
-    const num = parseInt(toothNumber);
-    
-    switch (quadrant) {
-      case 'UR': // أعلى يمين
-        // من 888,777,666,555,444,333,222,111 إلى 1,2,3,4,5,6,7,8
-        return String(9 - Math.floor((num + 1) / 111));
-      case 'UL': // أعلى يسار  
-        // من 11,22,33,44,55,66,77,88 إلى 9,10,11,12,13,14,15,16
-        return String(8 + Math.floor(num / 11));
-      case 'LL': // أسفل يسار
-        // من 1,2,3,4,5,6,7,8 إلى 17,18,19,20,21,22,23,24
-        return String(16 + num);
-      case 'LR': // أسفل يمين
-        // من 1,2,3,4,5,6,7,8 إلى 32,31,30,29,28,27,26,25
-        return String(33 - num);
-      default:
-        return toothNumber;
-    }
-  };
-
-  const getToothDisplayNumber = (toothNumber: string, quadrant: string): string => {
-    const universalNumber = convertToUniversal(toothNumber, quadrant);
-    if (showAlternativeNumbers && numberingSystem !== ToothNumberingSystem.UNIVERSAL) {
-      return `${convertToothNumber(universalNumber, numberingSystem)} (${universalNumber})`;
-    }
-    return convertToothNumber(universalNumber, numberingSystem);
-  };
-
-  // حفظ سجل السن
-  const handleSaveToothRecord = (record: ComprehensiveToothRecord) => {
-    setToothRecords(prev => new Map(prev.set(record.toothNumber, record)));
-    onSaveRecord?.(record);
-    setShowDialog(false);
-  };
-
-  // التعامل مع نقر السن
-  const handleToothClick = (toothNumber: string) => {
-    setSelectedTooth(toothNumber);
-    onToothSelect(toothNumber);
+  const handleToothClick = (fdi: string) => {
+    setSelectedTooth(fdi);
+    onToothSelect(fdi);
     setShowDialog(true);
   };
 
-  const selectedRecord = selectedTooth ? toothRecords.get(selectedTooth) : null;
+  const handleSaveRecord = async (data: Omit<DentalTreatmentRecord, 'id' | 'clinic_id'> & { id?: string }) => {
+    try {
+      await saveToothRecord(data);
+      toast.success('تم حفظ سجل السن بنجاح');
+      setShowDialog(false);
+    } catch (err: any) {
+      toast.error('فشل في حفظ السجل: ' + (err?.message || 'خطأ غير معروف'));
+    }
+  };
+
+  const selectedRecord = selectedTooth ? toothRecordsMap.get(selectedTooth) || null : null;
+
+  const renderToothRow = (teeth: string[], isLower: boolean) => (
+    <div className="flex justify-center items-center gap-0">
+      {teeth.map(fdi => {
+        const record = toothRecordsMap.get(fdi);
+        const condition = getConditionFromDiagnosis(record?.diagnosis);
+        const conditionLabel = (CONDITION_LABELS_AR as any)[condition] || condition;
+        const display = showAlternativeNumbers 
+          ? `${getDisplayNumber(fdi, numberingSystem)} (${fdi})`
+          : getDisplayNumber(fdi, numberingSystem);
+
+        return (
+          <ToothItem
+            key={fdi}
+            fdi={fdi}
+            displayNumber={display}
+            isLower={isLower}
+            condition={condition}
+            conditionLabel={conditionLabel}
+            status={record?.status}
+            onClick={() => handleToothClick(fdi)}
+          />
+        );
+      })}
+    </div>
+  );
 
   return (
-    <div className="w-full max-w-7xl mx-auto p-6 space-y-6">
-      {/* 🦷 المخطط التشريحي المحسن - نسخة خطية مبسطة */}
-      <Card className="bg-white dark:bg-gray-900 min-h-[600px] border-none shadow-none">
-        <CardContent className="p-6">
-          {/* مخطط الأسنان الخطي - مضغوط ومتقارب */}
-          <div className="space-y-4">
-            
-            {/* الفك العلوي - ترتيب خطي مضغوط */}
-            <div className="space-y-2">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                  الفك العلوي
-                </h3>
-                <div className="h-0.5 bg-gradient-to-r from-transparent via-blue-300 to-transparent"></div>
-              </div>
-              
-              {/* أسنان الفك العلوي - صف كامل من اليمين لليسار */}
-              <div className="flex justify-center items-center py-2 bg-white gap-0 m-0 px-0">
-                {/* الفك العلوي الأيمن (UR) - من 888 إلى 111 */}
-                {['888', '777', '666', '555', '444', '333', '222', '111'].map((toothNumber) => (
-                  <LinearToothComponent
-                    key={`UR-${toothNumber}`}
-                    toothNumber={toothNumber}
-                    displayNumber={getToothDisplayNumber(toothNumber, 'UR')}
-                    quadrant="UR"
-                    condition={toothRecords.get(`UR-${toothNumber}`)?.diagnosis.primary || ConditionType.SOUND}
-                    patientImage={patientImages.get(`UR-${toothNumber}`)}
-                    showPatientImage={showPatientImages.get(`UR-${toothNumber}`) || false}
-                    patientId={patientId}
-                    onClick={() => handleToothClick(`UR-${toothNumber}`)}
-                    onToggleImageType={() => toggleImageType(`UR-${toothNumber}`)}
-                    onPatientImageUpload={handlePatientImageUpload}
-                  />
-                ))}
-                
-                {/* خط الوسط العمودي */}
-                <div className="w-0.5 h-16 bg-gray-300 mx-1"></div>
-                
-                {/* الفك العلوي الأيسر (UL) - من 11 إلى 88 */}
-                {['11', '22', '33', '44', '55', '66', '77', '88'].map((toothNumber) => (
-                  <LinearToothComponent
-                    key={`UL-${toothNumber}`}
-                    toothNumber={toothNumber}
-                    displayNumber={getToothDisplayNumber(toothNumber, 'UL')}
-                    quadrant="UL"
-                    condition={toothRecords.get(`UL-${toothNumber}`)?.diagnosis.primary || ConditionType.SOUND}
-                    patientImage={patientImages.get(`UL-${toothNumber}`)}
-                    showPatientImage={showPatientImages.get(`UL-${toothNumber}`) || false}
-                    patientId={patientId}
-                    onClick={() => handleToothClick(`UL-${toothNumber}`)}
-                    onToggleImageType={() => toggleImageType(`UL-${toothNumber}`)}
-                    onPatientImageUpload={handlePatientImageUpload}
-                  />
-                ))}
-              </div>
-            </div>
+    <div className="w-full max-w-7xl mx-auto space-y-4">
+      {/* Statistics Bar */}
+      <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
+        {[
+          { label: 'مسجلة', value: statistics.recordedTeeth, icon: Activity, color: 'text-primary' },
+          { label: 'سليمة', value: statistics.healthyTeeth, icon: CheckCircle, color: 'text-green-600' },
+          { label: 'تسوس', value: statistics.decayedTeeth, icon: AlertTriangle, color: 'text-red-600' },
+          { label: 'محشوة', value: statistics.filledTeeth, icon: CheckCircle, color: 'text-blue-600' },
+          { label: 'مفقودة', value: statistics.missingTeeth, icon: XCircle, color: 'text-muted-foreground' },
+          { label: 'علاج عصب', value: statistics.rootCanalTeeth, icon: Activity, color: 'text-pink-600' },
+          { label: 'عاجلة', value: statistics.urgentCases, icon: AlertTriangle, color: 'text-amber-600' },
+          { label: 'الإجمالي', value: `${statistics.recordedTeeth}/32`, icon: Activity, color: 'text-muted-foreground' },
+        ].map((stat, i) => (
+          <div key={i} className="flex flex-col items-center p-2 rounded-lg border bg-card text-center">
+            <stat.icon className={`w-4 h-4 ${stat.color} mb-1`} />
+            <span className="text-lg font-bold">{stat.value}</span>
+            <span className="text-[10px] text-muted-foreground">{stat.label}</span>
+          </div>
+        ))}
+      </div>
 
-            {/* الفك السفلي - ترتيب خطي مضغوط */}
-            <div className="space-y-2">
-              <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-                  الفك السفلي
-                </h3>
-                <div className="h-0.5 bg-gradient-to-r from-transparent via-green-300 to-transparent"></div>
-              </div>
-              
-              {/* أسنان الفك السفلي - صف كامل من اليمين لليسار */}
-              <div className="flex justify-center items-center py-2 bg-white gap-0 m-0 px-0">
-                {/* الفك السفلي الأيمن (LR) - من 8 إلى 1 */}
-                {['8', '7', '6', '5', '4', '3', '2', '1'].map((toothNumber) => (
-                  <LinearToothComponent
-                    key={`LR-${toothNumber}`}
-                    toothNumber={toothNumber}
-                    displayNumber={getToothDisplayNumber(toothNumber, 'LR')}
-                    quadrant="LR"
-                    condition={toothRecords.get(`LR-${toothNumber}`)?.diagnosis.primary || ConditionType.SOUND}
-                    patientImage={patientImages.get(`LR-${toothNumber}`)}
-                    showPatientImage={showPatientImages.get(`LR-${toothNumber}`) || false}
-                    patientId={patientId}
-                    onClick={() => handleToothClick(`LR-${toothNumber}`)}
-                    onToggleImageType={() => toggleImageType(`LR-${toothNumber}`)}
-                    onPatientImageUpload={handlePatientImageUpload}
-                  />
-                ))}
-                
-                {/* خط الوسط العمودي */}
-                <div className="w-0.5 h-16 bg-gray-300 mx-1"></div>
-                
-                {/* الفك السفلي الأيسر (LL) - من 1 إلى 8 */}
-                {['1', '2', '3', '4', '5', '6', '7', '8'].map((toothNumber) => (
-                  <LinearToothComponent
-                    key={`LL-${toothNumber}`}
-                    toothNumber={toothNumber}
-                    displayNumber={getToothDisplayNumber(toothNumber, 'LL')}
-                    quadrant="LL"
-                    condition={toothRecords.get(`LL-${toothNumber}`)?.diagnosis.primary || ConditionType.SOUND}
-                    patientImage={patientImages.get(`LL-${toothNumber}`)}
-                    showPatientImage={showPatientImages.get(`LL-${toothNumber}`) || false}
-                    patientId={patientId}
-                    onClick={() => handleToothClick(`LL-${toothNumber}`)}
-                    onToggleImageType={() => toggleImageType(`LL-${toothNumber}`)}
-                    onPatientImageUpload={handlePatientImageUpload}
-                  />
-                ))}
-              </div>
+      {/* Dental Chart */}
+      <Card className="border-none shadow-sm">
+        <CardContent className="p-4 space-y-2">
+          {isLoading && (
+            <div className="flex items-center justify-center py-4 gap-2 text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span className="text-sm">جاري تحميل بيانات المخطط...</span>
             </div>
+          )}
+
+          {/* Upper Jaw */}
+          <div className="text-center mb-2">
+            <Badge variant="outline" className="text-xs">الفك العلوي</Badge>
+          </div>
+          <div className="flex justify-center items-end">
+            {renderToothRow(UPPER_RIGHT, false)}
+            <div className="w-px h-16 bg-border mx-1" />
+            {renderToothRow(UPPER_LEFT, false)}
+          </div>
+
+          {/* Midline */}
+          <div className="h-px bg-border my-2" />
+
+          {/* Lower Jaw */}
+          <div className="flex justify-center items-start">
+            {renderToothRow(LOWER_RIGHT, true)}
+            <div className="w-px h-16 bg-border mx-1" />
+            {renderToothRow(LOWER_LEFT, true)}
+          </div>
+          <div className="text-center mt-2">
+            <Badge variant="outline" className="text-xs">الفك السفلي</Badge>
           </div>
         </CardContent>
       </Card>
 
-      {/* لوحة التحكم في أنظمة الترقيم - أسفل المخطط */}
-      <Card className="bg-gradient-to-r from-purple-50 via-blue-50 to-teal-50 dark:from-purple-900/20 dark:via-blue-900/20 dark:to-teal-900/20 border-2 border-purple-200 dark:border-purple-700">
-        <CardContent className="p-4">
-          <div className="flex flex-wrap items-center gap-6 justify-center">
+      {/* Numbering System Controls */}
+      <Card className="border bg-muted/30">
+        <CardContent className="p-3">
+          <div className="flex flex-wrap items-center gap-4 justify-center">
             <div className="flex items-center gap-2">
-              <Label htmlFor="numbering-system" className="text-sm font-medium">
-                نظام ترقيم الأسنان:
-              </Label>
-              <Select value={numberingSystem} onValueChange={(value) => setNumberingSystem(value as ToothNumberingSystem)}>
-                <SelectTrigger className="w-48">
+              <Label className="text-xs">نظام الترقيم:</Label>
+              <Select value={numberingSystem} onValueChange={v => setNumberingSystem(v as ToothNumberingSystem)}>
+                <SelectTrigger className="w-44 h-8 text-xs">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value={ToothNumberingSystem.UNIVERSAL}>
-                    Universal (1-32) - أمريكي
-                  </SelectItem>
-                  <SelectItem value={ToothNumberingSystem.FDI}>
-                    FDI (11-48) - دولي
-                  </SelectItem>
-                  <SelectItem value={ToothNumberingSystem.PALMER}>
-                    Palmer - بريطاني
-                  </SelectItem>
+                  <SelectItem value={ToothNumberingSystem.FDI}>FDI (11-48) — دولي</SelectItem>
+                  <SelectItem value={ToothNumberingSystem.UNIVERSAL}>Universal (1-32) — أمريكي</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
             <div className="flex items-center gap-2">
-              <Switch
-                id="show-alternative"
-                checked={showAlternativeNumbers}
-                onCheckedChange={setShowAlternativeNumbers}
-              />
-              <Label htmlFor="show-alternative" className="text-sm">
-                إظهار الترقيم البديل
-              </Label>
-            </div>
-            
-            <div className="text-xs text-muted-foreground bg-white/50 px-2 py-1 rounded">
-              النظام الحالي: {numberingSystem === ToothNumberingSystem.UNIVERSAL ? 'أمريكي' : 
-                              numberingSystem === ToothNumberingSystem.FDI ? 'دولي' : 'بريطاني'}
+              <Switch id="alt-nums" checked={showAlternativeNumbers} onCheckedChange={setShowAlternativeNumbers} />
+              <Label htmlFor="alt-nums" className="text-xs">إظهار FDI البديل</Label>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* مفتاح الألوان العالمي - معيار WHO - أسفل المخطط */}
+      {/* Color Legend */}
       <ColorLegend compact={false} showDescriptions={true} />
 
-      {/* Input مخفي لرفع الصور */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={(e) => {
-          // معالج رفع الملف العادي - يمكن إضافة منطق لاحقاً
-          console.log('تم اختيار ملف:', e.target.files?.[0]?.name);
-        }}
-        className="hidden"
-        aria-label="رفع صورة المريض"
-      />
-
-      {/* حوار تسجيل بيانات السن */}
-      <ToothRecordDialog
-        isOpen={showDialog}
-        onClose={() => setShowDialog(false)}
-        toothNumber={selectedTooth || ''}
-        existingRecord={selectedRecord}
-        onSave={handleSaveToothRecord}
-        onUploadImage={() => fileInputRef.current?.click()}
-        hasImage={selectedTooth ? patientImages.has(selectedTooth) : false}
-      />
+      {/* Tooth Record Dialog */}
+      {selectedTooth && (
+        <ToothRecordDialog
+          isOpen={showDialog}
+          onClose={() => setShowDialog(false)}
+          toothNumber={selectedTooth}
+          existingRecord={selectedRecord}
+          patientId={patientId || ''}
+          onSave={handleSaveRecord}
+          isSaving={isSaving}
+          toothHistory={getToothHistory(selectedTooth)}
+        />
+      )}
     </div>
   );
 };
