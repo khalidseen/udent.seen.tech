@@ -40,6 +40,16 @@ const Medications = () => {
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
   const { toast } = useToast();
 
+  // Get clinic_id for insertions
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('get_current_user_profile');
+      if (error) throw error;
+      return data;
+    }
+  });
+
   const { data: medications = [], isLoading, refetch } = useQuery({
     queryKey: ['medications', profile?.id],
     queryFn: async () => {
