@@ -49,27 +49,13 @@ const AdvancedUserManagement = () => {
     role: "user"
   });
 
-  // Check if current user can add users - Enhanced permissions check
+  // Check if current user can add users
   const adminRoles = [
-    'super_admin',       // مدير النظام العام
-    'clinic_owner',      // مالك العيادة  
-    'owner',            // مالك
-    'admin',            // مدير
-    'system_admin',     // مدير النظام
-    'manager',          // مدير عام
-    'clinic_manager'    // مدير العيادة
+    'super_admin', 'clinic_owner', 'owner', 'admin',
+    'system_admin', 'manager', 'clinic_manager'
   ];
   
   const canAddUsers = currentUser && adminRoles.includes(currentUser.role);
-  
-  // تسجيل مفصل للتشخيص
-  console.log('=== User Permissions Debug ===');
-  console.log('Auth User:', authUser?.email);
-  console.log('Current User Profile:', currentUser);
-  console.log('Current user role:', currentUser?.role);
-  console.log('Admin roles:', adminRoles);
-  console.log('Can add users:', canAddUsers);
-  console.log('===============================');
 
   useEffect(() => {
     fetchUsers();

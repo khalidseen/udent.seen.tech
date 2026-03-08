@@ -45,9 +45,13 @@ export default function ServicePrices() {
   const { data: services, isLoading, refetch } = useQuery({
     queryKey: ['service-prices'],
     queryFn: async () => {
+      const { data: profile } = await supabase.rpc('get_current_user_profile');
+      if (!profile) throw new Error('Profile not found');
+
       const { data, error } = await supabase
         .from('service_prices')
         .select('*')
+        .eq('clinic_id', profile.id)
         .order('service_category', { ascending: true })
         .order('service_name', { ascending: true });
 
