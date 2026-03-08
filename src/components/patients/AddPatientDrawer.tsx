@@ -31,26 +31,8 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   };
 
   const resetForm = () => {
-    setFormData({
-      full_name: '',
-      phone: '',
-      email: '',
-      date_of_birth: '',
-      gender: '',
-      address: '',
-      medical_history: '',
-      notes: '',
-      emergency_contact: '',
-      emergency_phone: '',
-      patient_status: 'active',
-      insurance_info: '',
-      blood_type: '',
-      occupation: '',
-      marital_status: ''
-    });
-    // تم إلغاء البحث
-    // setSearchQuery('');
-    // setShowExistingPatients(false);
+    setFormData({ ...defaultPatientFormData });
+    setSuccessState(null);
   };
 
   // تم حذف وظيفة searchExistingPatients لأنها لم تعد مطلوبة
