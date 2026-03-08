@@ -49,7 +49,7 @@ export const useCreatePatient = () => {
       }
 
       // إنشاء معلومات المنشئ الحقيقية
-      const creatorInfo = `[المنشئ: ${profile.full_name} - ${getRoleInArabic(profile.role)} - ${new Date().toLocaleDateString('ar-SA')}]`;
+      const creatorInfo = `[المنشئ: ${profile.full_name} - ${getRoleInArabic(profile.role)} - ${new Date().toLocaleDateString()}]`;
       
       // إعداد البيانات مع معلومات المنشئ
       const patientWithCreator = {

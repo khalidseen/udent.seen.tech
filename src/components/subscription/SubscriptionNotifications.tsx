@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertTriangle, Clock, CreditCard, Users, X } from 'lucide-react';
+import { formatDateUtil } from '@/utils/formatters';
 
 interface SubscriptionAlert {
   id: string;
@@ -82,7 +83,7 @@ export const SubscriptionNotifications = () => {
           id: `expired-${clinic.id}`,
           type: 'expired',
           title: `انتهت صلاحية اشتراك ${clinic.name}`,
-          message: `انتهت صلاحية الاشتراك في ${new Date(clinic.subscription_end_date).toLocaleDateString('ar')}`,
+          message: `انتهت صلاحية الاشتراك في ${formatDateUtil(new Date(clinic.subscription_end_date))}`,
           severity: 'critical',
           clinic_id: clinic.id,
           clinic_name: clinic.name,

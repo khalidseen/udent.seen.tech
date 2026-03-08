@@ -333,10 +333,10 @@ export const PermissionsManagement = () => {
                       <TableRow key={assignment.id}>
                         <TableCell>{assignment.user_id}</TableCell>
                         <TableCell>{assignment.role_id}</TableCell>
-                        <TableCell>{new Date(assignment.assigned_at).toLocaleDateString('ar-SA')}</TableCell>
+                        <TableCell>{new Date(assignment.assigned_at).toLocaleDateString()}</TableCell>
                         <TableCell>
                           {assignment.expires_at 
-                            ? new Date(assignment.expires_at).toLocaleDateString('ar-SA') 
+                            ? new Date(assignment.expires_at).toLocaleDateString() 
                             : 'دائم'
                           }
                         </TableCell>

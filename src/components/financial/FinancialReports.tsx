@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileSpreadsheet, Download } from "lucide-react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
+import { formatDateUtil } from "@/utils/formatters";
 
 export function FinancialReports() {
   const [reportType, setReportType] = useState<string>("monthly");
@@ -73,7 +74,7 @@ export function FinancialReports() {
         totalPending,
         invoicesCount: invoices?.length || 0,
         paymentsCount: payments?.length || 0,
-        period: `من ${startDate.toLocaleDateString('ar-SA')} إلى ${endDate.toLocaleDateString('ar-SA')}`,
+        period: `${formatDateUtil(startDate)} - ${formatDateUtil(endDate)}`,
       };
     },
   });
