@@ -1390,6 +1390,157 @@ export type Database = {
         }
         Relationships: []
       }
+      insurance_claims: {
+        Row: {
+          approval_date: string | null
+          claim_date: string | null
+          claim_number: string
+          clinic_id: string
+          covered_amount: number
+          created_at: string | null
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          patient_id: string
+          patient_insurance_id: string
+          patient_share: number
+          payment_date: string | null
+          payment_reference: string | null
+          rejection_reason: string | null
+          service_date: string | null
+          status: string
+          total_amount: number
+          treatment_description: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approval_date?: string | null
+          claim_date?: string | null
+          claim_number: string
+          clinic_id: string
+          covered_amount?: number
+          created_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          patient_id: string
+          patient_insurance_id: string
+          patient_share?: number
+          payment_date?: string | null
+          payment_reference?: string | null
+          rejection_reason?: string | null
+          service_date?: string | null
+          status?: string
+          total_amount?: number
+          treatment_description?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approval_date?: string | null
+          claim_date?: string | null
+          claim_number?: string
+          clinic_id?: string
+          covered_amount?: number
+          created_at?: string | null
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          patient_id?: string
+          patient_insurance_id?: string
+          patient_share?: number
+          payment_date?: string | null
+          payment_reference?: string | null
+          rejection_reason?: string | null
+          service_date?: string | null
+          status?: string
+          total_amount?: number
+          treatment_description?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "insurance_claims_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_claims_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "insurance_claims_patient_insurance_id_fkey"
+            columns: ["patient_insurance_id"]
+            isOneToOne: false
+            referencedRelation: "patient_insurance"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      insurance_companies: {
+        Row: {
+          address: string | null
+          clinic_id: string
+          contact_person: string | null
+          contract_end_date: string | null
+          contract_number: string | null
+          contract_start_date: string | null
+          created_at: string | null
+          default_coverage_percentage: number | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          max_coverage_amount: number | null
+          name: string
+          name_ar: string | null
+          notes: string | null
+          phone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          address?: string | null
+          clinic_id: string
+          contact_person?: string | null
+          contract_end_date?: string | null
+          contract_number?: string | null
+          contract_start_date?: string | null
+          created_at?: string | null
+          default_coverage_percentage?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_coverage_amount?: number | null
+          name: string
+          name_ar?: string | null
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string | null
+          clinic_id?: string
+          contact_person?: string | null
+          contract_end_date?: string | null
+          contract_number?: string | null
+          contract_start_date?: string | null
+          created_at?: string | null
+          default_coverage_percentage?: number | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_coverage_amount?: number | null
+          name?: string
+          name_ar?: string | null
+          notes?: string | null
+          phone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       invoice_items: {
         Row: {
           created_at: string
@@ -2091,6 +2242,78 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      patient_insurance: {
+        Row: {
+          clinic_id: string
+          coverage_end_date: string | null
+          coverage_percentage: number | null
+          coverage_start_date: string | null
+          created_at: string | null
+          id: string
+          insurance_company_id: string
+          is_active: boolean | null
+          is_primary: boolean | null
+          max_annual_coverage: number | null
+          member_id: string | null
+          notes: string | null
+          patient_id: string
+          policy_number: string
+          updated_at: string | null
+          used_coverage: number | null
+        }
+        Insert: {
+          clinic_id: string
+          coverage_end_date?: string | null
+          coverage_percentage?: number | null
+          coverage_start_date?: string | null
+          created_at?: string | null
+          id?: string
+          insurance_company_id: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          max_annual_coverage?: number | null
+          member_id?: string | null
+          notes?: string | null
+          patient_id: string
+          policy_number: string
+          updated_at?: string | null
+          used_coverage?: number | null
+        }
+        Update: {
+          clinic_id?: string
+          coverage_end_date?: string | null
+          coverage_percentage?: number | null
+          coverage_start_date?: string | null
+          created_at?: string | null
+          id?: string
+          insurance_company_id?: string
+          is_active?: boolean | null
+          is_primary?: boolean | null
+          max_annual_coverage?: number | null
+          member_id?: string | null
+          notes?: string | null
+          patient_id?: string
+          policy_number?: string
+          updated_at?: string | null
+          used_coverage?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_insurance_insurance_company_id_fkey"
+            columns: ["insurance_company_id"]
+            isOneToOne: false
+            referencedRelation: "insurance_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_insurance_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       patients: {
         Row: {

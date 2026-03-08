@@ -81,6 +81,7 @@ export function AppSidebar() {
         { title: "خطط العلاج المالية", url: "/treatment-plans", icon: Calculator, permissions: ['financial.view'] },
         { title: "التقارير المالية", url: "/financial-reports", icon: FileSpreadsheet, permissions: ['financial.view'] },
         { title: "أسعار الخدمات", url: "/service-prices", icon: CreditCard, permissions: ['financial.manage'] },
+        { title: "التأمينات الصحية", url: "/insurance-management", icon: Shield, permissions: ['financial.view'] },
       ]
     },
     {

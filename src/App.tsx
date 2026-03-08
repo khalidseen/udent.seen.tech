@@ -75,6 +75,7 @@ const NotificationTemplates = lazy(() => import("@/pages/NotificationTemplates")
 const DentalLabManagement = lazy(() => import("@/pages/DentalLabManagement"));
 const SmartScheduling = lazy(() => import("@/pages/SmartScheduling"));
 const CommunicationCenter = lazy(() => import("@/pages/CommunicationCenter"));
+const InsuranceManagement = lazy(() => import("@/pages/InsuranceManagement"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 import { offlineDB } from "@/lib/offline-db";
@@ -205,6 +206,7 @@ function App() {
                     <Route path="dental-lab" element={<DentalLabManagement />} />
                     <Route path="smart-scheduling" element={<SmartScheduling />} />
                     <Route path="communication-center" element={<CommunicationCenter />} />
+                    <Route path="insurance-management" element={<InsuranceManagement />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
