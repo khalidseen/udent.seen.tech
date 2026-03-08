@@ -67,18 +67,23 @@ export default function PatientFinancialTransactions() {
       const { data: invoiceNames } = invoiceIds.length > 0
         ? await supabase.from('invoices').select('id, invoice_number').in('id', invoiceIds)
         : { data: [] as any[] };
-      const invoiceMap = new Map(invoiceNames?.map((i: any) => [i.id, i.invoice_number]) || []);
+      const invoiceMap = new Map<string, string>();
+      invoiceNames?.forEach((i: any) => invoiceMap.set(i.id, i.invoice_number));
 
-      const payments = paymentsRes.data || [];
+      const paymentsWithNames = (paymentsRes.data || []).map(p => ({
+        ...p,
+        patient_name: patientMap.get(p.patient_id) || 'غير محدد',
+        invoice_number: p.invoice_id ? invoiceMap.get(p.invoice_id) || null : null,
+      }));
       const invoices = invoicesRes.data || [];
 
-      const totalIncome = payments.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const totalIncome = paymentsWithNames.reduce((sum, t) => sum + Number(t.amount || 0), 0);
       const totalInvoiced = invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
       const totalOutstanding = invoices.reduce((sum, inv) => sum + Number(inv.balance_due || 0), 0);
-      const totalRefunds = payments.filter(t => t.status === 'refunded').reduce((s, t) => s + Number(t.amount || 0), 0);
+      const totalRefunds = paymentsWithNames.filter(t => t.status === 'refunded').reduce((s, t) => s + Number(t.amount || 0), 0);
 
       return {
-        payments,
+        payments: paymentsWithNames,
         invoices,
         stats: { totalIncome, totalInvoiced, totalOutstanding, totalRefunds, netIncome: totalIncome - totalRefunds }
       };
