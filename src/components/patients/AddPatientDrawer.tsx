@@ -20,28 +20,10 @@ interface AddPatientDrawerProps {
 
 const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  // تم إلغاء البحث عن المرضى الموجودين
-  // const [searchQuery, setSearchQuery] = useState('');
-  // const [existingPatients, setExistingPatients] = useState<Patient[]>([]);
-  // const [showExistingPatients, setShowExistingPatients] = useState(false);
-  const [formData, setFormData] = useState({
-    full_name: '',
-    phone: '',
-    email: '',
-    date_of_birth: '',
-    gender: '',
-    address: '',
-    medical_history: '',
-    notes: '',
-    emergency_contact: '',
-    emergency_phone: '',
-    patient_status: 'active',
-    insurance_info: '',
-    blood_type: '',
-    occupation: '',
-    marital_status: ''
-  });
+  const [successState, setSuccessState] = useState<{ id: string; name: string } | null>(null);
+  const [formData, setFormData] = useState({ ...defaultPatientFormData });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (field: string, value: string) => {
