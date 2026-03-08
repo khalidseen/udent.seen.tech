@@ -392,15 +392,6 @@ const DoctorAssistants = () => {
                 </Select>
               </div>
             </div>
-                <Label htmlFor="full_name">الاسم الكامل</Label>
-                <Input
-                  id="full_name"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  placeholder="أدخل الاسم الكامل"
-                  required
-                />
-              </div>
 
               <div>
                 <Label htmlFor="specialization">التخصص</Label>
