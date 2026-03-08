@@ -8,7 +8,7 @@ import {
   Settings, LogOut, TrendingUp, FileSpreadsheet,
   Shield, Crown, Building, Plug, ChevronLeft, ChevronRight,
   Activity, Brain, Bell, Mail, FolderOpen, Box, Briefcase,
-  Wallet, CreditCard, Calculator
+  Wallet, CreditCard, Calculator, FlaskConical, CalendarDays, MessageSquare
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -90,6 +90,14 @@ export function AppSidebar() {
         { title: "الأدوية", url: "/medications", icon: Pill, permissions: ['inventory.view'] },
         { title: "أوامر الشراء", url: "/purchase-orders", icon: PackageCheck, permissions: ['inventory.manage'] },
         { title: "حركة المخزون", url: "/stock-movements", icon: Truck, permissions: ['inventory.view'] },
+      ]
+    },
+    {
+      groupTitle: "🔬 المختبر والجدولة",
+      items: [
+        { title: "المختبر السني", url: "/dental-lab", icon: FlaskConical, permissions: ['treatments.view'] },
+        { title: "الجدولة الذكية", url: "/smart-scheduling", icon: CalendarDays, permissions: ['appointments.view'] },
+        { title: "مركز التواصل", url: "/communication-center", icon: MessageSquare, permissions: [] },
       ]
     },
     {
