@@ -253,6 +253,7 @@ const AppointmentList = () => {
         </h1>
         <div className="text-lg text-muted-foreground">{format(today, "MMMM yyyy", { locale: ar })}</div>
       </div>
+      <AppointmentReminders />
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
         <Card className="bg-primary/5 border-primary/20">
           <CardContent className="py-4 text-center">
