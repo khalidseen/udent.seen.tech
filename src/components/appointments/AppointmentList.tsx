@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle, CalendarDays, List } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import AddAppointmentDialog from "./AddAppointmentDialog";
+
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageToolbar } from "@/components/layout/PageToolbar";
 import { PageHeader } from "@/components/layout/PageHeader";
