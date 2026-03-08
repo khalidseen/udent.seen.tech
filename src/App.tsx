@@ -157,7 +157,6 @@ function App() {
                     <Route path="doctors" element={<Doctors />} />
                     <Route path="medical-records" element={<MedicalRecords />} />
                     <Route path="dental-treatments" element={<DentalTreatments />} />
-                    <Route path="ai-insights" element={<AIInsights />} />
                     <Route path="reports" element={<Reports />} />
                     <Route path="notifications" element={<Notifications />} />
                     <Route path="doctor-assistants" element={<DoctorAssistants />} />
