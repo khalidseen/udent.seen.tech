@@ -10,7 +10,61 @@ import Auth from "@/pages/Auth";
 const PageLoader = memo(() => <OptimizedPageLoader type="default" />);
 PageLoader.displayName = "PageLoader";
 
-// Lazy loaded pages
+// Route-to-import map for prefetching
+const routeImports: Record<string, () => Promise<any>> = {
+  '/': () => import("@/pages/Index"),
+  '/patients': () => import("@/pages/Patients"),
+  '/appointments': () => import("@/pages/Appointments"),
+  '/settings': () => import("@/pages/Settings"),
+  '/doctors': () => import("@/pages/Doctors"),
+  '/medical-records': () => import("@/pages/MedicalRecords"),
+  '/dental-treatments': () => import("@/pages/DentalTreatments"),
+  '/reports': () => import("@/pages/Reports"),
+  '/notifications': () => import("@/pages/Notifications"),
+  '/invoices': () => import("@/pages/Invoices"),
+  '/payments': () => import("@/pages/Payments"),
+  '/financial-overview': () => import("@/pages/FinancialOverview"),
+  '/inventory': () => import("@/pages/Inventory"),
+  '/invoice-management': () => import("@/pages/InvoiceManagement"),
+  '/payment-management': () => import("@/pages/PaymentManagement"),
+  '/dental-treatments-management': () => import("@/pages/DentalTreatmentsManagement"),
+  '/doctor-assistants': () => import("@/pages/DoctorAssistants"),
+  '/secretaries': () => import("@/pages/Secretaries"),
+  '/detailed-reports': () => import("@/pages/DetailedReports"),
+  '/insurance-management': () => import("@/pages/InsuranceManagement"),
+  '/prescriptions': () => import("@/pages/Prescriptions"),
+  '/treatment-plans': () => import("@/pages/TreatmentPlans"),
+  '/financial-reports': () => import("@/pages/FinancialReports"),
+  '/medications': () => import("@/pages/Medications"),
+  '/purchase-orders': () => import("@/pages/PurchaseOrders"),
+  '/stock-movements': () => import("@/pages/StockMovements"),
+  '/dental-lab': () => import("@/pages/DentalLabManagement"),
+  '/smart-scheduling': () => import("@/pages/SmartScheduling"),
+  '/communication-center': () => import("@/pages/CommunicationCenter"),
+  '/advanced-permissions-management': () => import("@/pages/AdvancedPermissionsManagement"),
+  '/advanced-user-management': () => import("@/pages/AdvancedUserManagement"),
+  '/advanced-notification-management': () => import("@/pages/AdvancedNotificationManagement"),
+  '/comprehensive-security-audit': () => import("@/pages/ComprehensiveSecurityAudit"),
+  '/profile': () => import("@/pages/Profile"),
+  '/service-prices': () => import("@/pages/ServicePrices"),
+  '/ai-management-dashboard': () => import("@/pages/AIManagementDashboard"),
+  '/integrations': () => import("@/pages/Integrations"),
+};
+
+// Prefetch a route's chunk on hover
+const prefetchedRoutes = new Set<string>();
+export function prefetchRoute(path: string) {
+  if (prefetchedRoutes.has(path)) return;
+  const importer = routeImports[path];
+  if (importer) {
+    prefetchedRoutes.add(path);
+    importer().catch(() => {
+      prefetchedRoutes.delete(path);
+    });
+  }
+}
+
+// Lazy loaded pages (use same imports)
 const Index = lazy(() => import("@/pages/Index"));
 const Patients = lazy(() => import("@/pages/Patients"));
 const PatientProfile = lazy(() => import("@/pages/PatientProfile"));
