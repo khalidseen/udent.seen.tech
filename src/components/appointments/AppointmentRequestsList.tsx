@@ -121,6 +121,7 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
         return;
       }
       console.log('Profile ID:', profile.id);
+      setClinicId(profile.id);
       const {
         data,
         error
