@@ -23,15 +23,7 @@ import Auth from "@/pages/Auth";
 const PageLoader = memo(() => <OptimizedPageLoader type="default" />);
 PageLoader.displayName = "PageLoader";
 
-const initializeOfflineDB = async () => {
-  try {
-    await offlineDB.init();
-    console.log('Offline database initialized successfully.');
-  } catch (error) {
-    console.error('Failed to initialize offline database:', error);
-    toast.error('Failed to initialize offline database. Some features may not work offline.');
-  }
-};
+// offlineDB is initialized once at module level (line 88-89)
 
 const Index = lazy(() => import("@/pages/Index"));
 const Patients = lazy(() => import("@/pages/Patients"));
@@ -115,6 +107,8 @@ function App() {
       });
     }
 
+    performanceMonitor.end('app-initialization');
+
     if (process.env.NODE_ENV === 'development') {
       const memoryInterval = setInterval(() => {
         const memory = performanceMonitor.getMemoryUsage();
@@ -125,8 +119,6 @@ function App() {
 
       return () => clearInterval(memoryInterval);
     }
-
-    performanceMonitor.end('app-initialization');
   }, []);
 
   return (
