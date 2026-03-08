@@ -32,6 +32,11 @@ const AppointmentRequestsList = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [processingRequest, setProcessingRequest] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [clinicId, setClinicId] = useState<string | undefined>(undefined);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<AppointmentRequest | null>(null);
+  
+  const { data: doctors } = useDoctors(clinicId);
 
   // WhatsApp message sending function
   const sendWhatsAppMessage = (phone: string, message: string) => {
