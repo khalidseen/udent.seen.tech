@@ -202,6 +202,13 @@ const NewAppointmentForm = () => {
   }, [clinicId]);
 
   const handleChange = (field: string, value: string | boolean) => {
+    if (field === 'treatment_type' && typeof value === 'string') {
+      const treatment = TREATMENT_TYPES.find(t => t.value === value);
+      if (treatment) {
+        setFormData(prev => ({ ...prev, treatment_type: value, duration: String(treatment.duration) }));
+        return;
+      }
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
     if (field === 'appointment_date' || field === 'appointment_time' || field === 'duration') {
       const updated = { ...formData, [field]: value };
@@ -210,13 +217,6 @@ const NewAppointmentForm = () => {
         String(updated.appointment_time),
         parseInt(String(updated.duration))
       );
-    }
-    // Auto-set duration based on treatment type
-    if (field === 'treatment_type') {
-      const treatment = TREATMENT_TYPES.find(t => t.value === value);
-      if (treatment) {
-        setFormData(prev => ({ ...prev, [field]: value, duration: String(treatment.duration) }));
-      }
     }
   };
 
