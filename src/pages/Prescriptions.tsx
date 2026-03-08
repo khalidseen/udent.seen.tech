@@ -5,11 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, FileText, Eye } from "lucide-react";
+import { Plus, Search, FileText, Eye, User, ExternalLink, Calendar } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import CreatePrescriptionDialog from "@/components/prescriptions/CreatePrescriptionDialog";
 import ViewPrescriptionDialog from "@/components/prescriptions/ViewPrescriptionDialog";
+import { useNavigate } from "react-router-dom";
 
 interface Prescription {
   id: string;
@@ -19,6 +20,7 @@ interface Prescription {
   prescription_date: string;
   status: 'active' | 'completed' | 'cancelled';
   patients?: {
+    id: string;
     full_name: string;
     phone?: string;
     age?: number;
@@ -26,6 +28,7 @@ interface Prescription {
 }
 
 const Prescriptions = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
@@ -49,6 +52,7 @@ const Prescriptions = () => {
         .select(`
           *,
           patients (
+            id,
             full_name,
             phone, 
             date_of_birth
@@ -80,10 +84,10 @@ const Prescriptions = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200';
-      case 'completed': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'cancelled': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'active': return 'default';
+      case 'completed': return 'secondary';
+      case 'cancelled': return 'destructive';
+      default: return 'outline';
     }
   };
 
@@ -167,14 +171,20 @@ const Prescriptions = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-lg text-right">
-                      {prescription.patients?.full_name || 'غير محدد'}
+                    <CardTitle className="text-lg text-right flex items-center gap-2">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <button
+                        className="text-primary hover:underline"
+                        onClick={() => prescription.patients?.id && navigate(`/patients/${prescription.patients.id}`)}
+                      >
+                        {prescription.patients?.full_name || 'غير محدد'}
+                      </button>
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
                       {prescription.patients?.age ? `${prescription.patients.age} سنة` : 'العمر غير محدد'}
                     </p>
                   </div>
-                  <Badge className={getStatusColor(prescription.status)}>
+                  <Badge variant={getStatusColor(prescription.status) as any}>
                     {getStatusLabel(prescription.status)}
                   </Badge>
                 </div>
@@ -195,7 +205,7 @@ const Prescriptions = () => {
                       {new Date(prescription.prescription_date).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="flex gap-2 pt-2">
+                  <div className="flex gap-2 pt-2 border-t">
                     <Button
                       variant="outline"
                       size="sm"
@@ -204,6 +214,24 @@ const Prescriptions = () => {
                     >
                       <Eye className="w-3 h-3" />
                       عرض
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => prescription.patients?.id && navigate(`/patients/${prescription.patients.id}?tab=prescriptions`)}
+                      className="flex items-center gap-1"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                      ملف المريض
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/appointments/new?patient=${prescription.patient_id}`)}
+                      className="flex items-center gap-1"
+                    >
+                      <Calendar className="w-3 h-3" />
+                      موعد
                     </Button>
                   </div>
                 </div>
