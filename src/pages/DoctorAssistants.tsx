@@ -110,7 +110,7 @@ const DoctorAssistants = () => {
 
     try {
         const { error } = await supabase
-          .from('doctor_assistants' as any)
+          .from('doctor_assistants')
           .delete()
           .eq('id', assistantId);
 
@@ -167,7 +167,7 @@ const DoctorAssistants = () => {
 
       if (editingAssistant) {
         const { error } = await supabase
-          .from('doctor_assistants' as any)
+          .from('doctor_assistants')
           .update(assistantData)
           .eq('id', editingAssistant.id);
 
@@ -179,7 +179,7 @@ const DoctorAssistants = () => {
         });
       } else {
         const { error } = await supabase
-          .from('doctor_assistants' as any)
+          .from('doctor_assistants')
           .insert(assistantData);
 
         if (error) throw error;
