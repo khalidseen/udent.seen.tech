@@ -41,10 +41,10 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
 
   const canAccessMenuItem = (item: MenuItem): boolean => {
-    // إعطاء صلاحيات كاملة لمدير النظام
+    // Super admin has full access
     const superAdminEmails = ['eng.khalid.work@gmail.com', 'klidmorre@gmail.com'];
     if (user?.email && superAdminEmails.includes(user.email.toLowerCase())) return true;
-    if (userRole === 'super_admin') return true;
+    if (userRole === 'super_admin' || userRole === 'owner' || userRole === 'admin') return true;
     if (!item.permissions || item.permissions.length === 0) return true;
     return hasAnyPermission(item.permissions);
   };
