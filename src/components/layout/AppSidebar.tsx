@@ -61,47 +61,35 @@ export function AppSidebar() {
       ]
     },
     {
-      groupTitle: "👥 إدارة المرضى",
+      groupTitle: "🦷 إدارة المرضى",
       items: [
-        { title: "قائمة المرضى", url: "/patients", icon: Users, permissions: [] },
-        { title: "السجلات الطبية المتقدمة", url: "/advanced-medical-records", icon: FolderOpen, permissions: [] },
+        { title: "المرضى", url: "/patients", icon: Users, permissions: ['patients.view'] },
+        { title: "المواعيد", url: "/appointments", icon: Calendar, permissions: ['appointments.view'] },
+        { title: "حجز جديد", url: "/appointments/new", icon: CalendarPlus, permissions: ['appointments.create'] },
+        { title: "طلبات الحجز", url: "/appointment-requests", icon: ClipboardList, permissions: ['appointments.view'] },
+        { title: "السجلات الطبية", url: "/medical-records", icon: FolderOpen, permissions: ['patients.view'] },
+        { title: "العلاجات", url: "/dental-treatments-management", icon: Stethoscope, permissions: ['treatments.view'] },
+        { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText, permissions: ['treatments.view'] },
       ]
     },
     {
-      groupTitle: "📅 المواعيد والحجوزات",
+      groupTitle: "💰 المالية",
       items: [
-        { title: "عرض المواعيد", url: "/appointments", icon: Calendar, permissions: [] },
-        { title: "حجز موعد جديد", url: "/appointments/new", icon: CalendarPlus, permissions: [] },
-        { title: "طلبات المواعيد", url: "/appointment-requests", icon: ClipboardList, permissions: [] },
+        { title: "نظرة مالية عامة", url: "/financial-overview", icon: TrendingUp, permissions: ['financial.view'] },
+        { title: "الفواتير", url: "/invoice-management", icon: Receipt, permissions: ['financial.view'] },
+        { title: "المدفوعات", url: "/payment-management", icon: DollarSign, permissions: ['financial.view'] },
+        { title: "خطط العلاج المالية", url: "/treatment-plans", icon: Calculator, permissions: ['financial.view'] },
+        { title: "التقارير المالية", url: "/financial-reports", icon: FileSpreadsheet, permissions: ['financial.view'] },
+        { title: "أسعار الخدمات", url: "/service-prices", icon: CreditCard, permissions: ['financial.manage'] },
       ]
     },
     {
-      groupTitle: "💊 العلاج والتشخيص",
+      groupTitle: "📦 المخزون والأدوية",
       items: [
-        { title: "العلاجات السنية", url: "/dental-treatments-management", icon: Activity, permissions: [] },
-        { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText, permissions: [] },
-        { title: "التشخيص الذكي (AI)", url: "/smart-diagnosis-system", icon: Brain, permissions: [] },
-        { title: "رؤى الذكاء الاصطناعي", url: "/ai-insights-page", icon: TrendingUp, permissions: [] },
-      ]
-    },
-    {
-      groupTitle: "💰 الإدارة المالية",
-      items: [
-        { title: "ملخص مالي شامل", url: "/financial-overview", icon: Wallet, permissions: [] },
-        { title: "إدارة الفواتير", url: "/invoice-management", icon: Receipt, permissions: [] },
-        { title: "إدارة المدفوعات", url: "/payment-management", icon: DollarSign, permissions: [] },
-        { title: "خطط العلاج المالية", url: "/treatment-plans", icon: CreditCard, permissions: [] },
-        { title: "سجل المعاملات المالية", url: "/financial-transactions", icon: Activity, permissions: [] },
-        { title: "التقارير المالية", url: "/financial-reports", icon: Calculator, permissions: [] },
-      ]
-    },
-    {
-      groupTitle: "📦 المخزون والمستلزمات",
-      items: [
-        { title: "المخزون الطبي", url: "/inventory", icon: Package, permissions: [] },
-        { title: "الأدوية", url: "/medications", icon: Pill, permissions: [] },
-        { title: "أوامر الشراء", url: "/purchase-orders", icon: PackageCheck, permissions: [] },
-        { title: "حركة المخزون", url: "/stock-movements", icon: Truck, permissions: [] },
+        { title: "المخزون الطبي", url: "/inventory", icon: Package, permissions: ['inventory.view'] },
+        { title: "الأدوية", url: "/medications", icon: Pill, permissions: ['inventory.view'] },
+        { title: "أوامر الشراء", url: "/purchase-orders", icon: PackageCheck, permissions: ['inventory.manage'] },
+        { title: "حركة المخزون", url: "/stock-movements", icon: Truck, permissions: ['inventory.view'] },
       ]
     },
     {
@@ -115,8 +103,8 @@ export function AppSidebar() {
     {
       groupTitle: "📊 التقارير والإحصائيات",
       items: [
-        { title: "التقارير التفصيلية", url: "/detailed-reports", icon: FileSpreadsheet, permissions: [] },
-        { title: "قائمة الذكاء الاصطناعي", url: "/ai-management-dashboard", icon: Brain, permissions: [] },
+        { title: "التقارير التفصيلية", url: "/detailed-reports", icon: FileSpreadsheet, permissions: ['reports.view'] },
+        { title: "قائمة الذكاء الاصطناعي", url: "/ai-management-dashboard", icon: Brain, permissions: ['reports.view'] },
       ]
     },
     // Super Admin Section
@@ -140,12 +128,12 @@ export function AppSidebar() {
       groupTitle: "🔧 الإعدادات والنظام",
       items: [
         { title: "الإعدادات العامة", url: "/settings", icon: Settings, permissions: [] },
-        { title: "الأدوار والصلاحيات", url: "/advanced-permissions-management", icon: Shield, permissions: [] },
-        { title: "إدارة المستخدمين", url: "/advanced-user-management", icon: Users, permissions: [] },
+        { title: "الأدوار والصلاحيات", url: "/advanced-permissions-management", icon: Shield, permissions: ['settings.manage_roles'] },
+        { title: "إدارة المستخدمين", url: "/advanced-user-management", icon: Users, permissions: ['settings.manage_users'] },
         { title: "الإشعارات", url: "/advanced-notification-management", icon: Bell, permissions: [] },
-        { title: "قوالب الإشعارات", url: "/custom-notification-templates", icon: Mail, permissions: [] },
-        { title: "الأمان والحماية", url: "/comprehensive-security-audit", icon: Shield, permissions: [] },
-        { title: "الدمج مع الأنظمة", url: "/integrations", icon: Plug, permissions: [] },
+        { title: "قوالب الإشعارات", url: "/custom-notification-templates", icon: Mail, permissions: ['settings.manage_notifications'] },
+        { title: "الأمان والحماية", url: "/comprehensive-security-audit", icon: Shield, permissions: ['settings.security'] },
+        { title: "الدمج مع الأنظمة", url: "/integrations", icon: Plug, permissions: ['settings.integrations'] },
         { title: "النماذج ثلاثية الأبعاد", url: "/dental-3d-models-management", icon: Box, permissions: [] },
       ]
     },
