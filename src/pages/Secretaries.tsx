@@ -37,12 +37,12 @@ export default function Secretaries() {
     queryKey: ['secretaries'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('secretaries' as any)
+        .from('secretaries')
         .select('*')
         .order('full_name', { ascending: true });
 
       if (error) throw error;
-      return (data as any) as Secretary[];
+      return data as Secretary[];
     }
   });
 
@@ -76,7 +76,7 @@ export default function Secretaries() {
 
     try {
       const { error } = await supabase
-        .from('secretaries' as any)
+        .from('secretaries')
         .delete()
         .eq('id', secretaryId);
 
@@ -119,7 +119,7 @@ export default function Secretaries() {
 
       if (editingSecretary) {
         const { error } = await supabase
-          .from('secretaries' as any)
+          .from('secretaries')
           .update(secretaryData)
           .eq('id', editingSecretary.id);
 
@@ -131,7 +131,7 @@ export default function Secretaries() {
         });
       } else {
         const { error } = await supabase
-          .from('secretaries' as any)
+          .from('secretaries')
           .insert(secretaryData);
 
         if (error) throw error;
