@@ -50,8 +50,7 @@ const StockMovements = lazy(() => import("@/pages/StockMovements"));
 const DentalTreatmentsManagement = lazy(() => import("@/pages/DentalTreatmentsManagement"));
 const AdvancedMedicalRecords = lazy(() => import("@/pages/AdvancedMedicalRecords"));
 const AIManagementDashboard = lazy(() => import("@/pages/AIManagementDashboard"));
-const SmartDiagnosisSystem = lazy(() => import("@/pages/SmartDiagnosisSystem"));
-const AIInsightsPage = lazy(() => import("@/pages/AIInsightsPage"));
+const SmartDiagnosis = lazy(() => import("@/pages/SmartDiagnosis"));
 const AdvancedNotificationManagement = lazy(() => import("@/pages/AdvancedNotificationManagement"));
 const CustomNotificationTemplates = lazy(() => import("@/pages/CustomNotificationTemplates"));
 const DetailedReports = lazy(() => import("@/pages/DetailedReports"));
@@ -169,8 +168,8 @@ function App() {
                     <Route path="dental-treatments-management" element={<DentalTreatmentsManagement />} />
                     <Route path="advanced-medical-records" element={<AdvancedMedicalRecords />} />
                     <Route path="ai-management-dashboard" element={<AIManagementDashboard />} />
-                    <Route path="smart-diagnosis-system" element={<SmartDiagnosisSystem />} />
-                    <Route path="ai-insights-page" element={<AIInsightsPage />} />
+                    <Route path="smart-diagnosis-system" element={<SmartDiagnosis />} />
+                    <Route path="ai-insights-page" element={<AIInsights />} />
                     <Route path="advanced-notification-management" element={<AdvancedNotificationManagement />} />
                     <Route path="custom-notification-templates" element={<CustomNotificationTemplates />} />
                     <Route path="detailed-reports" element={<DetailedReports />} />
