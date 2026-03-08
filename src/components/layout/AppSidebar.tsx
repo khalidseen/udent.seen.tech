@@ -100,8 +100,6 @@ export function AppSidebar() {
         { title: "مركز التواصل", url: "/communication-center", icon: MessageSquare, permissions: [] },
       ]
     },
-      ]
-    },
     {
       groupTitle: "👨‍⚕️ الكادر الطبي",
       items: [
