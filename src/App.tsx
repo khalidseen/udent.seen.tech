@@ -68,6 +68,9 @@ const Permissions = lazy(() => import("@/pages/Permissions"));
 const PatientFinancialTransactions = lazy(() => import("@/pages/PatientFinancialTransactions"));
 const InvoiceManagement = lazy(() => import("@/pages/InvoiceManagement"));
 const PaymentManagement = lazy(() => import("@/pages/PaymentManagement"));
+const ServicePrices = lazy(() => import("@/pages/ServicePrices"));
+const SecurityAudit = lazy(() => import("@/pages/SecurityAudit"));
+const NotificationTemplates = lazy(() => import("@/pages/NotificationTemplates"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 import { offlineDB } from "@/lib/offline-db";
@@ -186,6 +189,9 @@ function App() {
                     <Route path="profile/:userId" element={<Profile />} />
                     <Route path="users" element={<Users />} />
                     <Route path="financial-transactions" element={<PatientFinancialTransactions />} />
+                    <Route path="service-prices" element={<ServicePrices />} />
+                    <Route path="security-audit" element={<SecurityAudit />} />
+                    <Route path="notification-templates" element={<NotificationTemplates />} />
                   </Route>
                   
                   <Route path="*" element={<NotFound />} />
