@@ -10,8 +10,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, User, Mail, Phone } from "lucide-react";
+import { Plus, Edit, Trash2, User, Mail, Phone, CalendarPlus, CalendarDays } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface Secretary {
   id: number;
@@ -33,6 +34,7 @@ export default function Secretaries() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { data: profile } = useQuery({
     queryKey: ['current-profile'],
@@ -175,10 +177,20 @@ export default function Secretaries() {
         title="إدارة السكرتيرات"
         description="إدارة السكرتيرات والموظفين الإداريين"
         action={
-          <Button onClick={handleCreate}>
-            <Plus className="w-4 h-4 ml-2" />
-            إضافة سكرتير جديد
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => navigate('/appointments')}>
+              <CalendarDays className="w-4 h-4 ml-2" />
+              جدول المواعيد
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/appointments/new')}>
+              <CalendarPlus className="w-4 h-4 ml-2" />
+              حجز موعد
+            </Button>
+            <Button onClick={handleCreate}>
+              <Plus className="w-4 h-4 ml-2" />
+              إضافة سكرتير جديد
+            </Button>
+          </div>
         }
       />
 
