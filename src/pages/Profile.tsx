@@ -42,7 +42,7 @@ interface SecurityEvent {
   id: string;
   event_type: string;
   created_at: string;
-  ip_address: string;
+  ip_address: unknown;
   details: any;
 }
 
