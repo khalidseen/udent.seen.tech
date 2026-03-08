@@ -1,6 +1,7 @@
 import React from 'react';
 import { useCurrency } from '@/hooks/useCurrency';
 import { CurrencyCode } from '@/types/currency';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CurrencyAmountProps {
   amount: number;
@@ -18,8 +19,10 @@ export const CurrencyAmount: React.FC<CurrencyAmountProps> = ({
   fromCurrency = 'IQD'
 }) => {
   const { formatAmount, convertAmount, currentCurrency } = useCurrency();
+  const { language } = useLanguage();
   
   const displayAmount = convertAmount(amount, fromCurrency);
+  const locale = language === 'ar' ? 'ar-IQ' : 'en-US';
   
   const formatOptions = precision !== undefined 
     ? { 
@@ -31,7 +34,7 @@ export const CurrencyAmount: React.FC<CurrencyAmountProps> = ({
         maximumFractionDigits: currentCurrency.decimalPlaces
       };
   
-  const formattedAmount = new Intl.NumberFormat('ar-IQ', formatOptions).format(displayAmount);
+  const formattedAmount = new Intl.NumberFormat(locale, formatOptions).format(displayAmount);
   
   return (
     <span className={className}>
