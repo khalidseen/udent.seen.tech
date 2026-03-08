@@ -198,7 +198,12 @@ export function AppSidebar() {
     }
 
     return (
-      <NavLink to={url} className={className}>
+      <NavLink 
+        to={url} 
+        className={className}
+        onMouseEnter={() => prefetchRoute(url)}
+        onFocus={() => prefetchRoute(url)}
+      >
         {content}
       </NavLink>
     );
