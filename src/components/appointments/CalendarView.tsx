@@ -1,9 +1,8 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Users } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock, Users, AlertTriangle } from "lucide-react";
 import { format, isSameDay, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { ar } from "date-fns/locale";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +35,19 @@ const CalendarView = () => {
   const fetchMonthAppointments = useCallback(async () => {
     try {
       setLoading(true);
+
+      // Get current user's clinic_id for data isolation
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) return;
+
       const monthStart = startOfMonth(currentDate);
       const monthEnd = endOfMonth(currentDate);
 
@@ -45,6 +57,7 @@ const CalendarView = () => {
           *,
           patients (id, full_name, phone, email)
         `)
+        .eq('clinic_id', profile.id)
         .gte('appointment_date', monthStart.toISOString())
         .lte('appointment_date', monthEnd.toISOString())
         .order('appointment_date', { ascending: true });
@@ -60,6 +73,24 @@ const CalendarView = () => {
 
   useEffect(() => {
     fetchMonthAppointments();
+  }, [fetchMonthAppointments]);
+
+  // Realtime subscription for live updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('calendar-appointments')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'appointments'
+      }, () => {
+        fetchMonthAppointments();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [fetchMonthAppointments]);
 
   const getAppointmentsForDate = useCallback((date: Date) => {
@@ -86,56 +117,40 @@ const CalendarView = () => {
   const getDayAppointmentStats = useCallback((date: Date) => {
     const dayAppointments = getAppointmentsForDate(date);
     const completed = dayAppointments.filter(a => a.status === 'completed').length;
-    const scheduled = dayAppointments.filter(a => a.status === 'scheduled').length;
+    const scheduled = dayAppointments.filter(a => a.status === 'scheduled' || a.status === 'confirmed').length;
     const cancelled = dayAppointments.filter(a => a.status === 'cancelled').length;
+    const noShow = dayAppointments.filter(a => a.status === 'no_show').length;
     
-    return { total: dayAppointments.length, completed, scheduled, cancelled };
+    return { total: dayAppointments.length, completed, scheduled, cancelled, noShow };
   }, [getAppointmentsForDate]);
-
-  // ألوان مختلفة لكل يوم من الأسبوع
-  const getDayColors = useCallback((date: Date) => {
-    const dayOfWeek = date.getDay();
-    const colors = [
-      'bg-purple-50 border-purple-200 hover:bg-purple-100', // الأحد
-      'bg-blue-50 border-blue-200 hover:bg-blue-100', // الاثنين  
-      'bg-green-50 border-green-200 hover:bg-green-100', // الثلاثاء
-      'bg-yellow-50 border-yellow-200 hover:bg-yellow-100', // الأربعاء
-      'bg-orange-50 border-orange-200 hover:bg-orange-100', // الخميس
-      'bg-red-50 border-red-200 hover:bg-red-100', // الجمعة
-      'bg-indigo-50 border-indigo-200 hover:bg-indigo-100', // السبت
-    ];
-    return colors[dayOfWeek] || 'bg-gray-50 border-gray-200 hover:bg-gray-100';
-  }, []);
 
   const renderCalendarDay = useCallback((date: Date) => {
     const stats = getDayAppointmentStats(date);
     const dayAppointments = getAppointmentsForDate(date);
     const isToday = isSameDay(date, new Date());
     const isPast = date < new Date(new Date().setHours(0, 0, 0, 0));
-    const dayColors = getDayColors(date);
     
     return (
       <div
         className={cn(
           "p-3 h-32 border-2 rounded-lg transition-all duration-200 cursor-pointer relative",
-          !isPast && dayColors,
-          "hover:border-primary/40 hover:shadow-md",
-          isToday && "border-amber-400 bg-amber-100 shadow-lg",
-          isPast && "opacity-50 cursor-not-allowed bg-gray-100 border-gray-300"
+          "bg-card border-border hover:border-primary/40 hover:shadow-md",
+          isToday && "border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20",
+          isPast && "opacity-50 cursor-not-allowed bg-muted border-muted"
         )}
-        onClick={() => !isPast && handleDateClick(date)}
+        onClick={() => handleDateClick(date)}
       >
-        {/* رقم اليوم بحجم كبير */}
+        {/* رقم اليوم */}
         <div className={cn(
           "text-3xl font-bold mb-2",
-          isToday ? "text-amber-800" : isPast ? "text-gray-400" : "text-gray-700"
+          isToday ? "text-primary" : isPast ? "text-muted-foreground" : "text-foreground"
         )}>
           {format(date, 'd')}
         </div>
         
-        {/* عداد المواعيد في الزاوية العلوية اليسرى */}
+        {/* عداد المواعيد */}
         {stats.total > 0 && (
-          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md">
+          <div className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-md">
             {stats.total}
           </div>
         )}
@@ -144,54 +159,52 @@ const CalendarView = () => {
         {stats.total > 0 && (
           <div className="absolute top-2 right-2 flex gap-1">
             {stats.scheduled > 0 && (
-              <div className="w-3 h-3 bg-blue-500 rounded-full shadow-sm" title={`${stats.scheduled} مجدول`} />
+              <div className="w-3 h-3 bg-primary rounded-full shadow-sm" title={`${stats.scheduled} مجدول`} />
             )}
             {stats.completed > 0 && (
               <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm" title={`${stats.completed} مكتمل`} />
             )}
             {stats.cancelled > 0 && (
-              <div className="w-3 h-3 bg-red-500 rounded-full shadow-sm" title={`${stats.cancelled} ملغي`} />
+              <div className="w-3 h-3 bg-destructive rounded-full shadow-sm" title={`${stats.cancelled} ملغي`} />
+            )}
+            {stats.noShow > 0 && (
+              <div className="w-3 h-3 bg-orange-500 rounded-full shadow-sm" title={`${stats.noShow} لم يحضر`} />
             )}
           </div>
         )}
         
         {/* تفاصيل المواعيد */}
-        {!isPast && dayAppointments.length > 0 && (
+        {dayAppointments.length > 0 && (
           <div className="absolute bottom-2 left-2 right-2 space-y-1">
-            {dayAppointments.slice(0, 2).map((appointment, index) => (
+            {dayAppointments.slice(0, 2).map((appointment) => (
               <div
                 key={appointment.id}
-                className="text-xs bg-white/90 border border-gray-300 text-gray-800 px-2 py-1 rounded shadow-sm"
+                className="text-xs bg-background/90 border border-border text-foreground px-2 py-1 rounded shadow-sm"
               >
                 <div className="font-medium flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   {format(new Date(appointment.appointment_date), 'HH:mm')}
                 </div>
-                <div className="text-gray-600 truncate">
+                <div className="text-muted-foreground truncate">
                   {appointment.patients?.full_name || 'مريض غير محدد'}
                 </div>
-                {appointment.treatment_type && (
-                  <div className="text-gray-500 text-xs truncate">
-                    {appointment.treatment_type}
-                  </div>
-                )}
               </div>
             ))}
             {dayAppointments.length > 2 && (
-              <div className="text-xs text-gray-600 bg-white/80 px-2 py-1 rounded text-center font-medium">
+              <div className="text-xs text-muted-foreground bg-muted/80 px-2 py-1 rounded text-center font-medium">
                 +{dayAppointments.length - 2} موعد إضافي
               </div>
             )}
           </div>
         )}
         
-        {/* اسم اليوم في الزاوية السفلية */}
-        <div className="absolute bottom-1 right-1 text-xs text-gray-500 font-medium">
+        {/* اسم اليوم */}
+        <div className="absolute bottom-1 right-1 text-xs text-muted-foreground font-medium">
           {format(date, 'EEEE', { locale: ar }).slice(0, 3)}
         </div>
       </div>
     );
-  }, [getDayAppointmentStats, handleDateClick, getAppointmentsForDate, getDayColors]);
+  }, [getDayAppointmentStats, handleDateClick, getAppointmentsForDate]);
 
   const monthDays = useMemo(() => 
     eachDayOfInterval({
@@ -199,20 +212,19 @@ const CalendarView = () => {
       end: endOfMonth(currentDate)
     }), [currentDate]);
 
-  // Get month statistics
   const monthStats = useMemo(() => ({
     total: appointments.length,
     completed: appointments.filter(a => a.status === 'completed').length,
-    scheduled: appointments.filter(a => a.status === 'scheduled').length,
+    scheduled: appointments.filter(a => a.status === 'scheduled' || a.status === 'confirmed').length,
     cancelled: appointments.filter(a => a.status === 'cancelled').length,
+    noShow: appointments.filter(a => a.status === 'no_show').length,
   }), [appointments]);
-
 
   if (loading) {
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center">جاري تحميل التقويم...</div>
+          <div className="text-center text-muted-foreground">جاري تحميل التقويم...</div>
         </CardContent>
       </Card>
     );
@@ -230,32 +242,18 @@ const CalendarView = () => {
                 <CardTitle className="text-xl">
                   {format(currentDate, 'MMMM yyyy', { locale: ar })}
                 </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  تقويم المواعيد
-                </p>
+                <p className="text-sm text-muted-foreground">تقويم المواعيد</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateMonth('prev')}
-              >
+              <Button variant="outline" size="sm" onClick={() => navigateMonth('prev')}>
                 <ChevronRight className="w-4 h-4" />
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentDate(new Date())}
-              >
+              <Button variant="outline" size="sm" onClick={() => setCurrentDate(new Date())}>
                 اليوم
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigateMonth('next')}
-              >
+              <Button variant="outline" size="sm" onClick={() => navigateMonth('next')}>
                 <ChevronLeft className="w-4 h-4" />
               </Button>
             </div>
@@ -264,7 +262,7 @@ const CalendarView = () => {
       </Card>
 
       {/* Month Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -276,7 +274,6 @@ const CalendarView = () => {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -288,7 +285,6 @@ const CalendarView = () => {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -300,14 +296,24 @@ const CalendarView = () => {
             </div>
           </CardContent>
         </Card>
-        
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 rounded-full" />
+              <div className="w-4 h-4 bg-destructive rounded-full" />
               <div>
-                <p className="text-2xl font-bold text-red-600">{monthStats.cancelled}</p>
+                <p className="text-2xl font-bold text-destructive">{monthStats.cancelled}</p>
                 <p className="text-xs text-muted-foreground">ملغي</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-orange-500" />
+              <div>
+                <p className="text-2xl font-bold text-orange-500">{monthStats.noShow}</p>
+                <p className="text-xs text-muted-foreground">لم يحضر</p>
               </div>
             </div>
           </CardContent>
@@ -319,29 +325,18 @@ const CalendarView = () => {
         <CardContent className="p-6">
           {/* Week Headers */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {[
-              { name: 'السبت', color: 'text-indigo-600 bg-indigo-50' },
-              { name: 'الأحد', color: 'text-purple-600 bg-purple-50' },
-              { name: 'الاثنين', color: 'text-blue-600 bg-blue-50' },
-              { name: 'الثلاثاء', color: 'text-green-600 bg-green-50' },
-              { name: 'الأربعاء', color: 'text-yellow-600 bg-yellow-50' },
-              { name: 'الخميس', color: 'text-orange-600 bg-orange-50' },
-              { name: 'الجمعة', color: 'text-red-600 bg-red-50' }
-            ].map((day) => (
-              <div key={day.name} className={`p-3 text-center text-sm font-bold rounded-lg border ${day.color}`}>
-                {day.name}
+            {['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'].map((day) => (
+              <div key={day} className="p-3 text-center text-sm font-bold rounded-lg border bg-muted text-muted-foreground">
+                {day}
               </div>
             ))}
           </div>
           
           {/* Calendar Days Grid */}
           <div className="grid grid-cols-7 gap-1">
-            {/* Add empty cells for days before month start */}
             {Array.from({ length: (startOfMonth(currentDate).getDay() + 1) % 7 }).map((_, index) => (
               <div key={`empty-${index}`} className="h-32" />
             ))}
-            
-            {/* Render month days */}
             {monthDays.map((date) => (
               <div key={date.toString()}>
                 {renderCalendarDay(date)}

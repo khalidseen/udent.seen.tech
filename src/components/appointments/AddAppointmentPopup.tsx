@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,14 +6,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { CalendarPlus, Save, X } from "lucide-react";
+import { CalendarPlus, Save, X, AlertTriangle } from "lucide-react";
 
 interface AddAppointmentPopupProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAppointmentAdded?: () => void;
+  preselectedDate?: string;
 }
 
 interface Patient {
@@ -22,43 +24,58 @@ interface Patient {
   phone: string;
 }
 
-const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppointmentPopupProps) => {
+const TREATMENT_TYPES = [
+  { value: 'فحص عام', label: 'فحص عام' },
+  { value: 'تنظيف الأسنان', label: 'تنظيف الأسنان' },
+  { value: 'حشو الأسنان', label: 'حشو الأسنان' },
+  { value: 'خلع الأسنان', label: 'خلع الأسنان' },
+  { value: 'علاج عصب', label: 'علاج عصب' },
+  { value: 'تركيب تاج', label: 'تركيب تاج' },
+  { value: 'تركيب جسر', label: 'تركيب جسر' },
+  { value: 'زراعة أسنان', label: 'زراعة أسنان' },
+  { value: 'تقويم الأسنان', label: 'تقويم الأسنان' },
+  { value: 'تبييض الأسنان', label: 'تبييض الأسنان' },
+  { value: 'جراحة فموية', label: 'جراحة فموية' },
+  { value: 'علاج اللثة', label: 'علاج اللثة' },
+  { value: 'طوارئ', label: 'طوارئ' },
+  { value: 'متابعة', label: 'متابعة' },
+  { value: 'استشارة', label: 'استشارة' },
+  { value: 'أخرى', label: 'أخرى' },
+];
+
+const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselectedDate }: AddAppointmentPopupProps) => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [patientType, setPatientType] = useState<'existing' | 'new'>('existing');
   const [loading, setLoading] = useState(false);
+  const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [clinicId, setClinicId] = useState<string | null>(null);
   
   const [formData, setFormData] = useState({
     patient_id: '',
-    appointment_date: '',
+    appointment_date: preselectedDate || '',
     appointment_time: '',
     duration: '30',
     treatment_type: '',
     notes: '',
     emergency_level: 'routine',
     chief_complaint: '',
-    estimated_cost: '',
-    requires_anesthesia: 'false',
-    follow_up_required: 'false'
   });
 
   const [newPatientData, setNewPatientData] = useState({
     full_name: '',
     phone: '',
     email: '',
-    date_of_birth: '',
-    gender: '',
-    address: '',
-    medical_history: '',
-    blood_type: '',
-    allergies: '',
-    current_medications: '',
-    insurance_info: '',
-    emergency_contact: '',
-    emergency_phone: ''
   });
 
   const handleFormChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Check for conflicts when date/time changes
+    if (field === 'appointment_date' || field === 'appointment_time' || field === 'duration') {
+      const updated = { ...formData, [field]: value };
+      if (updated.appointment_date && updated.appointment_time) {
+        checkConflicts(updated.appointment_date, updated.appointment_time, parseInt(updated.duration));
+      }
+    }
   };
 
   const handlePatientChange = (field: string, value: string) => {
@@ -68,103 +85,123 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppo
   const resetForm = () => {
     setFormData({
       patient_id: '',
-      appointment_date: '',
+      appointment_date: preselectedDate || '',
       appointment_time: '',
       duration: '30',
       treatment_type: '',
       notes: '',
       emergency_level: 'routine',
       chief_complaint: '',
-      estimated_cost: '',
-      requires_anesthesia: 'false',
-      follow_up_required: 'false'
     });
-    setNewPatientData({
-      full_name: '',
-      phone: '',
-      email: '',
-      date_of_birth: '',
-      gender: '',
-      address: '',
-      medical_history: '',
-      blood_type: '',
-      allergies: '',
-      current_medications: '',
-      insurance_info: '',
-      emergency_contact: '',
-      emergency_phone: ''
-    });
+    setNewPatientData({ full_name: '', phone: '', email: '' });
     setPatientType('existing');
+    setConflictWarning(null);
   };
 
-  // Fetch patients
+  // Fetch clinic_id once
+  useEffect(() => {
+    const fetchClinicId = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+      if (profile) setClinicId(profile.id);
+    };
+    fetchClinicId();
+  }, []);
+
+  // Fetch patients filtered by clinic
   useEffect(() => {
     const fetchPatients = async () => {
+      if (!clinicId) return;
       const { data } = await supabase
         .from('patients')
         .select('id, full_name, phone')
+        .eq('clinic_id', clinicId)
         .eq('patient_status', 'active')
         .order('full_name');
-      
       if (data) setPatients(data);
     };
+    if (open && clinicId) fetchPatients();
+  }, [open, clinicId]);
 
-    if (open) {
-      fetchPatients();
+  // Conflict detection
+  const checkConflicts = useCallback(async (date: string, time: string, duration: number) => {
+    if (!clinicId) return;
+    
+    const startTime = new Date(`${date}T${time}:00`);
+    const endTime = new Date(startTime.getTime() + duration * 60000);
+    
+    const { data: existing } = await supabase
+      .from('appointments')
+      .select('id, appointment_date, duration, patients(full_name)')
+      .eq('clinic_id', clinicId)
+      .gte('appointment_date', `${date}T00:00:00`)
+      .lte('appointment_date', `${date}T23:59:59`)
+      .in('status', ['scheduled', 'confirmed']);
+
+    if (existing && existing.length > 0) {
+      const conflicts = existing.filter(apt => {
+        const aptStart = new Date(apt.appointment_date);
+        const aptEnd = new Date(aptStart.getTime() + (apt.duration || 30) * 60000);
+        return (startTime < aptEnd && endTime > aptStart);
+      });
+
+      if (conflicts.length > 0) {
+        const names = conflicts.map(c => (c.patients as any)?.full_name || 'مريض').join('، ');
+        setConflictWarning(`⚠️ تعارض مع موعد: ${names}`);
+      } else {
+        setConflictWarning(null);
+      }
+    } else {
+      setConflictWarning(null);
     }
-  }, [open]);
+  }, [clinicId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.appointment_date || !formData.appointment_time) {
-      toast({
-        title: 'خطأ',
-        description: 'يجب إدخال تاريخ ووقت الموعد',
-        variant: 'destructive'
-      });
+      toast({ title: 'خطأ', description: 'يجب إدخال تاريخ ووقت الموعد', variant: 'destructive' });
       return;
     }
 
     if (patientType === 'existing' && !formData.patient_id) {
-      toast({
-        title: 'خطأ',
-        description: 'يجب اختيار المريض',
-        variant: 'destructive'
-      });
+      toast({ title: 'خطأ', description: 'يجب اختيار المريض', variant: 'destructive' });
       return;
     }
 
     if (patientType === 'new' && !newPatientData.full_name.trim()) {
-      toast({
-        title: 'خطأ',
-        description: 'يجب إدخال اسم المريض الجديد',
-        variant: 'destructive'
-      });
+      toast({ title: 'خطأ', description: 'يجب إدخال اسم المريض الجديد', variant: 'destructive' });
+      return;
+    }
+
+    // Validate appointment is not in the past
+    const appointmentDT = new Date(`${formData.appointment_date}T${formData.appointment_time}:00`);
+    if (appointmentDT < new Date()) {
+      toast({ title: 'خطأ', description: 'لا يمكن حجز موعد في الماضي', variant: 'destructive' });
       return;
     }
 
     setLoading(true);
     
     try {
+      if (!clinicId) throw new Error('لم يتم العثور على ملف المستخدم');
+
       let patient_id = formData.patient_id;
 
-      // If new patient, create patient first
+      // Create new patient if needed
       if (patientType === 'new') {
-        // Get current user's clinic_id
-        const { data: userProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-          .single();
-
-        if (!userProfile) throw new Error('لم يتم العثور على ملف المستخدم');
-
         const { data: newPatient, error: patientError } = await supabase
           .from('patients')
           .insert([{
-            ...newPatientData,
-            clinic_id: userProfile.id
+            full_name: newPatientData.full_name,
+            phone: newPatientData.phone || null,
+            email: newPatientData.email || null,
+            clinic_id: clinicId
           }])
           .select('id')
           .single();
@@ -173,36 +210,29 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppo
         patient_id = newPatient.id;
       }
 
-      // Get clinic_id for appointment
-      const { data: userProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
-
-      if (!userProfile) throw new Error('لم يتم العثور على ملف المستخدم');
-
-      // Combine date and time for appointment_date
       const appointmentDateTime = `${formData.appointment_date}T${formData.appointment_time}:00`;
 
-      // Create appointment
+      const noteParts = [];
+      if (formData.chief_complaint) noteParts.push(`سبب الزيارة: ${formData.chief_complaint}`);
+      if (formData.notes) noteParts.push(formData.notes);
+
       const { error: appointmentError } = await supabase
         .from('appointments')
         .insert([{
           patient_id,
-          clinic_id: userProfile.id,
+          clinic_id: clinicId,
           appointment_date: appointmentDateTime,
           duration: parseInt(formData.duration),
           treatment_type: formData.treatment_type || null,
-          notes: formData.notes || null,
-          status: 'scheduled'
+          notes: noteParts.join('\n') || null,
+          status: formData.emergency_level === 'emergency' ? 'confirmed' : 'scheduled'
         }]);
 
       if (appointmentError) throw appointmentError;
 
       toast({
         title: 'تم بنجاح',
-        description: 'تم إضافة الموعد بنجاح'
+        description: patientType === 'new' ? 'تم إضافة المريض وحجز الموعد بنجاح' : 'تم إضافة الموعد بنجاح'
       });
 
       resetForm();
@@ -223,7 +253,6 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppo
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-screen h-screen max-w-none max-h-none p-0 m-0 rounded-none overflow-hidden">
-        {/* Custom Header with Close Button */}
         <div className="sticky top-0 z-50 bg-background border-b border-border p-6 flex items-center justify-between">
           <DialogHeader className="flex-1">
             <DialogTitle className="text-2xl font-bold flex items-center gap-3">
@@ -231,38 +260,40 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppo
               إضافة موعد جديد
             </DialogTitle>
           </DialogHeader>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onOpenChange(false)}
-            className="h-10 w-10 hover:bg-muted"
-          >
+          <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)} className="h-10 w-10 hover:bg-muted">
             <X className="w-5 h-5" />
           </Button>
         </div>
 
-        {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-8">
             
+            {/* Conflict Warning */}
+            {conflictWarning && (
+              <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>{conflictWarning}</AlertDescription>
+              </Alert>
+            )}
+
             {/* Patient Selection */}
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-foreground border-b pb-2">اختيار المريض</h3>
               
               <RadioGroup value={patientType} onValueChange={(value: 'existing' | 'new') => setPatientType(value)} className="flex gap-6">
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <RadioGroupItem value="existing" id="existing" />
-                  <Label htmlFor="existing">مريض موجود</Label>
+                  <RadioGroupItem value="existing" id="popup-existing" />
+                  <Label htmlFor="popup-existing">مريض موجود</Label>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <RadioGroupItem value="new" id="new" />
-                  <Label htmlFor="new">مريض جديد</Label>
+                  <RadioGroupItem value="new" id="popup-new" />
+                  <Label htmlFor="popup-new">مريض جديد</Label>
                 </div>
               </RadioGroup>
               
               {patientType === 'existing' ? (
                 <div className="space-y-2">
-                  <Label htmlFor="patient_id">اختر المريض *</Label>
+                  <Label>اختر المريض *</Label>
                   <Select value={formData.patient_id} onValueChange={(value) => handleFormChange('patient_id', value)}>
                     <SelectTrigger className="h-11">
                       <SelectValue placeholder="اختر المريض" />
@@ -270,34 +301,25 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppo
                     <SelectContent className="bg-background border border-border z-50">
                       {patients.map((patient) => (
                         <SelectItem key={patient.id} value={patient.id}>
-                          {patient.full_name} - {patient.phone}
+                          {patient.full_name} {patient.phone ? `- ${patient.phone}` : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="new_patient_name">اسم المريض الجديد *</Label>
-                    <Input
-                      id="new_patient_name"
-                      value={newPatientData.full_name}
-                      onChange={(e) => handlePatientChange('full_name', e.target.value)}
-                      placeholder="الاسم الكامل"
-                      className="h-11"
-                    />
+                    <Label>اسم المريض *</Label>
+                    <Input value={newPatientData.full_name} onChange={(e) => handlePatientChange('full_name', e.target.value)} placeholder="الاسم الكامل" className="h-11" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="new_patient_phone">رقم الهاتف *</Label>
-                    <Input
-                      id="new_patient_phone"
-                      value={newPatientData.phone}
-                      onChange={(e) => handlePatientChange('phone', e.target.value)}
-                      placeholder="05xxxxxxxx"
-                      type="tel"
-                      className="h-11"
-                    />
+                    <Label>رقم الهاتف</Label>
+                    <Input value={newPatientData.phone} onChange={(e) => handlePatientChange('phone', e.target.value)} placeholder="05xxxxxxxx" type="tel" className="h-11" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>البريد الإلكتروني</Label>
+                    <Input value={newPatientData.email} onChange={(e) => handlePatientChange('email', e.target.value)} type="email" className="h-11" />
                   </div>
                 </div>
               )}
@@ -307,37 +329,19 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppo
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-foreground border-b pb-2">تفاصيل الموعد</h3>
               
-              {/* الصف الأول: التاريخ، الوقت، المدة */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="appointment_date">تاريخ الموعد *</Label>
-                  <Input
-                    id="appointment_date"
-                    type="date"
-                    value={formData.appointment_date}
-                    onChange={(e) => handleFormChange('appointment_date', e.target.value)}
-                    className="h-11"
-                    min={new Date().toISOString().split('T')[0]}
-                  />
+                  <Label>تاريخ الموعد *</Label>
+                  <Input type="date" value={formData.appointment_date} onChange={(e) => handleFormChange('appointment_date', e.target.value)} className="h-11" min={new Date().toISOString().split('T')[0]} />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="appointment_time">وقت الموعد *</Label>
-                  <Input
-                    id="appointment_time"
-                    type="time"
-                    value={formData.appointment_time}
-                    onChange={(e) => handleFormChange('appointment_time', e.target.value)}
-                    className="h-11"
-                  />
+                  <Label>وقت الموعد *</Label>
+                  <Input type="time" value={formData.appointment_time} onChange={(e) => handleFormChange('appointment_time', e.target.value)} className="h-11" min="08:00" max="22:00" />
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="duration">مدة الموعد (دقيقة)</Label>
+                  <Label>مدة الموعد (دقيقة)</Label>
                   <Select value={formData.duration} onValueChange={(value) => handleFormChange('duration', value)}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="اختر المدة" />
-                    </SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-background border border-border z-50">
                       <SelectItem value="15">15 دقيقة</SelectItem>
                       <SelectItem value="30">30 دقيقة</SelectItem>
@@ -350,39 +354,22 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppo
                 </div>
               </div>
 
-              {/* الصف الثاني: نوع العلاج، مستوى الطوارئ */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="treatment_type">نوع العلاج</Label>
+                  <Label>نوع العلاج</Label>
                   <Select value={formData.treatment_type} onValueChange={(value) => handleFormChange('treatment_type', value)}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="اختر نوع العلاج" />
-                    </SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue placeholder="اختر نوع العلاج" /></SelectTrigger>
                     <SelectContent className="bg-background border border-border z-50">
-                      <SelectItem value="consultation">استشارة</SelectItem>
-                      <SelectItem value="cleaning">تنظيف الأسنان</SelectItem>
-                      <SelectItem value="filling">حشو الأسنان</SelectItem>
-                      <SelectItem value="extraction">خلع الأسنان</SelectItem>
-                      <SelectItem value="root_canal">علاج الجذور</SelectItem>
-                      <SelectItem value="crown">تركيب تاج</SelectItem>
-                      <SelectItem value="bridge">تركيب جسر</SelectItem>
-                      <SelectItem value="implant">زراعة أسنان</SelectItem>
-                      <SelectItem value="orthodontics">تقويم الأسنان</SelectItem>
-                      <SelectItem value="whitening">تبييض الأسنان</SelectItem>
-                      <SelectItem value="surgery">جراحة فموية</SelectItem>
-                      <SelectItem value="emergency">طوارئ</SelectItem>
-                      <SelectItem value="follow_up">متابعة</SelectItem>
-                      <SelectItem value="other">أخرى</SelectItem>
+                      {TREATMENT_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
-
                 <div className="space-y-2">
-                  <Label htmlFor="emergency_level">مستوى الطوارئ</Label>
+                  <Label>مستوى الأولوية</Label>
                   <Select value={formData.emergency_level} onValueChange={(value) => handleFormChange('emergency_level', value)}>
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="اختر المستوى" />
-                    </SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                     <SelectContent className="bg-background border border-border z-50">
                       <SelectItem value="routine">عادي</SelectItem>
                       <SelectItem value="urgent">عاجل</SelectItem>
@@ -393,53 +380,24 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded }: AddAppo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="chief_complaint">الشكوى الرئيسية</Label>
-                <Textarea
-                  id="chief_complaint"
-                  value={formData.chief_complaint}
-                  onChange={(e) => handleFormChange('chief_complaint', e.target.value)}
-                  placeholder="وصف الحالة والأعراض..."
-                  rows={3}
-                  className="resize-none"
-                />
+                <Label>سبب الزيارة / الشكوى الرئيسية</Label>
+                <Textarea value={formData.chief_complaint} onChange={(e) => handleFormChange('chief_complaint', e.target.value)} placeholder="وصف الحالة والأعراض..." rows={3} className="resize-none" />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="notes">ملاحظات إضافية</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => handleFormChange('notes', e.target.value)}
-                  placeholder="أي ملاحظات أو تعليمات خاصة..."
-                  rows={3}
-                  className="resize-none"
-                />
+                <Label>ملاحظات إضافية</Label>
+                <Textarea value={formData.notes} onChange={(e) => handleFormChange('notes', e.target.value)} placeholder="أي ملاحظات أو تعليمات خاصة..." rows={3} className="resize-none" />
               </div>
             </div>
           </form>
         </div>
 
-        {/* Fixed Action Buttons */}
         <div className="sticky bottom-0 bg-background border-t border-border p-6">
           <div className="max-w-4xl mx-auto flex justify-end gap-4">
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={() => {
-                resetForm();
-                onOpenChange(false);
-              }}
-              disabled={loading}
-              className="px-8 h-12"
-            >
+            <Button type="button" variant="outline" onClick={() => { resetForm(); onOpenChange(false); }} disabled={loading} className="px-8 h-12">
               إلغاء
             </Button>
-            <Button 
-              type="button" 
-              disabled={loading}
-              onClick={handleSubmit}
-              className="px-8 h-12"
-            >
+            <Button type="button" disabled={loading} onClick={handleSubmit} className="px-8 h-12">
               <Save className="w-4 h-4 ml-2" />
               {loading ? 'جاري الحفظ...' : 'حفظ الموعد'}
             </Button>
