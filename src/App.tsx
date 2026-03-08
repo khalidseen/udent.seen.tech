@@ -1,11 +1,5 @@
 import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
-import { GlobalProvider } from "@/contexts/GlobalContext";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import { SettingsProvider } from "@/contexts/SettingsContext";
-import { SidebarProvider } from "@/contexts/SidebarContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { PermissionsProvider } from "@/contexts/PermissionsContext";
-import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { AppProviders } from "@/contexts/AppProviders";
 import { useEffect, lazy, Suspense, memo } from "react";
 import { toast } from "sonner";
 import { performanceMonitor } from "@/lib/performance-monitor";
@@ -23,15 +17,7 @@ import Auth from "@/pages/Auth";
 const PageLoader = memo(() => <OptimizedPageLoader type="default" />);
 PageLoader.displayName = "PageLoader";
 
-const initializeOfflineDB = async () => {
-  try {
-    await offlineDB.init();
-    console.log('Offline database initialized successfully.');
-  } catch (error) {
-    console.error('Failed to initialize offline database:', error);
-    toast.error('Failed to initialize offline database. Some features may not work offline.');
-  }
-};
+// offlineDB is initialized once at module level (line 88-89)
 
 const Index = lazy(() => import("@/pages/Index"));
 const Patients = lazy(() => import("@/pages/Patients"));
@@ -115,6 +101,8 @@ function App() {
       });
     }
 
+    performanceMonitor.end('app-initialization');
+
     if (process.env.NODE_ENV === 'development') {
       const memoryInterval = setInterval(() => {
         const memory = performanceMonitor.getMemoryUsage();
@@ -125,106 +113,92 @@ function App() {
 
       return () => clearInterval(memoryInterval);
     }
-
-    performanceMonitor.end('app-initialization');
   }, []);
 
   return (
-    <GlobalProvider>
-      <LanguageProvider>
-        <SettingsProvider>
-          <SidebarProvider>
-            <ThemeProvider>
-              <CurrencyProvider>
-                <PermissionsProvider>
-                  <BrowserRouter 
-                    future={{
-                      v7_startTransition: true,
-                      v7_relativeSplatPath: true
-                    }}
-                  >
-                    <div className="min-h-screen bg-background">
-                      <ErrorBoundary>
-                        <Suspense fallback={<PageLoader />}>
-                          <Routes>
-                              <Route path="/auth" element={<Auth />} />
-                              
-                              <Route path="/" element={
-                                <SimpleProtectedRoute>
-                                  <MainLayout>
-                                    <Outlet />
-                                  </MainLayout>
-                                </SimpleProtectedRoute>
-                              }>
-                                <Route index element={<Index />} />
-                                <Route path="patients" element={<Patients />} />
-                                <Route path="patients/:patientId" element={<PatientProfile />} />
-                                <Route path="patients/edit/:patientId" element={<EditPatient />} />
-                                <Route path="appointments" element={<Appointments />} />
-                                <Route path="appointments/new" element={<NewAppointment />} />
-                                <Route path="book" element={<PublicBooking />} />
-                                <Route path="appointment-requests" element={<AppointmentRequests />} />
-                                <Route path="doctor-applications" element={<DoctorApplications />} />
-                                <Route path="settings" element={<Settings />} />
-                                <Route path="doctors" element={<Doctors />} />
-                                <Route path="medical-records" element={<MedicalRecords />} />
-                                <Route path="dental-treatments" element={<DentalTreatments />} />
-                                <Route path="ai-insights" element={<AIInsights />} />
-                                <Route path="reports" element={<Reports />} />
-                                <Route path="notifications" element={<Notifications />} />
-                                <Route path="doctor-assistants" element={<DoctorAssistants />} />
-                                <Route path="secretaries" element={<Secretaries />} />
-                                <Route path="invoices" element={<Invoices />} />
-                                <Route path="payments" element={<Payments />} />
-                                <Route path="financial-overview" element={<FinancialOverview />} />
-                                <Route path="treatment-plans" element={<TreatmentPlans />} />
-                                <Route path="financial-reports" element={<FinancialReports />} />
-                                <Route path="invoice-management" element={<InvoiceManagement />} />
-                                <Route path="payment-management" element={<PaymentManagement />} />
-                                <Route path="inventory" element={<Inventory />} />
-                                <Route path="medications" element={<Medications />} />
-                                <Route path="prescriptions" element={<Prescriptions />} />
-                                <Route path="purchase-orders" element={<PurchaseOrders />} />
-                                <Route path="stock-movements" element={<StockMovements />} />
-                                <Route path="dental-treatments-management" element={<DentalTreatmentsManagement />} />
-                                <Route path="advanced-medical-records" element={<AdvancedMedicalRecords />} />
-                                <Route path="ai-management-dashboard" element={<AIManagementDashboard />} />
-                                <Route path="smart-diagnosis-system" element={<SmartDiagnosisSystem />} />
-                                <Route path="ai-insights-page" element={<AIInsightsPage />} />
-                                <Route path="advanced-notification-management" element={<AdvancedNotificationManagement />} />
-                                <Route path="custom-notification-templates" element={<CustomNotificationTemplates />} />
-                                <Route path="detailed-reports" element={<DetailedReports />} />
-                                <Route path="advanced-permissions-management" element={<AdvancedPermissionsManagement />} />
-                                <Route path="advanced-user-management" element={<AdvancedUserManagement />} />
-                                <Route path="comprehensive-security-audit" element={<ComprehensiveSecurityAudit />} />
-                                <Route path="dental-3d-models-management" element={<Dental3DModelsManagement />} />
-                                <Route path="super-admin" element={<SuperAdmin />} />
-                                <Route path="subscription-plans" element={<SubscriptionPlans />} />
-                                <Route path="subscription" element={<SubscriptionManagement />} />
-                                <Route path="integrations" element={<Integrations />} />
-                                <Route path="permissions" element={<Permissions />} />
-                                <Route path="profile" element={<Profile />} />
-                                <Route path="profile/:userId" element={<Profile />} />
-                                <Route path="users" element={<Users />} />
-                                <Route path="financial-transactions" element={<PatientFinancialTransactions />} />
-                              </Route>
-                              
-                              <Route path="*" element={<NotFound />} />
-                          </Routes>
-                        </Suspense>
-                      </ErrorBoundary>
-                      <DatabaseKeepAlive />
-                      <PerformanceMonitor />
-                      <PerformanceDashboard />
-                    </div>
-                  </BrowserRouter>
-                </PermissionsProvider>
-              </CurrencyProvider>
-            </ThemeProvider>
-          </SidebarProvider>
-        </SettingsProvider>
-      </LanguageProvider>
-    </GlobalProvider>
+    <AppProviders>
+      <BrowserRouter 
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
+        <div className="min-h-screen bg-background">
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                  <Route path="/auth" element={<Auth />} />
+                  
+                  <Route path="/" element={
+                    <SimpleProtectedRoute>
+                      <MainLayout>
+                        <Outlet />
+                      </MainLayout>
+                    </SimpleProtectedRoute>
+                  }>
+                    <Route index element={<Index />} />
+                    <Route path="patients" element={<Patients />} />
+                    <Route path="patients/:patientId" element={<PatientProfile />} />
+                    <Route path="patients/edit/:patientId" element={<EditPatient />} />
+                    <Route path="appointments" element={<Appointments />} />
+                    <Route path="appointments/new" element={<NewAppointment />} />
+                    <Route path="book" element={<PublicBooking />} />
+                    <Route path="appointment-requests" element={<AppointmentRequests />} />
+                    <Route path="doctor-applications" element={<DoctorApplications />} />
+                    <Route path="settings" element={<Settings />} />
+                    <Route path="doctors" element={<Doctors />} />
+                    <Route path="medical-records" element={<MedicalRecords />} />
+                    <Route path="dental-treatments" element={<DentalTreatments />} />
+                    <Route path="ai-insights" element={<AIInsights />} />
+                    <Route path="reports" element={<Reports />} />
+                    <Route path="notifications" element={<Notifications />} />
+                    <Route path="doctor-assistants" element={<DoctorAssistants />} />
+                    <Route path="secretaries" element={<Secretaries />} />
+                    <Route path="invoices" element={<Invoices />} />
+                    <Route path="payments" element={<Payments />} />
+                    <Route path="financial-overview" element={<FinancialOverview />} />
+                    <Route path="treatment-plans" element={<TreatmentPlans />} />
+                    <Route path="financial-reports" element={<FinancialReports />} />
+                    <Route path="invoice-management" element={<InvoiceManagement />} />
+                    <Route path="payment-management" element={<PaymentManagement />} />
+                    <Route path="inventory" element={<Inventory />} />
+                    <Route path="medications" element={<Medications />} />
+                    <Route path="prescriptions" element={<Prescriptions />} />
+                    <Route path="purchase-orders" element={<PurchaseOrders />} />
+                    <Route path="stock-movements" element={<StockMovements />} />
+                    <Route path="dental-treatments-management" element={<DentalTreatmentsManagement />} />
+                    <Route path="advanced-medical-records" element={<AdvancedMedicalRecords />} />
+                    <Route path="ai-management-dashboard" element={<AIManagementDashboard />} />
+                    <Route path="smart-diagnosis-system" element={<SmartDiagnosisSystem />} />
+                    <Route path="ai-insights-page" element={<AIInsightsPage />} />
+                    <Route path="advanced-notification-management" element={<AdvancedNotificationManagement />} />
+                    <Route path="custom-notification-templates" element={<CustomNotificationTemplates />} />
+                    <Route path="detailed-reports" element={<DetailedReports />} />
+                    <Route path="advanced-permissions-management" element={<AdvancedPermissionsManagement />} />
+                    <Route path="advanced-user-management" element={<AdvancedUserManagement />} />
+                    <Route path="comprehensive-security-audit" element={<ComprehensiveSecurityAudit />} />
+                    <Route path="dental-3d-models-management" element={<Dental3DModelsManagement />} />
+                    <Route path="super-admin" element={<SuperAdmin />} />
+                    <Route path="subscription-plans" element={<SubscriptionPlans />} />
+                    <Route path="subscription" element={<SubscriptionManagement />} />
+                    <Route path="integrations" element={<Integrations />} />
+                    <Route path="permissions" element={<Permissions />} />
+                    <Route path="profile" element={<Profile />} />
+                    <Route path="profile/:userId" element={<Profile />} />
+                    <Route path="users" element={<Users />} />
+                    <Route path="financial-transactions" element={<PatientFinancialTransactions />} />
+                  </Route>
+                  
+                  <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+          <DatabaseKeepAlive />
+          <PerformanceMonitor />
+          <PerformanceDashboard />
+        </div>
+      </BrowserRouter>
+    </AppProviders>
   );
 }
 
