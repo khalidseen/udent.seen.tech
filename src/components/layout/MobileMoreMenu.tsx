@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Sheet, SheetContent, SheetHeader, SheetTitle
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription
 } from "@/components/ui/sheet";
 import {
   BarChart3, ClipboardList, CalendarPlus, FolderOpen, Stethoscope, FileText,
@@ -23,7 +23,7 @@ const menuSections = [
     items: [
       { title: "حجز جديد", url: "/appointments/new", icon: CalendarPlus },
       { title: "طلبات الحجز", url: "/appointment-requests", icon: ClipboardList },
-      { title: "السجلات الطبية", url: "/medical-records", icon: FolderOpen },
+      { title: "السجلات الطبية", url: "/advanced-medical-records", icon: FolderOpen },
       { title: "العلاجات", url: "/dental-treatments-management", icon: Stethoscope },
       { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText },
     ],
@@ -35,6 +35,7 @@ const menuSections = [
       { title: "المدفوعات", url: "/payment-management", icon: DollarSign },
       { title: "خطط العلاج المالية", url: "/treatment-plans", icon: Calculator },
       { title: "التقارير المالية", url: "/financial-reports", icon: FileSpreadsheet },
+      { title: "المعاملات المالية", url: "/financial-transactions", icon: DollarSign },
       { title: "أسعار الخدمات", url: "/service-prices", icon: CreditCard },
       { title: "التأمينات", url: "/insurance-management", icon: Shield },
     ],
@@ -69,6 +70,8 @@ const menuSections = [
     items: [
       { title: "التقارير التفصيلية", url: "/detailed-reports", icon: FileSpreadsheet },
       { title: "الذكاء الاصطناعي", url: "/ai-management-dashboard", icon: Brain },
+      { title: "التحليل الذكي", url: "/ai-insights-page", icon: Brain },
+      { title: "التشخيص الذكي", url: "/smart-diagnosis-system", icon: Stethoscope },
     ],
   },
   {
