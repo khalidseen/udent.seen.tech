@@ -203,13 +203,13 @@ export default function PatientFinancialTransactions() {
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <button onClick={() => navigate(`/patient/${payment.patient_id}`)} className="font-medium text-primary hover:underline flex items-center gap-1">
-                          <User className="h-3 w-3" /> {payment.patients?.full_name}
+                          <User className="h-3 w-3" /> {payment.patient_name}
                         </button>
                         <Badge variant="outline" className={getMethodColor(payment.payment_method)}>{getMethodText(payment.payment_method)}</Badge>
                       </div>
                       <p className="text-sm text-muted-foreground">{format(new Date(payment.payment_date), 'PPP', { locale: ar })}</p>
-                      {payment.invoices?.invoice_number && (
-                        <p className="text-xs text-muted-foreground">فاتورة: {payment.invoices.invoice_number}</p>
+                      {payment.invoice_number && (
+                        <p className="text-xs text-muted-foreground">فاتورة: {payment.invoice_number}</p>
                       )}
                     </div>
                   </div>
