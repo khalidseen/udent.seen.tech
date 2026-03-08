@@ -2,13 +2,17 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DollarSign, TrendingUp, TrendingDown, Receipt, CreditCard, PieChart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { DollarSign, TrendingUp, TrendingDown, Receipt, CreditCard, PieChart, FileText, Activity } from "lucide-react";
 import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
 import { TreatmentPlansManager } from "@/components/financial/TreatmentPlansManager";
 import { FinancialReports } from "@/components/financial/FinancialReports";
 import { CurrencyAmount } from "@/components/ui/currency-display";
+import { useNavigate } from "react-router-dom";
 
 export default function FinancialOverview() {
+  const navigate = useNavigate();
+
   const { data: financialSummary, isLoading } = useQuery({
     queryKey: ['financial-summary'],
     queryFn: async () => {
@@ -17,122 +21,99 @@ export default function FinancialOverview() {
         .select('id')
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
         .single();
-
       if (!profile) throw new Error('Profile not found');
 
-      // الإيرادات الإجمالية
-      const { data: invoices } = await supabase
-        .from('invoices')
-        .select('total_amount, paid_amount, balance_due, status')
-        .eq('clinic_id', profile.id);
+      const [invoicesRes, paymentsRes] = await Promise.all([
+        supabase.from('invoices').select('total_amount, paid_amount, balance_due, status').eq('clinic_id', profile.id),
+        supabase.from('payments').select('amount, payment_date, status').eq('clinic_id', profile.id).eq('status', 'completed'),
+      ]);
 
-      const totalRevenue = invoices?.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0) || 0;
-      const totalPaid = invoices?.reduce((sum, inv) => sum + Number(inv.paid_amount || 0), 0) || 0;
-      const totalPending = invoices?.reduce((sum, inv) => sum + Number(inv.balance_due || 0), 0) || 0;
+      const invoices = invoicesRes.data || [];
+      const payments = paymentsRes.data || [];
 
-      // عدد الفواتير حسب الحالة
-      const pendingInvoices = invoices?.filter(inv => inv.status === 'pending').length || 0;
-      const paidInvoices = invoices?.filter(inv => inv.status === 'paid').length || 0;
+      const totalRevenue = invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+      const totalPaid = invoices.reduce((sum, inv) => sum + Number(inv.paid_amount || 0), 0);
+      const totalPending = invoices.reduce((sum, inv) => sum + Number(inv.balance_due || 0), 0);
+      const pendingInvoices = invoices.filter(inv => inv.status === 'pending').length;
+      const paidInvoices = invoices.filter(inv => inv.status === 'paid').length;
 
-      return {
-        totalRevenue,
-        totalPaid,
-        totalPending,
-        pendingInvoices,
-        paidInvoices,
-      };
+      // Today's collection
+      const today = new Date().toISOString().split('T')[0];
+      const todayCollection = payments.filter(p => p.payment_date.startsWith(today)).reduce((s, p) => s + Number(p.amount || 0), 0);
+
+      return { totalRevenue, totalPaid, totalPending, pendingInvoices, paidInvoices, todayCollection, totalInvoices: invoices.length };
     },
   });
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold">💰 الإدارة المالية الشاملة</h1>
-        <p className="text-muted-foreground">
-          نظرة شاملة على الوضع المالي للعيادة
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">💰 الإدارة المالية الشاملة</h1>
+          <p className="text-muted-foreground">نظرة شاملة على الوضع المالي للعيادة</p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" size="sm" onClick={() => navigate('/invoice-management')}>
+            <Receipt className="ml-1 h-4 w-4" /> الفواتير
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/payment-management')}>
+            <CreditCard className="ml-1 h-4 w-4" /> المدفوعات
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate('/financial-transactions')}>
+            <Activity className="ml-1 h-4 w-4" /> السجل
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-green-600" />
-              إجمالي الإيرادات
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><DollarSign className="h-4 w-4 text-success" />الإيرادات</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              <CurrencyAmount amount={financialSummary?.totalRevenue || 0} />
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-              <TrendingUp className="h-3 w-3" />
-              إجمالي الفواتير
-            </p>
+            <div className="text-2xl font-bold text-success"><CurrencyAmount amount={financialSummary?.totalRevenue || 0} /></div>
+            <p className="text-xs text-muted-foreground">{financialSummary?.totalInvoices} فاتورة</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <CreditCard className="h-4 w-4 text-blue-600" />
-              المدفوعات المستلمة
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><CreditCard className="h-4 w-4 text-blue-600" />المدفوع</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              <CurrencyAmount amount={financialSummary?.totalPaid || 0} />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {financialSummary?.paidInvoices} فاتورة مدفوعة
-            </p>
+            <div className="text-2xl font-bold text-blue-600"><CurrencyAmount amount={financialSummary?.totalPaid || 0} /></div>
+            <p className="text-xs text-muted-foreground">{financialSummary?.paidInvoices} فاتورة مدفوعة</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Receipt className="h-4 w-4 text-red-600" />
-              المبالغ المستحقة
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><Receipt className="h-4 w-4 text-destructive" />المستحق</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              <CurrencyAmount amount={financialSummary?.totalPending || 0} />
-            </div>
-            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-              <TrendingDown className="h-3 w-3" />
-              {financialSummary?.pendingInvoices} فاتورة معلقة
-            </p>
+            <div className="text-2xl font-bold text-destructive"><CurrencyAmount amount={financialSummary?.totalPending || 0} /></div>
+            <p className="text-xs text-muted-foreground">{financialSummary?.pendingInvoices} فاتورة معلقة</p>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <PieChart className="h-4 w-4 text-purple-600" />
-              نسبة التحصيل
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-primary" />تحصيل اليوم</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary"><CurrencyAmount amount={financialSummary?.todayCollection || 0} /></div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><PieChart className="h-4 w-4 text-purple-600" />نسبة التحصيل</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {financialSummary?.totalRevenue 
-                ? ((financialSummary.totalPaid / financialSummary.totalRevenue) * 100).toFixed(1)
-                : 0}%
+              {financialSummary?.totalRevenue ? ((financialSummary.totalPaid / financialSummary.totalRevenue) * 100).toFixed(1) : 0}%
             </div>
-            <p className="text-xs text-muted-foreground">
-              من إجمالي الفواتير
-            </p>
           </CardContent>
         </Card>
       </div>
@@ -148,11 +129,9 @@ export default function FinancialOverview() {
         <TabsContent value="dashboard">
           <FinancialDashboard />
         </TabsContent>
-
         <TabsContent value="treatment-plans">
           <TreatmentPlansManager />
         </TabsContent>
-
         <TabsContent value="reports">
           <FinancialReports />
         </TabsContent>

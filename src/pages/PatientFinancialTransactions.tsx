@@ -4,269 +4,194 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, TrendingUp, TrendingDown, Filter, Download } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Filter, User, Receipt } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState } from "react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
+import { useNavigate } from "react-router-dom";
 
 export default function PatientFinancialTransactions() {
-  const [filterType, setFilterType] = useState<string>("all");
+  const navigate = useNavigate();
   const [filterPeriod, setFilterPeriod] = useState<string>("month");
 
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ['financial-transactions', filterType, filterPeriod],
+    queryKey: ['financial-transactions', filterPeriod],
     queryFn: async () => {
       const { data: profile } = await supabase
         .from('profiles')
         .select('id')
         .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
         .single();
-
       if (!profile) throw new Error('Profile not found');
 
-      // حساب تاريخ البداية بناءً على الفترة
       const now = new Date();
       let startDate: Date;
-      
       switch (filterPeriod) {
-        case 'week':
-          startDate = new Date(now.setDate(now.getDate() - 7));
-          break;
-        case 'month':
-          startDate = new Date(now.setMonth(now.getMonth() - 1));
-          break;
-        case 'quarter':
-          startDate = new Date(now.setMonth(now.getMonth() - 3));
-          break;
-        case 'year':
-          startDate = new Date(now.setFullYear(now.getFullYear() - 1));
-          break;
-        default:
-          startDate = new Date(now.setMonth(now.getMonth() - 1));
+        case 'week': startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); break;
+        case 'month': startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate()); break;
+        case 'quarter': startDate = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate()); break;
+        case 'year': startDate = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate()); break;
+        default: startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
       }
 
-      let query = supabase
-        .from('payments')
-        .select('*')
-        .eq('clinic_id', profile.id)
-        .gte('payment_date', startDate.toISOString())
-        .order('payment_date', { ascending: false });
+      // Fetch payments and invoices in parallel
+      const [paymentsRes, invoicesRes] = await Promise.all([
+        supabase
+          .from('payments')
+          .select('*, patients (full_name), invoices (invoice_number)')
+          .eq('clinic_id', profile.id)
+          .gte('payment_date', startDate.toISOString())
+          .order('payment_date', { ascending: false }),
+        supabase
+          .from('invoices')
+          .select('*, patients (full_name)')
+          .eq('clinic_id', profile.id)
+          .gte('issue_date', startDate.toISOString())
+          .order('issue_date', { ascending: false }),
+      ]);
 
-      const { data: paymentsData, error } = await query;
-      if (error) throw error;
+      const payments = paymentsRes.data || [];
+      const invoices = invoicesRes.data || [];
 
-      // جلب أسماء المرضى
-      const patientIds = [...new Set(paymentsData?.map(p => p.patient_id))];
-      const { data: patients } = await supabase
-        .from('patients')
-        .select('id, full_name')
-        .in('id', patientIds);
-
-      // دمج البيانات
-      const data = paymentsData?.map(payment => ({
-        ...payment,
-        patient_name: patients?.find(p => p.id === payment.patient_id)?.full_name || 'مريض غير محدد'
-      }));
-
-      // حساب الإحصائيات
-      const totalIncome = data?.reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
-      const totalCharges = 0; // يمكن حسابه من الفواتير
-      const totalAdjustments = 0;
-      const totalRefunds = data?.filter(t => t.status === 'refunded')
-        .reduce((sum, t) => sum + Number(t.amount || 0), 0) || 0;
+      const totalIncome = payments.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const totalInvoiced = invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
+      const totalOutstanding = invoices.reduce((sum, inv) => sum + Number(inv.balance_due || 0), 0);
+      const totalRefunds = payments.filter(t => t.status === 'refunded').reduce((s, t) => s + Number(t.amount || 0), 0);
 
       return {
-        transactions: data || [],
-        stats: {
-          totalIncome,
-          totalCharges,
-          totalAdjustments,
-          totalRefunds,
-          netIncome: totalIncome - totalRefunds,
-        }
+        payments,
+        invoices,
+        stats: { totalIncome, totalInvoiced, totalOutstanding, totalRefunds, netIncome: totalIncome - totalRefunds }
       };
     },
   });
 
-  const getTransactionTypeColor = (method: string) => {
+  const getMethodColor = (method: string) => {
     switch (method) {
-      case 'cash': return 'bg-green-500';
-      case 'card': return 'bg-blue-500';
-      case 'transfer': return 'bg-purple-500';
-      default: return 'bg-gray-500';
+      case 'cash': return 'bg-success/10 text-success';
+      case 'card': return 'bg-blue-500/10 text-blue-600';
+      case 'transfer': return 'bg-purple-500/10 text-purple-600';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 
-  const getTransactionTypeText = (method: string) => {
+  const getMethodText = (method: string) => {
     switch (method) {
       case 'cash': return 'نقداً';
       case 'card': return 'بطاقة';
       case 'transfer': return 'تحويل';
+      case 'check': return 'شيك';
       default: return method;
     }
   };
 
-  const getTransactionIcon = (status: string) => {
-    return <DollarSign className="h-4 w-4" />;
-  };
-
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
   }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">سجل المعاملات المالية</h1>
-          <p className="text-muted-foreground">
-            تتبع شامل لجميع المعاملات المالية للمرضى
-          </p>
+          <p className="text-muted-foreground">تتبع شامل لجميع المعاملات المالية</p>
         </div>
-        <Button>
-          <Download className="w-4 h-4 mr-2" />
-          تصدير
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/invoice-management')}>
+            <Receipt className="ml-2 h-4 w-4" /> الفواتير
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/payment-management')}>
+            <DollarSign className="ml-2 h-4 w-4" /> المدفوعات
+          </Button>
+        </div>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-green-600" />
-              إجمالي المدفوعات
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-success" />المدفوعات المستلمة</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {transactions?.stats.totalIncome.toFixed(2)} ريال
-            </div>
+            <div className="text-2xl font-bold text-success"><CurrencyAmount amount={transactions?.stats.totalIncome || 0} /></div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-blue-600" />
-              إجمالي الرسوم
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><Receipt className="h-4 w-4 text-blue-600" />الفواتير الصادرة</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {transactions?.stats.totalCharges.toFixed(2)} ريال
-            </div>
+            <div className="text-2xl font-bold text-blue-600"><CurrencyAmount amount={transactions?.stats.totalInvoiced || 0} /></div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-yellow-600" />
-              التعديلات
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingDown className="h-4 w-4 text-destructive" />المستحقات</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">
-              {transactions?.stats.totalAdjustments.toFixed(2)} ريال
-            </div>
+            <div className="text-2xl font-bold text-destructive"><CurrencyAmount amount={transactions?.stats.totalOutstanding || 0} /></div>
           </CardContent>
         </Card>
-
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingDown className="h-4 w-4 text-red-600" />
-              المرتجعات
-            </CardTitle>
+            <CardTitle className="text-sm font-medium flex items-center gap-2"><DollarSign className="h-4 w-4 text-primary" />صافي الدخل</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">
-              {transactions?.stats.totalRefunds.toFixed(2)} ريال
-            </div>
+            <div className="text-2xl font-bold text-primary"><CurrencyAmount amount={transactions?.stats.netIncome || 0} /></div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
+      {/* Filter */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            تصفية المدفوعات
-          </CardTitle>
+          <CardTitle className="flex items-center gap-2"><Filter className="h-5 w-5" />الفترة الزمنية</CardTitle>
         </CardHeader>
-        <CardContent className="flex gap-4">
-          <div className="flex-1">
-            <label className="text-sm font-medium mb-2 block">الفترة الزمنية</label>
-            <Select value={filterPeriod} onValueChange={setFilterPeriod}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="week">آخر أسبوع</SelectItem>
-                <SelectItem value="month">آخر شهر</SelectItem>
-                <SelectItem value="quarter">آخر 3 أشهر</SelectItem>
-                <SelectItem value="year">آخر سنة</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <CardContent>
+          <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+            <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">آخر أسبوع</SelectItem>
+              <SelectItem value="month">آخر شهر</SelectItem>
+              <SelectItem value="quarter">آخر 3 أشهر</SelectItem>
+              <SelectItem value="year">آخر سنة</SelectItem>
+            </SelectContent>
+          </Select>
         </CardContent>
       </Card>
 
       {/* Transactions List */}
       <Card>
         <CardHeader>
-          <CardTitle>المدفوعات ({transactions?.transactions.length || 0})</CardTitle>
+          <CardTitle>المدفوعات ({transactions?.payments.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
-          {!transactions?.transactions || transactions.transactions.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">
-              لا توجد مدفوعات في الفترة المحددة
-            </p>
+          {!transactions?.payments.length ? (
+            <p className="text-center text-muted-foreground py-8">لا توجد معاملات في الفترة المحددة</p>
           ) : (
             <div className="space-y-3">
-              {transactions.transactions.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                >
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className={`p-2 rounded-full ${getTransactionTypeColor(payment.payment_method)} text-white`}>
-                      {getTransactionIcon(payment.status)}
+              {transactions.payments.map((payment: any) => (
+                <div key={payment.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className={`p-2 rounded-full ${getMethodColor(payment.payment_method)}`}>
+                      <DollarSign className="h-4 w-4" />
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">
-                          {payment.patient_name}
-                        </span>
-                        <Badge className={getTransactionTypeColor(payment.payment_method)}>
-                          {getTransactionTypeText(payment.payment_method)}
-                        </Badge>
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button onClick={() => navigate(`/patient/${payment.patient_id}`)} className="font-medium text-primary hover:underline flex items-center gap-1">
+                          <User className="h-3 w-3" /> {payment.patients?.full_name}
+                        </button>
+                        <Badge variant="outline" className={getMethodColor(payment.payment_method)}>{getMethodText(payment.payment_method)}</Badge>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {format(new Date(payment.payment_date), 'PPP - HH:mm', { locale: ar })}
-                      </div>
-                      {payment.invoice_id && (
-                        <div className="text-sm text-muted-foreground">
-                          فاتورة رقم: {payment.invoice_id.substring(0, 8)}
-                        </div>
-                      )}
-                      {payment.notes && (
-                        <div className="text-sm text-muted-foreground">
-                          {payment.notes}
-                        </div>
+                      <p className="text-sm text-muted-foreground">{format(new Date(payment.payment_date), 'PPP', { locale: ar })}</p>
+                      {payment.invoices?.invoice_number && (
+                        <p className="text-xs text-muted-foreground">فاتورة: {payment.invoices.invoice_number}</p>
                       )}
                     </div>
                   </div>
-                  <div className="text-lg font-bold text-green-600">
-                    +{Number(payment.amount).toFixed(2)} ريال
+                  <div className="text-lg font-bold text-success shrink-0">
+                    +<CurrencyAmount amount={Number(payment.amount)} />
                   </div>
                 </div>
               ))}
