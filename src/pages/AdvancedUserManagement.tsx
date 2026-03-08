@@ -305,58 +305,7 @@ const AdvancedUserManagement = () => {
       
       <div className="space-y-6">
         {/* Action Buttons */}
-        <div className="space-y-4 mb-6">
-          {/* Debug Panel - Remove in production */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 w-full">
-            <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-              🔍 معلومات التشخيص والصلاحيات
-              {localStorage.getItem('temp_admin_session') && (
-                <Badge className="bg-green-100 text-green-800">جلسة تجريبية نشطة</Badge>
-              )}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-700">
-              <div className="space-y-2">
-                <p><strong>👤 المستخدم الحالي:</strong> {currentUser?.full_name || 'غير محدد'}</p>
-                <p><strong>📧 البريد الإلكتروني:</strong> {currentUser?.email || authUser?.email || 'غير محدد'}</p>
-                <p><strong>🎭 الدور:</strong> 
-                  <Badge variant="outline" className="mr-2">
-                    {currentUser?.role || 'غير محدد'}
-                  </Badge>
-                </p>
-              </div>
-              <div className="space-y-2">
-                <p><strong>✅ يمكن إضافة مستخدمين:</strong> 
-                  <Badge className={canAddUsers ? 'bg-green-100 text-green-800 mr-2' : 'bg-red-100 text-red-800 mr-2'}>
-                    {canAddUsers ? '✓ نعم' : '✗ لا'}
-                  </Badge>
-                </p>
-                <p><strong>🔐 الأدوار المصرح لها:</strong></p>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {adminRoles.map(role => (
-                    <Badge 
-                      key={role} 
-                      variant={currentUser?.role === role ? "default" : "outline"}
-                      className="text-xs"
-                    >
-                      {role}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* إرشادات للمستخدم */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
-            <h4 className="font-semibold text-gray-800 mb-2">📋 إرشادات الاستخدام</h4>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>• <strong>للمدير العام (super_admin):</strong> يمكنه إضافة وإدارة جميع المستخدمين</p>
-              <p>• <strong>لمالك العيادة (clinic_owner):</strong> يمكنه إدارة موظفي عيادته</p>
-              <p>• <strong>للمدير (admin/manager):</strong> صلاحيات إدارية محدودة</p>
-              <p>• <strong>للمستخدمين العاديين:</strong> عرض فقط بدون صلاحيات إضافة</p>
-              <p>• <strong>اختبار الصلاحيات:</strong> استخدم زر "صلاحيات مدير عام" للاختبار</p>
-            </div>
-          </div>
+        <div className="mb-6">
           
           <div className="flex gap-4">
           {canAddUsers ? (
