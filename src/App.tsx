@@ -17,12 +17,6 @@ const routeImports: Record<string, () => Promise<any>> = {
   '/appointments': () => import("@/pages/Appointments"),
   '/settings': () => import("@/pages/Settings"),
   '/doctors': () => import("@/pages/Doctors"),
-  '/medical-records': () => import("@/pages/MedicalRecords"),
-  '/dental-treatments': () => import("@/pages/DentalTreatments"),
-  '/reports': () => import("@/pages/Reports"),
-  '/notifications': () => import("@/pages/Notifications"),
-  '/invoices': () => import("@/pages/Invoices"),
-  '/payments': () => import("@/pages/Payments"),
   '/financial-overview': () => import("@/pages/FinancialOverview"),
   '/inventory': () => import("@/pages/Inventory"),
   '/invoice-management': () => import("@/pages/InvoiceManagement"),
@@ -44,6 +38,7 @@ const routeImports: Record<string, () => Promise<any>> = {
   '/advanced-permissions-management': () => import("@/pages/AdvancedPermissionsManagement"),
   '/advanced-user-management': () => import("@/pages/AdvancedUserManagement"),
   '/advanced-notification-management': () => import("@/pages/AdvancedNotificationManagement"),
+  '/advanced-medical-records': () => import("@/pages/AdvancedMedicalRecords"),
   '/comprehensive-security-audit': () => import("@/pages/ComprehensiveSecurityAudit"),
   '/profile': () => import("@/pages/Profile"),
   '/service-prices': () => import("@/pages/ServicePrices"),
@@ -75,17 +70,11 @@ const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Doctors = lazy(() => import("@/pages/Doctors"));
 const DoctorProfile = lazy(() => import("@/pages/DoctorProfile"));
-const MedicalRecords = lazy(() => import("@/pages/MedicalRecords"));
-const DentalTreatments = lazy(() => import("@/pages/DentalTreatments"));
 const AIInsights = lazy(() => import("@/pages/AIInsights"));
-const Reports = lazy(() => import("@/pages/Reports"));
-const Notifications = lazy(() => import("@/pages/Notifications"));
 const DoctorAssistants = lazy(() => import("@/pages/DoctorAssistants"));
 const Secretaries = lazy(() => import("@/pages/Secretaries"));
 const AppointmentRequests = lazy(() => import("@/pages/AppointmentRequests"));
 const DoctorApplications = lazy(() => import("@/pages/DoctorApplications"));
-const Invoices = lazy(() => import("@/pages/Invoices"));
-const Payments = lazy(() => import("@/pages/Payments"));
 const FinancialOverview = lazy(() => import("@/pages/FinancialOverview"));
 const TreatmentPlans = lazy(() => import("@/pages/TreatmentPlans"));
 const FinancialReports = lazy(() => import("@/pages/FinancialReports"));
@@ -110,14 +99,10 @@ const SubscriptionPlans = lazy(() => import("@/pages/SubscriptionPlans"));
 const SubscriptionManagement = lazy(() => import("@/pages/SubscriptionManagement"));
 const Integrations = lazy(() => import("@/pages/Integrations"));
 const Profile = lazy(() => import("@/pages/Profile"));
-const Users = lazy(() => import("@/pages/Users"));
-const Permissions = lazy(() => import("@/pages/Permissions"));
 const PatientFinancialTransactions = lazy(() => import("@/pages/PatientFinancialTransactions"));
 const InvoiceManagement = lazy(() => import("@/pages/InvoiceManagement"));
 const PaymentManagement = lazy(() => import("@/pages/PaymentManagement"));
 const ServicePrices = lazy(() => import("@/pages/ServicePrices"));
-const SecurityAudit = lazy(() => import("@/pages/SecurityAudit"));
-const NotificationTemplates = lazy(() => import("@/pages/NotificationTemplates"));
 const DentalLabManagement = lazy(() => import("@/pages/DentalLabManagement"));
 const SmartScheduling = lazy(() => import("@/pages/SmartScheduling"));
 const CommunicationCenter = lazy(() => import("@/pages/CommunicationCenter"));
@@ -158,14 +143,8 @@ function App() {
                   <Route path="settings" element={<Settings />} />
                   <Route path="doctors" element={<Doctors />} />
                   <Route path="doctors/:doctorId" element={<DoctorProfile />} />
-                  <Route path="medical-records" element={<MedicalRecords />} />
-                  <Route path="dental-treatments" element={<DentalTreatments />} />
-                  <Route path="reports" element={<Reports />} />
-                  <Route path="notifications" element={<Notifications />} />
                   <Route path="doctor-assistants" element={<DoctorAssistants />} />
                   <Route path="secretaries" element={<Secretaries />} />
-                  <Route path="invoices" element={<Invoices />} />
-                  <Route path="payments" element={<Payments />} />
                   <Route path="financial-overview" element={<FinancialOverview />} />
                   <Route path="treatment-plans" element={<TreatmentPlans />} />
                   <Route path="financial-reports" element={<FinancialReports />} />
@@ -192,14 +171,10 @@ function App() {
                   <Route path="subscription-plans" element={<SubscriptionPlans />} />
                   <Route path="subscription" element={<SubscriptionManagement />} />
                   <Route path="integrations" element={<Integrations />} />
-                  <Route path="permissions" element={<Permissions />} />
                   <Route path="profile" element={<Profile />} />
                   <Route path="profile/:userId" element={<Profile />} />
-                  <Route path="users" element={<Users />} />
                   <Route path="financial-transactions" element={<PatientFinancialTransactions />} />
                   <Route path="service-prices" element={<ServicePrices />} />
-                  <Route path="security-audit" element={<SecurityAudit />} />
-                  <Route path="notification-templates" element={<NotificationTemplates />} />
                   <Route path="dental-lab" element={<DentalLabManagement />} />
                   <Route path="smart-scheduling" element={<SmartScheduling />} />
                   <Route path="communication-center" element={<CommunicationCenter />} />

@@ -49,6 +49,11 @@ export const availableRoutes: RouteValidation[] = [
   { route: "/subscription-plans", exists: true, description: "خطط الاشتراك", component: "SubscriptionPlans" },
   { route: "/subscription", exists: true, description: "الاشتراك", component: "SubscriptionManagement" },
   { route: "/doctor-applications", exists: true, description: "طلبات الأطباء", component: "DoctorApplications" },
+  { route: "/service-prices", exists: true, description: "أسعار الخدمات", component: "ServicePrices" },
+  { route: "/dental-lab", exists: true, description: "مختبر الأسنان", component: "DentalLabManagement" },
+  { route: "/smart-scheduling", exists: true, description: "الجدولة الذكية", component: "SmartScheduling" },
+  { route: "/communication-center", exists: true, description: "مركز الاتصالات", component: "CommunicationCenter" },
+  { route: "/insurance-management", exists: true, description: "إدارة التأمين", component: "InsuranceManagement" },
 ];
 
 export function validateRoute(route: string): RouteValidation | null {
