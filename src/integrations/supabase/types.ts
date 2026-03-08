@@ -3189,7 +3189,7 @@ export type Database = {
           ip_address: unknown
           max_requests?: number
           table_name: string
-          time_window?: unknown
+          time_window?: string
         }
         Returns: boolean
       }
