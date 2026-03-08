@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, TrendingUp, TrendingDown, Filter, User, Receipt } from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, Filter, User, Receipt, Download } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useState } from "react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
 import { useNavigate } from "react-router-dom";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
+import { toast } from "sonner";
 
 export default function PatientFinancialTransactions() {
   const navigate = useNavigate();
@@ -47,7 +48,6 @@ export default function PatientFinancialTransactions() {
           .order('issue_date', { ascending: false }),
       ]);
 
-      // Fetch patient names
       const allPatientIds = [...new Set([
         ...(paymentsRes.data?.map(p => p.patient_id) || []),
         ...(invoicesRes.data?.map(i => i.patient_id) || []),
@@ -58,7 +58,6 @@ export default function PatientFinancialTransactions() {
         .in('id', allPatientIds.length > 0 ? allPatientIds : ['none']);
       const patientMap = new Map(patientsData?.map(p => [p.id, p.full_name]) || []);
 
-      // Fetch invoice numbers for payments
       const invoiceIds = [...new Set(paymentsRes.data?.filter(p => p.invoice_id).map(p => p.invoice_id!) || [])];
       const { data: invoiceNames } = invoiceIds.length > 0
         ? await supabase.from('invoices').select('id, invoice_number').in('id', invoiceIds)
@@ -73,7 +72,7 @@ export default function PatientFinancialTransactions() {
       }));
       const invoices = invoicesRes.data || [];
 
-      const totalIncome = paymentsWithNames.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+      const totalIncome = paymentsWithNames.filter(t => t.status === 'completed').reduce((sum, t) => sum + Number(t.amount || 0), 0);
       const totalInvoiced = invoices.reduce((sum, inv) => sum + Number(inv.total_amount || 0), 0);
       const totalOutstanding = invoices.reduce((sum, inv) => sum + Number(inv.balance_due || 0), 0);
       const totalRefunds = paymentsWithNames.filter(t => t.status === 'refunded').reduce((s, t) => s + Number(t.amount || 0), 0);
@@ -96,13 +95,23 @@ export default function PatientFinancialTransactions() {
   };
 
   const getMethodText = (method: string) => {
-    switch (method) {
-      case 'cash': return 'نقداً';
-      case 'card': return 'بطاقة';
-      case 'transfer': return 'تحويل';
-      case 'check': return 'شيك';
-      default: return method;
-    }
+    const map: Record<string, string> = { cash: 'نقداً', card: 'بطاقة', transfer: 'تحويل', check: 'شيك' };
+    return map[method] || method;
+  };
+
+  const exportCSV = () => {
+    if (!transactions?.payments) return;
+    const BOM = '\uFEFF';
+    let csv = 'المريض,التاريخ,المبلغ,طريقة الدفع,الحالة,رقم الفاتورة\n';
+    transactions.payments.forEach((p: any) => {
+      csv += `${p.patient_name},${p.payment_date.split('T')[0]},${p.amount},${getMethodText(p.payment_method)},${p.status},${p.invoice_number || ''}\n`;
+    });
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `سجل_المعاملات_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    toast.success('تم التصدير بنجاح');
   };
 
   if (isLoading) {
@@ -118,6 +127,9 @@ export default function PatientFinancialTransactions() {
             <p className="text-muted-foreground">تتبع شامل لجميع المعاملات المالية</p>
           </div>
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={exportCSV}>
+              <Download className="ml-1 h-4 w-4" /> تصدير
+            </Button>
             <Button variant="outline" onClick={() => navigate('/invoice-management')}>
               <Receipt className="ml-2 h-4 w-4" /> الفواتير
             </Button>
@@ -128,10 +140,10 @@ export default function PatientFinancialTransactions() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-success" />المدفوعات المستلمة</CardTitle>
+              <CardTitle className="text-sm font-medium flex items-center gap-2"><TrendingUp className="h-4 w-4 text-success" />المدفوعات</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-success"><CurrencyAmount amount={transactions?.stats.totalIncome || 0} /></div>
@@ -139,7 +151,7 @@ export default function PatientFinancialTransactions() {
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-medium flex items-center gap-2"><Receipt className="h-4 w-4 text-blue-600" />الفواتير الصادرة</CardTitle>
+              <CardTitle className="text-sm font-medium flex items-center gap-2"><Receipt className="h-4 w-4 text-blue-600" />الفواتير</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600"><CurrencyAmount amount={transactions?.stats.totalInvoiced || 0} /></div>
@@ -151,6 +163,14 @@ export default function PatientFinancialTransactions() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-destructive"><CurrencyAmount amount={transactions?.stats.totalOutstanding || 0} /></div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center gap-2 text-orange-600">المرتجعات</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-600"><CurrencyAmount amount={transactions?.stats.totalRefunds || 0} /></div>
             </CardContent>
           </Card>
           <Card>
@@ -203,6 +223,9 @@ export default function PatientFinancialTransactions() {
                             <User className="h-3 w-3" /> {payment.patient_name}
                           </button>
                           <Badge variant="outline" className={getMethodColor(payment.payment_method)}>{getMethodText(payment.payment_method)}</Badge>
+                          {payment.status === 'refunded' && (
+                            <Badge variant="outline" className="bg-orange-500/10 text-orange-600">مُرتجعة</Badge>
+                          )}
                         </div>
                         <p className="text-sm text-muted-foreground">{format(new Date(payment.payment_date), 'PPP', { locale: ar })}</p>
                         {payment.invoice_number && (
@@ -210,8 +233,8 @@ export default function PatientFinancialTransactions() {
                         )}
                       </div>
                     </div>
-                    <div className="text-lg font-bold text-success shrink-0">
-                      +<CurrencyAmount amount={Number(payment.amount)} />
+                    <div className={`text-lg font-bold shrink-0 ${payment.status === 'refunded' ? 'text-orange-600' : 'text-success'}`}>
+                      {payment.status === 'refunded' ? '-' : '+'}<CurrencyAmount amount={Number(payment.amount)} />
                     </div>
                   </div>
                 ))}
