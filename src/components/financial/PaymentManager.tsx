@@ -29,12 +29,29 @@ export function PaymentManager() {
 
       const { data, error } = await supabase
         .from('payments')
-        .select(`*, patients (full_name, phone), invoices (invoice_number)`)
+        .select('*')
         .eq('clinic_id', profile.id)
         .order('payment_date', { ascending: false })
         .limit(100);
       if (error) throw error;
-      return data;
+
+      // Fetch patient names and invoice numbers
+      const patientIds = [...new Set(data?.map(p => p.patient_id) || [])];
+      const invoiceIds = [...new Set(data?.filter(p => p.invoice_id).map(p => p.invoice_id!) || [])];
+
+      const [patientsRes, invoicesRes] = await Promise.all([
+        supabase.from('patients').select('id, full_name').in('id', patientIds.length > 0 ? patientIds : ['none']),
+        invoiceIds.length > 0 ? supabase.from('invoices').select('id, invoice_number').in('id', invoiceIds) : { data: [] },
+      ]);
+
+      const patientMap = new Map(patientsRes.data?.map(p => [p.id, p]) || []);
+      const invoiceMap = new Map((invoicesRes as any).data?.map((i: any) => [i.id, i]) || []);
+
+      return data?.map(p => ({
+        ...p,
+        patient: patientMap.get(p.patient_id),
+        invoice: p.invoice_id ? invoiceMap.get(p.invoice_id) : null,
+      })) || [];
     },
   });
 

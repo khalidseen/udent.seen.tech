@@ -32,11 +32,20 @@ export function InvoiceManager() {
 
       const { data, error } = await supabase
         .from('invoices')
-        .select(`*, patients (full_name, phone)`)
+        .select('*')
         .eq('clinic_id', profile.id)
         .order('issue_date', { ascending: false });
       if (error) throw error;
-      return data;
+
+      // Fetch patient names
+      const patientIds = [...new Set(data?.map(i => i.patient_id) || [])];
+      const { data: patients } = await supabase
+        .from('patients')
+        .select('id, full_name, phone')
+        .in('id', patientIds.length > 0 ? patientIds : ['none']);
+      const patientMap = new Map(patients?.map(p => [p.id, p]) || []);
+
+      return data?.map(inv => ({ ...inv, patient: patientMap.get(inv.patient_id) })) || [];
     },
   });
 
