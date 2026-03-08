@@ -14,7 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { MessageSquare, Send, Phone, Mail, Clock, Users, FileText, Plus, Search, CheckCircle, AlertCircle } from "lucide-react";
+import { MessageSquare, Send, Phone, Mail, Clock, Users, FileText, Plus, Search, CheckCircle, AlertCircle, Settings } from "lucide-react";
+import WhatsAppSetupWizard from "@/components/whatsapp/WhatsAppSetupWizard";
 
 export default function CommunicationCenter() {
   const [tab, setTab] = useState("logs");
@@ -283,6 +284,10 @@ export default function CommunicationCenter() {
         <TabsList>
           <TabsTrigger value="logs">سجل الرسائل</TabsTrigger>
           <TabsTrigger value="templates">القوالب ({templates.length})</TabsTrigger>
+          <TabsTrigger value="whatsapp-setup" className="gap-1">
+            <Settings className="w-3.5 h-3.5" />
+            إعداد واتساب
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="logs" className="space-y-4">
@@ -349,6 +354,10 @@ export default function CommunicationCenter() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="whatsapp-setup" className="space-y-4">
+          <WhatsAppSetupWizard clinicId={clinicId || null} />
         </TabsContent>
       </Tabs>
 

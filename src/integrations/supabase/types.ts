@@ -3569,6 +3569,65 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_config: {
+        Row: {
+          access_token: string
+          business_account_id: string | null
+          business_name: string | null
+          clinic_id: string
+          created_at: string | null
+          display_phone_number: string | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          last_verified_at: string | null
+          phone_number_id: string
+          updated_at: string | null
+          webhook_secret: string | null
+          webhook_verify_token: string
+        }
+        Insert: {
+          access_token: string
+          business_account_id?: string | null
+          business_name?: string | null
+          clinic_id: string
+          created_at?: string | null
+          display_phone_number?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          last_verified_at?: string | null
+          phone_number_id: string
+          updated_at?: string | null
+          webhook_secret?: string | null
+          webhook_verify_token?: string
+        }
+        Update: {
+          access_token?: string
+          business_account_id?: string | null
+          business_name?: string | null
+          clinic_id?: string
+          created_at?: string | null
+          display_phone_number?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          last_verified_at?: string | null
+          phone_number_id?: string
+          updated_at?: string | null
+          webhook_secret?: string | null
+          webhook_verify_token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_config_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: true
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
