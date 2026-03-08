@@ -2204,6 +2204,36 @@ export type Database = {
         }
         Relationships: []
       }
+      otp_codes: {
+        Row: {
+          attempts: number | null
+          code: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          attempts?: number | null
+          code: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          attempts?: number | null
+          code?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       patient_dental_models: {
         Row: {
           annotations: Json | null
@@ -2709,6 +2739,7 @@ export type Database = {
           status: string | null
           updated_at: string
           user_id: string
+          whatsapp_number: string | null
         }
         Insert: {
           clinic_id?: string | null
@@ -2723,6 +2754,7 @@ export type Database = {
           status?: string | null
           updated_at?: string
           user_id: string
+          whatsapp_number?: string | null
         }
         Update: {
           clinic_id?: string | null
@@ -2737,6 +2769,7 @@ export type Database = {
           status?: string | null
           updated_at?: string
           user_id?: string
+          whatsapp_number?: string | null
         }
         Relationships: [
           {
@@ -3686,6 +3719,30 @@ export type Database = {
         }
         Relationships: []
       }
+      trusted_devices: {
+        Row: {
+          created_at: string | null
+          device_hash: string
+          expires_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_hash: string
+          expires_at: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_hash?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       usage_tracking: {
         Row: {
           clinic_id: string
@@ -3889,6 +3946,7 @@ export type Database = {
         Args: { _role: string; _user_id: string }
         Returns: boolean
       }
+      cleanup_expired_otp_codes: { Args: never; Returns: undefined }
       cleanup_old_health_pings: { Args: never; Returns: undefined }
       create_clinic_with_owner: {
         Args: {
@@ -3969,6 +4027,7 @@ export type Database = {
           status: string | null
           updated_at: string
           user_id: string
+          whatsapp_number: string | null
         }
         SetofOptions: {
           from: "*"
