@@ -28,6 +28,7 @@ const NewAppointment = lazy(() => import("@/pages/NewAppointment"));
 const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Doctors = lazy(() => import("@/pages/Doctors"));
+const DoctorProfile = lazy(() => import("@/pages/DoctorProfile"));
 const MedicalRecords = lazy(() => import("@/pages/MedicalRecords"));
 const DentalTreatments = lazy(() => import("@/pages/DentalTreatments"));
 const AIInsights = lazy(() => import("@/pages/AIInsights"));
@@ -155,6 +156,7 @@ function App() {
                     <Route path="doctor-applications" element={<DoctorApplications />} />
                     <Route path="settings" element={<Settings />} />
                     <Route path="doctors" element={<Doctors />} />
+                    <Route path="doctors/:doctorId" element={<DoctorProfile />} />
                     <Route path="medical-records" element={<MedicalRecords />} />
                     <Route path="dental-treatments" element={<DentalTreatments />} />
                     <Route path="reports" element={<Reports />} />

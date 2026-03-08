@@ -205,8 +205,8 @@ const Doctors = () => {
             <Card key={doctor.id} className="hover:shadow-md transition-shadow">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg">{doctor.full_name}</CardTitle>
+                  <div className="cursor-pointer" onClick={() => navigate(`/doctors/${doctor.id}`)}>
+                    <CardTitle className="text-lg hover:text-primary transition-colors">{doctor.full_name}</CardTitle>
                     {doctor.specialization && (<p className="text-sm text-muted-foreground">{doctor.specialization}</p>)}
                   </div>
                   {getStatusBadge(doctor.status)}
