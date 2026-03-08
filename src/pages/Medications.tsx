@@ -41,20 +41,18 @@ const Medications = () => {
   const { toast } = useToast();
 
   const { data: medications = [], isLoading, refetch } = useQuery({
-    queryKey: ['medications'],
+    queryKey: ['medications', profile?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('medications')
         .select('*')
+        .eq('clinic_id', profile!.id)
         .order('trade_name');
       
-      if (error) {
-        console.error('Error fetching medications:', error);
-        throw error;
-      }
-      
+      if (error) throw error;
       return data as Medication[];
-    }
+    },
+    enabled: !!profile?.id
   });
 
   // Get clinic_id for insertions

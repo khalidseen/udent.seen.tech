@@ -31,8 +31,18 @@ const StockMovements = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const { user } = useAuth();
 
+  const { data: profile } = useQuery({
+    queryKey: ['current-profile'],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    }
+  });
+
+  const clinicId = profile?.id;
+
   const { data: movements = [], isLoading, refetch } = useQuery({
-    queryKey: ['stock-movements'],
+    queryKey: ['stock-movements', clinicId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stock_movements')
@@ -40,11 +50,13 @@ const StockMovements = () => {
           *,
           medical_supplies(name, unit)
         `)
+        .eq('clinic_id', clinicId!)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       return data as StockMovement[];
-    }
+    },
+    enabled: !!clinicId
   });
 
   const filteredMovements = movements.filter(movement =>

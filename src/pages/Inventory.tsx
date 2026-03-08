@@ -41,26 +41,39 @@ export default function Inventory() {
   const [isStockMovementOpen, setIsStockMovementOpen] = useState(false);
   const { toast } = useToast();
 
+  const { data: profile } = useQuery({
+    queryKey: ['current-profile'],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    }
+  });
+
+  const clinicId = profile?.id;
+
   const { data: supplies, isLoading, refetch } = useQuery({
-    queryKey: ['medical-supplies'],
+    queryKey: ['medical-supplies', clinicId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('medical_supplies')
         .select('*')
+        .eq('clinic_id', clinicId!)
         .eq('is_active', true)
         .order('name');
 
       if (error) throw error;
       return data as Supply[];
-    }
+    },
+    enabled: !!clinicId
   });
 
   const { data: stats } = useQuery({
-    queryKey: ['inventory-stats'],
+    queryKey: ['inventory-stats', clinicId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('medical_supplies')
         .select('current_stock, minimum_stock, unit_cost')
+        .eq('clinic_id', clinicId!)
         .eq('is_active', true);
 
       if (error) throw error;
@@ -71,7 +84,8 @@ export default function Inventory() {
       const outOfStockItems = data.filter(item => item.current_stock === 0).length;
 
       return { totalItems, lowStockItems, totalValue, outOfStockItems };
-    }
+    },
+    enabled: !!clinicId
   });
 
   const filteredSupplies = supplies?.filter(supply => {

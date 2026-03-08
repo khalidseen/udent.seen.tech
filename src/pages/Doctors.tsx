@@ -30,17 +30,29 @@ const Doctors = () => {
   const [editingDoctor, setEditingDoctor] = useState<Doctor | null>(null);
   const { toast } = useToast();
 
+  const { data: profile } = useQuery({
+    queryKey: ['current-profile'],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    }
+  });
+
+  const clinicId = profile?.id;
+
   const { data: doctors, isLoading, refetch } = useQuery({
-    queryKey: ['doctors'],
+    queryKey: ['doctors', clinicId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('doctors')
         .select('*')
+        .eq('clinic_id', clinicId!)
         .order('full_name', { ascending: true });
 
       if (error) throw error;
       return data as Doctor[];
-    }
+    },
+    enabled: !!clinicId
   });
 
   const filteredDoctors = doctors?.filter(doctor =>
