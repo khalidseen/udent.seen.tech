@@ -14,7 +14,7 @@ import { Plus, Edit, Trash2, User, Mail, Phone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface Secretary {
-  id: string;
+  id: number;
   full_name: string;
   email: string;
   phone: string | null;
@@ -84,7 +84,7 @@ export default function Secretaries() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (secretaryId: string) => {
+  const handleDelete = async (secretaryId: number) => {
     if (!confirm('هل أنت متأكد من حذف هذا السكرتير؟')) return;
 
     try {
