@@ -68,7 +68,7 @@ export function AppSidebar() {
         { title: "المواعيد", url: "/appointments", icon: Calendar, permissions: ['appointments.view'] },
         { title: "حجز جديد", url: "/appointments/new", icon: CalendarPlus, permissions: ['appointments.create'] },
         { title: "طلبات الحجز", url: "/appointment-requests", icon: ClipboardList, permissions: ['appointments.view'] },
-        { title: "السجلات الطبية", url: "/medical-records", icon: FolderOpen, permissions: ['patients.view'] },
+        { title: "السجلات الطبية", url: "/advanced-medical-records", icon: FolderOpen, permissions: ['patients.view'] },
         { title: "العلاجات", url: "/dental-treatments-management", icon: Stethoscope, permissions: ['treatments.view'] },
         { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText, permissions: ['treatments.view'] },
       ]
@@ -81,6 +81,7 @@ export function AppSidebar() {
         { title: "المدفوعات", url: "/payment-management", icon: DollarSign, permissions: ['financial.view'] },
         { title: "خطط العلاج المالية", url: "/treatment-plans", icon: Calculator, permissions: ['financial.view'] },
         { title: "التقارير المالية", url: "/financial-reports", icon: FileSpreadsheet, permissions: ['financial.view'] },
+        { title: "المعاملات المالية", url: "/financial-transactions", icon: Wallet, permissions: ['financial.view'] },
         { title: "أسعار الخدمات", url: "/service-prices", icon: CreditCard, permissions: ['financial.manage'] },
         { title: "التأمينات الصحية", url: "/insurance-management", icon: Shield, permissions: ['financial.view'] },
       ]
@@ -115,6 +116,8 @@ export function AppSidebar() {
       items: [
         { title: "التقارير التفصيلية", url: "/detailed-reports", icon: FileSpreadsheet, permissions: ['reports.view'] },
         { title: "قائمة الذكاء الاصطناعي", url: "/ai-management-dashboard", icon: Brain, permissions: ['reports.view'] },
+        { title: "التحليل الذكي", url: "/ai-insights-page", icon: Activity, permissions: ['reports.view'] },
+        { title: "التشخيص الذكي", url: "/smart-diagnosis-system", icon: Stethoscope, permissions: ['reports.view'] },
       ]
     },
     // Super Admin Section
