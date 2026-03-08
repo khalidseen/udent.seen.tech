@@ -393,14 +393,10 @@ const DoctorAssistants = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="specialization">التخصص</Label>
-                <Input
-                  id="specialization"
-                  value={formData.specialization}
-                  onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                  placeholder="أدخل التخصص"
-                />
+                <Input id="specialization" value={formData.specialization} onChange={(e) => setFormData({ ...formData, specialization: e.target.value })} placeholder="أدخل التخصص" />
               </div>
             </div>
 
