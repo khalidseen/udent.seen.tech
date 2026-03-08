@@ -51,6 +51,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSettings } from "@/hooks/useSettingsHook";
 import styles from "./Index.module.css";
 import { validateDashboardCards } from "@/utils/dashboardValidation";
+import { TodayAppointmentsWidget } from "@/components/dashboard/TodayAppointmentsWidget";
 // import { DashboardValidator } from "@/components/dashboard/DashboardValidator"; // تم نقله إلى الإعدادات
 // import { SmartNotificationSystem } from "@/components/dashboard/SmartNotificationSystem"; // مُعطل مؤقتاً
 
@@ -673,6 +674,9 @@ function Index() {
             </Card>
           </div>
         )}
+
+        {/* مواعيد اليوم */}
+        <TodayAppointmentsWidget />
 
         {/* Dashboard Action Cards */}
         {settings.showDashboardBoxes && (
