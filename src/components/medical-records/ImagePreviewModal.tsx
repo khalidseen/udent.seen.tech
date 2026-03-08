@@ -211,7 +211,7 @@ export function ImagePreviewModal({ image, isOpen, onClose }: ImagePreviewModalP
                 <div className="space-y-2 text-sm">
                   <div>
                     <span className="font-medium">التاريخ: </span>
-                    {new Date(image.image_date).toLocaleDateString('ar-SA')}
+                    {new Date(image.image_date).toLocaleDateString()}
                   </div>
                   
                   {image.tooth_number && (

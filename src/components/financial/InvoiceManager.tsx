@@ -134,7 +134,7 @@ export function InvoiceManager() {
                     المريض: {invoice.patients?.full_name}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    تاريخ الإصدار: {new Date(invoice.issue_date).toLocaleDateString('ar-SA')}
+                    تاريخ الإصدار: {new Date(invoice.issue_date).toLocaleDateString()}
                   </p>
                 </div>
 

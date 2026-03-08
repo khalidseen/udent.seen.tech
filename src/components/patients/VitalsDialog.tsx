@@ -300,7 +300,7 @@ const VitalsDialog: React.FC<VitalsDialogProps> = ({
                               {statusLabels[latest.status]}
                             </Badge>
                             <div className="text-xs text-gray-500">
-                              {new Date(latest.timestamp).toLocaleDateString('ar-SA')}
+                              {new Date(latest.timestamp).toLocaleDateString()}
                             </div>
                             <div className="text-xs text-gray-400">
                               المعدل الطبيعي: {config.normalRange}
