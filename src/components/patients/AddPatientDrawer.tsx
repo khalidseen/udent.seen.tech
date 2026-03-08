@@ -130,6 +130,35 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
         <VisuallyHidden>
           <DialogTitle>إضافة مريض جديد</DialogTitle>
         </VisuallyHidden>
+        {successState ? (
+          /* Success Screen */
+          <div className="flex flex-col items-center justify-center h-full p-8 space-y-6">
+            <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+              <CheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
+            </div>
+            <div className="text-center space-y-2">
+              <h2 className="text-2xl font-bold text-foreground">تم إضافة المريض بنجاح!</h2>
+              <p className="text-muted-foreground text-lg">{successState.name}</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-md">
+              <Button
+                onClick={handleBookAppointment}
+                className="flex-1 h-14 text-base gap-2"
+              >
+                <Calendar className="w-5 h-5" />
+                حجز موعد الآن
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                className="flex-1 h-14 text-base"
+              >
+                إغلاق
+              </Button>
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Custom Header with Close Button */}
         <div className="sticky top-0 z-50 bg-background border-b border-border p-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -143,7 +172,7 @@ const AddPatientDrawer = ({ onPatientAdded }: AddPatientDrawerProps) => {
             variant="outline"
             size="icon"
             onClick={() => setOpen(false)}
-            className="h-10 w-10 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950 dark:hover:border-red-700 dark:hover:text-red-300"
+            className="h-10 w-10 border-destructive/30 text-destructive hover:bg-destructive/10"
           >
             <X className="h-5 w-5" />
           </Button>
