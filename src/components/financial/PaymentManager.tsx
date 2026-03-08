@@ -49,8 +49,8 @@ export function PaymentManager() {
 
       return data?.map(p => ({
         ...p,
-        patient: patientMap.get(p.patient_id),
-        invoice: p.invoice_id ? invoiceMap.get(p.invoice_id) : null,
+        patient: patientMap.get(p.patient_id) as { id: string; full_name: string } | undefined,
+        invoice: (p.invoice_id ? invoiceMap.get(p.invoice_id) : null) as { id: string; invoice_number: string } | null,
       })) || [];
     },
   });
