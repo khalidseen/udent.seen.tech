@@ -60,6 +60,7 @@ export function TopNavbar() {
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { hasPermission, getPrimaryRole } = usePermissions();
+  const navigate = useNavigate();
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
