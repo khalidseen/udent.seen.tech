@@ -446,6 +446,7 @@ export type Database = {
           appointment_date: string
           clinic_id: string
           created_at: string
+          doctor_id: string | null
           duration: number
           id: string
           notes: string | null
@@ -458,6 +459,7 @@ export type Database = {
           appointment_date: string
           clinic_id: string
           created_at?: string
+          doctor_id?: string | null
           duration?: number
           id?: string
           notes?: string | null
@@ -470,6 +472,7 @@ export type Database = {
           appointment_date?: string
           clinic_id?: string
           created_at?: string
+          doctor_id?: string | null
           duration?: number
           id?: string
           notes?: string | null
@@ -484,6 +487,13 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
           {
@@ -1049,6 +1059,7 @@ export type Database = {
           address: string | null
           clinic_id: string
           created_at: string
+          doctor_id: string | null
           email: string | null
           experience_years: number | null
           full_name: string
@@ -1063,6 +1074,7 @@ export type Database = {
           address?: string | null
           clinic_id: string
           created_at?: string
+          doctor_id?: string | null
           email?: string | null
           experience_years?: number | null
           full_name: string
@@ -1077,6 +1089,7 @@ export type Database = {
           address?: string | null
           clinic_id?: string
           created_at?: string
+          doctor_id?: string | null
           email?: string | null
           experience_years?: number | null
           full_name?: string
@@ -1093,6 +1106,13 @@ export type Database = {
             columns: ["clinic_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "doctor_assistants_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "doctors"
             referencedColumns: ["id"]
           },
         ]

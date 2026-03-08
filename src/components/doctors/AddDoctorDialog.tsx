@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,65 +35,54 @@ interface AddDoctorDialogProps {
   editingDoctor?: Doctor;
 }
 
+const getInitialFormData = (doctor?: Doctor) => ({
+  full_name: doctor?.full_name || "",
+  email: doctor?.email || "",
+  phone: doctor?.phone || "",
+  specialization: doctor?.specialization || "",
+  license_number: doctor?.license_number || "",
+  qualifications: doctor?.qualifications || "",
+  experience_years: doctor?.experience_years?.toString() || "",
+  consultation_fee: doctor?.consultation_fee?.toString() || "",
+  working_hours: doctor?.working_hours || "",
+  address: doctor?.address || "",
+  bio: doctor?.bio || "",
+  gender: doctor?.gender || "",
+  date_of_birth: doctor?.date_of_birth || "",
+  hired_date: doctor?.hired_date || new Date().toISOString().split('T')[0],
+  status: doctor?.status || "active",
+  notes: doctor?.notes || ""
+});
+
 export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editingDoctor }: AddDoctorDialogProps) {
-  const [formData, setFormData] = useState({
-    full_name: editingDoctor?.full_name || "",
-    email: editingDoctor?.email || "",
-    phone: editingDoctor?.phone || "",
-    specialization: editingDoctor?.specialization || "",
-    license_number: editingDoctor?.license_number || "",
-    qualifications: editingDoctor?.qualifications || "",
-    experience_years: editingDoctor?.experience_years?.toString() || "",
-    consultation_fee: editingDoctor?.consultation_fee?.toString() || "",
-    working_hours: editingDoctor?.working_hours || "",
-    address: editingDoctor?.address || "",
-    bio: editingDoctor?.bio || "",
-    gender: editingDoctor?.gender || "",
-    date_of_birth: editingDoctor?.date_of_birth || "",
-    hired_date: editingDoctor?.hired_date || new Date().toISOString().split('T')[0],
-    status: editingDoctor?.status || "active",
-    notes: editingDoctor?.notes || ""
-  });
+  const [formData, setFormData] = useState(getInitialFormData(editingDoctor));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
+  // Fix: sync form state when editingDoctor changes
+  useEffect(() => {
+    setFormData(getInitialFormData(editingDoctor));
+  }, [editingDoctor]);
+
   const specializations = [
-    "طب عام",
-    "طب أسنان",
-    "جراحة الفم والأسنان",
-    "تقويم الأسنان",
-    "طب أسنان الأطفال",
-    "علاج العصب",
-    "أمراض اللثة",
-    "التركيبات السنية",
+    "طب عام", "طب أسنان", "جراحة الفم والأسنان", "تقويم الأسنان",
+    "طب أسنان الأطفال", "علاج العصب", "أمراض اللثة", "التركيبات السنية",
     "جراحة الوجه والفكين"
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.full_name || !formData.specialization) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء الحقول المطلوبة",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: "يرجى ملء الحقول المطلوبة", variant: "destructive" });
       return;
     }
 
     setIsSubmitting(true);
-
     try {
-      // Get current user profile for clinic_id
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('المستخدم غير مسجل الدخول');
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_id', user.user.id)
-        .single();
-
+      const { data: profile } = await supabase.from('profiles').select('id').eq('user_id', user.user.id).single();
       if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
 
       const doctorData = {
@@ -116,71 +105,21 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
         notes: formData.notes?.trim() || null
       };
 
-      console.log('Doctor data to save:', doctorData);
-
-      if (editingDoctor) {
-        console.log('Updating doctor with ID:', editingDoctor.id);
-        const { error } = await supabase
-          .from('doctors')
-          .update(doctorData)
-          .eq('id', editingDoctor.id);
-
-        if (error) {
-          console.error('Update error:', error);
-          throw error;
-        }
-
-        toast({
-          title: "تم التحديث",
-          description: "تم تحديث بيانات الطبيب بنجاح",
-        });
+      if (editingDoctor?.id) {
+        const { error } = await supabase.from('doctors').update(doctorData).eq('id', editingDoctor.id);
+        if (error) throw error;
+        toast({ title: "تم التحديث", description: "تم تحديث بيانات الطبيب بنجاح" });
       } else {
-        console.log('Inserting new doctor');
-        const { data, error } = await supabase
-          .from('doctors')
-          .insert(doctorData)
-          .select();
-
-        if (error) {
-          console.error('Insert error:', error);
-          throw error;
-        }
-
-        console.log('Doctor inserted successfully:', data);
-        toast({
-          title: "تم الإضافة",
-          description: "تم إضافة الطبيب بنجاح",
-        });
+        const { error } = await supabase.from('doctors').insert(doctorData);
+        if (error) throw error;
+        toast({ title: "تم الإضافة", description: "تم إضافة الطبيب بنجاح" });
       }
 
-      // Reset form
-      setFormData({
-        full_name: "",
-        email: "",
-        phone: "",
-        specialization: "",
-        license_number: "",
-        qualifications: "",
-        experience_years: "",
-        consultation_fee: "",
-        working_hours: "",
-        address: "",
-        bio: "",
-        gender: "",
-        date_of_birth: "",
-        hired_date: new Date().toISOString().split('T')[0],
-        status: "active",
-        notes: ""
-      });
-      
+      setFormData(getInitialFormData());
       onOpenChange(false);
       onSuccess();
     } catch (error: unknown) {
-      toast({
-        title: "خطأ",
-        description: (error as Error)?.message || "حدث خطأ أثناء حفظ البيانات",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: (error as Error)?.message || "حدث خطأ أثناء حفظ البيانات", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -190,154 +129,74 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {editingDoctor ? "تعديل الطبيب" : "إضافة طبيب جديد"}
-          </DialogTitle>
+          <DialogTitle>{editingDoctor ? "تعديل الطبيب" : "إضافة طبيب جديد"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">المعلومات الأساسية</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="full_name">الاسم الكامل *</Label>
-                <Input
-                  id="full_name"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  placeholder="أدخل الاسم الكامل"
-                  required
-                />
+                <Input id="full_name" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} placeholder="أدخل الاسم الكامل" required />
               </div>
-
               <div>
                 <Label htmlFor="specialization">التخصص *</Label>
-                <Select
-                  value={formData.specialization}
-                  onValueChange={(value) => setFormData({ ...formData, specialization: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر التخصص" />
-                  </SelectTrigger>
+                <Select value={formData.specialization} onValueChange={(value) => setFormData({ ...formData, specialization: value })}>
+                  <SelectTrigger><SelectValue placeholder="اختر التخصص" /></SelectTrigger>
                   <SelectContent>
-                    {specializations.map((spec) => (
-                      <SelectItem key={spec} value={spec}>
-                        {spec}
-                      </SelectItem>
-                    ))}
+                    {specializations.map((spec) => (<SelectItem key={spec} value={spec}>{spec}</SelectItem>))}
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <Label htmlFor="email">البريد الإلكتروني</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="أدخل البريد الإلكتروني"
-                />
+                <Input id="email" type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="أدخل البريد الإلكتروني" />
               </div>
-
               <div>
                 <Label htmlFor="phone">رقم الهاتف</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="أدخل رقم الهاتف"
-                />
+                <Input id="phone" type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="أدخل رقم الهاتف" />
               </div>
-
               <div>
                 <Label htmlFor="gender">الجنس</Label>
-                <Select
-                  value={formData.gender}
-                  onValueChange={(value) => setFormData({ ...formData, gender: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="اختر الجنس" />
-                  </SelectTrigger>
+                <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
+                  <SelectTrigger><SelectValue placeholder="اختر الجنس" /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="male">ذكر</SelectItem>
                     <SelectItem value="female">أنثى</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <Label htmlFor="date_of_birth">تاريخ الميلاد</Label>
-                <Input
-                  id="date_of_birth"
-                  type="date"
-                  value={formData.date_of_birth}
-                  onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
-                />
+                <Input id="date_of_birth" type="date" value={formData.date_of_birth} onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })} />
               </div>
             </div>
           </div>
 
-          {/* Professional Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">المعلومات المهنية</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="license_number">رقم الترخيص</Label>
-                <Input
-                  id="license_number"
-                  value={formData.license_number}
-                  onChange={(e) => setFormData({ ...formData, license_number: e.target.value })}
-                  placeholder="أدخل رقم الترخيص"
-                />
+                <Input id="license_number" value={formData.license_number} onChange={(e) => setFormData({ ...formData, license_number: e.target.value })} placeholder="أدخل رقم الترخيص" />
               </div>
-
               <div>
                 <Label htmlFor="experience_years">سنوات الخبرة</Label>
-                <Input
-                  id="experience_years"
-                  type="number"
-                  min="0"
-                  value={formData.experience_years}
-                  onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })}
-                  placeholder="أدخل سنوات الخبرة"
-                />
+                <Input id="experience_years" type="number" min="0" value={formData.experience_years} onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })} />
               </div>
-
               <div>
                 <Label htmlFor="consultation_fee">أتعاب الاستشارة</Label>
-                <Input
-                  id="consultation_fee"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={formData.consultation_fee}
-                  onChange={(e) => setFormData({ ...formData, consultation_fee: e.target.value })}
-                  placeholder="أدخل أتعاب الاستشارة"
-                />
+                <Input id="consultation_fee" type="number" min="0" step="0.01" value={formData.consultation_fee} onChange={(e) => setFormData({ ...formData, consultation_fee: e.target.value })} />
               </div>
-
               <div>
                 <Label htmlFor="hired_date">تاريخ التعيين</Label>
-                <Input
-                  id="hired_date"
-                  type="date"
-                  value={formData.hired_date}
-                  onChange={(e) => setFormData({ ...formData, hired_date: e.target.value })}
-                />
+                <Input id="hired_date" type="date" value={formData.hired_date} onChange={(e) => setFormData({ ...formData, hired_date: e.target.value })} />
               </div>
-
               <div>
                 <Label htmlFor="status">الحالة</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">نشط</SelectItem>
                     <SelectItem value="inactive">غير نشط</SelectItem>
@@ -345,72 +204,37 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
                   </SelectContent>
                 </Select>
               </div>
-
               <div>
                 <Label htmlFor="working_hours">ساعات العمل</Label>
-                <Input
-                  id="working_hours"
-                  value={formData.working_hours}
-                  onChange={(e) => setFormData({ ...formData, working_hours: e.target.value })}
-                  placeholder="مثال: 9:00 ص - 5:00 م"
-                />
+                <Input id="working_hours" value={formData.working_hours} onChange={(e) => setFormData({ ...formData, working_hours: e.target.value })} placeholder="مثال: 9:00 ص - 5:00 م" />
               </div>
             </div>
           </div>
 
-          {/* Additional Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-medium">معلومات إضافية</h3>
             <div className="space-y-4">
               <div>
                 <Label htmlFor="qualifications">المؤهلات</Label>
-                <Textarea
-                  id="qualifications"
-                  value={formData.qualifications}
-                  onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })}
-                  placeholder="أدخل المؤهلات والشهادات"
-                  rows={3}
-                />
+                <Textarea id="qualifications" value={formData.qualifications} onChange={(e) => setFormData({ ...formData, qualifications: e.target.value })} placeholder="أدخل المؤهلات والشهادات" rows={3} />
               </div>
-
               <div>
                 <Label htmlFor="address">العنوان</Label>
-                <Input
-                  id="address"
-                  value={formData.address}
-                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="أدخل العنوان"
-                />
+                <Input id="address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} placeholder="أدخل العنوان" />
               </div>
-
               <div>
                 <Label htmlFor="bio">السيرة الذاتية</Label>
-                <Textarea
-                  id="bio"
-                  value={formData.bio}
-                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-                  placeholder="أدخل نبذة عن الطبيب"
-                  rows={3}
-                />
+                <Textarea id="bio" value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} placeholder="أدخل نبذة عن الطبيب" rows={3} />
               </div>
-
               <div>
                 <Label htmlFor="notes">ملاحظات</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  placeholder="أدخل أي ملاحظات إضافية"
-                  rows={3}
-                />
+                <Textarea id="notes" value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} placeholder="أدخل أي ملاحظات إضافية" rows={3} />
               </div>
             </div>
           </div>
 
           <div className="flex justify-end space-x-2 space-x-reverse">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              إلغاء
-            </Button>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? "جاري الحفظ..." : editingDoctor ? "تحديث" : "إضافة"}
             </Button>

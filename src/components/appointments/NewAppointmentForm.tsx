@@ -89,6 +89,7 @@ const NewAppointmentForm = () => {
 
   const [formData, setFormData] = useState({
     patient_id: preselectedPatientId || '',
+    doctor_id: '',
     appointment_date: '',
     appointment_time: '',
     duration: '30',
@@ -117,6 +118,22 @@ const NewAppointmentForm = () => {
     };
     fetchClinic();
   }, []);
+
+  // Fetch active doctors
+  const [activeDoctors, setActiveDoctors] = useState<{id: string; full_name: string; specialization: string | null}[]>([]);
+  useEffect(() => {
+    if (!clinicId) return;
+    const fetchDoctors = async () => {
+      const { data } = await supabase
+        .from('doctors')
+        .select('id, full_name, specialization')
+        .eq('clinic_id', clinicId)
+        .eq('status', 'active')
+        .order('full_name');
+      if (data) setActiveDoctors(data);
+    };
+    fetchDoctors();
+  }, [clinicId]);
 
   // Fetch patients filtered by clinic
   useEffect(() => {
@@ -288,12 +305,13 @@ const NewAppointmentForm = () => {
       const { error } = await supabase.from('appointments').insert({
         patient_id: finalPatientId,
         clinic_id: clinicId,
+        doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null,
         appointment_date: appointmentDateTime,
         duration: parseInt(formData.duration),
         treatment_type: formData.treatment_type || null,
         notes: noteParts.join('\n') || null,
         status: formData.emergency_level === 'emergency' ? 'confirmed' : 'scheduled',
-      });
+      } as any);
 
       if (error) throw error;
 
@@ -534,6 +552,24 @@ const NewAppointmentForm = () => {
           <AlertDescription className="font-medium">{conflictWarning}</AlertDescription>
         </Alert>
       )}
+
+      {/* Doctor Selection */}
+      <div className="space-y-2">
+        <Label className="text-base font-semibold flex items-center gap-1">
+          <Stethoscope className="w-4 h-4" /> الطبيب المعالج
+        </Label>
+        <Select value={formData.doctor_id} onValueChange={v => handleChange('doctor_id', v)}>
+          <SelectTrigger className="h-12 text-base border-2"><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">بدون طبيب محدد</SelectItem>
+            {activeDoctors.map(doc => (
+              <SelectItem key={doc.id} value={doc.id}>
+                د. {doc.full_name} {doc.specialization ? `- ${doc.specialization}` : ''}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-2">

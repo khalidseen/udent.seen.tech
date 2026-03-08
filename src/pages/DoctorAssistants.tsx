@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, UserCheck, Users, Phone, Mail } from "lucide-react";
+import { Plus, Edit, Trash2, UserCheck, Users, Phone, Mail, Stethoscope } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 interface DoctorAssistant {
@@ -40,7 +41,8 @@ const DoctorAssistants = () => {
     specialization: "",
     experience_years: "",
     salary: "",
-    notes: ""
+    notes: "",
+    doctor_id: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -63,9 +65,24 @@ const DoctorAssistants = () => {
         .select('*')
         .eq('clinic_id', clinicId!)
         .order('full_name', { ascending: true });
-
       if (error) throw error;
       return data as DoctorAssistant[];
+    },
+    enabled: !!clinicId
+  });
+
+  // Fetch active doctors for assignment
+  const { data: activeDoctors } = useQuery({
+    queryKey: ['doctors-for-assistants', clinicId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('doctors')
+        .select('id, full_name, specialization')
+        .eq('clinic_id', clinicId!)
+        .eq('status', 'active')
+        .order('full_name');
+      if (error) throw error;
+      return data;
     },
     enabled: !!clinicId
   });
@@ -85,7 +102,8 @@ const DoctorAssistants = () => {
       specialization: "",
       experience_years: "",
       salary: "",
-      notes: ""
+      notes: "",
+      doctor_id: ""
     });
     setIsDialogOpen(true);
   };
@@ -100,7 +118,8 @@ const DoctorAssistants = () => {
       specialization: assistant.specialization || "",
       experience_years: assistant.experience_years?.toString() || "",
       salary: assistant.salary?.toString() || "",
-      notes: assistant.notes || ""
+      notes: assistant.notes || "",
+      doctor_id: (assistant as any).doctor_id || ""
     });
     setIsDialogOpen(true);
   };
@@ -153,7 +172,7 @@ const DoctorAssistants = () => {
 
       if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
 
-      const assistantData = {
+      const assistantData: any = {
         clinic_id: profile.id,
         full_name: formData.full_name,
         email: formData.email || null,
@@ -162,7 +181,8 @@ const DoctorAssistants = () => {
         specialization: formData.specialization || null,
         experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
         salary: formData.salary ? parseFloat(formData.salary) : null,
-        notes: formData.notes || null
+        notes: formData.notes || null,
+        doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null
       };
 
       if (editingAssistant) {
@@ -289,7 +309,8 @@ const DoctorAssistants = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>الاسم الكامل</TableHead>
-                  <TableHead>التخصص</TableHead>
+                   <TableHead>الطبيب المسؤول</TableHead>
+                   <TableHead>التخصص</TableHead>
                   <TableHead>الخبرة</TableHead>
                   <TableHead>الهاتف</TableHead>
                   <TableHead>الإيميل</TableHead>
@@ -300,6 +321,12 @@ const DoctorAssistants = () => {
                 {filteredAssistants?.map((assistant) => (
                   <TableRow key={assistant.id}>
                     <TableCell className="font-medium">{assistant.full_name}</TableCell>
+                    <TableCell>
+                      {(() => {
+                        const doc = activeDoctors?.find(d => d.id === (assistant as any).doctor_id);
+                        return doc ? <Badge variant="outline">د. {doc.full_name}</Badge> : <span className="text-muted-foreground">-</span>;
+                      })()}
+                    </TableCell>
                     <TableCell>
                       {assistant.specialization ? (
                         <Badge variant="outline">{assistant.specialization}</Badge>
@@ -348,23 +375,28 @@ const DoctorAssistants = () => {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="full_name">الاسم الكامل</Label>
-                <Input
-                  id="full_name"
-                  value={formData.full_name}
-                  onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                  placeholder="أدخل الاسم الكامل"
-                  required
-                />
+                <Input id="full_name" value={formData.full_name} onChange={(e) => setFormData({ ...formData, full_name: e.target.value })} placeholder="أدخل الاسم الكامل" required />
               </div>
+              <div>
+                <Label>الطبيب المسؤول</Label>
+                <Select value={formData.doctor_id} onValueChange={(value) => setFormData({ ...formData, doctor_id: value })}>
+                  <SelectTrigger><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">بدون طبيب محدد</SelectItem>
+                    {activeDoctors?.map((doctor) => (
+                      <SelectItem key={doctor.id} value={doctor.id}>
+                        د. {doctor.full_name} {doctor.specialization ? `- ${doctor.specialization}` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
 
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="specialization">التخصص</Label>
-                <Input
-                  id="specialization"
-                  value={formData.specialization}
-                  onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
-                  placeholder="أدخل التخصص"
-                />
+                <Input id="specialization" value={formData.specialization} onChange={(e) => setFormData({ ...formData, specialization: e.target.value })} placeholder="أدخل التخصص" />
               </div>
             </div>
 

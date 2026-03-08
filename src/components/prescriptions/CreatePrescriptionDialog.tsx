@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Search } from "lucide-react";
@@ -54,6 +55,22 @@ const CreatePrescriptionDialog = ({ open, onOpenChange, onSuccess, preselectedPa
   });
 
   const clinicId = profile?.id;
+
+  // Fetch active doctors for dropdown
+  const { data: activeDoctors } = useQuery({
+    queryKey: ['doctors-for-prescription', clinicId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('doctors')
+        .select('id, full_name, specialization, license_number')
+        .eq('clinic_id', clinicId!)
+        .eq('status', 'active')
+        .order('full_name');
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!clinicId
+  });
 
   // Fetch patients filtered by clinic_id
   const { data: patients } = useQuery({
@@ -275,14 +292,27 @@ const CreatePrescriptionDialog = ({ open, onOpenChange, onSuccess, preselectedPa
           {/* Doctor Information */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>اسم الطبيب *</Label>
-              <Input
+              <Label>الطبيب المعالج *</Label>
+              <Select
                 value={formData.doctor_name}
-                onChange={(e) => setFormData({ ...formData, doctor_name: e.target.value })}
-                placeholder="د. أحمد محمد"
-                required
-                maxLength={100}
-              />
+                onValueChange={(value) => {
+                  const doctor = activeDoctors?.find(d => d.full_name === value);
+                  setFormData({
+                    ...formData,
+                    doctor_name: value,
+                    doctor_license: doctor?.license_number || formData.doctor_license
+                  });
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
+                <SelectContent>
+                  {activeDoctors?.map((doctor) => (
+                    <SelectItem key={doctor.id} value={doctor.full_name}>
+                      د. {doctor.full_name} {doctor.specialization ? `- ${doctor.specialization}` : ''}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>رقم الإجازة</Label>
