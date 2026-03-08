@@ -90,6 +90,7 @@ export default function CommunicationCenter() {
   const sendMutation = useMutation({
     mutationFn: async () => {
       const patient = patients.find((p: any) => p.id === sendForm.patient_id);
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       const { error } = await supabase.from('communication_logs').insert({
         clinic_id: clinicId!, patient_id: sendForm.patient_id,
         message_type: sendForm.message_type, message_body: sendForm.message_body,
@@ -97,7 +98,7 @@ export default function CommunicationCenter() {
         recipient_phone: patient?.phone || null,
         recipient_email: patient?.email || null,
         status: 'sent', channel: 'manual',
-        sent_by: (await supabase.auth.getUser()).data.user?.id
+        sent_by: currentUser?.id
       });
       if (error) throw error;
     },
@@ -134,14 +135,15 @@ export default function CommunicationCenter() {
   // Bulk reminder
   const sendBulkReminderMutation = useMutation({
     mutationFn: async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
       const records = upcomingAppointments.map((a: any) => ({
         clinic_id: clinicId!, patient_id: a.patient_id,
-        message_type: 'sms', channel: 'auto_reminder',
+        message_type: 'sms' as const, channel: 'auto_reminder',
         message_body: `تذكير: لديك موعد في العيادة بتاريخ ${format(new Date(a.appointment_date), 'dd/MM/yyyy الساعة HH:mm', { locale: ar })}`,
         recipient_phone: a.patients?.phone || null,
         status: 'sent',
         related_type: 'appointment', related_id: a.id,
-        sent_by: (await supabase.auth.getUser()).data.user?.id
+        sent_by: currentUser?.id
       }));
       if (records.length === 0) { toast.info('لا توجد مواعيد للتذكير'); return; }
       const { error } = await supabase.from('communication_logs').insert(records);
