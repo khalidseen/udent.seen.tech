@@ -17,7 +17,8 @@ import { AnatomicalChartProps } from "@/types/anatomical-dental";
 import { ToothRecordDialog } from "./ToothRecordDialog";
 import { ColorLegend } from "./ColorLegend";
 import { useDentalChart, DentalTreatmentRecord } from "@/hooks/useDentalChart";
-import { Activity, AlertTriangle, CheckCircle, XCircle, Loader2, Plus, Trash2, Edit3, MessageSquare } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle, XCircle, Loader2, Plus, Trash2, Edit3, MessageSquare, FileDown } from "lucide-react";
+import { exportDentalChartPDF } from './ExportDentalChartPDF';
 import { toast } from "sonner";
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -207,6 +208,14 @@ export const AnatomicalDentalChart: React.FC<AnatomicalChartProps> = ({ patientI
 
   return (
     <div className="w-full max-w-7xl mx-auto space-y-4">
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => exportDentalChartPDF(statistics, toothRecordsMap, chartNotes)}>
+          <FileDown className="w-4 h-4 ml-1" />
+          تصدير PDF
+        </Button>
+      </div>
+
       {/* Statistics Bar */}
       <div className="grid grid-cols-4 md:grid-cols-8 gap-2">
         {[
