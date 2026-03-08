@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { Home, Calendar, Users, DollarSign, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { prefetchRoute } from "@/App";
+import { triggerHaptic } from "@/lib/haptics";
 
 interface MobileBottomNavProps {
   onMoreClick: () => void;
