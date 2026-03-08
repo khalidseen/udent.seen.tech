@@ -13,9 +13,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, DollarSign } from "lucide-react";
+import { Plus, Edit, Trash2, DollarSign, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 interface ServicePrice {
   id: string;
@@ -36,7 +37,7 @@ export default function ServicePrices() {
     service_name: "",
     service_category: "general",
     base_price: "",
-    currency: "USD",
+    currency: "IQD",
     is_active: true,
     description: ""
   });
@@ -72,42 +73,29 @@ export default function ServicePrices() {
     { value: "prosthetics", label: "تركيبات" },
     { value: "surgery", label: "جراحة" },
     { value: "cosmetic", label: "تجميلي" },
-    { value: "emergency", label: "طوارئ" }
+    { value: "emergency", label: "طوارئ" },
+    { value: "xray", label: "أشعة" },
+    { value: "whitening", label: "تبييض" },
   ];
 
   const currencies = [
+    { value: "IQD", label: "دينار عراقي" },
     { value: "USD", label: "دولار أمريكي" },
     { value: "EUR", label: "يورو" },
     { value: "SAR", label: "ريال سعودي" },
     { value: "AED", label: "درهم إماراتي" },
-    { value: "KWD", label: "دينار كويتي" }
+    { value: "KWD", label: "دينار كويتي" },
+    { value: "JOD", label: "دينار أردني" },
+    { value: "EGP", label: "جنيه مصري" },
   ];
 
   const getCategoryLabel = (category: string) => {
     return serviceCategories.find(cat => cat.value === category)?.label || category;
   };
 
-  const getCurrencySymbol = (currency: string) => {
-    switch (currency) {
-      case 'USD': return '$';
-      case 'EUR': return '€';
-      case 'SAR': return 'ر.س';
-      case 'AED': return 'د.إ';
-      case 'KWD': return 'د.ك';
-      default: return currency;
-    }
-  };
-
   const handleCreate = () => {
     setEditingService(null);
-    setFormData({
-      service_name: "",
-      service_category: "general",
-      base_price: "",
-      currency: "USD",
-      is_active: true,
-      description: ""
-    });
+    setFormData({ service_name: "", service_category: "general", base_price: "", currency: "IQD", is_active: true, description: "" });
     setIsDialogOpen(true);
   };
 
@@ -126,32 +114,23 @@ export default function ServicePrices() {
 
   const handleDelete = async (serviceId: string) => {
     if (!confirm('هل أنت متأكد من حذف هذه الخدمة؟')) return;
-
     try {
-      const { error } = await supabase
-        .from('service_prices')
-        .delete()
-        .eq('id', serviceId);
-
+      const { error } = await supabase.from('service_prices').delete().eq('id', serviceId);
       if (error) throw error;
-
       refetch();
       toast({ title: "تم الحذف", description: "تم حذف الخدمة بنجاح" });
     } catch (error: any) {
-      toast({ title: "خطأ", description: error.message || "حدث خطأ أثناء حذف الخدمة", variant: "destructive" });
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!formData.service_name || !formData.base_price) {
       toast({ title: "خطأ", description: "يرجى ملء جميع الحقول المطلوبة", variant: "destructive" });
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       const { data: profile } = await supabase.rpc('get_current_user_profile');
       if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
@@ -167,16 +146,11 @@ export default function ServicePrices() {
       };
 
       if (editingService) {
-        const { error } = await supabase
-          .from('service_prices')
-          .update(serviceData)
-          .eq('id', editingService.id);
+        const { error } = await supabase.from('service_prices').update(serviceData).eq('id', editingService.id);
         if (error) throw error;
         toast({ title: "تم التحديث", description: "تم تحديث الخدمة بنجاح" });
       } else {
-        const { error } = await supabase
-          .from('service_prices')
-          .insert(serviceData);
+        const { error } = await supabase.from('service_prices').insert(serviceData);
         if (error) throw error;
         toast({ title: "تم الإضافة", description: "تم إضافة الخدمة بنجاح" });
       }
@@ -184,31 +158,49 @@ export default function ServicePrices() {
       setIsDialogOpen(false);
       refetch();
     } catch (error: any) {
-      toast({ title: "خطأ", description: error.message || "حدث خطأ أثناء حفظ الخدمة", variant: "destructive" });
+      toast({ title: "خطأ", description: error.message, variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const exportCSV = () => {
+    if (!services) return;
+    const BOM = '\uFEFF';
+    let csv = 'اسم الخدمة,الفئة,السعر,العملة,الحالة,الوصف\n';
+    services.forEach(s => {
+      csv += `${s.service_name},${getCategoryLabel(s.service_category)},${s.base_price},${s.currency},${s.is_active ? 'نشط' : 'غير نشط'},${s.description || ''}\n`;
+    });
+    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `أسعار_الخدمات_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
   const groupedServices = services?.reduce((acc, service) => {
-    if (!acc[service.service_category]) {
-      acc[service.service_category] = [];
-    }
+    if (!acc[service.service_category]) acc[service.service_category] = [];
     acc[service.service_category].push(service);
     return acc;
   }, {} as Record<string, ServicePrice[]>);
 
+  const avgPrice = services?.length ? services.reduce((sum, s) => sum + Number(s.base_price), 0) / services.length : 0;
+
   return (
     <PermissionGuard requiredPermissions={['financial.view', 'financial.manage', 'settings.manage']}>
       <PageContainer>
-        <PageHeader 
+        <PageHeader
           title="أسعار الخدمات"
           description="إدارة أسعار الخدمات والعلاجات"
           action={
-            <Button onClick={handleCreate}>
-              <Plus className="w-4 h-4 ml-2" />
-              خدمة جديدة
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={exportCSV}>
+                <Download className="w-4 h-4 ml-1" /> تصدير
+              </Button>
+              <Button onClick={handleCreate}>
+                <Plus className="w-4 h-4 ml-2" /> خدمة جديدة
+              </Button>
+            </div>
           }
         />
 
@@ -218,31 +210,19 @@ export default function ServicePrices() {
               <CardTitle className="text-sm font-medium">إجمالي الخدمات</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{services?.length || 0}</div>
-            </CardContent>
+            <CardContent><div className="text-2xl font-bold">{services?.length || 0}</div></CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">خدمات نشطة</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-success">
-                {services?.filter(s => s.is_active).length || 0}
-              </div>
-            </CardContent>
+            <CardContent><div className="text-2xl font-bold text-success">{services?.filter(s => s.is_active).length || 0}</div></CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">متوسط السعر</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                ${services?.length ? (services.reduce((sum, s) => sum + Number(s.base_price), 0) / services.length).toFixed(2) : '0.00'}
-              </div>
-            </CardContent>
+            <CardContent><div className="text-2xl font-bold"><CurrencyAmount amount={avgPrice} /></div></CardContent>
           </Card>
         </div>
 
@@ -273,7 +253,7 @@ export default function ServicePrices() {
                       {categoryServices.map((service) => (
                         <TableRow key={service.id}>
                           <TableCell className="font-medium">{service.service_name}</TableCell>
-                          <TableCell>{getCurrencySymbol(service.currency)} {Number(service.base_price).toFixed(2)}</TableCell>
+                          <TableCell><CurrencyAmount amount={Number(service.base_price)} /></TableCell>
                           <TableCell className="max-w-xs truncate">{service.description || '-'}</TableCell>
                           <TableCell>
                             <Badge variant={service.is_active ? "default" : "secondary"}>
@@ -320,7 +300,7 @@ export default function ServicePrices() {
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label htmlFor="base_price">السعر</Label>
-                  <Input id="base_price" type="number" step="0.01" min="0" value={formData.base_price} onChange={(e) => setFormData({ ...formData, base_price: e.target.value })} placeholder="0.00" required />
+                  <Input id="base_price" type="number" step="0.01" min="0" value={formData.base_price} onChange={(e) => setFormData({ ...formData, base_price: e.target.value })} placeholder="0" required />
                 </div>
                 <div>
                   <Label htmlFor="currency">العملة</Label>
