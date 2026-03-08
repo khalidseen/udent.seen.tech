@@ -253,7 +253,7 @@ const VitalsDialog: React.FC<VitalsDialogProps> = ({
             </div>
             <div className="bg-purple-50 p-4 rounded-lg text-center">
               <div className="text-lg font-bold text-purple-600">
-                {stats.lastReading ? stats.lastReading.toLocaleDateString('ar-SA') : 'N/A'}
+                {stats.lastReading ? stats.lastReading.toLocaleDateString() : 'N/A'}
               </div>
               <div className="text-sm text-purple-700">آخر قراءة</div>
             </div>

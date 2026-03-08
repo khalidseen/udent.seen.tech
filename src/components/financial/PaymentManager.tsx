@@ -163,7 +163,7 @@ export function PaymentManager() {
                     الفاتورة: {payment.invoices?.invoice_number || 'غير محدد'}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {new Date(payment.payment_date).toLocaleDateString('ar-SA')}
+                    {new Date(payment.payment_date).toLocaleDateString()}
                   </p>
                   {payment.notes && (
                     <p className="text-sm text-muted-foreground mt-2">

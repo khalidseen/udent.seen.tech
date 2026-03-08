@@ -313,7 +313,7 @@ const LogsTab: React.FC<LogsTabProps> = ({ apiLogs, onRefresh }) => {
                       {log.response_time}ms
                     </span>
                     <span className="font-mono text-xs">{log.ip_address}</span>
-                    <span>{new Date(log.timestamp).toLocaleTimeString('ar-SA')}</span>
+                    <span>{new Date(log.timestamp).toLocaleTimeString()}</span>
                   </div>
                 </div>
               ))}

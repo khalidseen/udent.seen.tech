@@ -33,7 +33,7 @@ export const useAssignCreatorToPatients = () => {
       for (const patient of patients) {
         // التحقق من عدم وجود معلومات منشئ مسبقاً
         if (!patient.notes?.includes(`[المنشئ: ${profile.full_name}`)) {
-          const creatorInfo = `[المنشئ: ${profile.full_name} - ${getRoleInArabic(profile.role)} - ${new Date().toLocaleDateString('ar-SA')}]`;
+          const creatorInfo = `[المنشئ: ${profile.full_name} - ${getRoleInArabic(profile.role)} - ${new Date().toLocaleDateString()}]`;
           const updatedNotes = patient.notes ? `${patient.notes}\n\n${creatorInfo}` : creatorInfo;
           
           const { error: updateError } = await supabase

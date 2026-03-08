@@ -504,7 +504,7 @@ export function SmartDiagnosisEngine() {
                               الثقة: {Math.round(analysis.confidence_score * 100)}%
                             </p>
                             <p className="text-xs text-muted-foreground">
-                              {new Date(analysis.created_at).toLocaleDateString('ar-SA')}
+                              {new Date(analysis.created_at).toLocaleDateString()}
                             </p>
                           </div>
                           <Badge variant="outline">

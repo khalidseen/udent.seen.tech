@@ -251,7 +251,7 @@ const PatientPrescriptionSection = ({ patientId, patientData }: PatientPrescript
                 </div>
                 <div>
                   <strong>تاريخ الفحص:</strong>
-                  <p>${new Date(prescription.prescription_date).toLocaleDateString('ar-IQ')}</p>
+                  <p>${new Date(prescription.prescription_date).toLocaleDateString()}</p>
                 </div>
               </div>
               <div style="margin-top: 15px;">
@@ -301,7 +301,7 @@ const PatientPrescriptionSection = ({ patientId, patientData }: PatientPrescript
     message += `👤 *المريض:* ${patientData.full_name}\\\\n`;
     message += `👨‍⚕️ *الطبيب:* ${prescription.doctor_name}\\\\n`;
     message += `🏥 *العيادة:* ${prescription.clinic_name}\\\\n`;
-    message += `📅 *التاريخ:* ${new Date(prescription.prescription_date).toLocaleDateString('ar-IQ')}\\\\n`;
+    message += `📅 *التاريخ:* ${new Date(prescription.prescription_date).toLocaleDateString()}\\\\n`;
     message += `🩺 *التشخيص:* ${prescription.diagnosis}\\\\n\\\\n`;
     
     message += `💊 *الأدوية:*\\\\n`;
@@ -550,7 +550,7 @@ const PatientPrescriptionSection = ({ patientId, patientData }: PatientPrescript
                     <div>
                       <CardTitle className="text-lg">{prescription.diagnosis}</CardTitle>
                       <p className="text-sm text-muted-foreground">
-                        {prescription.doctor_name} - {new Date(prescription.prescription_date).toLocaleDateString('ar-IQ')}
+                        {prescription.doctor_name} - {new Date(prescription.prescription_date).toLocaleDateString()}
                       </p>
                     </div>
                     <Badge variant="secondary">{prescription.status === 'active' ? 'نشطة' : 'مكتملة'}</Badge>

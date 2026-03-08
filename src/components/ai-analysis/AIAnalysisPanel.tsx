@@ -122,7 +122,7 @@ export function AIAnalysisPanel({ imageElement, imageType, onAnalysisComplete }:
     if (!analysisResult) return;
     
     const analysisData = {
-      تاريخ_التحليل: new Date().toLocaleDateString('ar-SA'),
+      تاريخ_التحليل: new Date().toLocaleDateString(),
       نوع_الصورة: imageType === 'xray' ? 'أشعة سينية' : 'صورة فوتوغرافية',
       مستوى_الثقة: `${(analysisResult.confidence * 100).toFixed(1)}%`,
       مستوى_المخاطر: getRiskLevelText(analysisResult.riskLevel),
