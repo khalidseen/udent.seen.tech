@@ -39,17 +39,35 @@ export default function PatientFinancialTransactions() {
       const [paymentsRes, invoicesRes] = await Promise.all([
         supabase
           .from('payments')
-          .select('*, patients (full_name), invoices (invoice_number)')
+          .select('*')
           .eq('clinic_id', profile.id)
           .gte('payment_date', startDate.toISOString())
           .order('payment_date', { ascending: false }),
         supabase
           .from('invoices')
-          .select('*, patients (full_name)')
+          .select('*')
           .eq('clinic_id', profile.id)
           .gte('issue_date', startDate.toISOString())
           .order('issue_date', { ascending: false }),
       ]);
+
+      // Fetch patient names
+      const allPatientIds = [...new Set([
+        ...(paymentsRes.data?.map(p => p.patient_id) || []),
+        ...(invoicesRes.data?.map(i => i.patient_id) || []),
+      ])];
+      const { data: patientsData } = await supabase
+        .from('patients')
+        .select('id, full_name')
+        .in('id', allPatientIds.length > 0 ? allPatientIds : ['none']);
+      const patientMap = new Map(patientsData?.map(p => [p.id, p.full_name]) || []);
+
+      // Fetch invoice numbers for payments
+      const invoiceIds = [...new Set(paymentsRes.data?.filter(p => p.invoice_id).map(p => p.invoice_id!) || [])];
+      const { data: invoiceNames } = invoiceIds.length > 0
+        ? await supabase.from('invoices').select('id, invoice_number').in('id', invoiceIds)
+        : { data: [] as any[] };
+      const invoiceMap = new Map(invoiceNames?.map((i: any) => [i.id, i.invoice_number]) || []);
 
       const payments = paymentsRes.data || [];
       const invoices = invoicesRes.data || [];
