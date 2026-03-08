@@ -74,7 +74,13 @@ const NotificationTemplates = lazy(() => import("@/pages/NotificationTemplates")
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 import { offlineDB } from "@/lib/offline-db";
-offlineDB.init().catch(console.error);
+
+// Defer offlineDB init to after page load
+if (typeof window !== 'undefined') {
+  window.addEventListener('load', () => {
+    offlineDB.init().catch(console.error);
+  }, { once: true });
+}
 
 function App() {
   useEffect(() => {
