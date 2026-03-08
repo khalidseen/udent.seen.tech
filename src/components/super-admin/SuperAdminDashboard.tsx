@@ -199,7 +199,7 @@ export function SuperAdminDashboard() {
       </Card>
 
       {/* Main Content Tabs */}
-      <Tabs defaultValue="clinics" className="space-y-4">
+      <Tabs defaultValue="notifications" className="space-y-4">
         <TabsList>
           <TabsTrigger value="notifications">📢 الإشعارات المركزية</TabsTrigger>
           <TabsTrigger value="clinics">إدارة العيادات</TabsTrigger>
