@@ -50,8 +50,10 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
   const [clinicId, setClinicId] = useState<string | null>(null);
   
+  const [activeDoctors, setActiveDoctors] = useState<{id: string; full_name: string; specialization: string | null}[]>([]);
   const [formData, setFormData] = useState({
     patient_id: '',
+    doctor_id: '',
     appointment_date: preselectedDate || '',
     appointment_time: '',
     duration: '30',
@@ -85,6 +87,7 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
   const resetForm = () => {
     setFormData({
       patient_id: '',
+      doctor_id: '',
       appointment_date: preselectedDate || '',
       appointment_time: '',
       duration: '30',
@@ -126,6 +129,21 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
       if (data) setPatients(data);
     };
     if (open && clinicId) fetchPatients();
+  }, [open, clinicId]);
+
+  // Fetch active doctors
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      if (!clinicId) return;
+      const { data } = await supabase
+        .from('doctors')
+        .select('id, full_name, specialization')
+        .eq('clinic_id', clinicId)
+        .eq('status', 'active')
+        .order('full_name');
+      if (data) setActiveDoctors(data);
+    };
+    if (open && clinicId) fetchDoctors();
   }, [open, clinicId]);
 
   // Conflict detection
@@ -221,12 +239,13 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
         .insert([{
           patient_id,
           clinic_id: clinicId,
+          doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null,
           appointment_date: appointmentDateTime,
           duration: parseInt(formData.duration),
           treatment_type: formData.treatment_type || null,
           notes: noteParts.join('\n') || null,
           status: formData.emergency_level === 'emergency' ? 'confirmed' : 'scheduled'
-        }]);
+        } as any]);
 
       if (appointmentError) throw appointmentError;
 
@@ -329,6 +348,22 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
             <div className="space-y-6">
               <h3 className="text-lg font-medium text-foreground border-b pb-2">تفاصيل الموعد</h3>
               
+              {/* Doctor Selection */}
+              <div className="space-y-2">
+                <Label>الطبيب المعالج</Label>
+                <Select value={formData.doctor_id} onValueChange={(value) => handleFormChange('doctor_id', value)}>
+                  <SelectTrigger className="h-11"><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    <SelectItem value="none">بدون طبيب محدد</SelectItem>
+                    {activeDoctors.map((doctor) => (
+                      <SelectItem key={doctor.id} value={doctor.id}>
+                        د. {doctor.full_name} {doctor.specialization ? `- ${doctor.specialization}` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>تاريخ الموعد *</Label>

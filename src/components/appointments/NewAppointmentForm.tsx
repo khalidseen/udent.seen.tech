@@ -89,6 +89,7 @@ const NewAppointmentForm = () => {
 
   const [formData, setFormData] = useState({
     patient_id: preselectedPatientId || '',
+    doctor_id: '',
     appointment_date: '',
     appointment_time: '',
     duration: '30',
@@ -117,6 +118,22 @@ const NewAppointmentForm = () => {
     };
     fetchClinic();
   }, []);
+
+  // Fetch active doctors
+  const [activeDoctors, setActiveDoctors] = useState<{id: string; full_name: string; specialization: string | null}[]>([]);
+  useEffect(() => {
+    if (!clinicId) return;
+    const fetchDoctors = async () => {
+      const { data } = await supabase
+        .from('doctors')
+        .select('id, full_name, specialization')
+        .eq('clinic_id', clinicId)
+        .eq('status', 'active')
+        .order('full_name');
+      if (data) setActiveDoctors(data);
+    };
+    fetchDoctors();
+  }, [clinicId]);
 
   // Fetch patients filtered by clinic
   useEffect(() => {
@@ -288,12 +305,13 @@ const NewAppointmentForm = () => {
       const { error } = await supabase.from('appointments').insert({
         patient_id: finalPatientId,
         clinic_id: clinicId,
+        doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null,
         appointment_date: appointmentDateTime,
         duration: parseInt(formData.duration),
         treatment_type: formData.treatment_type || null,
         notes: noteParts.join('\n') || null,
         status: formData.emergency_level === 'emergency' ? 'confirmed' : 'scheduled',
-      });
+      } as any);
 
       if (error) throw error;
 
