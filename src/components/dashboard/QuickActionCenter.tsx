@@ -17,6 +17,7 @@ import {
 import { usePermissions } from '@/hooks/usePermissions';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 interface QuickAction {
   id: string;
@@ -33,6 +34,7 @@ export const QuickActionCenter: React.FC = () => {
   const { hasPermission } = usePermissions();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const navigate = useNavigate();
 
   const quickActions: QuickAction[] = [
     {
@@ -41,7 +43,7 @@ export const QuickActionCenter: React.FC = () => {
       description: t("quickActions.addPatientDesc"),
       icon: <Users className="w-4 h-4" />,
       action: () => {
-        window.open('/patients', '_blank');
+        navigate('/patients');
       },
       permission: 'patients.create',
       priority: 'high',
@@ -53,7 +55,7 @@ export const QuickActionCenter: React.FC = () => {
       description: t("quickActions.scheduleAppointmentDesc"),
       icon: <Calendar className="w-4 h-4" />,
       action: () => {
-        window.open('/appointments/new', '_blank');
+        navigate('/appointments/new');
       },
       permission: 'appointments.create',
       priority: 'high',

@@ -26,6 +26,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
@@ -59,6 +60,7 @@ export function TopNavbar() {
   const { theme, setTheme } = useTheme();
   const { user, signOut } = useAuth();
   const { hasPermission, getPrimaryRole } = usePermissions();
+  const navigate = useNavigate();
   const [upcomingAppointments, setUpcomingAppointments] = useState<UpcomingAppointment[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [zoomLevel, setZoomLevel] = useState(100);
@@ -541,7 +543,7 @@ export function TopNavbar() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => window.location.href = '/appointments/new'}
+                  onClick={() => navigate('/appointments/new')}
                   className="gap-2 h-8 px-3"
                 >
                   <Plus className="h-4 w-4" />
@@ -550,7 +552,7 @@ export function TopNavbar() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => window.location.href = '/patients/new'}
+                  onClick={() => navigate('/patients')}
                   className="gap-2 h-8 px-3"
                 >
                   <UserPlus className="h-4 w-4" />
