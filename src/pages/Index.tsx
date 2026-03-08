@@ -106,7 +106,7 @@ const defaultCards: ActionCard[] = [
     description: "إدارة السجلات الطبية للمرضى",
     icon: FileText,
     color: "bg-purple-500",
-    route: "/medical-records",
+    route: "/advanced-medical-records",
     order_index: 5
   },
   {
@@ -115,7 +115,7 @@ const defaultCards: ActionCard[] = [
     description: "إدارة العلاجات والإجراءات السنية",
     icon: Stethoscope,
     color: "bg-red-500",
-    route: "/dental-treatments",
+    route: "/dental-treatments-management",
     order_index: 6
   },
   {
@@ -124,7 +124,7 @@ const defaultCards: ActionCard[] = [
     description: "إدارة الفواتير والمدفوعات",
     icon: Receipt,
     color: "bg-yellow-500",
-    route: "/invoices",
+    route: "/invoice-management",
     order_index: 7
   },
   {
@@ -151,7 +151,7 @@ const defaultCards: ActionCard[] = [
     description: "تحليل ذكي وتشخيص متقدم بالذكاء الاصطناعي",
     icon: Brain,
     color: "bg-indigo-500",
-    route: "/ai-insights",
+    route: "/ai-insights-page",
     order_index: 10
   },
   {
@@ -178,7 +178,7 @@ const defaultCards: ActionCard[] = [
     description: "تقارير شاملة وإحصائيات مفصلة",
     icon: BarChart3,
     color: "bg-teal-500",
-    route: "/reports",
+    route: "/detailed-reports",
     order_index: 13
   },
   {
@@ -187,7 +187,7 @@ const defaultCards: ActionCard[] = [
     description: "إدارة الإشعارات والتنبيهات",
     icon: Bell,
     color: "bg-lime-500",
-    route: "/notifications",
+    route: "/advanced-notification-management",
     order_index: 14
   },
   {
@@ -196,7 +196,7 @@ const defaultCards: ActionCard[] = [
     description: "إدارة المستخدمين والصلاحيات",
     icon: Users,
     color: "bg-slate-500",
-    route: "/users",
+    route: "/advanced-user-management",
     order_index: 15
   },
   {
