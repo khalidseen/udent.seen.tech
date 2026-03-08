@@ -541,7 +541,7 @@ export function TopNavbar() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => window.location.href = '/appointments/new'}
+                  onClick={() => navigate('/appointments/new')}
                   className="gap-2 h-8 px-3"
                 >
                   <Plus className="h-4 w-4" />
@@ -550,7 +550,7 @@ export function TopNavbar() {
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  onClick={() => window.location.href = '/patients/new'}
+                  onClick={() => navigate('/patients')}
                   className="gap-2 h-8 px-3"
                 >
                   <UserPlus className="h-4 w-4" />

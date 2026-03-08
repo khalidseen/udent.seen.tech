@@ -101,6 +101,10 @@ const AppointmentList = () => {
         label: t('status.scheduled'),
         variant: 'default' as const
       },
+      confirmed: {
+        label: 'مؤكد',
+        variant: 'default' as const
+      },
       completed: {
         label: t('status.completed'),
         variant: 'secondary' as const
@@ -111,6 +115,10 @@ const AppointmentList = () => {
       },
       no_show: {
         label: t('status.noShow'),
+        variant: 'outline' as const
+      },
+      rescheduled: {
+        label: 'معاد جدولته',
         variant: 'outline' as const
       }
     };
