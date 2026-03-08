@@ -23,11 +23,11 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   if (isMobile) {
     return (
       <>
-        <MobileHeader />
+        <MobileHeader onMenuClick={() => setMoreMenuOpen(true)} />
         <div className="min-h-screen bg-background pt-14 pb-20">
           {children}
         </div>
-        <MobileBottomNav onMoreClick={() => setMoreMenuOpen(true)} />
+        <MobileBottomNav />
         <MobileMoreMenu open={moreMenuOpen} onOpenChange={setMoreMenuOpen} />
       </>
     );

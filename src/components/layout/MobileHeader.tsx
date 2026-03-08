@@ -1,14 +1,17 @@
 import { memo, useState } from "react";
-import { Search, Bell, Moon, Sun } from "lucide-react";
+import { Search, Bell, Moon, Sun, Menu } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
 
-export const MobileHeader = memo(() => {
+interface MobileHeaderProps {
+  onMenuClick?: () => void;
+}
+
+export const MobileHeader = memo<MobileHeaderProps>(({ onMenuClick }) => {
   const { theme, setTheme } = useTheme();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -33,7 +36,12 @@ export const MobileHeader = memo(() => {
           </div>
         ) : (
           <>
-            <h1 className="text-base font-bold text-foreground">🦷 DentaCare</h1>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={onMenuClick}>
+                <Menu className="h-5 w-5" />
+              </Button>
+              <h1 className="text-base font-bold text-foreground">🦷 DentaCare</h1>
+            </div>
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setShowSearch(true)}>
                 <Search className="h-4 w-4" />

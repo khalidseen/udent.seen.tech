@@ -6,10 +6,6 @@ import { prefetchRoute } from "@/App";
 import { triggerHaptic } from "@/lib/haptics";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface MobileBottomNavProps {
-  onMoreClick: () => void;
-}
-
 const leftItems = [
   { title: "الرئيسية", url: "/", icon: Home },
   { title: "المواعيد", url: "/appointments", icon: Calendar },
@@ -20,7 +16,7 @@ const rightItems = [
   { title: "المالية", url: "/financial-overview", icon: DollarSign },
 ];
 
-export const MobileBottomNav = memo<MobileBottomNavProps>(({ onMoreClick }) => {
+export const MobileBottomNav = memo(() => {
   const location = useLocation();
   const navigate = useNavigate();
   const [fabOpen, setFabOpen] = useState(false);
