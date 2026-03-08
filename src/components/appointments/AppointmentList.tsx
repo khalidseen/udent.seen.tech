@@ -25,6 +25,7 @@ interface Appointment {
   id: string;
   patient_id: string;
   clinic_id: string;
+  doctor_id?: string;
   appointment_date: string;
   duration: number;
   status: string;
@@ -37,6 +38,10 @@ interface Appointment {
     full_name: string;
     phone?: string;
     email?: string;
+  };
+  doctors?: {
+    id: string;
+    full_name: string;
   };
   profiles?: {
     full_name: string;
@@ -75,6 +80,7 @@ const AppointmentList = () => {
       } = await supabase.from('appointments').select(`
           *,
           patients (id, full_name, phone, email),
+          doctors (id, full_name),
           profiles (full_name)
         `).eq('clinic_id', userProfile.id).order('appointment_date', {
         ascending: true
@@ -349,6 +355,11 @@ const AppointmentList = () => {
                       {appointment.treatment_type && (
                         <div className="text-sm text-muted-foreground">نوع العلاج: {appointment.treatment_type}</div>
                       )}
+                      {(appointment as any).doctors?.full_name && (
+                        <div className="text-sm text-muted-foreground flex items-center gap-1">
+                          🩺 د. {(appointment as any).doctors.full_name}
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(appointment.status)}
@@ -373,18 +384,19 @@ const AppointmentList = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead className="border-b bg-muted/50">
-                    <tr>
-                      <th className="text-right p-3 font-medium">المريض</th>
-                      <th className="text-right p-3 font-medium">التاريخ</th>
-                      <th className="text-right p-3 font-medium">المدة</th>
-                      <th className="text-right p-3 font-medium">العلاج</th>
-                      <th className="text-right p-3 font-medium">الحالة</th>
-                      <th className="text-right p-3 font-medium">إجراءات</th>
-                    </tr>
+                     <tr>
+                       <th className="text-right p-3 font-medium">المريض</th>
+                       <th className="text-right p-3 font-medium">الطبيب</th>
+                       <th className="text-right p-3 font-medium">التاريخ</th>
+                       <th className="text-right p-3 font-medium">المدة</th>
+                       <th className="text-right p-3 font-medium">العلاج</th>
+                       <th className="text-right p-3 font-medium">الحالة</th>
+                       <th className="text-right p-3 font-medium">إجراءات</th>
+                     </tr>
                   </thead>
                   <tbody>
                     {filteredAppointments.length === 0 ? (
-                      <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">لا توجد مواعيد</td></tr>
+                       <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">لا توجد مواعيد</td></tr>
                     ) : (
                       filteredAppointments.map((appointment) => (
                         <tr key={appointment.id} className="border-b hover:bg-muted/30 transition-colors">
