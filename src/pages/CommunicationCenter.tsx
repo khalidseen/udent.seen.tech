@@ -355,6 +355,10 @@ export default function CommunicationCenter() {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="whatsapp-setup" className="space-y-4">
+          <WhatsAppSetupWizard clinicId={clinicId || null} />
+        </TabsContent>
       </Tabs>
 
       {/* حوار إرسال رسالة */}
