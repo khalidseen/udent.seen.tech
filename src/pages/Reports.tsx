@@ -4,69 +4,82 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DatePickerWithRange } from "@/components/ui/date-range-picker";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from "recharts";
-import { TrendingUp, TrendingDown, Calendar, DollarSign, Users, Package, FileText, Download, Eye, Printer } from "lucide-react";
-import { useState } from "react";
-import { format } from "date-fns";
-import { ar } from "date-fns/locale";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
+import { TrendingUp, Calendar, DollarSign, Users, Package, Download } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 
 export default function Reports() {
-  const [dateRange, setDateRange] = useState<any>({
-    from: new Date(2024, 0, 1),
-    to: new Date()
-  });
-  const [reportType, setReportType] = useState("monthly");
-
-  // بيانات وهمية للتقارير
-  const revenueData = [
-    { month: "يناير", revenue: 45000, expenses: 25000, profit: 20000 },
-    { month: "فبراير", revenue: 52000, expenses: 28000, profit: 24000 },
-    { month: "مارس", revenue: 48000, expenses: 26000, profit: 22000 },
-    { month: "أبريل", revenue: 61000, expenses: 32000, profit: 29000 },
-    { month: "مايو", revenue: 55000, expenses: 30000, profit: 25000 },
-    { month: "يونيو", revenue: 67000, expenses: 35000, profit: 32000 }
-  ];
-
-  const appointmentData = [
-    { day: "الأحد", appointments: 15, completed: 13, cancelled: 2 },
-    { day: "الاثنين", appointments: 18, completed: 16, cancelled: 2 },
-    { day: "الثلاثاء", appointments: 22, completed: 20, cancelled: 2 },
-    { day: "الأربعاء", appointments: 19, completed: 17, cancelled: 2 },
-    { day: "الخميس", appointments: 25, completed: 23, cancelled: 2 },
-    { day: "السبت", appointments: 12, completed: 11, cancelled: 1 }
-  ];
-
-  const treatmentData = [
-    { name: "تنظيف الأسنان", count: 45, percentage: 35 },
-    { name: "حشوات", count: 32, percentage: 25 },
-    { name: "علاج جذور", count: 20, percentage: 15 },
-    { name: "تقويم", count: 15, percentage: 12 },
-    { name: "زراعة", count: 10, percentage: 8 },
-    { name: "أخرى", count: 6, percentage: 5 }
-  ];
-
-  const patientData = [
-    { month: "يناير", newPatients: 25, returning: 45 },
-    { month: "فبراير", newPatients: 32, returning: 52 },
-    { month: "مارس", newPatients: 28, returning: 48 },
-    { month: "أبريل", newPatients: 35, returning: 61 },
-    { month: "مايو", newPatients: 30, returning: 55 },
-    { month: "يونيو", newPatients: 38, returning: 67 }
-  ];
-
   const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 
-  const generateReport = (type: string) => {
-    console.log(`Generating ${type} report...`);
-    // هنا يمكن إضافة منطق إنشاء التقرير
-  };
+  const { data: stats, isLoading } = useQuery({
+    queryKey: ['reports-stats'],
+    queryFn: async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .single();
 
-  const exportReport = (format: string) => {
-    console.log(`Exporting report as ${format}...`);
-    // هنا يمكن إضافة منطق تصدير التقرير
-  };
+      if (!profile) throw new Error('Profile not found');
+      const clinicId = profile.id;
+
+      const [invoicesRes, patientsRes, appointmentsRes, treatmentsRes, suppliesRes] = await Promise.all([
+        supabase.from('invoices').select('total_amount, paid_amount, status, issue_date').eq('clinic_id', clinicId),
+        supabase.from('patients').select('id, created_at').eq('clinic_id', clinicId),
+        supabase.from('appointments').select('id, status, appointment_date').eq('clinic_id', clinicId),
+        supabase.from('dental_treatments').select('id, diagnosis, status, treatment_date').eq('clinic_id', clinicId),
+        supabase.from('medical_supplies').select('id, current_stock, minimum_stock').eq('clinic_id', clinicId),
+      ]);
+
+      const invoices = invoicesRes.data || [];
+      const patients = patientsRes.data || [];
+      const appointments = appointmentsRes.data || [];
+      const treatments = treatmentsRes.data || [];
+      const supplies = suppliesRes.data || [];
+
+      const totalRevenue = invoices.reduce((s, i) => s + Number(i.total_amount || 0), 0);
+      const totalPaid = invoices.reduce((s, i) => s + Number(i.paid_amount || 0), 0);
+      const completedAppointments = appointments.filter(a => a.status === 'completed').length;
+      const cancelledAppointments = appointments.filter(a => a.status === 'cancelled').length;
+      const lowStock = supplies.filter(s => s.current_stock <= s.minimum_stock).length;
+
+      // Group treatments by diagnosis for pie chart
+      const diagnosisMap: Record<string, number> = {};
+      treatments.forEach(t => {
+        const key = t.diagnosis || 'أخرى';
+        diagnosisMap[key] = (diagnosisMap[key] || 0) + 1;
+      });
+      const treatmentData = Object.entries(diagnosisMap)
+        .map(([name, count]) => ({ name, count, percentage: Math.round((count / (treatments.length || 1)) * 100) }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6);
+
+      // Monthly revenue (last 6 months)
+      const monthlyRevenue: Record<string, number> = {};
+      const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+      invoices.forEach(inv => {
+        if (inv.issue_date) {
+          const d = new Date(inv.issue_date);
+          const key = months[d.getMonth()];
+          monthlyRevenue[key] = (monthlyRevenue[key] || 0) + Number(inv.total_amount || 0);
+        }
+      });
+      const revenueData = Object.entries(monthlyRevenue).map(([month, revenue]) => ({ month, revenue }));
+
+      return {
+        totalRevenue, totalPaid, totalPatients: patients.length,
+        totalAppointments: appointments.length, completedAppointments, cancelledAppointments,
+        lowStock, treatmentData, revenueData, totalTreatments: treatments.length,
+        attendanceRate: appointments.length ? ((completedAppointments / appointments.length) * 100).toFixed(1) : '0',
+      };
+    },
+  });
+
+  if (isLoading) {
+    return <PageContainer><div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" /></div></PageContainer>;
+  }
 
   return (
     <PageContainer>
@@ -75,74 +88,22 @@ export default function Reports() {
         description="تقارير شاملة عن أداء العيادة والإحصائيات المالية"
         action={
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => exportReport('pdf')}>
-              <Download className="w-4 h-4 mr-2" />
-              تصدير PDF
-            </Button>
-            <Button variant="outline" onClick={() => exportReport('excel')}>
-              <Download className="w-4 h-4 mr-2" />
-              تصدير Excel
-            </Button>
+            <Button variant="outline"><Download className="w-4 h-4 mr-2" />تصدير PDF</Button>
           </div>
         }
       />
 
-      {/* أدوات التحكم */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            فلترة التقارير
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4 items-end">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">الفترة الزمنية</label>
-              <DatePickerWithRange 
-                date={dateRange}
-                onDateChange={setDateRange}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">نوع التقرير</label>
-              <Select value={reportType} onValueChange={setReportType}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="daily">يومي</SelectItem>
-                  <SelectItem value="weekly">أسبوعي</SelectItem>
-                  <SelectItem value="monthly">شهري</SelectItem>
-                  <SelectItem value="yearly">سنوي</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={() => generateReport(reportType)}>
-              إنشاء التقرير
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* الإحصائيات السريعة */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">إجمالي الإيرادات</p>
-                <p className="text-2xl font-bold">328,000 ر.س</p>
+                <p className="text-2xl font-bold"><CurrencyAmount amount={stats?.totalRevenue || 0} /></p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-green-100 dark:bg-green-900/20 flex items-center justify-center">
-                <TrendingUp className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <DollarSign className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
-            </div>
-            <div className="flex items-center mt-4 text-sm">
-              <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                +12.5%
-              </Badge>
-              <span className="text-muted-foreground mr-2">مقارنة بالشهر الماضي</span>
             </div>
           </CardContent>
         </Card>
@@ -152,17 +113,11 @@ export default function Reports() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">عدد المرضى</p>
-                <p className="text-2xl font-bold">1,247</p>
+                <p className="text-2xl font-bold">{stats?.totalPatients || 0}</p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
                 <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
-            </div>
-            <div className="flex items-center mt-4 text-sm">
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                +8.2%
-              </Badge>
-              <span className="text-muted-foreground mr-2">مرضى جدد هذا الشهر</span>
             </div>
           </CardContent>
         </Card>
@@ -172,17 +127,15 @@ export default function Reports() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">المواعيد المكتملة</p>
-                <p className="text-2xl font-bold">892</p>
+                <p className="text-2xl font-bold">{stats?.completedAppointments || 0}</p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-purple-100 dark:bg-purple-900/20 flex items-center justify-center">
                 <Calendar className="h-6 w-6 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
             <div className="flex items-center mt-4 text-sm">
-              <Badge variant="secondary" className="bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">
-                95.2%
-              </Badge>
-              <span className="text-muted-foreground mr-2">معدل الإكمال</span>
+              <Badge variant="secondary">{stats?.attendanceRate}%</Badge>
+              <span className="text-muted-foreground mr-2">معدل الحضور</span>
             </div>
           </CardContent>
         </Card>
@@ -192,100 +145,61 @@ export default function Reports() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">مخزون منخفض</p>
-                <p className="text-2xl font-bold">23</p>
+                <p className="text-2xl font-bold">{stats?.lowStock || 0}</p>
               </div>
               <div className="h-12 w-12 rounded-lg bg-orange-100 dark:bg-orange-900/20 flex items-center justify-center">
                 <Package className="h-6 w-6 text-orange-600 dark:text-orange-400" />
               </div>
-            </div>
-            <div className="flex items-center mt-4 text-sm">
-              <Badge variant="destructive">
-                تحتاج إعادة طلب
-              </Badge>
             </div>
           </CardContent>
         </Card>
       </div>
 
       <Tabs defaultValue="financial" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="financial">التقارير المالية</TabsTrigger>
           <TabsTrigger value="appointments">المواعيد</TabsTrigger>
           <TabsTrigger value="treatments">العلاجات</TabsTrigger>
-          <TabsTrigger value="patients">المرضى</TabsTrigger>
         </TabsList>
 
-        {/* التقارير المالية */}
         <TabsContent value="financial">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>الإيرادات والأرباح الشهرية</CardTitle>
-                <CardDescription>مقارنة الإيرادات مع المصروفات والأرباح</CardDescription>
+                <CardTitle>الإيرادات الشهرية</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip 
-                      formatter={(value, name) => [
-                        `${value.toLocaleString()} ر.س`,
-                        name === 'revenue' ? 'الإيرادات' : name === 'expenses' ? 'المصروفات' : 'الأرباح'
-                      ]}
-                    />
-                    <Bar dataKey="revenue" fill="hsl(var(--chart-1))" name="revenue" />
-                    <Bar dataKey="expenses" fill="hsl(var(--chart-2))" name="expenses" />
-                    <Bar dataKey="profit" fill="hsl(var(--chart-3))" name="profit" />
-                  </BarChart>
-                </ResponsiveContainer>
+                {(stats?.revenueData?.length || 0) > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={stats?.revenueData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`${Number(value).toLocaleString()} ر.س`, 'الإيرادات']} />
+                      <Bar dataKey="revenue" fill="hsl(var(--chart-1))" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-muted-foreground py-12">لا توجد بيانات مالية بعد</p>
+                )}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>نمو الإيرادات</CardTitle>
-                <CardDescription>تطور الإيرادات خلال الأشهر الماضية</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={revenueData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [`${value.toLocaleString()} ر.س`, 'الإيرادات']} />
-                    <Area 
-                      type="monotone" 
-                      dataKey="revenue" 
-                      stroke="hsl(var(--chart-1))" 
-                      fill="hsl(var(--chart-1))" 
-                      fillOpacity={0.3}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle>ملخص مالي تفصيلي</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>ملخص مالي</CardTitle></CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-muted/50 p-4 rounded-lg">
-                      <div className="text-sm text-muted-foreground">إجمالي الإيرادات</div>
-                      <div className="text-2xl font-bold text-green-600">328,000 ر.س</div>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-lg">
-                      <div className="text-sm text-muted-foreground">إجمالي المصروفات</div>
-                      <div className="text-2xl font-bold text-red-600">176,000 ر.س</div>
-                    </div>
-                    <div className="bg-muted/50 p-4 rounded-lg">
-                      <div className="text-sm text-muted-foreground">صافي الأرباح</div>
-                      <div className="text-2xl font-bold text-blue-600">152,000 ر.س</div>
-                    </div>
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="text-sm text-muted-foreground">إجمالي الإيرادات</div>
+                    <div className="text-2xl font-bold text-green-600"><CurrencyAmount amount={stats?.totalRevenue || 0} /></div>
+                  </div>
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="text-sm text-muted-foreground">المدفوعات المستلمة</div>
+                    <div className="text-2xl font-bold text-blue-600"><CurrencyAmount amount={stats?.totalPaid || 0} /></div>
+                  </div>
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <div className="text-sm text-muted-foreground">المبلغ المستحق</div>
+                    <div className="text-2xl font-bold text-red-600"><CurrencyAmount amount={(stats?.totalRevenue || 0) - (stats?.totalPaid || 0)} /></div>
                   </div>
                 </div>
               </CardContent>
@@ -293,203 +207,80 @@ export default function Reports() {
           </div>
         </TabsContent>
 
-        {/* تقارير المواعيد */}
         <TabsContent value="appointments">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>المواعيد الأسبوعية</CardTitle>
-                <CardDescription>توزيع المواعيد خلال أيام الأسبوع</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={appointmentData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="completed" fill="hsl(var(--chart-1))" name="مكتملة" />
-                    <Bar dataKey="cancelled" fill="hsl(var(--chart-2))" name="ملغية" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>إحصائيات المواعيد</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                    <span>إجمالي المواعيد</span>
-                    <Badge variant="secondary">932</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                    <span>المواعيد المكتملة</span>
-                    <Badge className="bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">892</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                    <span>المواعيد الملغية</span>
-                    <Badge variant="destructive">40</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                    <span>معدل الحضور</span>
-                    <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">95.7%</Badge>
-                  </div>
+          <Card>
+            <CardHeader><CardTitle>إحصائيات المواعيد</CardTitle></CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <span>إجمالي المواعيد</span>
+                  <Badge variant="secondary">{stats?.totalAppointments || 0}</Badge>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <span>المواعيد المكتملة</span>
+                  <Badge className="bg-green-100 text-green-700">{stats?.completedAppointments || 0}</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <span>المواعيد الملغية</span>
+                  <Badge variant="destructive">{stats?.cancelledAppointments || 0}</Badge>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <span>معدل الحضور</span>
+                  <Badge variant="secondary">{stats?.attendanceRate}%</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        {/* تقارير العلاجات */}
         <TabsContent value="treatments">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
                 <CardTitle>توزيع العلاجات</CardTitle>
-                <CardDescription>أنواع العلاجات الأكثر شيوعاً</CardDescription>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={treatmentData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="count"
-                      label={({ name, percentage }) => `${name} ${percentage}%`}
-                    >
-                      {treatmentData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                {(stats?.treatmentData?.length || 0) > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie data={stats?.treatmentData} cx="50%" cy="50%" outerRadius={80} dataKey="count"
+                        label={({ name, percentage }) => `${name} ${percentage}%`}>
+                        {stats?.treatmentData?.map((_, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-center text-muted-foreground py-12">لا توجد بيانات علاجات بعد</p>
+                )}
               </CardContent>
             </Card>
 
             <Card>
-              <CardHeader>
-                <CardTitle>تفاصيل العلاجات</CardTitle>
-              </CardHeader>
+              <CardHeader><CardTitle>إجمالي العلاجات</CardTitle></CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {treatmentData.map((treatment, index) => (
-                    <div key={treatment.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-3 h-3 rounded-full" 
-                          style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                        />
-                        <span>{treatment.name}</span>
+                <div className="text-4xl font-bold text-center py-8">{stats?.totalTreatments || 0}</div>
+                <p className="text-center text-muted-foreground">علاج مسجل</p>
+                {(stats?.treatmentData?.length || 0) > 0 && (
+                  <div className="space-y-3 mt-6">
+                    {stats?.treatmentData?.map((t, i) => (
+                      <div key={t.name} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[i % COLORS.length] }} />
+                          <span>{t.name}</span>
+                        </div>
+                        <Badge variant="secondary">{t.count}</Badge>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="secondary">{treatment.count}</Badge>
-                        <span className="text-sm text-muted-foreground">{treatment.percentage}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        {/* تقارير المرضى */}
-        <TabsContent value="patients">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>نمو قاعدة المرضى</CardTitle>
-                <CardDescription>المرضى الجدد مقابل المراجعين</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={patientData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="newPatients" 
-                      stroke="hsl(var(--chart-1))" 
-                      name="مرضى جدد"
-                      strokeWidth={2}
-                    />
-                    <Line 
-                      type="monotone" 
-                      dataKey="returning" 
-                      stroke="hsl(var(--chart-2))" 
-                      name="مراجعين"
-                      strokeWidth={2}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>إحصائيات المرضى</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                    <span>إجمالي المرضى</span>
-                    <Badge variant="secondary">1,247</Badge>
+                    ))}
                   </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                    <span>مرضى جدد هذا الشهر</span>
-                    <Badge className="bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400">38</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                    <span>مرضى مراجعين</span>
-                    <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">67</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                    <span>معدل الإخلاص</span>
-                    <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400">78.5%</Badge>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>
         </TabsContent>
       </Tabs>
-
-      {/* تقارير سريعة */}
-      <Card>
-        <CardHeader>
-          <CardTitle>تقارير سريعة</CardTitle>
-          <CardDescription>إنشاء تقارير مختصرة بنقرة واحدة</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <FileText className="w-6 h-6" />
-              <span>تقرير يومي</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <DollarSign className="w-6 h-6" />
-              <span>تقرير مالي</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <Users className="w-6 h-6" />
-              <span>تقرير المرضى</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <Package className="w-6 h-6" />
-              <span>تقرير المخزون</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </PageContainer>
   );
 }
