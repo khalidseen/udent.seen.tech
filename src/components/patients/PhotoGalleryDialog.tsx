@@ -154,7 +154,7 @@ const PhotoGalleryDialog: React.FC<PhotoGalleryDialogProps> = ({
                 <span className="font-medium">آخر رفع: </span>
                 <span className="text-gray-600">
                   {photos.length > 0 
-                    ? new Date(Math.max(...photos.map(p => new Date(p.uploadDate).getTime()))).toLocaleDateString('ar-SA')
+                    ? new Date(Math.max(...photos.map(p => new Date(p.uploadDate).getTime()))).toLocaleDateString()
                     : 'لا توجد صور'
                   }
                 </span>
@@ -256,7 +256,7 @@ const PhotoGalleryDialog: React.FC<PhotoGalleryDialogProps> = ({
                       
                       <div className="flex items-center gap-1 text-xs text-gray-500">
                         <Calendar className="h-3 w-3" />
-                        {new Date(photo.uploadDate).toLocaleDateString('ar-SA')}
+                        {new Date(photo.uploadDate).toLocaleDateString()}
                       </div>
                     </div>
                   </CardContent>
@@ -292,7 +292,7 @@ const PhotoGalleryDialog: React.FC<PhotoGalleryDialogProps> = ({
                   </div>
                   <div>
                     <Label>تاريخ الرفع</Label>
-                    <p>{new Date(selectedPhoto.uploadDate).toLocaleDateString('ar-SA')}</p>
+                    <p>{new Date(selectedPhoto.uploadDate).toLocaleDateString()}</p>
                   </div>
                   <div>
                     <Label>حجم الملف</Label>

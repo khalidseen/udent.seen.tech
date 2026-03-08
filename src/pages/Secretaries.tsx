@@ -266,7 +266,7 @@ export default function Secretaries() {
                     <TableCell>{secretary.email}</TableCell>
                     <TableCell>{secretary.phone || '-'}</TableCell>
                     <TableCell>
-                      {new Date(secretary.created_at).toLocaleDateString('ar-SA')}
+                      {new Date(secretary.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
