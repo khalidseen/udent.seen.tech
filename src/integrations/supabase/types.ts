@@ -599,6 +599,53 @@ export type Database = {
         }
         Relationships: []
       }
+      clinic_settings: {
+        Row: {
+          clinic_id: string
+          created_at: string | null
+          currency: string | null
+          custom_preferences: Json | null
+          id: string
+          language: string | null
+          remote_access_enabled: boolean | null
+          time_format: string | null
+          timezone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          clinic_id: string
+          created_at?: string | null
+          currency?: string | null
+          custom_preferences?: Json | null
+          id?: string
+          language?: string | null
+          remote_access_enabled?: boolean | null
+          time_format?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          clinic_id?: string
+          created_at?: string | null
+          currency?: string | null
+          custom_preferences?: Json | null
+          id?: string
+          language?: string | null
+          remote_access_enabled?: boolean | null
+          time_format?: string | null
+          timezone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_settings_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: true
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clinic_specific_permissions: {
         Row: {
           clinic_id: string
@@ -3202,6 +3249,21 @@ export type Database = {
       generate_purchase_order_number: {
         Args: { clinic_id_param: string }
         Returns: string
+      }
+      get_all_clinics_analytics: {
+        Args: never
+        Returns: {
+          appointment_count: number
+          clinic_id: string
+          clinic_name: string
+          completed_appointments: number
+          is_active: boolean
+          patient_count: number
+          subscription_plan: string
+          this_month_revenue: number
+          total_revenue: number
+          user_count: number
+        }[]
       }
       get_audit_statistics: { Args: { days_back?: number }; Returns: Json }
       get_clinic_stats_batch: {
