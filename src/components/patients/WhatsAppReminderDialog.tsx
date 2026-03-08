@@ -1,18 +1,22 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Send, Phone } from "lucide-react";
+import { Send, Phone, Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { sendWhatsAppMessage } from "@/lib/whatsapp";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WhatsAppReminderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   patientName: string;
   patientPhone?: string;
+  patientId?: string;
   totalCost: number;
   totalPaid: number;
   remaining: number;
@@ -23,6 +27,7 @@ export const WhatsAppReminderDialog = ({
   onOpenChange,
   patientName,
   patientPhone,
+  patientId,
   totalCost,
   totalPaid,
   remaining
@@ -30,60 +35,66 @@ export const WhatsAppReminderDialog = ({
   const { toast } = useToast();
   const [phoneNumber, setPhoneNumber] = useState(patientPhone || "");
   const [customMessage, setCustomMessage] = useState("");
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<'success' | 'error' | null>(null);
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile-wa'],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    }
+  });
 
   const generateMessage = () => {
-    const baseMessage = `السلام عليكم ${patientName}،
+    return `السلام عليكم ${patientName}،
 
 هذا تذكير بالمبلغ المتبقي عليك:
 
 💰 إجمالي التكلفة: ${totalCost.toLocaleString()} دينار عراقي
 ✅ المدفوع: ${totalPaid.toLocaleString()} دينار عراقي  
 ⏰ المتبقي: ${remaining.toLocaleString()} دينار عراقي
-
 ${customMessage ? `\n${customMessage}\n` : ''}
-
 يرجى التواصل معنا لتحديد موعد الدفع.
 شكراً لك 🙏`;
-
-    return baseMessage;
   };
 
-  const handleSendWhatsApp = () => {
+  const handleSendWhatsApp = async () => {
     if (!phoneNumber) {
-      toast({
-        title: "خطأ",
-        description: "يرجى إدخال رقم الهاتف",
-        variant: "destructive"
-      });
+      toast({ title: "خطأ", description: "يرجى إدخال رقم الهاتف", variant: "destructive" });
       return;
     }
 
-    // Clean phone number (remove spaces, dashes, etc.)
-    const cleanPhone = phoneNumber.replace(/[\s\-\(\)]/g, '');
-    
-    // Add country code if not present (assuming Iraq +964)
-    let formattedPhone = cleanPhone;
-    if (!cleanPhone.startsWith('+')) {
-      if (cleanPhone.startsWith('964')) {
-        formattedPhone = `+${cleanPhone}`;
-      } else if (cleanPhone.startsWith('07')) {
-        formattedPhone = `+964${cleanPhone.substring(1)}`;
-      } else {
-        formattedPhone = `+964${cleanPhone}`;
-      }
+    if (!profile?.id) {
+      toast({ title: "خطأ", description: "لم يتم تحميل بيانات العيادة", variant: "destructive" });
+      return;
     }
 
-    const message = generateMessage();
-    const whatsappUrl = `https://wa.me/${formattedPhone.replace('+', '')}?text=${encodeURIComponent(message)}`;
-    
-    window.open(whatsappUrl, '_blank');
-    
-    toast({
-      title: "تم بنجاح",
-      description: "تم فتح واتساب بالرسالة المُعدة"
-    });
-    
-    onOpenChange(false);
+    setSending(true);
+    setResult(null);
+
+    try {
+      const res = await sendWhatsAppMessage({
+        phone: phoneNumber,
+        message: generateMessage(),
+        patient_id: patientId,
+        clinic_id: profile.id,
+      });
+
+      if (res.success) {
+        setResult('success');
+        toast({ title: "تم بنجاح ✅", description: "تم إرسال رسالة الواتساب بنجاح" });
+        setTimeout(() => onOpenChange(false), 1500);
+      } else {
+        setResult('error');
+        toast({ title: "فشل الإرسال", description: res.error || "حدث خطأ أثناء الإرسال", variant: "destructive" });
+      }
+    } catch (err) {
+      setResult('error');
+      toast({ title: "خطأ", description: "فشل الاتصال بخدمة الواتساب", variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
@@ -94,6 +105,7 @@ ${customMessage ? `\n${customMessage}\n` : ''}
             <Send className="h-5 w-5 text-green-600" />
             إرسال تذكير واتساب - {patientName}
           </DialogTitle>
+          <DialogDescription>إرسال تذكير بالمبالغ المستحقة عبر WhatsApp Business API</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-6">
@@ -132,7 +144,7 @@ ${customMessage ? `\n${customMessage}\n` : ''}
               dir="ltr"
             />
             <p className="text-xs text-muted-foreground">
-              يمكنك إدخال الرقم بأي تنسيق (07xxxxxxxx أو +964xxxxxxxxx)
+              سيتم إرسال الرسالة مباشرة عبر WhatsApp Business API
             </p>
           </div>
 
@@ -156,14 +168,26 @@ ${customMessage ? `\n${customMessage}\n` : ''}
             </div>
           </div>
 
+          {/* Result indicator */}
+          {result && (
+            <div className={`flex items-center gap-2 p-3 rounded-lg ${result === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-950/30' : 'bg-red-50 text-red-700 dark:bg-red-950/30'}`}>
+              {result === 'success' ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+              {result === 'success' ? 'تم إرسال الرسالة بنجاح ✅' : 'فشل إرسال الرسالة'}
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               إلغاء
             </Button>
-            <Button onClick={handleSendWhatsApp} className="bg-green-600 hover:bg-green-700">
-              <Send className="h-4 w-4 ml-2" />
-              إرسال واتساب
+            <Button 
+              onClick={handleSendWhatsApp} 
+              className="bg-green-600 hover:bg-green-700"
+              disabled={sending}
+            >
+              {sending ? <Loader2 className="h-4 w-4 ml-2 animate-spin" /> : <Send className="h-4 w-4 ml-2" />}
+              {sending ? 'جاري الإرسال...' : 'إرسال واتساب'}
             </Button>
           </div>
         </div>
