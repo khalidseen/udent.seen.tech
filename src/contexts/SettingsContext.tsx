@@ -42,6 +42,16 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     return saved ? JSON.parse(saved) : true;
   });
 
+  const [timeFormat, setTimeFormatState] = useState<'12' | '24'>(() => {
+    const saved = localStorage.getItem('timeFormat');
+    return (saved as '12' | '24') || '12';
+  });
+
+  const setTimeFormat = (format: '12' | '24') => {
+    setTimeFormatState(format);
+    localStorage.setItem('timeFormat', format);
+  };
+
   // Server-side persisted dismissal flag (per-profile)
   const [serverDashboardDismissed, setServerDashboardDismissed] = useState<boolean | null>(null);
 
@@ -202,7 +212,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   setBoxSize,
   linkValidationAlertEnabled,
   setLinkValidationAlertEnabled,
-  setDashboardDismissedServer
+  setDashboardDismissedServer,
+  timeFormat,
+  setTimeFormat,
     }}>
       {children}
     </SettingsContext.Provider>

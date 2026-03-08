@@ -1,12 +1,14 @@
 import React, { useState, useEffect, ReactNode } from 'react';
 import { Currency, CURRENCIES, DEFAULT_CURRENCY, CurrencyCode } from '@/types/currency';
 import { CurrencyContext } from '@/hooks/useCurrency';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CurrencyProviderProps {
   children: ReactNode;
 }
 
 export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) => {
+  const { language } = useLanguage();
   const [currencyCode, setCurrencyCode] = useState<CurrencyCode>(() => {
     const stored = localStorage.getItem('selectedCurrency');
     return (stored && stored in CURRENCIES) ? stored as CurrencyCode : DEFAULT_CURRENCY;
@@ -24,7 +26,8 @@ export const CurrencyProvider: React.FC<CurrencyProviderProps> = ({ children }) 
 
   const formatAmount = (amount: number, includeCurrency: boolean = true): string => {
     const convertedAmount = convertAmount(amount);
-    const formatted = new Intl.NumberFormat('ar-IQ', {
+    const locale = language === 'ar' ? 'ar-IQ' : 'en-US';
+    const formatted = new Intl.NumberFormat(locale, {
       minimumFractionDigits: currentCurrency.decimalPlaces,
       maximumFractionDigits: currentCurrency.decimalPlaces,
     }).format(convertedAmount);
