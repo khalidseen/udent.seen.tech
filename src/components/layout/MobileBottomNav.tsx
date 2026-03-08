@@ -30,6 +30,7 @@ export const MobileBottomNav = memo<MobileBottomNavProps>(({ onMoreClick }) => {
             <NavLink
               key={item.url}
               to={item.url}
+              onClick={() => !active && triggerHaptic('light')}
               onMouseEnter={() => prefetchRoute(item.url)}
               className={cn(
                 "flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors",
@@ -45,7 +46,7 @@ export const MobileBottomNav = memo<MobileBottomNavProps>(({ onMoreClick }) => {
           );
         })}
         <button
-          onClick={onMoreClick}
+          onClick={() => { triggerHaptic('medium'); onMoreClick(); }}
           className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium text-muted-foreground transition-colors"
         >
           <MoreHorizontal className="h-5 w-5" />
