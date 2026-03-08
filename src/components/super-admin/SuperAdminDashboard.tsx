@@ -6,6 +6,7 @@ import { Building2, Users, Activity, TrendingUp, Plus, Eye } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ClinicsManagement } from '@/components/clinic/ClinicsManagement';
+import { CentralizedNotifications } from '@/components/super-admin/CentralizedNotifications';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface DashboardStats {
@@ -200,9 +201,14 @@ export function SuperAdminDashboard() {
       {/* Main Content Tabs */}
       <Tabs defaultValue="clinics" className="space-y-4">
         <TabsList>
+          <TabsTrigger value="notifications">📢 الإشعارات المركزية</TabsTrigger>
           <TabsTrigger value="clinics">إدارة العيادات</TabsTrigger>
           <TabsTrigger value="system">إدارة النظام</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="notifications">
+          <CentralizedNotifications />
+        </TabsContent>
         
         <TabsContent value="clinics">
           <ClinicsManagement />
