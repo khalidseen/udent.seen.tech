@@ -238,10 +238,6 @@ export default defineConfig(({ mode }) => ({
     ],
     exclude: [
       'lucide-react',
-      '@huggingface/transformers',
-      'three',
-      '@react-three/fiber',
-      '@react-three/drei'
     ],
   },
   esbuild: {
