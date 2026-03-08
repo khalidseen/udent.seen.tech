@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Settings as SettingsIcon, Building, Shield, Bell, Monitor, Database, LayoutDashboard, Link, Coins, Activity } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Import settings components
 import { InterfaceSettings } from "@/components/settings/InterfaceSettings";
@@ -15,74 +16,74 @@ import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("interface");
+  const { language } = useLanguage();
+  const isAr = language === 'ar';
+
   const settingsTabs = [{
     value: "interface",
-    label: "الواجهة",
+    label: isAr ? "الواجهة" : "Interface",
     icon: Monitor,
-    description: "تخصيص مظهر وسلوك واجهة النظام",
+    description: isAr ? "تخصيص مظهر وسلوك واجهة النظام" : "Customize system interface appearance",
     component: InterfaceSettings
   }, {
     value: "currency",
-    label: "العملة",
+    label: isAr ? "العملة" : "Currency",
     icon: Coins,
-    description: "إعدادات العملة والتحويل",
+    description: isAr ? "إعدادات العملة والتحويل" : "Currency and conversion settings",
     component: CurrencySettings
   }, {
     value: "dashboard",
-    label: "لوحة القيادة",
+    label: isAr ? "لوحة القيادة" : "Dashboard",
     icon: LayoutDashboard,
-    description: "إدارة وتخصيص صناديق لوحة القيادة",
+    description: isAr ? "إدارة وتخصيص صناديق لوحة القيادة" : "Manage and customize dashboard boxes",
     component: DashboardCardsSettings
   }, {
     value: "link-validation",
-    label: "فحص الروابط",
+    label: isAr ? "فحص الروابط" : "Link Check",
     icon: Link,
-    description: "فحص صحة روابط لوحة التحكم والتحقق من صحتها",
+    description: isAr ? "فحص صحة روابط لوحة التحكم والتحقق من صحتها" : "Check and validate dashboard links",
     component: DashboardLinkValidationSettings
   }, {
     value: "performance",
-    label: "الأداء",
+    label: isAr ? "الأداء" : "Performance",
     icon: Activity,
-    description: "مراقبة أداء التطبيق واستهلاك الموارد",
+    description: isAr ? "مراقبة أداء التطبيق واستهلاك الموارد" : "Monitor app performance and resource usage",
     component: PerformanceSettings
   }, {
     value: "clinic",
-    label: "العيادة",
+    label: isAr ? "العيادة" : "Clinic",
     icon: Building,
-    description: "معلومات العيادة وأوقات العمل",
+    description: isAr ? "معلومات العيادة وأوقات العمل" : "Clinic info and working hours",
     component: ClinicSettings
   }, {
     value: "notifications",
-    label: "الإشعارات",
+    label: isAr ? "الإشعارات" : "Notifications",
     icon: Bell,
-    description: "إعدادات التنبيهات والإشعارات",
+    description: isAr ? "إعدادات التنبيهات والإشعارات" : "Alert and notification settings",
     component: NotificationSettings
   }, {
     value: "system",
-    label: "النظام",
+    label: isAr ? "النظام" : "System",
     icon: Shield,
-    description: "الأمان والنسخ الاحتياطي",
+    description: isAr ? "الأمان والنسخ الاحتياطي" : "Security and backups",
     component: SystemSettings
   }];
+
   return <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
       <div className="flex items-center gap-3">
         <div className="p-2 bg-primary/10 rounded-lg">
           <SettingsIcon className="h-6 w-6 text-primary" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold">الإعدادات</h1>
-          
+          <h1 className="text-3xl font-bold">{isAr ? 'الإعدادات' : 'Settings'}</h1>
         </div>
       </div>
 
-      {/* Settings Content */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        {/* Tabs Navigation */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-xl">أقسام الإعدادات</CardTitle>
-            <CardDescription>اختر القسم الذي تريد تعديل إعداداته</CardDescription>
+            <CardTitle className="text-xl">{isAr ? 'أقسام الإعدادات' : 'Settings Sections'}</CardTitle>
+            <CardDescription>{isAr ? 'اختر القسم الذي تريد تعديل إعداداته' : 'Choose the section to configure'}</CardDescription>
           </CardHeader>
           <CardContent>
             <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto p-1">
@@ -97,7 +98,6 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Tab Content */}
         <div className="min-h-[600px]">
           {settingsTabs.map(tab => {
           const ComponentToRender = tab.component;
@@ -109,7 +109,7 @@ export default function Settings() {
                         <tab.icon className="h-5 w-5 text-primary" />
                       </div>
                       <div>
-                        <CardTitle className="text-xl">إعدادات {tab.label}</CardTitle>
+                        <CardTitle className="text-xl">{isAr ? `إعدادات ${tab.label}` : `${tab.label} Settings`}</CardTitle>
                         <CardDescription>{tab.description}</CardDescription>
                       </div>
                     </div>
