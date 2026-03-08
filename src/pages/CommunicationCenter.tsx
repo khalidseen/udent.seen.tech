@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { sendWhatsAppMessage, sendBulkWhatsApp } from "@/lib/whatsapp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -90,6 +91,24 @@ export default function CommunicationCenter() {
   const sendMutation = useMutation({
     mutationFn: async () => {
       const patient = patients.find((p: any) => p.id === sendForm.patient_id);
+      
+      // If WhatsApp, use the real API
+      if (sendForm.message_type === 'whatsapp') {
+        const phone = patient?.phone;
+        if (!phone) throw new Error('المريض ليس لديه رقم هاتف');
+        
+        const result = await sendWhatsAppMessage({
+          phone,
+          message: sendForm.message_body,
+          patient_id: sendForm.patient_id,
+          clinic_id: clinicId!,
+        });
+        
+        if (!result.success) throw new Error(result.error || 'فشل إرسال رسالة الواتساب');
+        return;
+      }
+      
+      // For other types, just log
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       const { error } = await supabase.from('communication_logs').insert({
         clinic_id: clinicId!, patient_id: sendForm.patient_id,
@@ -104,9 +123,12 @@ export default function CommunicationCenter() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comm-logs'] });
-      toast.success('تم إرسال الرسالة وتسجيلها');
+      toast.success('تم إرسال الرسالة بنجاح ✅');
       setShowSendDialog(false);
       setSendForm({ patient_id: '', message_type: 'sms', message_body: '', subject: '', template_id: '' });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'فشل إرسال الرسالة');
     }
   });
 
@@ -135,23 +157,37 @@ export default function CommunicationCenter() {
   // Bulk reminder
   const sendBulkReminderMutation = useMutation({
     mutationFn: async () => {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      const records = upcomingAppointments.map((a: any) => ({
-        clinic_id: clinicId!, patient_id: a.patient_id,
-        message_type: 'sms' as const, channel: 'auto_reminder',
-        message_body: `تذكير: لديك موعد في العيادة بتاريخ ${format(new Date(a.appointment_date), 'dd/MM/yyyy الساعة HH:mm', { locale: ar })}`,
-        recipient_phone: a.patients?.phone || null,
-        status: 'sent',
-        related_type: 'appointment', related_id: a.id,
-        sent_by: currentUser?.id
-      }));
-      if (records.length === 0) { toast.info('لا توجد مواعيد للتذكير'); return; }
-      const { error } = await supabase.from('communication_logs').insert(records);
-      if (error) throw error;
+      const whatsappMessages = upcomingAppointments
+        .filter((a: any) => a.patients?.phone)
+        .map((a: any) => ({
+          phone: a.patients.phone,
+          message: `تذكير: لديك موعد في العيادة بتاريخ ${format(new Date(a.appointment_date), 'dd/MM/yyyy الساعة HH:mm', { locale: ar })}`,
+          patient_id: a.patient_id,
+          related_type: 'appointment',
+          related_id: a.id,
+        }));
+      
+      if (whatsappMessages.length === 0) {
+        toast.info('لا توجد مواعيد مع أرقام هاتف للتذكير');
+        return;
+      }
+      
+      const result = await sendBulkWhatsApp(clinicId!, whatsappMessages);
+      
+      if (result.failed > 0) {
+        toast.warning(`تم إرسال ${result.sent} من ${result.total} تذكير. فشل: ${result.failed}`);
+      }
+      
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['comm-logs'] });
-      toast.success(`تم إرسال ${upcomingAppointments.length} تذكير`);
+      if (result) {
+        toast.success(`✅ تم إرسال ${result.sent} تذكير عبر واتساب`);
+      }
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'فشل إرسال التذكيرات');
     }
   });
 
