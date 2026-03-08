@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useLocation, NavLink } from "react-router-dom";
+import { prefetchRoute } from "@/App";
 import "./sidebar.css";
 import { 
   BarChart3, Users, Calendar, CalendarPlus, ClipboardList, 
@@ -197,7 +198,12 @@ export function AppSidebar() {
     }
 
     return (
-      <NavLink to={url} className={className}>
+      <NavLink 
+        to={url} 
+        className={className}
+        onMouseEnter={() => prefetchRoute(url)}
+        onFocus={() => prefetchRoute(url)}
+      >
         {content}
       </NavLink>
     );
