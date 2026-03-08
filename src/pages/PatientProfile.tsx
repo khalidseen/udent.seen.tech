@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, DollarSign, FileText, Image, Pill, Activity, Edit, Smile } from "lucide-react";
+import { CurrencyAmount } from "@/components/ui/currency-display";
 import { PatientAppointments } from "@/components/patients/profile/PatientAppointments";
 import { PatientTreatments } from "@/components/patients/profile/PatientTreatments";
 import { PatientFinancials } from "@/components/patients/profile/PatientFinancials";
@@ -150,7 +151,7 @@ export default function PatientProfile() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {stats?.balance?.toFixed(2) || '0.00'} ريال
+              <CurrencyAmount amount={stats?.balance || 0} />
             </div>
             <p className="text-xs text-muted-foreground">
               {Number(stats?.balance || 0) > 0 ? 'مبلغ مستحق' : 'لا توجد مستحقات'}

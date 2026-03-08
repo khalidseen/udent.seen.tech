@@ -150,10 +150,10 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
                         تاريخ الإصدار: {format(new Date(invoice.issue_date), 'PPP', { locale: ar })}
                       </div>
                       <div className="flex gap-4 text-sm">
-                        <span>الإجمالي: {Number(invoice.total_amount).toFixed(2)} ريال</span>
-                        <span>المدفوع: {Number(invoice.paid_amount).toFixed(2)} ريال</span>
+                        <span>الإجمالي: <CurrencyAmount amount={Number(invoice.total_amount)} /></span>
+                        <span>المدفوع: <CurrencyAmount amount={Number(invoice.paid_amount)} /></span>
                         <span className="text-red-600">
-                          المتبقي: {Number(invoice.balance_due).toFixed(2)} ريال
+                          المتبقي: <CurrencyAmount amount={Number(invoice.balance_due)} />
                         </span>
                       </div>
                     </div>
@@ -194,7 +194,7 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
                       <div className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4 text-green-600" />
                         <span className="font-medium text-green-600">
-                          {Number(payment.amount).toFixed(2)} ريال
+                          <CurrencyAmount amount={Number(payment.amount)} />
                         </span>
                       </div>
                       <div className="text-sm text-muted-foreground">
