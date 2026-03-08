@@ -188,7 +188,7 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
         .from('appointments').insert({
           clinic_id: profile.id,
           patient_id: patientId,
-          doctor_id: approvalData.doctorId !== 'none' ? approvalData.doctorId : null,
+          doctor_id: approvalData.doctorId,
           appointment_date: `${approvalData.date}T${approvalData.time}+00:00`,
           duration: approvalData.duration,
           treatment_type: approvalData.treatmentType,

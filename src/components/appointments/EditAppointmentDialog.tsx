@@ -9,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Save, AlertTriangle, Stethoscope } from "lucide-react";
+import { TREATMENT_TYPES } from "@/constants/treatmentTypes";
 
 interface EditAppointment {
   id: string;
@@ -38,25 +39,6 @@ interface EditAppointmentDialogProps {
   onOpenChange: (open: boolean) => void;
   onAppointmentUpdated: () => void;
 }
-
-const TREATMENT_TYPES = [
-  { value: 'فحص عام', label: 'فحص عام' },
-  { value: 'تنظيف الأسنان', label: 'تنظيف الأسنان' },
-  { value: 'حشو الأسنان', label: 'حشو الأسنان' },
-  { value: 'خلع الأسنان', label: 'خلع الأسنان' },
-  { value: 'علاج عصب', label: 'علاج عصب' },
-  { value: 'تركيب تاج', label: 'تركيب تاج' },
-  { value: 'تركيب جسر', label: 'تركيب جسر' },
-  { value: 'زراعة أسنان', label: 'زراعة أسنان' },
-  { value: 'تقويم الأسنان', label: 'تقويم الأسنان' },
-  { value: 'تبييض الأسنان', label: 'تبييض الأسنان' },
-  { value: 'جراحة فموية', label: 'جراحة فموية' },
-  { value: 'علاج اللثة', label: 'علاج اللثة' },
-  { value: 'طوارئ', label: 'طوارئ' },
-  { value: 'متابعة', label: 'متابعة' },
-  { value: 'استشارة', label: 'استشارة' },
-  { value: 'أخرى', label: 'أخرى' },
-];
 
 const EditAppointmentDialog = ({ 
   appointment, 
@@ -95,7 +77,6 @@ const EditAppointmentDialog = ({
       });
       setConflictWarning(null);
 
-      // Fetch doctors for this clinic
       if (appointment.clinic_id) {
         supabase
           .from('doctors')
@@ -110,8 +91,8 @@ const EditAppointmentDialog = ({
     }
   }, [appointment]);
 
-  const checkConflicts = useCallback(async (date: string, time: string, duration: number) => {
-    if (!appointment) return;
+  const checkConflicts = useCallback(async (date: string, time: string, duration: number, doctorId: string) => {
+    if (!appointment || !doctorId) return;
     
     const startTime = new Date(`${date}T${time}:00`);
     const endTime = new Date(startTime.getTime() + duration * 60000);
@@ -120,6 +101,7 @@ const EditAppointmentDialog = ({
       .from('appointments')
       .select('id, appointment_date, duration, patients(full_name)')
       .eq('clinic_id', appointment.clinic_id || '')
+      .eq('doctor_id', doctorId)
       .gte('appointment_date', `${date}T00:00:00`)
       .lte('appointment_date', `${date}T23:59:59`)
       .in('status', ['scheduled', 'confirmed'])
@@ -146,10 +128,10 @@ const EditAppointmentDialog = ({
   const handleChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    if (field === 'appointment_date' || field === 'appointment_time' || field === 'duration') {
+    if (field === 'appointment_date' || field === 'appointment_time' || field === 'duration' || field === 'doctor_id') {
       const updated = { ...formData, [field]: value };
-      if (updated.appointment_date && updated.appointment_time) {
-        checkConflicts(updated.appointment_date, updated.appointment_time, typeof updated.duration === 'number' ? updated.duration : parseInt(String(updated.duration)));
+      if (updated.appointment_date && updated.appointment_time && updated.doctor_id) {
+        checkConflicts(updated.appointment_date, updated.appointment_time, typeof updated.duration === 'number' ? updated.duration : parseInt(String(updated.duration)), updated.doctor_id);
       }
     }
   };
@@ -157,6 +139,11 @@ const EditAppointmentDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!appointment) return;
+
+    if (!formData.doctor_id) {
+      toast({ title: 'تنبيه', description: 'يجب اختيار طبيب معالج', variant: 'destructive' });
+      return;
+    }
 
     setLoading(true);
     
@@ -171,13 +158,12 @@ const EditAppointmentDialog = ({
           status: formData.status,
           treatment_type: formData.treatment_type || null,
           notes: formData.notes || null,
-          doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null
+          doctor_id: formData.doctor_id
         } as any)
         .eq('id', appointment.id);
 
       if (appointmentError) throw appointmentError;
 
-      // Update patient contact info if changed
       const updateData: Record<string, string> = {};
       if (formData.patient_phone && formData.patient_phone !== appointment.patients?.phone) {
         updateData.phone = formData.patient_phone;
@@ -215,7 +201,6 @@ const EditAppointmentDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Conflict Warning */}
           {conflictWarning && (
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
@@ -223,7 +208,6 @@ const EditAppointmentDialog = ({
             </Alert>
           )}
 
-          {/* Patient Info */}
           <div className="space-y-4 p-4 bg-muted/50 rounded-lg">
             <h3 className="font-medium">تحديث بيانات المريض</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -238,7 +222,6 @@ const EditAppointmentDialog = ({
             </div>
           </div>
 
-          {/* Appointment Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>التاريخ</Label>
@@ -277,19 +260,20 @@ const EditAppointmentDialog = ({
               <SelectTrigger><SelectValue placeholder="اختر نوع العلاج" /></SelectTrigger>
               <SelectContent>
                 {TREATMENT_TYPES.map((t) => (
-                  <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                  <SelectItem key={t.value} value={t.value}>
+                    {t.icon} {t.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Doctor Selection */}
+          {/* Doctor Selection - Required */}
           <div className="space-y-2">
-            <Label className="flex items-center gap-1"><Stethoscope className="w-3 h-3" /> الطبيب المعالج</Label>
-            <Select value={formData.doctor_id} onValueChange={(value) => handleChange('doctor_id', value)}>
+            <Label className="flex items-center gap-1"><Stethoscope className="w-3 h-3" /> الطبيب المعالج *</Label>
+            <Select value={formData.doctor_id} onValueChange={(value) => handleChange('doctor_id', value)} required>
               <SelectTrigger><SelectValue placeholder="اختر الطبيب" /></SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">بدون طبيب محدد</SelectItem>
                 {activeDoctors.map((doctor) => (
                   <SelectItem key={doctor.id} value={doctor.id}>
                     د. {doctor.full_name} {doctor.specialization ? `- ${doctor.specialization}` : ''}
@@ -306,7 +290,7 @@ const EditAppointmentDialog = ({
 
           <div className="flex justify-end space-x-2 space-x-reverse pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>إلغاء</Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !formData.doctor_id}>
               <Save className="w-4 h-4 ml-2" />
               {loading ? 'جاري الحفظ...' : 'حفظ التغييرات'}
             </Button>
