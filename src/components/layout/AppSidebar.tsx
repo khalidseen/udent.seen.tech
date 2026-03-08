@@ -116,7 +116,7 @@ export function AppSidebar() {
       items: [
         { title: "التقارير التفصيلية", url: "/detailed-reports", icon: FileSpreadsheet, permissions: ['reports.view'] },
         { title: "قائمة الذكاء الاصطناعي", url: "/ai-management-dashboard", icon: Brain, permissions: ['reports.view'] },
-        { title: "التحليل الذكي", url: "/ai-insights-page", icon: Activity, permissions: ['reports.view'] },
+        
         { title: "التشخيص الذكي", url: "/smart-diagnosis-system", icon: Stethoscope, permissions: ['reports.view'] },
       ]
     },

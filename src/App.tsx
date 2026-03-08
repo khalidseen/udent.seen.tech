@@ -70,7 +70,7 @@ const PublicBooking = lazy(() => import("@/pages/PublicBooking"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Doctors = lazy(() => import("@/pages/Doctors"));
 const DoctorProfile = lazy(() => import("@/pages/DoctorProfile"));
-const AIInsights = lazy(() => import("@/pages/AIInsights"));
+
 const DoctorAssistants = lazy(() => import("@/pages/DoctorAssistants"));
 const Secretaries = lazy(() => import("@/pages/Secretaries"));
 const AppointmentRequests = lazy(() => import("@/pages/AppointmentRequests"));
@@ -159,7 +159,7 @@ function App() {
                   <Route path="advanced-medical-records" element={<AdvancedMedicalRecords />} />
                   <Route path="ai-management-dashboard" element={<AIManagementDashboard />} />
                   <Route path="smart-diagnosis-system" element={<SmartDiagnosis />} />
-                  <Route path="ai-insights-page" element={<AIInsights />} />
+                  
                   <Route path="advanced-notification-management" element={<AdvancedNotificationManagement />} />
                   <Route path="custom-notification-templates" element={<CustomNotificationTemplates />} />
                   <Route path="detailed-reports" element={<DetailedReports />} />

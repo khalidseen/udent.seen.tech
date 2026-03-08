@@ -70,7 +70,7 @@ const menuSections = [
     items: [
       { title: "التقارير التفصيلية", url: "/detailed-reports", icon: FileSpreadsheet },
       { title: "الذكاء الاصطناعي", url: "/ai-management-dashboard", icon: Brain },
-      { title: "التحليل الذكي", url: "/ai-insights-page", icon: Brain },
+      
       { title: "التشخيص الذكي", url: "/smart-diagnosis-system", icon: Stethoscope },
     ],
   },
