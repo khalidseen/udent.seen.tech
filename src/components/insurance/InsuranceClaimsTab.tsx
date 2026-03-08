@@ -55,7 +55,7 @@ const InsuranceClaimsTab = () => {
     queryFn: async () => {
       if (!clinicId) return [];
       const { data } = await supabase.from('patient_insurance')
-        .select('id, policy_number, coverage_percentage, patients(full_name), insurance_companies(name, name_ar)')
+        .select('id, policy_number, coverage_percentage, patient_id, patients(full_name), insurance_companies(name, name_ar)')
         .eq('clinic_id', clinicId).eq('is_active', true);
       return data || [];
     },
@@ -65,9 +65,10 @@ const InsuranceClaimsTab = () => {
   const saveMutation = useMutation({
     mutationFn: async (f: typeof form) => {
       const pi = patientInsurances?.find(p => p.id === f.patient_insurance_id) as any;
+      if (!pi) throw new Error('لم يتم العثور على التأمين');
       const { error } = await supabase.from('insurance_claims').insert({
         clinic_id: clinicId!,
-        patient_id: pi?.patients?.id || (pi as any)?.patient_id,
+        patient_id: pi.patient_id,
         patient_insurance_id: f.patient_insurance_id,
         claim_number: f.claim_number,
         treatment_description: f.treatment_description || null,
