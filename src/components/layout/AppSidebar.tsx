@@ -9,7 +9,7 @@ import {
   Settings, LogOut, TrendingUp, FileSpreadsheet,
   Shield, Crown, Building, Plug, ChevronLeft, ChevronRight,
   Activity, Brain, Bell, Mail, FolderOpen, Box, Briefcase,
-  Wallet, CreditCard, Calculator, FlaskConical, CalendarDays, MessageSquare
+  Wallet, CreditCard, Calculator, FlaskConical, CalendarDays, MessageSquare, Globe
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -101,6 +101,7 @@ export function AppSidebar() {
         { title: "المختبر السني", url: "/dental-lab", icon: FlaskConical, permissions: ['treatments.view'] },
         { title: "الجدولة الذكية", url: "/smart-scheduling", icon: CalendarDays, permissions: ['appointments.view'] },
         { title: "مركز التواصل", url: "/communication-center", icon: MessageSquare, permissions: [] },
+        { title: "قنوات الاتصال", url: "/communication-channels", icon: Globe, permissions: [] },
       ]
     },
     {
