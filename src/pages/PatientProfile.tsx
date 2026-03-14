@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Calendar, DollarSign, FileText, Image, Pill, Activity, Edit, Smile } from "lucide-react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
 import { PatientAppointments } from "@/components/patients/profile/PatientAppointments";
+import { AppointmentReminderScheduler } from "@/components/appointments/AppointmentReminderScheduler";
 import { PatientTreatments } from "@/components/patients/profile/PatientTreatments";
 import { PatientFinancials } from "@/components/patients/profile/PatientFinancials";
 import { PatientImages } from "@/components/patients/profile/PatientImages";
@@ -221,8 +222,11 @@ export default function PatientProfile() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="appointments">
+        <TabsContent value="appointments" className="space-y-4">
           <PatientAppointments patientId={patientId!} />
+          {patient?.clinic_id && (
+            <AppointmentReminderScheduler patientId={patientId!} clinicId={patient.clinic_id} />
+          )}
         </TabsContent>
 
         <TabsContent value="treatments">
