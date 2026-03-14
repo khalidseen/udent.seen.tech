@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,11 +14,22 @@ interface PatientWorkflowTrackerProps {
   patientId: string;
 }
 
+const stageStyles: Record<string, { passed: string; active: string }> = {
+  blue: { passed: 'bg-blue-500 text-white', active: 'bg-blue-100 text-blue-600 border-2 border-blue-500' },
+  purple: { passed: 'bg-purple-500 text-white', active: 'bg-purple-100 text-purple-600 border-2 border-purple-500' },
+  indigo: { passed: 'bg-indigo-500 text-white', active: 'bg-indigo-100 text-indigo-600 border-2 border-indigo-500' },
+  green: { passed: 'bg-green-500 text-white', active: 'bg-green-100 text-green-600 border-2 border-green-500' },
+  yellow: { passed: 'bg-yellow-500 text-white', active: 'bg-yellow-100 text-yellow-600 border-2 border-yellow-500' },
+  orange: { passed: 'bg-orange-500 text-white', active: 'bg-orange-100 text-orange-600 border-2 border-orange-500' },
+  emerald: { passed: 'bg-emerald-500 text-white', active: 'bg-emerald-100 text-emerald-600 border-2 border-emerald-500' },
+};
+
 export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProps) {
+  const navigate = useNavigate();
+
   const { data: workflowStatus, isLoading } = useQuery({
     queryKey: ['patient-workflow', patientId],
     queryFn: async () => {
-      // جلب جميع البيانات المتعلقة بالمريض
       const [appointmentsResult, treatmentsResult, invoicesResult, paymentsResult] = await Promise.all([
         supabase.from('appointments').select('*').eq('patient_id', patientId).order('appointment_date', { ascending: false }),
         supabase.from('dental_treatments').select('*').eq('patient_id', patientId).order('treatment_date', { ascending: false }),
@@ -30,7 +42,6 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
       const invoices = invoicesResult.data || [];
       const payments = paymentsResult.data || [];
 
-      // حساب حالة كل مرحلة
       const hasAppointment = appointments.length > 0;
       const hasCompletedAppointment = appointments.some(a => a.status === 'completed');
       const hasTreatmentPlan = treatments.length > 0;
@@ -39,9 +50,8 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
       const hasInvoice = invoices.length > 0;
       const hasPayment = payments.length > 0;
       const totalBalance = invoices.reduce((sum, inv) => sum + Number(inv.balance_due || 0), 0);
-      const isPaid = totalBalance <= 0;
+      const isPaid = totalBalance <= 0 && hasInvoice;
 
-      // حساب نسبة الإنجاز
       let completedSteps = 0;
       const totalSteps = 7;
       
@@ -55,7 +65,6 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
 
       const progress = (completedSteps / totalSteps) * 100;
 
-      // تحديد المرحلة الحالية
       let currentStage = 'appointment_booking';
       if (isPaid && hasCompletedTreatment) currentStage = 'completed';
       else if (hasPayment) currentStage = 'payment';
@@ -77,7 +86,7 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
           paymentReceived: hasPayment,
           fullyPaid: isPaid,
         },
-        nextActions: getNextActions(currentStage, {
+        nextActions: getNextActions({
           hasAppointment,
           hasCompletedAppointment,
           hasTreatmentPlan,
@@ -90,17 +99,20 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
     },
   });
 
-  const getNextActions = (stage: string, data: any) => {
-    const actions = [];
+  const getNextActions = (data: any) => {
+    const actions: { label: string; action: string; icon: any }[] = [];
     
     if (!data.hasAppointment) {
       actions.push({ label: 'حجز موعد', action: 'book_appointment', icon: Calendar });
     }
     if (data.hasAppointment && !data.hasCompletedAppointment) {
-      actions.push({ label: 'إكمال الموعد', action: 'complete_appointment', icon: CheckCircle });
+      actions.push({ label: 'إدارة المواعيد', action: 'manage_appointments', icon: CheckCircle });
     }
     if (data.hasCompletedAppointment && !data.hasTreatmentPlan) {
       actions.push({ label: 'إنشاء خطة علاج', action: 'create_treatment_plan', icon: FileText });
+    }
+    if (data.hasTreatmentPlan && !data.hasOngoingTreatment) {
+      actions.push({ label: 'بدء العلاج', action: 'start_treatment', icon: Activity });
     }
     if (data.hasTreatmentPlan && !data.hasInvoice) {
       actions.push({ label: 'إنشاء فاتورة', action: 'create_invoice', icon: DollarSign });
@@ -108,11 +120,33 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
     if (data.hasInvoice && !data.hasPayment) {
       actions.push({ label: 'تسجيل دفعة', action: 'record_payment', icon: DollarSign });
     }
-    if (data.hasTreatmentPlan && !data.hasOngoingTreatment) {
-      actions.push({ label: 'بدء العلاج', action: 'start_treatment', icon: Activity });
-    }
     
     return actions;
+  };
+
+  const handleAction = (action: string) => {
+    switch (action) {
+      case 'book_appointment':
+        navigate(`/appointments/new?patient=${patientId}`);
+        break;
+      case 'manage_appointments':
+        navigate(`/patients/${patientId}?tab=appointments`);
+        break;
+      case 'create_treatment_plan':
+        navigate(`/dental-treatments?patient=${patientId}`);
+        break;
+      case 'start_treatment':
+        navigate(`/dental-treatments?patient=${patientId}`);
+        break;
+      case 'create_invoice':
+        navigate(`/invoices?patient=${patientId}`);
+        break;
+      case 'record_payment':
+        navigate(`/invoices?patient=${patientId}`);
+        break;
+      default:
+        break;
+    }
   };
 
   const stages = [
@@ -169,14 +203,13 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
               const isActive = workflowStatus?.currentStage === stage.id;
               const isPassed = stages.findIndex(s => s.id === workflowStatus?.currentStage) > index;
               const StageIcon = stage.icon;
+              const styles = stageStyles[stage.color] || stageStyles.blue;
 
               return (
                 <div key={stage.id} className="flex items-center gap-4">
                   <div className={`
                     p-3 rounded-full flex items-center justify-center
-                    ${isPassed ? `bg-${stage.color}-500 text-white` : 
-                      isActive ? `bg-${stage.color}-100 text-${stage.color}-600 border-2 border-${stage.color}-500` : 
-                      'bg-gray-100 text-gray-400'}
+                    ${isPassed ? styles.passed : isActive ? styles.active : 'bg-muted text-muted-foreground'}
                   `}>
                     <StageIcon className="h-5 w-5" />
                   </div>
@@ -219,10 +252,7 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
                   key={index}
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => {
-                    // هنا يمكن إضافة منطق التوجيه للصفحة المناسبة
-                    console.log('Action:', action.action);
-                  }}
+                  onClick={() => handleAction(action.action)}
                 >
                   <ActionIcon className="h-4 w-4 mr-2" />
                   {action.label}
