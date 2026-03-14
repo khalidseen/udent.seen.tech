@@ -179,6 +179,7 @@ function App() {
                   <Route path="dental-lab" element={<DentalLabManagement />} />
                   <Route path="smart-scheduling" element={<SmartScheduling />} />
                   <Route path="communication-center" element={<CommunicationCenter />} />
+                  <Route path="communication-channels" element={<CommunicationChannels />} />
                   <Route path="insurance-management" element={<InsuranceManagement />} />
                 </Route>
                 
