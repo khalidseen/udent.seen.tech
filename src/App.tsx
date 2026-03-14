@@ -106,6 +106,7 @@ const ServicePrices = lazy(() => import("@/pages/ServicePrices"));
 const DentalLabManagement = lazy(() => import("@/pages/DentalLabManagement"));
 const SmartScheduling = lazy(() => import("@/pages/SmartScheduling"));
 const CommunicationCenter = lazy(() => import("@/pages/CommunicationCenter"));
+const CommunicationChannels = lazy(() => import("@/pages/CommunicationChannels"));
 const InsuranceManagement = lazy(() => import("@/pages/InsuranceManagement"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
