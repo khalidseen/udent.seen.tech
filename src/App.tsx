@@ -106,6 +106,7 @@ const ServicePrices = lazy(() => import("@/pages/ServicePrices"));
 const DentalLabManagement = lazy(() => import("@/pages/DentalLabManagement"));
 const SmartScheduling = lazy(() => import("@/pages/SmartScheduling"));
 const CommunicationCenter = lazy(() => import("@/pages/CommunicationCenter"));
+const CommunicationChannels = lazy(() => import("@/pages/CommunicationChannels"));
 const InsuranceManagement = lazy(() => import("@/pages/InsuranceManagement"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -178,6 +179,7 @@ function App() {
                   <Route path="dental-lab" element={<DentalLabManagement />} />
                   <Route path="smart-scheduling" element={<SmartScheduling />} />
                   <Route path="communication-center" element={<CommunicationCenter />} />
+                  <Route path="communication-channels" element={<CommunicationChannels />} />
                   <Route path="insurance-management" element={<InsuranceManagement />} />
                 </Route>
                 
