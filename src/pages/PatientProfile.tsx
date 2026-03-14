@@ -222,8 +222,11 @@ export default function PatientProfile() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="appointments">
+        <TabsContent value="appointments" className="space-y-4">
           <PatientAppointments patientId={patientId!} />
+          {patient?.clinic_id && (
+            <AppointmentReminderScheduler patientId={patientId!} clinicId={patient.clinic_id} />
+          )}
         </TabsContent>
 
         <TabsContent value="treatments">
