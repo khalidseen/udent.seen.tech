@@ -101,6 +101,7 @@ export function AppSidebar() {
         { title: "المختبر السني", url: "/dental-lab", icon: FlaskConical, permissions: ['treatments.view'] },
         { title: "الجدولة الذكية", url: "/smart-scheduling", icon: CalendarDays, permissions: ['appointments.view'] },
         { title: "مركز التواصل", url: "/communication-center", icon: MessageSquare, permissions: [] },
+        { title: "قنوات الاتصال", url: "/communication-channels", icon: Globe, permissions: [] },
       ]
     },
     {
