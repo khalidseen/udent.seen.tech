@@ -9,7 +9,7 @@ import {
   Settings, LogOut, TrendingUp, FileSpreadsheet,
   Shield, Crown, Building, Plug, ChevronLeft, ChevronRight,
   Activity, Brain, Bell, Mail, FolderOpen, Box, Briefcase,
-  Wallet, CreditCard, Calculator, FlaskConical, CalendarDays, MessageSquare
+  Wallet, CreditCard, Calculator, FlaskConical, CalendarDays, MessageSquare, Globe
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
