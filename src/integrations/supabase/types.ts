@@ -381,6 +381,82 @@ export type Database = {
           },
         ]
       }
+      appointment_reminders: {
+        Row: {
+          appointment_id: string
+          clinic_id: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          is_active: boolean
+          patient_id: string
+          reminder_hours_before: number
+          reminder_type: string
+          scheduled_at: string
+          sent_at: string | null
+          status: string
+          template_language: string
+          template_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          appointment_id: string
+          clinic_id: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_active?: boolean
+          patient_id: string
+          reminder_hours_before?: number
+          reminder_type?: string
+          scheduled_at: string
+          sent_at?: string | null
+          status?: string
+          template_language?: string
+          template_name?: string
+          updated_at?: string | null
+        }
+        Update: {
+          appointment_id?: string
+          clinic_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          is_active?: boolean
+          patient_id?: string
+          reminder_hours_before?: number
+          reminder_type?: string
+          scheduled_at?: string
+          sent_at?: string | null
+          status?: string
+          template_language?: string
+          template_name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointment_reminders_appointment_id_fkey"
+            columns: ["appointment_id"]
+            isOneToOne: false
+            referencedRelation: "appointments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_reminders_clinic_id_fkey"
+            columns: ["clinic_id"]
+            isOneToOne: false
+            referencedRelation: "clinics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointment_reminders_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       appointment_requests: {
         Row: {
           approved_appointment_id: string | null
