@@ -167,24 +167,5 @@ export function setupGlobalErrorHandling() {
     
     // أخطاء أخرى تطبع بشكل طبيعي
     originalConsoleError.apply(console, args);
-  // قمع أخطاء runtime.lastError من Chrome Extensions
-  const originalConsoleError = console.error;
-  console.error = (...args: unknown[]) => {
-    const message = args.join(' ');
-    
-    // تجاهل أخطاء Chrome Extensions
-    if (
-      message.includes('runtime.lastError') ||
-      message.includes('message port closed') ||
-      message.includes('back/forward cache') ||
-      message.includes('Extension context') ||
-      message.includes('No tab with id') ||
-      message.includes('chrome-extension')
-    ) {
-      return; // لا تطبع شيء
-    }
-    
-    // أخطاء أخرى تطبع بشكل طبيعي
-    originalConsoleError.apply(console, args);
   };
 }
