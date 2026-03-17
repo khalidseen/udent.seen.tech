@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import * as Sentry from '@sentry/react'
+import { setupGlobalErrorHandling } from './lib/error-handler'
 
 if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
@@ -10,6 +11,8 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
     environment: import.meta.env.MODE,
   });
 }
+
+setupGlobalErrorHandling();
 
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
