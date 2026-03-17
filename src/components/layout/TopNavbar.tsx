@@ -253,7 +253,7 @@ export function TopNavbar() {
           title: `فاتورة #${invoice.invoice_number}`,
           subtitle: patientName,
           description: `💰 ${invoice.total_amount} ريال`,
-          url: `/invoices/${invoice.id}`,
+          url: `/invoice-management?invoice=${invoice.id}`,
           icon: '🧾'
         });
       });

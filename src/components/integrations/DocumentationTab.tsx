@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const DocumentationTab: React.FC = () => {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const supabaseBaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 
   const copyToClipboard = (code: string, id: string) => {
     navigator.clipboard.writeText(code);
@@ -253,7 +254,7 @@ print(data)`;
                 <CodeBlock
                   id="analytics-ex"
                   language="bash"
-                  code={`curl -X GET "https://lxusbjpvcyjcfrnyselc.supabase.co/functions/v1/clinic-analytics?clinic_id=YOUR_CLINIC_ID" \\
+                  code={`curl -X GET "${supabaseBaseUrl}/functions/v1/clinic-analytics?clinic_id=YOUR_CLINIC_ID" \\
   -H "Authorization: Bearer YOUR_API_KEY"`}
                 />
               </div>

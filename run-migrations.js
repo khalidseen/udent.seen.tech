@@ -6,9 +6,13 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// بيانات الاتصال من ملف .env
-const supabaseUrl = 'https://lxusbjpvcyjcfrnyselc.supabase.co';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4dXNianB2Y3lqY2ZybnlzZWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTUsImV4cCI6MjA2OTQ3NTU5NX0.-UZM4oHEbJ52j_VBmEOJtmODhkkScc4I3yxgz9ckbVM';
+// بيانات الاتصال من متغيرات البيئة
+const supabaseUrl = process.env.VITE_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables');
+}
 
 // إنشاء عميل Supabase
 const supabase = createClient(supabaseUrl, supabaseServiceKey);

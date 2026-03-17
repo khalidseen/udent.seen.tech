@@ -55,29 +55,11 @@ supabase.rpc = function(fn: string, args?: Record<string, unknown>, options?: Re
   // Ensure we always return a promise
   if (result && typeof result.catch === 'function') {
     return result.catch((error) => {
-      // Handle common RPC errors with fallback
+      // Fail closed for permission/identity-sensitive RPC failures.
       if (error?.code === '500' || error?.message?.includes('500')) {
-        console.warn(`RPC function ${fn} failed with 500 error, providing fallback:`, error);
-        
-        // Return appropriate fallback based on function name
-        if (fn === 'get_user_effective_permissions') {
-          return { data: [], error: null };
-        }
-        if (fn === 'get_user_roles') {
-          return { data: [], error: null };
-        }
-        if (fn === 'get_user_accessible_clinics') {
-          return { data: [], error: null };
-        }
-        if (fn === 'switch_user_clinic') {
-          return { data: null, error: null };
-        }
-        
-        // Re-throw for other functions
-        throw error;
+        console.error(`RPC function ${fn} failed with server error`, error);
       }
-      
-      // Re-throw other errors
+
       throw error;
     });
   }

@@ -45,7 +45,7 @@ const defaultCards: ActionCard[] = [
   { id: "invoices", title: "الفواتير", description: "إدارة الفواتير والمدفوعات", icon: Receipt, color: "text-yellow-600", gradient: "from-yellow-500/10 to-yellow-500/5", route: "/invoice-management", order_index: 7 },
   { id: "inventory", title: "المخزون", description: "إدارة المخزون والإمدادات", icon: Box, color: "text-orange-600", gradient: "from-orange-500/10 to-orange-500/5", route: "/inventory", order_index: 8 },
   { id: "doctors", title: "إدارة الأطباء", description: "إدارة بيانات الأطباء", icon: UserCheck, color: "text-blue-700", gradient: "from-blue-600/10 to-blue-600/5", route: "/doctors", order_index: 9 },
-  { id: "ai-insights", title: "التحليل الذكي", description: "تحليل ذكي بالذكاء الاصطناعي", icon: Brain, color: "text-indigo-600", gradient: "from-indigo-500/10 to-indigo-500/5", route: "/ai-insights-page", order_index: 10 },
+  { id: "ai-insights", title: "التحليل الذكي", description: "تحليل ذكي بالذكاء الاصطناعي", icon: Brain, color: "text-indigo-600", gradient: "from-indigo-500/10 to-indigo-500/5", route: "/ai-management-dashboard", order_index: 10 },
   { id: "medications", title: "الأدوية", description: "إدارة قاعدة بيانات الأدوية", icon: Pill, color: "text-rose-600", gradient: "from-rose-500/10 to-rose-500/5", route: "/medications", order_index: 11 },
   { id: "prescriptions", title: "الوصفات الطبية", description: "إنشاء وإدارة الوصفات الطبية", icon: ClipboardList, color: "text-emerald-700", gradient: "from-emerald-600/10 to-emerald-600/5", route: "/prescriptions", order_index: 12 },
   { id: "reports", title: "التقارير", description: "تقارير شاملة وإحصائيات", icon: BarChart3, color: "text-teal-600", gradient: "from-teal-500/10 to-teal-500/5", route: "/detailed-reports", order_index: 13 },

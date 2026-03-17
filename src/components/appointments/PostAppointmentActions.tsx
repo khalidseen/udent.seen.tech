@@ -326,7 +326,7 @@ const PostAppointmentActions = ({ appointment, onActionsCompleted }: PostAppoint
       <Button 
         size="sm" 
         variant="outline"
-        onClick={() => navigate(`/invoices?patient=${appointment.patient_id}`)}
+        onClick={() => navigate(`/invoice-management?patient=${appointment.patient_id}`)}
       >
         <Receipt className="w-4 h-4 ml-1" />
         إنشاء فاتورة

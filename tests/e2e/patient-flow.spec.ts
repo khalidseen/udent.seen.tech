@@ -21,7 +21,7 @@ test.describe('Patient Flow - Complete Journey', () => {
     
     if (!isLoggedIn) {
       // الانتقال لصفحة تسجيل الدخول
-      await page.goto('/login');
+      await page.goto('/auth');
       
       // ملء النموذج
       await page.fill('input[name="email"]', 'test@clinic.com');
@@ -144,7 +144,7 @@ test.describe('Patient Flow - Complete Journey', () => {
   
   test('should create an invoice for a patient', async ({ page }) => {
     // الانتقال لصفحة الفواتير
-    await page.goto('/invoices');
+    await page.goto('/invoice-management');
     
     // النقر على زر "إنشاء فاتورة"
     await page.click('button:has-text("إنشاء فاتورة"), button:has-text("Create Invoice")');
@@ -172,7 +172,7 @@ test.describe('Patient Flow - Complete Journey', () => {
   
   test('should add payment to an invoice', async ({ page }) => {
     // الانتقال لصفحة الفواتير
-    await page.goto('/invoices');
+    await page.goto('/invoice-management');
     
     // النقر على أول فاتورة غير مدفوعة
     await page.click('[data-testid="invoice-list"] > *:first-child');
@@ -199,9 +199,9 @@ test.describe('Patient Flow - Complete Journey', () => {
     const pages = [
       '/patients',
       '/appointments',
-      '/invoices',
-      '/treatments',
-      '/reports',
+      '/invoice-management',
+      '/dental-treatments-management',
+      '/detailed-reports',
     ];
 
     for (const url of pages) {

@@ -3,6 +3,7 @@ import { AppProviders } from "@/contexts/AppProviders";
 import { lazy, Suspense, memo } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { SimpleProtectedRoute } from "@/components/auth/SimpleProtectedRoute";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { OptimizedPageLoader } from "@/components/layout/OptimizedPageLoader";
 import Auth from "@/pages/Auth";
@@ -149,8 +150,16 @@ function App() {
                   <Route path="financial-overview" element={<FinancialOverview />} />
                   <Route path="treatment-plans" element={<TreatmentPlans />} />
                   <Route path="financial-reports" element={<FinancialReports />} />
-                  <Route path="invoice-management" element={<InvoiceManagement />} />
-                  <Route path="payment-management" element={<PaymentManagement />} />
+                  <Route path="invoice-management" element={
+                    <ProtectedRoute permissions={['financial.view', 'invoices.view']}>
+                      <InvoiceManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="payment-management" element={
+                    <ProtectedRoute permissions={['financial.view', 'payments.view']}>
+                      <PaymentManagement />
+                    </ProtectedRoute>
+                  } />
                   <Route path="inventory" element={<Inventory />} />
                   <Route path="medications" element={<Medications />} />
                   <Route path="prescriptions" element={<Prescriptions />} />
@@ -164,11 +173,27 @@ function App() {
                   <Route path="advanced-notification-management" element={<AdvancedNotificationManagement />} />
                   <Route path="custom-notification-templates" element={<CustomNotificationTemplates />} />
                   <Route path="detailed-reports" element={<DetailedReports />} />
-                  <Route path="advanced-permissions-management" element={<AdvancedPermissionsManagement />} />
-                  <Route path="advanced-user-management" element={<AdvancedUserManagement />} />
-                  <Route path="comprehensive-security-audit" element={<ComprehensiveSecurityAudit />} />
+                  <Route path="advanced-permissions-management" element={
+                    <ProtectedRoute permissions={['settings.manage', 'users.manage']}>
+                      <AdvancedPermissionsManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="advanced-user-management" element={
+                    <ProtectedRoute permissions={['users.view', 'users.manage']}>
+                      <AdvancedUserManagement />
+                    </ProtectedRoute>
+                  } />
+                  <Route path="comprehensive-security-audit" element={
+                    <ProtectedRoute permissions={['system.manage', 'settings.manage']}>
+                      <ComprehensiveSecurityAudit />
+                    </ProtectedRoute>
+                  } />
                   <Route path="dental-3d-models-management" element={<Dental3DModelsManagement />} />
-                  <Route path="super-admin" element={<SuperAdmin />} />
+                  <Route path="super-admin" element={
+                    <ProtectedRoute roles={['super_admin']}>
+                      <SuperAdmin />
+                    </ProtectedRoute>
+                  } />
                   <Route path="subscription-plans" element={<SubscriptionPlans />} />
                   <Route path="subscription" element={<SubscriptionManagement />} />
                   <Route path="integrations" element={<Integrations />} />

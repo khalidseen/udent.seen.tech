@@ -100,6 +100,31 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
   const createInvoiceMutation = useMutation({
     mutationFn: async () => {
       if (!profile) throw new Error('Profile not found');
+      if (!patientId) throw new Error('Patient is required');
+
+      // Clinical rule: prevent invoice creation before linking to a completed
+      // clinical encounter (completed appointment or treatment record).
+      const [appointmentsRes, treatmentsRes] = await Promise.all([
+        supabase
+          .from('appointments')
+          .select('id', { count: 'exact', head: true })
+          .eq('clinic_id', profile.id)
+          .eq('patient_id', patientId)
+          .eq('status', 'completed'),
+        supabase
+          .from('dental_treatments')
+          .select('id', { count: 'exact', head: true })
+          .eq('clinic_id', profile.id)
+          .eq('patient_id', patientId),
+      ]);
+
+      if (appointmentsRes.error) throw appointmentsRes.error;
+      if (treatmentsRes.error) throw treatmentsRes.error;
+
+      const hasClinicalLink = (appointmentsRes.count || 0) > 0 || (treatmentsRes.count || 0) > 0;
+      if (!hasClinicalLink) {
+        throw new Error('لا يمكن إنشاء فاتورة قبل تسجيل جلسة مكتملة أو علاج موثق للمريض');
+      }
 
       // Generate invoice number
       const { data: invoiceNumber } = await supabase.rpc('generate_invoice_number', {

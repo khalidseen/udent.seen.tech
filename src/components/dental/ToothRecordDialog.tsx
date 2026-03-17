@@ -178,6 +178,11 @@ export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
   };
 
   const handleSave = () => {
+    // Clinical rule: do not close treatment without documentation.
+    if (status === 'completed' && (!treatmentPlan.trim() || !notes.trim())) {
+      return;
+    }
+
     const clinicalData = JSON.stringify({
       surfaces, icdCode, mobility, probingDepths, bleeding, recession, plaqueIndex,
       rootCount, endoTreatment, endoDate, endoMaterial, rootConditions, followUpDate, estimatedCost,
@@ -316,6 +321,13 @@ export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
 
           {/* ===== Section 3: Treatment Presets + Plan + Notes ===== */}
           <div className="space-y-3">
+            {status === 'completed' && (!treatmentPlan.trim() || !notes.trim()) && (
+              <div className="flex items-center gap-2 p-2 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                <span>لا يمكن اعتماد الحالة كمكتملة بدون خطة علاج وملاحظات سريرية.</span>
+              </div>
+            )}
+
             {presets.length > 0 && (
               <div className="space-y-2">
                 <Label className="text-sm font-semibold">خيارات العلاج السريعة</Label>
@@ -526,7 +538,12 @@ export const ToothRecordDialog: React.FC<ToothRecordDialogProps> = ({
         {/* Save/Cancel */}
         <div className="flex justify-end gap-3 pt-4 border-t">
           <Button variant="outline" onClick={onClose} size="sm">إلغاء</Button>
-          <Button onClick={handleSave} disabled={isSaving} size="sm" className="min-w-[100px]">
+          <Button
+            onClick={handleSave}
+            disabled={isSaving || (status === 'completed' && (!treatmentPlan.trim() || !notes.trim()))}
+            size="sm"
+            className="min-w-[100px]"
+          >
             <Save className="w-4 h-4 ml-1" />
             {isSaving ? 'جاري الحفظ...' : 'حفظ'}
           </Button>

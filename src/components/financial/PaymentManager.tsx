@@ -240,7 +240,7 @@ export function PaymentManager() {
                       <Badge variant="outline" className={getMethodColor(payment.payment_method)}>{getPaymentMethodText(payment.payment_method)}</Badge>
                     </div>
                     <button
-                      onClick={() => navigate(`/patient/${payment.patient_id}`)}
+                      onClick={() => navigate(`/patients/${payment.patient_id}`)}
                       className="text-sm text-primary hover:underline flex items-center gap-1"
                     >
                       <User className="h-3 w-3" /> {payment.patient?.full_name}

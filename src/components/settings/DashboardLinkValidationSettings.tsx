@@ -1,5 +1,6 @@
 import React from 'react';
 import { DashboardLinkValidation } from './DashboardLinkValidation';
+import { ROUTES } from '@/constants/routes';
 import { 
   Users, 
   Calendar, 
@@ -62,7 +63,7 @@ const defaultCards = [
     description: "إدارة السجلات الطبية للمرضى",
     icon: FileText,
     color: "bg-purple-500",
-    route: "/medical-records",
+    route: ROUTES.advancedMedicalRecords,
     order_index: 5
   },
   {
@@ -71,7 +72,7 @@ const defaultCards = [
     description: "إدارة العلاجات والإجراءات السنية",
     icon: Stethoscope,
     color: "bg-red-500",
-    route: "/dental-treatments",
+    route: ROUTES.dentalTreatmentsManagement,
     order_index: 6
   },
   {
@@ -80,7 +81,7 @@ const defaultCards = [
     description: "إدارة الفواتير والمدفوعات",
     icon: Receipt,
     color: "bg-yellow-500",
-    route: "/invoices",
+    route: ROUTES.invoiceManagement,
     order_index: 7
   },
   {
@@ -107,7 +108,7 @@ const defaultCards = [
     description: "تحليل ذكي وتشخيص متقدم بالذكاء الاصطناعي",
     icon: Brain,
     color: "bg-indigo-500",
-    route: "/ai-insights",
+    route: ROUTES.aiManagementDashboard,
     order_index: 10
   },
   {
@@ -134,7 +135,7 @@ const defaultCards = [
     description: "تقارير شاملة وإحصائيات مفصلة",
     icon: BarChart3,
     color: "bg-teal-500",
-    route: "/reports",
+    route: ROUTES.detailedReports,
     order_index: 13
   },
   {
@@ -143,7 +144,7 @@ const defaultCards = [
     description: "إدارة الإشعارات والتنبيهات",
     icon: Bell,
     color: "bg-lime-500",
-    route: "/notifications",
+    route: ROUTES.advancedNotificationManagement,
     order_index: 14
   },
   {
@@ -152,7 +153,7 @@ const defaultCards = [
     description: "إدارة المستخدمين والصلاحيات",
     icon: Users,
     color: "bg-slate-500",
-    route: "/users",
+    route: "/advanced-user-management",
     order_index: 15
   },
   {

@@ -154,7 +154,7 @@ export function FloatingActionMenu({ className }: FloatingActionMenuProps) {
             {/* Add Appointment */}
             <div className="relative group">
               <Button
-                onClick={() => handleNavigation('/new-appointment')}
+                onClick={() => handleNavigation('/appointments/new')}
                 variant="outline"
                 className="flex-shrink-0 flex flex-col items-center justify-center min-w-16 h-16 bg-muted/50 hover:bg-muted text-foreground rounded-xl transition-all duration-200 hover:scale-105 p-2"
               >
@@ -171,7 +171,7 @@ export function FloatingActionMenu({ className }: FloatingActionMenuProps) {
             {/* Invoices */}
             <div className="relative group">
               <Button
-                onClick={() => handleNavigation('/invoices')}
+                onClick={() => handleNavigation('/invoice-management')}
                 variant="outline"
                 className="flex-shrink-0 flex flex-col items-center justify-center min-w-16 h-16 bg-muted/50 hover:bg-muted text-foreground rounded-xl transition-all duration-200 hover:scale-105 p-2"
               >
@@ -196,7 +196,7 @@ export function FloatingActionMenu({ className }: FloatingActionMenuProps) {
             {/* Payments */}
             <div className="relative group">
               <Button
-                onClick={() => handleNavigation('/payments')}
+                onClick={() => handleNavigation('/payment-management')}
                 variant="outline"
                 className="flex-shrink-0 flex flex-col items-center justify-center min-w-16 h-16 bg-muted/50 hover:bg-muted text-foreground rounded-xl transition-all duration-200 hover:scale-105 p-2"
               >

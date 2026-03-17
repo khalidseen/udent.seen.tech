@@ -133,16 +133,16 @@ export function PatientWorkflowTracker({ patientId }: PatientWorkflowTrackerProp
         navigate(`/patients/${patientId}?tab=appointments`);
         break;
       case 'create_treatment_plan':
-        navigate(`/dental-treatments?patient=${patientId}`);
+        navigate(`/dental-treatments-management?patient=${patientId}`);
         break;
       case 'start_treatment':
-        navigate(`/dental-treatments?patient=${patientId}`);
+        navigate(`/dental-treatments-management?patient=${patientId}`);
         break;
       case 'create_invoice':
-        navigate(`/invoices?patient=${patientId}`);
+        navigate(`/invoice-management?patient=${patientId}`);
         break;
       case 'record_payment':
-        navigate(`/invoices?patient=${patientId}`);
+        navigate(`/payment-management?patient=${patientId}`);
         break;
       default:
         break;

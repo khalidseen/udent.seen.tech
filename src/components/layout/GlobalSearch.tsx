@@ -43,18 +43,18 @@ const mockSearchData: SearchResult[] = [
   { id: '7', type: 'doctor', title: 'د. محمد حسين', subtitle: 'أخصائي جراحة', route: '/doctors', icon: UserCheck },
   
   // Invoices
-  { id: '8', type: 'invoice', title: 'فاتورة #1001', subtitle: '500 ج.م', route: '/invoices', icon: Receipt },
-  { id: '9', type: 'invoice', title: 'فاتورة #1002', subtitle: '750 ج.م', route: '/invoices', icon: Receipt },
+  { id: '8', type: 'invoice', title: 'فاتورة #1001', subtitle: '500 ج.م', route: '/invoice-management', icon: Receipt },
+  { id: '9', type: 'invoice', title: 'فاتورة #1002', subtitle: '750 ج.م', route: '/invoice-management', icon: Receipt },
   
   // Inventory
   { id: '10', type: 'inventory', title: 'أدوات التنظيف', subtitle: '25 قطعة متوفرة', route: '/inventory', icon: Package },
   { id: '11', type: 'inventory', title: 'مواد التعقيم', subtitle: '10 عبوات', route: '/inventory', icon: Package },
   
   // Medical Records
-  { id: '12', type: 'record', title: 'تقرير طبي - أحمد', subtitle: 'فحص دوري', route: '/medical-records', icon: FileText },
+  { id: '12', type: 'record', title: 'تقرير طبي - أحمد', subtitle: 'فحص دوري', route: '/advanced-medical-records', icon: FileText },
   
   // Treatments
-  { id: '13', type: 'treatment', title: 'تنظيف الأسنان', subtitle: 'علاج عام', route: '/treatments', icon: Stethoscope },
+  { id: '13', type: 'treatment', title: 'تنظيف الأسنان', subtitle: 'علاج عام', route: '/dental-treatments-management', icon: Stethoscope },
   
   // Settings
   { id: '14', type: 'setting', title: 'إعدادات النظام', subtitle: 'إدارة التطبيق', route: '/settings', icon: Settings },

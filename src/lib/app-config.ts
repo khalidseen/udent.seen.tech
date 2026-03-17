@@ -33,8 +33,8 @@ export const APP_CONFIG = {
 
   // Development settings
   development: {
-    showDebugLogs: process.env.NODE_ENV === 'development',
-    enableStrictMode: process.env.NODE_ENV === 'development',
+    showDebugLogs: import.meta.env.DEV,
+    enableStrictMode: import.meta.env.DEV,
     mockData: false,
   },
 };
@@ -117,15 +117,21 @@ export class AppHealthChecker {
     }
 
     try {
-      // Check Supabase connectivity
-      const response = await fetch('https://lxusbjpvcyjcfrnyselc.supabase.co/rest/v1/', {
-        method: 'HEAD',
-        headers: {
-          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4dXNianB2Y3lqY2ZybnlzZWxjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM4OTk1OTUsImV4cCI6MjA2OTQ3NTU5NX0.-UZM4oHEbJ52j_VBmEOJtmODhkkScc4I3yxgz9ckbVM'
-        }
-      });
-      
-      this.healthStatus.supabase = response.ok ? 'healthy' : 'unhealthy';
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+      const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        this.healthStatus.supabase = 'unhealthy';
+      } else {
+        // Check Supabase connectivity
+        const response = await fetch(`${supabaseUrl}/rest/v1/`, {
+          method: 'HEAD',
+          headers: {
+            apikey: supabaseAnonKey
+          }
+        });
+        this.healthStatus.supabase = response.ok ? 'healthy' : 'unhealthy';
+      }
     } catch {
       this.healthStatus.supabase = 'unhealthy';
     }

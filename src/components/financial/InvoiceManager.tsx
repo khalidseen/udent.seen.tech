@@ -230,7 +230,7 @@ export function InvoiceManager() {
                       </Badge>
                     </div>
                     <button
-                      onClick={() => navigate(`/patient/${invoice.patient_id}`)}
+                      onClick={() => navigate(`/patients/${invoice.patient_id}`)}
                       className="text-sm text-primary hover:underline flex items-center gap-1"
                     >
                       <User className="h-3 w-3" /> {invoice.patient?.full_name}
@@ -249,7 +249,7 @@ export function InvoiceManager() {
                   </div>
 
                   <div className="flex flex-col gap-1 shrink-0">
-                    <Button variant="outline" size="sm" onClick={() => navigate(`/patient/${invoice.patient_id}?tab=financials`)}>
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/patients/${invoice.patient_id}?tab=financials`)}>
                       <Eye className="h-4 w-4" />
                     </Button>
                     {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (

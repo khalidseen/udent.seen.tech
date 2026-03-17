@@ -39,6 +39,7 @@ import {
   Link as LinkIcon
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { DASHBOARD_ROUTE_OPTIONS } from "@/constants/routes";
 
 interface SimpleActionCard {
   id: string;
@@ -50,23 +51,7 @@ interface SimpleActionCard {
   order_index?: number;
 }
 
-const availableRoutes = [
-  { route: "/patients", name: "المرضى", iconName: "UserPlus", color: "bg-blue-500" },
-  { route: "/appointments", name: "المواعيد", iconName: "Calendar", color: "bg-green-500" },
-  { route: "/appointments/new", name: "موعد جديد", iconName: "Calendar", color: "bg-green-600" },
-  { route: "/public-booking", name: "حجز عام", iconName: "LinkIcon", color: "bg-lime-600" },
-  { route: "/medical-records", name: "السجلات الطبية", iconName: "FileText", color: "bg-purple-500" },
-  { route: "/invoices", name: "الفواتير", iconName: "DollarSign", color: "bg-yellow-500" },
-  { route: "/inventory", name: "المخزون", iconName: "Package", color: "bg-orange-500" },
-  { route: "/treatments", name: "العلاجات", iconName: "Stethoscope", color: "bg-red-500" },
-  { route: "/ai-insights", name: "الذكاء الاصطناعي", iconName: "Brain", color: "bg-indigo-500" },
-  { route: "/settings", name: "الإعدادات", iconName: "Settings", color: "bg-gray-500" },
-  { route: "/reports", name: "التقارير", iconName: "BarChart3", color: "bg-teal-500" },
-  { route: "/notifications", name: "الإشعارات", iconName: "Bell", color: "bg-pink-500" },
-  { route: "/payments", name: "المدفوعات", iconName: "DollarSign", color: "bg-emerald-500" },
-  { route: "/doctors", name: "الأطباء", iconName: "Activity", color: "bg-cyan-500" },
-  { route: "/prescriptions", name: "الوصفات", iconName: "FileText", color: "bg-violet-500" },
-];
+const availableRoutes = [...DASHBOARD_ROUTE_OPTIONS];
 
 // Helper function to get icon component
 const getIconComponent = (iconName: string) => {

@@ -219,7 +219,7 @@ export default function PatientFinancialTransactions() {
                       </div>
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <button onClick={() => navigate(`/patient/${payment.patient_id}`)} className="font-medium text-primary hover:underline flex items-center gap-1">
+                          <button onClick={() => navigate(`/patients/${payment.patient_id}`)} className="font-medium text-primary hover:underline flex items-center gap-1">
                             <User className="h-3 w-3" /> {payment.patient_name}
                           </button>
                           <Badge variant="outline" className={getMethodColor(payment.payment_method)}>{getMethodText(payment.payment_method)}</Badge>

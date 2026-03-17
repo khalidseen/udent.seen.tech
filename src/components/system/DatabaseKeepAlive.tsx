@@ -6,8 +6,14 @@ const KEEP_ALIVE_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
 export const DatabaseKeepAlive = () => {
   const sendKeepAlive = useCallback(async () => {
     try {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+      if (!supabaseUrl) {
+        console.warn('⚠️ Keep-alive skipped: missing VITE_SUPABASE_URL');
+        return false;
+      }
+
       const response = await fetch(
-        'https://lxusbjpvcyjcfrnyselc.supabase.co/functions/v1/keep-alive',
+        `${supabaseUrl}/functions/v1/keep-alive`,
         {
           method: 'POST',
           headers: {

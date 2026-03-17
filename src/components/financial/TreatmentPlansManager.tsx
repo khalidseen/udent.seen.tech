@@ -176,7 +176,7 @@ export function TreatmentPlansManager() {
                         <Badge className={getStatusColor(plan.status)}>{getStatusText(plan.status)}</Badge>
                         <span className="text-xs text-muted-foreground">سن: {plan.tooth_number}</span>
                       </div>
-                      <button onClick={() => navigate(`/patient/${plan.patient_id}`)} className="text-sm text-primary hover:underline flex items-center gap-1">
+                      <button onClick={() => navigate(`/patients/${plan.patient_id}`)} className="text-sm text-primary hover:underline flex items-center gap-1">
                         <User className="h-3 w-3" /> {plan.patients?.full_name}
                       </button>
                       <p className="text-sm"><strong>التشخيص:</strong> {plan.diagnosis}</p>
