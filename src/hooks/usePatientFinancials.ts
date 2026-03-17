@@ -6,6 +6,7 @@ import { useCurrency } from '@/hooks/useCurrency';
 
 interface FinancialUpdateData {
   patientId: string;
+  clinicId?: string; // إضافة clinicId
   financial_status: 'paid' | 'pending' | 'overdue' | 'partial';
   financial_balance?: number;
   total_payments?: number;
@@ -54,6 +55,7 @@ export const useUpdatePatientFinancials = () => {
           .from('patients')
           .select('notes')
           .eq('id', data.patientId)
+          .eq('clinic_id', data.clinicId)
           .single();
 
         const paymentNote = `\n[دفعة: ${formatAmount(data.payment_amount || 0)} - ${new Date().toLocaleDateString()} - ${data.payment_note}]`;
@@ -65,6 +67,7 @@ export const useUpdatePatientFinancials = () => {
         .from('patients')
         .update(updateData)
         .eq('id', data.patientId)
+        .eq('clinic_id', data.clinicId)
         .select('*')
         .single();
 

@@ -18,6 +18,41 @@
     
     <!-- Secondary Font (Deferred) -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    
+    <!-- Suppress Chrome Extension Errors Early -->
+    <script>
+      // Override console.error immediately to suppress extension errors
+      const originalConsoleError = console.error;
+      console.error = function(...args) {
+        const message = args.join(' ');
+        if (
+          message.includes('runtime.lastError') ||
+          message.includes('message port closed') ||
+          message.includes('back/forward cache') ||
+          message.includes('Extension context') ||
+          message.includes('No tab with id') ||
+          message.includes('chrome-extension')
+        ) {
+          return;
+        }
+        originalConsoleError.apply(console, args);
+      };
+
+      // Handle unhandled errors
+      window.addEventListener('error', function(event) {
+        if (event.message && (
+          event.message.includes('Extension context invalidated') ||
+          event.message.includes('chrome-extension') ||
+          event.message.includes('Attempting to use a disconnected port') ||
+          event.message.includes('message port closed') ||
+          event.message.includes('back/forward cache') ||
+          event.message.includes('No tab with id')
+        )) {
+          event.preventDefault();
+          return false;
+        }
+      });
+    </script>
     <noscript><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet"></noscript>
 
     <meta property="og:title" content="clear-sheet-scribe" />
