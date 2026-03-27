@@ -26,7 +26,7 @@ class PerformanceMonitor {
     
     this.entries.set(name, entry);
     
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log(`🚀 Started measuring: ${name}`);
     }
   }
@@ -35,14 +35,14 @@ class PerformanceMonitor {
   end(name: string) {
     const entry = this.entries.get(name);
     if (!entry) {
-      console.warn(`⚠️ No performance entry found for: ${name}`);
+      if (import.meta.env.DEV) console.warn(`⚠️ No performance entry found for: ${name}`);
       return;
     }
 
     entry.endTime = performance.now();
     entry.duration = entry.endTime - entry.startTime;
 
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       const color = entry.duration > 100 ? '🔴' : entry.duration > 50 ? '🟡' : '🟢';
       console.log(`${color} ${name}: ${entry.duration.toFixed(2)}ms`);
     }
@@ -113,7 +113,7 @@ class PerformanceMonitor {
       // مراقبة Resource Timing
       const resourceObserver = new PerformanceObserver((list) => {
         list.getEntries().forEach((entry) => {
-          if (entry.duration > 1000) { // موارد بطيئة فقط
+          if (import.meta.env.DEV && entry.duration > 1000) {
             console.warn(`🐌 Slow resource: ${entry.name} (${entry.duration.toFixed(2)}ms)`);
           }
         });
@@ -122,13 +122,13 @@ class PerformanceMonitor {
       this.observers.push(resourceObserver);
 
     } catch (error) {
-      console.warn('Performance Observer not supported:', error);
+      // Performance Observer not supported
     }
   }
 
   // تسجيل Web Vitals
   private logWebVital(name: string, value: number) {
-    if (process.env.NODE_ENV === 'development') {
+    if (import.meta.env.DEV) {
       console.log(`📊 Web Vital - ${name}: ${value.toFixed(2)}ms`);
     }
     

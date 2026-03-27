@@ -417,6 +417,7 @@ export function SmartPatientRecommendations() {
                       checked={isSelected}
                       onChange={() => toggleSelection(id)}
                       className="mt-1"
+                      aria-label={recommendation.title || 'تحديد التوصية'}
                     />
                     
                     <div className="flex-1 space-y-3">

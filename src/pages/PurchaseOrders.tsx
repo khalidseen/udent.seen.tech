@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, Edit, Trash2, ShoppingCart, Calendar, Truck, CheckCircle, XCircle, Package } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Plus, Search, Trash2, ShoppingCart, Calendar, Truck, CheckCircle, XCircle, Package, ArrowRight, Pill, ArrowLeftRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,13 +28,30 @@ interface PurchaseOrder {
   status: string;
   notes?: string;
   created_at: string;
+  purchase_order_items?: Array<{
+    supply_id: string | null;
+    supply_name: string;
+  }>;
 }
 
 const PurchaseOrders = () => {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const queryClient = useQueryClient();
+  const preselectedSupplyId = searchParams.get('supply') || undefined;
+  const workflowSource = searchParams.get('from');
+
+  useEffect(() => {
+    if (searchParams.get('status')) {
+      setStatusFilter(searchParams.get('status') || 'all');
+    }
+    if (searchParams.get('openCreate') === 'true') {
+      setIsCreateOpen(true);
+    }
+  }, [searchParams]);
 
   const { data: profile } = useQuery({
     queryKey: ['current-profile'],
@@ -50,7 +68,7 @@ const PurchaseOrders = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('purchase_orders')
-        .select('*')
+        .select('*, purchase_order_items(supply_id, supply_name)')
         .eq('clinic_id', clinicId!)
         .order('created_at', { ascending: false });
       if (error) throw error;
@@ -63,7 +81,8 @@ const PurchaseOrders = () => {
     const matchesSearch = order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.supplier.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesSupply = !preselectedSupplyId || order.purchase_order_items?.some(item => item.supply_id === preselectedSupplyId);
+    return matchesSearch && matchesStatus && matchesSupply;
   });
 
   const stats = {
@@ -123,6 +142,7 @@ const PurchaseOrders = () => {
                     supply_id: item.supply_id,
                     movement_type: 'in',
                     quantity: item.quantity,
+                    reference_id: id,
                     reference_type: 'purchase',
                     notes: `استلام أمر شراء`,
                     created_by: profile?.id
@@ -161,7 +181,31 @@ const PurchaseOrders = () => {
   return (
     <PermissionGuard requiredPermissions={['inventory.view']}>
       <PageContainer>
-        <PageHeader title="أوامر الشراء" description="إدارة ومتابعة أوامر شراء المواد والمعدات الطبية" />
+        <div className="flex items-center justify-between mb-4">
+          <PageHeader title="أوامر الشراء" description="إدارة ومتابعة أوامر شراء المواد والمعدات الطبية" />
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate('/inventory?from=purchase-orders')}>
+              <ArrowRight className="w-4 h-4 ml-1" />
+              العودة للمخزون
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/stock-movements?reference=purchase&from=purchase-orders')}>
+              <ArrowLeftRight className="w-4 h-4 ml-1" />
+              الحركات
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/medications?from=purchase-orders')}>
+              <Pill className="w-4 h-4 ml-1" />
+              الأدوية
+            </Button>
+          </div>
+        </div>
+
+        {(preselectedSupplyId || workflowSource) && (
+          <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            {preselectedSupplyId && <span>القائمة مفلترة على أوامر شراء مرتبطة بصنف محدد. </span>}
+            {workflowSource === 'inventory' && <span>تم فتح أوامر الشراء من شاشة المخزون لبدء إعادة التوريد. </span>}
+            {workflowSource === 'medications' && <span>تم فتح أوامر الشراء من شاشة الأدوية لمتابعة التوريد الدوائي. </span>}
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -270,6 +314,11 @@ const PurchaseOrders = () => {
                     <div className="text-lg font-semibold text-primary">
                       <CurrencyAmount amount={order.total_amount} />
                     </div>
+                    {order.purchase_order_items?.length ? (
+                      <p className="text-xs text-muted-foreground">
+                        الأصناف: {order.purchase_order_items.map((item) => item.supply_name).slice(0, 2).join('، ')}{order.purchase_order_items.length > 2 ? '...' : ''}
+                      </p>
+                    ) : null}
                     
                     {order.notes && (
                       <p className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">{order.notes}</p>
@@ -297,6 +346,9 @@ const PurchaseOrders = () => {
                         <CheckCircle className="w-3 h-3 ml-1" /> تم التسليم
                       </Button>
                     )}
+                    <Button variant="outline" size="sm" onClick={() => navigate(`/stock-movements?reference=purchase&from=purchase-orders`)}>
+                      <ArrowLeftRight className="w-3 h-3 ml-1" /> الحركات
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleDelete(order.id)} className="text-destructive hover:text-destructive">
                       <Trash2 className="w-3 h-3" />
                     </Button>
@@ -324,11 +376,17 @@ const PurchaseOrders = () => {
 
         <CreatePurchaseOrderDialog
           isOpen={isCreateOpen}
-          onClose={() => setIsCreateOpen(false)}
+          onClose={() => {
+            setIsCreateOpen(false);
+            const next = new URLSearchParams(searchParams);
+            ['openCreate', 'supply', 'from'].forEach((key) => next.delete(key));
+            setSearchParams(next);
+          }}
           onOrderCreated={() => {
             invalidateAll();
             toast.success('تم إنشاء أمر الشراء بنجاح');
           }}
+          preselectedSupplyId={preselectedSupplyId}
         />
       </PageContainer>
     </PermissionGuard>

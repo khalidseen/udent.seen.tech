@@ -3,6 +3,8 @@ import { createContext } from 'react';
 export interface SettingsContextType {
   fontWeight: 'normal' | 'bold';
   setFontWeight: (weight: 'normal' | 'bold') => void;
+  navFontSize: 'small' | 'medium' | 'large';
+  setNavFontSize: (size: 'small' | 'medium' | 'large') => void;
   sidebarIconSize: 'small' | 'medium' | 'large';
   setSidebarIconSize: (size: 'small' | 'medium' | 'large') => void;
   collapsedIconSize: 'small' | 'medium' | 'large';

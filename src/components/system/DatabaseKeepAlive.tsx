@@ -24,7 +24,7 @@ export const DatabaseKeepAlive = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log('✅ Database keep-alive successful:', data.timestamp);
+        if (import.meta.env.DEV) console.log('✅ Database keep-alive successful:', data.timestamp);
         localStorage.setItem(KEEP_ALIVE_KEY, Date.now().toString());
         return true;
       } else {
@@ -43,7 +43,7 @@ export const DatabaseKeepAlive = () => {
 
     if (!lastPing) {
       // First time - send ping
-      console.log('🔄 First keep-alive ping...');
+      if (import.meta.env.DEV) console.log('🔄 First keep-alive ping...');
       await sendKeepAlive();
       return;
     }
@@ -52,13 +52,13 @@ export const DatabaseKeepAlive = () => {
     const timeSinceLastPing = now - lastPingTime;
 
     if (timeSinceLastPing >= KEEP_ALIVE_INTERVAL_MS) {
-      console.log('🔄 Sending daily keep-alive ping...');
+      if (import.meta.env.DEV) console.log('🔄 Sending daily keep-alive ping...');
       await sendKeepAlive();
     } else {
       const hoursRemaining = Math.round(
         (KEEP_ALIVE_INTERVAL_MS - timeSinceLastPing) / (60 * 60 * 1000)
       );
-      console.log(`✅ Database keep-alive active. Next ping in ~${hoursRemaining} hours`);
+      if (import.meta.env.DEV) console.log(`✅ Database keep-alive active. Next ping in ~${hoursRemaining} hours`);
     }
   }, [sendKeepAlive]);
 

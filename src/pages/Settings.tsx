@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings as SettingsIcon, Building, Shield, Bell, Monitor, LayoutDashboard, Link, Coins, Activity, Users } from "lucide-react";
+import { Settings as SettingsIcon, Building, Shield, Bell, Monitor, LayoutDashboard, Link, Coins, Activity, Users, Eye, Pencil } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { ADMIN_ROLES } from "@/constants/roles";
 
 import { InterfaceSettings } from "@/components/settings/InterfaceSettings";
 import { ClinicSettings } from "@/components/settings/ClinicSettings";
@@ -13,8 +14,8 @@ import { DashboardCardsSettings } from "@/components/settings/DashboardCardsSett
 import { DashboardLinkValidationSettings } from "@/components/settings/DashboardLinkValidationSettings";
 import CurrencySettings from "@/components/settings/CurrencySettings";
 import { PerformanceSettings } from "@/components/settings/PerformanceSettings";
-
-const ADMIN_ROLES = ['super_admin', 'owner', 'admin', 'manager', 'clinic_owner'];
+import { DevInspectorSettingsManager } from "@/components/settings/DevInspectorSettingsManager";
+import { VisualEditorSettingsManager } from "@/components/settings/VisualEditorSettingsManager";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("interface");
@@ -56,14 +57,14 @@ export default function Settings() {
       component: DashboardLinkValidationSettings,
       adminOnly: true,
     },
-    {
+    ...(import.meta.env.DEV ? [{
       value: "performance",
       label: isAr ? "الأداء" : "Performance",
       icon: Activity,
       description: isAr ? "مراقبة أداء التطبيق" : "Monitor app performance",
       component: PerformanceSettings,
       adminOnly: true,
-    },
+    }] : []),
     {
       value: "clinic",
       label: isAr ? "العيادة" : "Clinic",
@@ -88,6 +89,22 @@ export default function Settings() {
       component: SystemSettings,
       adminOnly: true,
     },
+    {
+      value: "dev-inspector",
+      label: isAr ? "المفتش" : "Inspector",
+      icon: Eye,
+      description: isAr ? "خريطة المكونات المرئية للتطبيق" : "Visual component inspector",
+      component: DevInspectorSettingsManager,
+      adminOnly: true,
+    },
+    {
+      value: "visual-editor",
+      label: isAr ? "المحرر" : "Editor",
+      icon: Pencil,
+      description: isAr ? "المحرر المرئي لتعديل المحتوى" : "Visual content editor",
+      component: VisualEditorSettingsManager,
+      adminOnly: true,
+    },
   ];
 
   const visibleTabs = settingsTabs.filter(tab => !tab.adminOnly || isAdmin);
@@ -110,7 +127,7 @@ export default function Settings() {
             <CardDescription>{isAr ? 'اختر القسم الذي تريد تعديل إعداداته' : 'Choose the section to configure'}</CardDescription>
           </CardHeader>
           <CardContent>
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 h-auto p-1">
+            <TabsList className="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-10 h-auto p-1">
               {visibleTabs.map(tab => {
                 const IconComponent = tab.icon;
                 return (

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,13 +12,30 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const PatientInsuranceTab = () => {
+interface PatientInsuranceTabProps {
+  preselectedPatientId?: string;
+  autoOpenCreate?: boolean;
+}
+
+const PatientInsuranceTab = ({ preselectedPatientId, autoOpenCreate = false }: PatientInsuranceTabProps) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
-    patient_id: '', insurance_company_id: '', policy_number: '',
+    patient_id: preselectedPatientId || '', insurance_company_id: '', policy_number: '',
     member_id: '', coverage_percentage: '0', max_annual_coverage: '', notes: ''
   });
+
+  useEffect(() => {
+    if (preselectedPatientId) {
+      setForm((current) => ({ ...current, patient_id: preselectedPatientId }));
+    }
+  }, [preselectedPatientId]);
+
+  useEffect(() => {
+    if (autoOpenCreate) {
+      setOpen(true);
+    }
+  }, [autoOpenCreate]);
 
   const { data: clinicId } = useQuery({
     queryKey: ['current-clinic-id'],
@@ -90,6 +107,11 @@ const PatientInsuranceTab = () => {
     });
   };
 
+  const visiblePatientInsurance = useMemo(() => {
+    if (!preselectedPatientId) return patientInsurance || [];
+    return (patientInsurance || []).filter((item: any) => item.patient_id === preselectedPatientId);
+  }, [patientInsurance, preselectedPatientId]);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -133,7 +155,7 @@ const PatientInsuranceTab = () => {
 
       {isLoading ? (
         <div className="space-y-3">{[1,2,3].map(i => <Skeleton key={i} className="h-20 w-full" />)}</div>
-      ) : (patientInsurance?.length || 0) === 0 ? (
+      ) : (visiblePatientInsurance?.length || 0) === 0 ? (
         <Card><CardContent className="p-12 text-center">
           <Users className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-lg font-semibold mb-2">لا يوجد تأمين مرتبط</h3>
@@ -141,7 +163,7 @@ const PatientInsuranceTab = () => {
         </CardContent></Card>
       ) : (
         <div className="space-y-3">
-          {patientInsurance?.map((pi: any) => (
+          {visiblePatientInsurance?.map((pi: any) => (
             <Card key={pi.id}>
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">

@@ -13,6 +13,7 @@ import { Clock, User, Phone, Mail, MapPin, FileText, Check, X, MessageCircle, Ca
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import ApproveRequestDialog, { ApprovalData } from "./ApproveRequestDialog";
 import { useDoctors } from "@/hooks/useDoctors";
+import { useNavigate } from "react-router-dom";
 interface AppointmentRequest {
   id: string;
   patient_name: string;
@@ -27,6 +28,7 @@ interface AppointmentRequest {
   rejection_reason: string;
 }
 const AppointmentRequestsList = () => {
+  const navigate = useNavigate();
   const [requests, setRequests] = useState<AppointmentRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -35,6 +37,7 @@ const AppointmentRequestsList = () => {
   const [clinicId, setClinicId] = useState<string | undefined>(undefined);
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<AppointmentRequest | null>(null);
+  const [lastApprovedContext, setLastApprovedContext] = useState<{ patientId: string; patientName: string } | null>(null);
   
   const { data: doctors } = useDoctors(clinicId);
 
@@ -105,7 +108,7 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
         }
       } = await supabase.auth.getUser();
       if (!user) {
-        console.log('No user found');
+        return;
         return;
       }
       const {
@@ -117,10 +120,8 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
         return;
       }
       if (!profile) {
-        console.log('No profile found');
         return;
       }
-      console.log('Profile ID:', profile.id);
       setClinicId(profile.id);
       const {
         data,
@@ -132,7 +133,6 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
         console.error('Appointment requests error:', error);
         throw error;
       }
-      console.log('Fetched requests:', data);
       setRequests(data || []);
     } catch (error) {
       console.error('Error fetching appointment requests:', error);
@@ -211,6 +211,10 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
       }
 
       toast.success("تم قبول طلب الموعد وإنشاء موعد بالبيانات المحددة");
+      setLastApprovedContext({
+        patientId,
+        patientName: request.patient_name,
+      });
       setApproveDialogOpen(false);
       setSelectedRequest(null);
       fetchRequests();
@@ -398,6 +402,27 @@ ${rejectionReason ? `السبب: ${rejectionReason}` : ''}
           تم الرفض ({requests.filter(r => r.status === 'rejected').length})
         </Button>
       </div>
+
+      {lastApprovedContext && (
+        <Alert className="bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-800">
+          <Check className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800 dark:text-green-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <span>
+              تم إنشاء ملف المريض {lastApprovedContext.patientName} والموعد بنجاح. يمكنك متابعة التدفق مباشرة.
+            </span>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="outline" onClick={() => navigate(`/patients/${lastApprovedContext.patientId}`)}>
+                <User className="w-3.5 h-3.5 ml-1" />
+                ملف المريض
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => navigate('/appointments')}>
+                <Calendar className="w-3.5 h-3.5 ml-1" />
+                المواعيد
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Requests List */}
       {filteredRequests.length === 0 ? (

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ interface PatientTreatmentsProps {
 }
 
 export function PatientTreatments({ patientId }: PatientTreatmentsProps) {
+  const navigate = useNavigate();
   const { data: treatments, isLoading } = useQuery({
     queryKey: ['patient-treatments', patientId],
     queryFn: async () => {
@@ -54,7 +56,7 @@ export function PatientTreatments({ patientId }: PatientTreatmentsProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">العلاجات</h3>
-        <Button size="sm" onClick={() => window.location.href = `/dental-treatments-management?patient=${patientId}`}>
+        <Button size="sm" onClick={() => navigate(`/dental-treatments-management?patient=${patientId}`)}>
           <Plus className="w-4 h-4 mr-2" />
           إضافة علاج جديد
         </Button>

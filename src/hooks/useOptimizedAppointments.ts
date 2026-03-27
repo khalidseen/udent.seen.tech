@@ -33,6 +33,7 @@ export function useOptimizedTodayAppointments(clinicId: string | null) {
         `)
         .gte('appointment_date', `${today}T00:00:00`)
         .lt('appointment_date', `${today}T23:59:59`)
+        .eq('clinic_id', clinicId)
         .order('appointment_date', { ascending: true });
 
       if (error) throw error;
@@ -69,6 +70,7 @@ export function useOptimizedUpcomingAppointments(clinicId: string | null, hours 
         .gte('appointment_date', now.toISOString())
         .lte('appointment_date', futureTime.toISOString())
         .eq('status', 'scheduled')
+        .eq('clinic_id', clinicId)
         .order('appointment_date', { ascending: true })
         .limit(10);
 

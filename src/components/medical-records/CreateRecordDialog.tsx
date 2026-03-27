@@ -13,10 +13,20 @@ interface CreateRecordDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onRecordCreated: () => void;
+  preselectedPatientId?: string;
+  initialValues?: {
+    recordType?: string;
+    title?: string;
+    description?: string;
+    diagnosis?: string;
+    treatmentPlan?: string;
+    notes?: string;
+    treatmentDate?: string;
+  };
 }
 
-export function CreateRecordDialog({ isOpen, onClose, onRecordCreated }: CreateRecordDialogProps) {
-  const [selectedPatientId, setSelectedPatientId] = useState("");
+export function CreateRecordDialog({ isOpen, onClose, onRecordCreated, preselectedPatientId, initialValues }: CreateRecordDialogProps) {
+  const [selectedPatientId, setSelectedPatientId] = useState(preselectedPatientId || "");
   const [recordType, setRecordType] = useState("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -26,6 +36,17 @@ export function CreateRecordDialog({ isOpen, onClose, onRecordCreated }: CreateR
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    setSelectedPatientId(preselectedPatientId || "");
+    setRecordType(initialValues?.recordType || "");
+    setTitle(initialValues?.title || "");
+    setDescription(initialValues?.description || "");
+    setTreatmentDate(initialValues?.treatmentDate || "");
+    setDiagnosis(initialValues?.diagnosis || "");
+    setTreatmentPlan(initialValues?.treatmentPlan || "");
+    setNotes(initialValues?.notes || "");
+  }, [preselectedPatientId, initialValues, isOpen]);
 
   const { data: patients } = useQuery({
     queryKey: ['patients'],
@@ -94,7 +115,7 @@ export function CreateRecordDialog({ isOpen, onClose, onRecordCreated }: CreateR
   };
 
   const resetForm = () => {
-    setSelectedPatientId("");
+    setSelectedPatientId(preselectedPatientId || "");
     setRecordType("");
     setTitle("");
     setDescription("");
@@ -115,18 +136,24 @@ export function CreateRecordDialog({ isOpen, onClose, onRecordCreated }: CreateR
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="patient">المريض *</Label>
-              <Select value={selectedPatientId} onValueChange={setSelectedPatientId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="اختر المريض" />
-                </SelectTrigger>
-                <SelectContent>
-                  {patients?.map((patient) => (
-                    <SelectItem key={patient.id} value={patient.id}>
-                      {patient.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {preselectedPatientId ? (
+                <div className="h-10 rounded-md border bg-muted/40 px-3 flex items-center text-sm text-muted-foreground">
+                  {(patients || []).find((patient) => patient.id === selectedPatientId)?.full_name || 'مريض محدد'}
+                </div>
+              ) : (
+                <Select value={selectedPatientId} onValueChange={setSelectedPatientId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="اختر المريض" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {patients?.map((patient) => (
+                      <SelectItem key={patient.id} value={patient.id}>
+                        {patient.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <div>

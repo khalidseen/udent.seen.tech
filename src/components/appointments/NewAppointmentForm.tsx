@@ -257,6 +257,25 @@ const NewAppointmentForm = () => {
 
   const handleSubmit = async () => {
     if (!clinicId) return;
+
+    // Validate required fields
+    if (patientType === 'new' && !newPatientData.full_name.trim()) {
+      toast({ title: "خطأ", description: "يرجى إدخال اسم المريض", variant: "destructive" });
+      return;
+    }
+    if (patientType === 'existing' && !formData.patient_id) {
+      toast({ title: "خطأ", description: "يرجى اختيار المريض", variant: "destructive" });
+      return;
+    }
+    if (!formData.appointment_date || !formData.appointment_time) {
+      toast({ title: "خطأ", description: "يرجى تحديد التاريخ والوقت", variant: "destructive" });
+      return;
+    }
+    if (!formData.doctor_id) {
+      toast({ title: "خطأ", description: "يرجى اختيار الطبيب", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -838,9 +857,17 @@ const NewAppointmentForm = () => {
             <FileBarChart className="w-5 h-5" />
             <span className="text-sm">إنشاء فاتورة</span>
           </Button>
-          <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={() => navigate(`/patients?id=${savedPatientId}`)}>
+          <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={() => navigate(`/patients/${savedPatientId}`)}>
             <FileUser className="w-5 h-5" />
             <span className="text-sm">ملف المريض</span>
+          </Button>
+          <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={() => navigate(`/dental-treatments-management?patient=${savedPatientId}`)}>
+            <Stethoscope className="w-5 h-5" />
+            <span className="text-sm">إضافة علاج</span>
+          </Button>
+          <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={() => navigate(`/prescriptions?patient=${savedPatientId}`)}>
+            <FileText className="w-5 h-5" />
+            <span className="text-sm">وصفة طبية</span>
           </Button>
           <Button variant="outline" className="h-16 flex flex-col gap-1" onClick={resetAndBookAnother}>
             <RotateCcw className="w-5 h-5" />

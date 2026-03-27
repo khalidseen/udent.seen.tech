@@ -29,7 +29,7 @@ export function usePerformanceMonitor(componentName: string) {
     }));
 
     // تسجيل الأداء في وضع التطوير
-    if (process.env.NODE_ENV === 'development' && renderTime > 500) {
+    if (import.meta.env.DEV && renderTime > 500) {
       console.warn(`⚠️ Slow render detected in ${componentName}: ${renderTime}ms`);
     }
 
@@ -38,7 +38,7 @@ export function usePerformanceMonitor(componentName: string) {
   }, [componentName]);
 
   const logPerformance = useCallback(() => {
-    console.log(`📊 Performance metrics for ${componentName}:`, metrics);
+    if (import.meta.env.DEV) console.log(`📊 Performance metrics for ${componentName}:`, metrics);
   }, [componentName, metrics]);
 
   return {

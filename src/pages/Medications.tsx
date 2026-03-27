@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Filter, Download, Upload, Grid, List, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import AddMedicationDialog from "@/components/medications/AddMedicationDialog";
 import EditMedicationDialog from "@/components/medications/EditMedicationDialog";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface Medication {
   id: string;
@@ -32,6 +33,8 @@ interface Medication {
 }
 
 const Medications = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [formFilter, setFormFilter] = useState<string>("all");
   const [prescriptionFilter, setPrescriptionFilter] = useState<string>("all");
@@ -39,8 +42,11 @@ const Medications = () => {
   const [viewMode, setViewMode] = useState<string>("cards");
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [editingMedication, setEditingMedication] = useState<Medication | null>(null);
+  const [mappingDrafts, setMappingDrafts] = useState<Record<string, { supplyId: string; unitsPerDose: number }>>({});
+  const [mappingSearch, setMappingSearch] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const workflowSource = searchParams.get('from');
 
   const { data: profile } = useQuery({
     queryKey: ['current-profile'],
@@ -65,6 +71,78 @@ const Medications = () => {
     enabled: !!profile?.id
   });
 
+  const { data: medicationSupplies = [] } = useQuery({
+    queryKey: ['medication-supplies', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('medical_supplies')
+        .select('id, name, unit, current_stock, is_active')
+        .eq('clinic_id', profile!.id)
+        .eq('category', 'medications')
+        .eq('is_active', true)
+        .order('name');
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!profile?.id,
+  });
+
+  const { data: mappingSettings = {}, refetch: refetchMappingSettings } = useQuery({
+    queryKey: ['medication-stock-mapping-settings', profile?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clinic_settings')
+        .select('custom_preferences')
+        .eq('clinic_id', profile!.id)
+        .maybeSingle();
+      if (error) throw error;
+      const prefs = (data?.custom_preferences ?? {}) as Record<string, any>;
+      return (prefs.inventory?.medicationSupplyMappings ?? {}) as Record<string, { supplyId?: string; unitsPerDose?: number }>;
+    },
+    enabled: !!profile?.id,
+  });
+
+  const mappingMutation = useMutation({
+    mutationFn: async ({ medicationId, mapping }: { medicationId: string; mapping: { supplyId: string; unitsPerDose: number } }) => {
+      const { data: existing, error: existingError } = await supabase
+        .from('clinic_settings')
+        .select('custom_preferences')
+        .eq('clinic_id', profile!.id)
+        .maybeSingle();
+      if (existingError) throw existingError;
+
+      const existingPrefs = (existing?.custom_preferences ?? {}) as Record<string, any>;
+      const nextMappings = {
+        ...(existingPrefs.inventory?.medicationSupplyMappings || {}),
+        [medicationId]: {
+          supplyId: mapping.supplyId || null,
+          unitsPerDose: Number(mapping.unitsPerDose || 1),
+        },
+      };
+
+      const nextPrefs = {
+        ...existingPrefs,
+        inventory: {
+          ...(existingPrefs.inventory || {}),
+          medicationSupplyMappings: nextMappings,
+        },
+      };
+
+      const { error } = await supabase
+        .from('clinic_settings')
+        .upsert({ clinic_id: profile!.id, custom_preferences: nextPrefs }, { onConflict: 'clinic_id' });
+
+      if (error) throw error;
+    },
+    onSuccess: async () => {
+      toast({ title: 'تم الحفظ', description: 'تم حفظ مطابقة الدواء مع المخزون' });
+      await refetchMappingSettings();
+    },
+    onError: () => {
+      toast({ title: 'خطأ', description: 'تعذر حفظ المطابقة', variant: 'destructive' });
+    },
+  });
+
   const filteredMedications = medications.filter(medication => {
     const matchesSearch = 
       medication.trade_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -76,6 +154,32 @@ const Medications = () => {
       (activeFilter === "inactive" && !medication.is_active);
     return matchesSearch && matchesForm && matchesPrescription && matchesActive;
   });
+
+  const effectiveMappings = useMemo(() => {
+    const result: Record<string, { supplyId: string; unitsPerDose: number }> = {};
+    medications.forEach((med) => {
+      const saved = mappingSettings[med.id] || {};
+      const draft = mappingDrafts[med.id];
+      result[med.id] = {
+        supplyId: draft?.supplyId ?? saved.supplyId ?? '',
+        unitsPerDose: Number(draft?.unitsPerDose ?? saved.unitsPerDose ?? 1),
+      };
+    });
+    return result;
+  }, [mappingDrafts, mappingSettings, medications]);
+
+  const mappingRows = useMemo(() => {
+    const term = mappingSearch.trim().toLowerCase();
+    if (!term) return medications;
+    return medications.filter((med) =>
+      med.trade_name.toLowerCase().includes(term) ||
+      (med.generic_name || '').toLowerCase().includes(term)
+    );
+  }, [mappingSearch, medications]);
+
+  const mappedCount = useMemo(() => {
+    return medications.filter((med) => !!effectiveMappings[med.id]?.supplyId).length;
+  }, [effectiveMappings, medications]);
 
   const stats = {
     total: medications.length,
@@ -188,7 +292,30 @@ const Medications = () => {
   return (
     <PermissionGuard requiredPermissions={['inventory.view']}>
       <PageContainer>
-        <PageHeader title="إدارة الأدوية" description="إضافة وإدارة قائمة الأدوية في العيادة" />
+        <PageHeader
+          title="إدارة الأدوية"
+          description="إضافة وإدارة قائمة الأدوية في العيادة"
+          action={
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => navigate('/inventory?category=medications&from=medications')}>
+                المخزون الطبي
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/purchase-orders?from=medications')}>
+                أوامر الشراء
+              </Button>
+              <Button variant="outline" onClick={() => navigate('/stock-movements?reference=usage&from=medications')}>
+                حركة المخزون
+              </Button>
+            </div>
+          }
+        />
+
+        {workflowSource && (
+          <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            {workflowSource === 'inventory' && 'تم فتح الأدوية من المخزون لمراجعة أو ربط صنف دوائي.'}
+            {workflowSource === 'prescriptions' && 'تم فتح الأدوية من الوصفات لمراجعة قاعدة الأدوية.'}
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -317,6 +444,7 @@ const Medications = () => {
                       </div>
                       {med.instructions && <p className="text-xs text-muted-foreground bg-muted p-2 rounded">{med.instructions}</p>}
                       <div className="flex gap-2 pt-2">
+                        <Button variant="outline" size="sm" onClick={() => navigate(`/inventory?openCreate=true&category=medications&name=${encodeURIComponent(med.trade_name)}&from=medications`)} className="flex-1">ربط بالمخزون</Button>
                         <Button variant="outline" size="sm" onClick={() => setEditingMedication(med)} className="flex-1">تعديل</Button>
                         <Button variant={med.is_active ? "destructive" : "default"} size="sm" onClick={() => handleToggleActive(med.id, med.is_active)} className="flex-1">
                           {med.is_active ? "إلغاء" : "تفعيل"}
@@ -373,6 +501,7 @@ const Medications = () => {
                           <TableCell><Badge variant={med.is_active ? "default" : "secondary"}>{med.is_active ? "نشط" : "غير نشط"}</Badge></TableCell>
                           <TableCell>
                             <div className="flex gap-1">
+                              <Button variant="outline" size="sm" onClick={() => navigate(`/inventory?openCreate=true&category=medications&name=${encodeURIComponent(med.trade_name)}&from=medications`)}>ربط</Button>
                               <Button variant="outline" size="sm" onClick={() => setEditingMedication(med)}>تعديل</Button>
                               <Button variant={med.is_active ? "destructive" : "default"} size="sm" onClick={() => handleToggleActive(med.id, med.is_active)}>
                                 {med.is_active ? "إلغاء" : "تفعيل"}
@@ -390,6 +519,114 @@ const Medications = () => {
               </CardContent>
             </Card>
           )}
+
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <CardTitle className="text-lg">مطابقة الدواء ↔ صنف المخزون</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">هذه المطابقة تُستخدم لصرف المخزون تلقائياً عند إنشاء الوصفة</p>
+                </div>
+                <Badge variant="outline">{mappedCount} / {medications.length} مرتبطة</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                <Input
+                  value={mappingSearch}
+                  onChange={(e) => setMappingSearch(e.target.value)}
+                  placeholder="بحث عن دواء للمطابقة..."
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                {mappingRows.map((medication) => {
+                  const mapping = effectiveMappings[medication.id] || { supplyId: '', unitsPerDose: 1 };
+                  const selectedSupply = medicationSupplies.find((supply) => supply.id === mapping.supplyId);
+
+                  return (
+                    <Card key={medication.id} className="border-dashed">
+                      <CardContent className="pt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                          <div className="md:col-span-2">
+                            <p className="font-medium">{medication.trade_name}</p>
+                            <p className="text-xs text-muted-foreground">{medication.generic_name || 'بدون اسم علمي'} - {medication.strength}</p>
+                          </div>
+                          <div>
+                            <Label className="text-xs">صنف المخزون</Label>
+                            <Select
+                              value={mapping.supplyId || 'none'}
+                              onValueChange={(value) => {
+                                setMappingDrafts((current) => ({
+                                  ...current,
+                                  [medication.id]: {
+                                    supplyId: value === 'none' ? '' : value,
+                                    unitsPerDose: Number(current[medication.id]?.unitsPerDose ?? mapping.unitsPerDose ?? 1),
+                                  },
+                                }));
+                              }}
+                            >
+                              <SelectTrigger><SelectValue placeholder="اختر الصنف" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="none">غير مرتبط</SelectItem>
+                                {medicationSupplies.map((supply) => (
+                                  <SelectItem key={supply.id} value={supply.id}>
+                                    {supply.name} (متاح: {supply.current_stock} {supply.unit})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label className="text-xs">وحدات لكل جرعة</Label>
+                            <Input
+                              type="number"
+                              min={0.1}
+                              step={0.1}
+                              value={mapping.unitsPerDose}
+                              onChange={(e) => {
+                                const nextValue = Number(e.target.value || 1);
+                                setMappingDrafts((current) => ({
+                                  ...current,
+                                  [medication.id]: {
+                                    supplyId: current[medication.id]?.supplyId ?? mapping.supplyId,
+                                    unitsPerDose: nextValue,
+                                  },
+                                }));
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="text-xs text-muted-foreground">
+                            {selectedSupply ? `الصنف المرتبط: ${selectedSupply.name}` : 'لا يوجد صنف مرتبط بعد'}
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              mappingMutation.mutate({
+                                medicationId: medication.id,
+                                mapping: {
+                                  supplyId: mapping.supplyId || '',
+                                  unitsPerDose: Number(mapping.unitsPerDose || 1),
+                                },
+                              });
+                            }}
+                            disabled={mappingMutation.isPending}
+                          >
+                            حفظ المطابقة
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <AddMedicationDialog open={showAddDialog} onOpenChange={setShowAddDialog} onSuccess={() => { refetch(); setShowAddDialog(false); }} />

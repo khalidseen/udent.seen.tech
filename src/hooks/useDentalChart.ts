@@ -1,33 +1,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
+import type { ChartStatistics, DentalTreatmentRecord } from '@/types/dental-enhanced';
+import { buildToothRecordsMap, computeChartStatistics, isChartNoteRecord } from '@/utils/dentalChart';
 
-export interface DentalTreatmentRecord {
-  id?: string;
-  patient_id: string;
-  clinic_id: string;
-  tooth_number: string;
-  numbering_system: string;
-  diagnosis: string;
-  treatment_plan: string;
-  status: string;
-  tooth_surface?: string;
-  notes?: string;
-  treatment_date: string;
-  assigned_doctor_id?: string;
-  prescribed_medications?: any;
-}
-
-export interface ChartStatistics {
-  totalTeeth: number;
-  recordedTeeth: number;
-  healthyTeeth: number;
-  decayedTeeth: number;
-  filledTeeth: number;
-  missingTeeth: number;
-  urgentCases: number;
-  rootCanalTeeth: number;
-}
+export type { ChartStatistics, DentalTreatmentRecord } from '@/types/dental-enhanced';
 
 async function getClinicId(): Promise<string | null> {
   try {
@@ -43,7 +20,7 @@ export function useDentalChart(patientId: string) {
 
   const { data: treatments, isLoading } = useQuery({
     queryKey: ['dental-chart', patientId],
-    queryFn: async () => {
+    queryFn: async (): Promise<DentalTreatmentRecord[]> => {
       const clinicId = await getClinicId();
       if (!clinicId) return [];
       
@@ -55,56 +32,36 @@ export function useDentalChart(patientId: string) {
         .order('updated_at', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data as DentalTreatmentRecord[]) || [];
     },
     enabled: !!patientId,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   });
 
-  // Map: FDI tooth number → latest treatment record
   const toothRecordsMap = useMemo(() => {
-    const map = new Map<string, DentalTreatmentRecord>();
-    if (!treatments) return map;
-    
-    for (const t of treatments) {
-      // Keep only the latest record per tooth (already sorted by updated_at desc)
-      if (!map.has(t.tooth_number)) {
-        map.set(t.tooth_number, t as DentalTreatmentRecord);
-      }
+    return buildToothRecordsMap(treatments || []);
+  }, [treatments]);
+
+  const chartNotes = useMemo(() => {
+    return (treatments || []).filter(record => isChartNoteRecord(record));
+  }, [treatments]);
+
+  const statistics: ChartStatistics = useMemo(() => {
+    return computeChartStatistics(treatments || []);
+  }, [treatments]);
+
+  const toothHistoryMap = useMemo(() => {
+    const map = new Map<string, DentalTreatmentRecord[]>();
+    for (const record of (treatments || [])) {
+      if (isChartNoteRecord(record)) continue;
+      const list = map.get(record.tooth_number) || [];
+      list.push(record);
+      map.set(record.tooth_number, list);
     }
     return map;
   }, [treatments]);
 
-  // Statistics
-  const statistics: ChartStatistics = useMemo(() => {
-    const stats: ChartStatistics = {
-      totalTeeth: 32,
-      recordedTeeth: 0,
-      healthyTeeth: 0,
-      decayedTeeth: 0,
-      filledTeeth: 0,
-      missingTeeth: 0,
-      urgentCases: 0,
-      rootCanalTeeth: 0,
-    };
-
-    toothRecordsMap.forEach((record) => {
-      stats.recordedTeeth++;
-      const d = record.diagnosis?.toLowerCase() || '';
-      if (d.includes('sound') || d.includes('سليم')) stats.healthyTeeth++;
-      else if (d.includes('caries') || d.includes('تسوس') || d.includes('decay')) stats.decayedTeeth++;
-      else if (d.includes('filled') || d.includes('محشو')) stats.filledTeeth++;
-      else if (d.includes('missing') || d.includes('مفقود')) stats.missingTeeth++;
-      else if (d.includes('root_canal') || d.includes('عصب')) stats.rootCanalTeeth++;
-      
-      if (record.status === 'planned' && (d.includes('caries') || d.includes('تسوس'))) {
-        stats.urgentCases++;
-      }
-    });
-
-    return stats;
-  }, [toothRecordsMap]);
-
-  // Save/update tooth record
   const saveMutation = useMutation({
     mutationFn: async (record: Omit<DentalTreatmentRecord, 'id' | 'clinic_id'> & { id?: string }) => {
       const clinicId = await getClinicId();
@@ -141,14 +98,14 @@ export function useDentalChart(patientId: string) {
     },
   });
 
-  // Get all treatments for a specific tooth
-  const getToothHistory = (toothNumber: string) => {
-    return (treatments || []).filter(t => t.tooth_number === toothNumber);
-  };
+  const getToothHistory = useCallback((toothNumber: string) => {
+    return toothHistoryMap.get(toothNumber) || [];
+  }, [toothHistoryMap]);
 
   return {
     toothRecordsMap,
     treatments: treatments || [],
+    chartNotes,
     statistics,
     isLoading,
     saveToothRecord: saveMutation.mutateAsync,

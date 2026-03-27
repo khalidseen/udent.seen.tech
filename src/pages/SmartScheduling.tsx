@@ -27,7 +27,7 @@ export default function SmartScheduling() {
   const weekStart = startOfWeek(addDays(new Date(), weekOffset * 7), { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
 
-  const { data: profile } = useQuery({
+  const { data: profile, isError: isProfileError } = useQuery({
     queryKey: ['profile-scheduling'],
     queryFn: async () => {
       const { data, error } = await supabase.rpc('get_current_user_profile');
@@ -154,6 +154,19 @@ export default function SmartScheduling() {
     conflicts: weekDays.reduce((sum, day) => sum + HOURS.reduce((s, h) => s + (hasConflict(day, h) ? 1 : 0), 0), 0),
     activeLeaves: leaves.filter((l: any) => isWithinInterval(new Date(), { start: parseISO(l.start_date), end: parseISO(l.end_date) })).length,
   };
+
+  if (isProfileError) {
+    return (
+      <div className="container mx-auto p-6" dir="rtl">
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <CalendarDays className="w-12 h-12 text-destructive mb-4" />
+          <h2 className="text-xl font-bold mb-2">حدث خطأ في تحميل الجدولة</h2>
+          <p className="text-muted-foreground mb-4">تعذر جلب بيانات الجدولة. تحقق من الاتصال وحاول مرة أخرى.</p>
+          <Button onClick={() => window.location.reload()}>إعادة المحاولة</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6" dir="rtl">

@@ -2,6 +2,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { captureError } from '@/services/monitoring';
 
 interface Props {
   children: ReactNode;
@@ -23,11 +24,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error for monitoring in production
-    if (process.env.NODE_ENV === 'production') {
-      // Could integrate with error tracking service here
-      console.error('ErrorBoundary caught an error:', error, errorInfo);
-    }
+    captureError(error, { componentStack: errorInfo.componentStack ?? undefined });
   }
 
   private handleRetry = () => {
@@ -47,7 +44,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <AlertTitle>حدث خطأ غير متوقع</AlertTitle>
             <AlertDescription className="mt-2 space-y-2">
               <p>عذراً، حدث خطأ في تحميل هذا المكون.</p>
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <details className="text-xs bg-muted p-2 rounded">
                   <summary>تفاصيل الخطأ</summary>
                   <pre className="mt-2 whitespace-pre-wrap">{this.state.error.message}</pre>

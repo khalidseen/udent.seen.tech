@@ -16,6 +16,7 @@ interface Invoice {
   total_amount: number;
   paid_amount: number;
   balance_due: number;
+  patient_id: string;
   patients: {
     full_name: string;
   } | null;
@@ -83,7 +84,7 @@ export function RecordPaymentDialog({ invoice, isOpen, onClose, onPaymentRecorde
         .insert({
           clinic_id: profile.id,
           invoice_id: invoice.id,
-          patient_id: invoice.patients ? invoice.patients.full_name : '', // This will need patient_id lookup
+          patient_id: invoice.patient_id,
           amount: paymentAmount,
           payment_method: paymentMethod,
           payment_date: paymentDate,

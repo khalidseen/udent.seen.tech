@@ -1,6 +1,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { SettingsContext, SettingsContextType } from './SettingsContextType';
 import { isDashboardColumnAvailable } from '@/lib/database-init';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SettingsProviderProps {
   children: ReactNode;
@@ -10,6 +11,11 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const [fontWeight, setFontWeight] = useState<'normal' | 'bold'>(() => {
     const saved = localStorage.getItem('fontWeight');
     return (saved as 'normal' | 'bold') || 'normal';
+  });
+
+  const [navFontSize, setNavFontSize] = useState<'small' | 'medium' | 'large'>(() => {
+    const saved = localStorage.getItem('navFontSize');
+    return (saved as 'small' | 'medium' | 'large') || 'medium';
   });
 
   const [sidebarIconSize, setSidebarIconSize] = useState<'small' | 'medium' | 'large'>(() => {
@@ -69,6 +75,10 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   }, [fontWeight]);
 
   useEffect(() => {
+    localStorage.setItem('navFontSize', navFontSize);
+  }, [navFontSize]);
+
+  useEffect(() => {
     localStorage.setItem('sidebarIconSize', sidebarIconSize);
   }, [sidebarIconSize]);
 
@@ -99,13 +109,12 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       try {
         // فحص إذا كان العمود متوفر في قاعدة البيانات
         if (!isDashboardColumnAvailable) {
-          console.log('💾 استخدام localStorage فقط للعلم - العمود غير متوفر في قاعدة البيانات');
+          // localStorage fallback - column not in DB
           const local = localStorage.getItem('dashboard_link_validation_dismissed');
           if (local && mounted) setServerDashboardDismissed(JSON.parse(local));
           return;
         }
 
-        const { supabase } = await import('@/integrations/supabase/client');
         const userResp = await supabase.auth.getUser();
         const userId = userResp.data.user?.id;
         if (!userId) {
@@ -152,7 +161,6 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
   const setDashboardDismissedServer = async (value: boolean) => {
     try {
       // العمود متوفر الآن بعد تطبيق الهجرة
-      const { supabase } = await import('@/integrations/supabase/client');
       const userResp = await supabase.auth.getUser();
       const userId = userResp.data.user?.id;
       if (!userId) {
@@ -177,7 +185,7 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       });
       
       if (error) {
-        console.warn('⚠️ خطأ في تحديث الخادم، استخدام localStorage:', error.message);
+        // Server update failed, falling back to localStorage
         localStorage.setItem('dashboard_link_validation_dismissed', JSON.stringify(value));
         setServerDashboardDismissed(value);
         return;
@@ -186,9 +194,9 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       // Success - تم الحفظ على الخادم
       localStorage.setItem('dashboard_link_validation_dismissed', JSON.stringify(value));
       setServerDashboardDismissed(value);
-      console.log('✅ تم حفظ علم الإخفاء على الخادم بنجاح');
+      // Server save succeeded
     } catch (err) {
-      console.warn('⚠️ خطأ في الاتصال بالخادم، استخدام localStorage:', err);
+      // Server connection failed, falling back to localStorage
       localStorage.setItem('dashboard_link_validation_dismissed', JSON.stringify(value));
       setServerDashboardDismissed(value);
     }
@@ -200,6 +208,8 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
     <SettingsContext.Provider value={{ 
       fontWeight, 
       setFontWeight,
+      navFontSize,
+      setNavFontSize,
       sidebarIconSize,
       setSidebarIconSize,
       collapsedIconSize,
@@ -209,14 +219,13 @@ export function SettingsProvider({ children }: SettingsProviderProps) {
       boxesPerRow,
       setBoxesPerRow,
       boxSize,
-  setBoxSize,
-  linkValidationAlertEnabled,
-  setLinkValidationAlertEnabled,
-  setDashboardDismissedServer,
-  timeFormat,
-  setTimeFormat,
-    }}>
-      {children}
+      setBoxSize,
+      linkValidationAlertEnabled,
+      setLinkValidationAlertEnabled,
+      setDashboardDismissedServer,
+      timeFormat,
+      setTimeFormat,
+    }}>      {children}
     </SettingsContext.Provider>
   );
 }

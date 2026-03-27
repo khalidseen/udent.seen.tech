@@ -128,11 +128,12 @@ export default defineConfig(({ mode }) => ({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          // Critical: React core - smallest possible bundle
-          if (id.includes('react/jsx-runtime') || id.includes('react-dom/client')) {
-            return 'react-core';
-          }
-          if (id.includes('node_modules/react') && !id.includes('react-router') && !id.includes('react-hook')) {
+          // Keep React and ReactDOM in a single vendor chunk to avoid circular chunk edges
+          if (
+            id.includes('node_modules/react/') ||
+            id.includes('node_modules/react-dom/') ||
+            id.includes('react/jsx-runtime')
+          ) {
             return 'react';
           }
           
@@ -207,7 +208,7 @@ export default defineConfig(({ mode }) => ({
       polyfill: true, // Keep polyfill for compatibility
       resolveDependencies: (filename, deps) => {
         // Preload core chunks, defer heavy/specialized chunks
-        const criticalChunks = ['react-core', 'react', 'router', 'query', 'supabase', 'ui-components'];
+        const criticalChunks = ['react', 'router', 'query', 'supabase', 'ui-components'];
         const deferredChunks = ['recharts', 'chartjs', 'forms', '3d-libs', 'heavy-libs', 'ai-libs'];
         
         // Filter: exclude non-JS/data URLs and deferred chunks

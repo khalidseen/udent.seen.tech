@@ -12,6 +12,56 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
+const normalizeDigits = (value: string) => {
+  const map: Record<string, string> = {
+    '٠': '0', '١': '1', '٢': '2', '٣': '3', '٤': '4',
+    '٥': '5', '٦': '6', '٧': '7', '٨': '8', '٩': '9',
+  };
+  return value.replace(/[٠-٩]/g, (char) => map[char] || char);
+};
+
+const parseFrequencyPerDay = (raw: string) => {
+  const text = normalizeDigits((raw || '').toLowerCase());
+  if (!text.trim()) return 1;
+
+  const perDayKeywords: Array<[RegExp, number]> = [
+    [/مرة|once/, 1],
+    [/مرتين|twice/, 2],
+    [/ثلاث|three/, 3],
+    [/اربع|أربع|four/, 4],
+  ];
+
+  const everyMatch = text.match(/كل\s*(\d+(?:\.\d+)?)/);
+  if (everyMatch) {
+    const everyHours = Number(everyMatch[1]);
+    if (everyHours > 0) return Math.max(1, Math.round(24 / everyHours));
+  }
+
+  const directNumber = text.match(/(\d+(?:\.\d+)?)(?:\s*(مرة|مرات|x|times|يوم))/);
+  if (directNumber) {
+    const value = Number(directNumber[1]);
+    if (value > 0) return value;
+  }
+
+  for (const [pattern, value] of perDayKeywords) {
+    if (pattern.test(text)) return value;
+  }
+
+  return 1;
+};
+
+const parseDurationDays = (raw: string) => {
+  const text = normalizeDigits((raw || '').toLowerCase());
+  if (!text.trim()) return 7;
+
+  const numberMatch = text.match(/(\d+(?:\.\d+)?)/);
+  const value = numberMatch ? Number(numberMatch[1]) : 7;
+
+  if (/(week|اسبوع|أسبوع)/.test(text)) return Math.max(1, Math.round(value * 7));
+  if (/(month|شهر)/.test(text)) return Math.max(1, Math.round(value * 30));
+  return Math.max(1, Math.round(value));
+};
+
 interface CreatePrescriptionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -101,6 +151,22 @@ const CreatePrescriptionDialog = ({ open, onOpenChange, onSuccess, preselectedPa
       return data;
     },
     enabled: !!clinicId
+  });
+
+  const { data: medicationSupplyMappings = {} } = useQuery({
+    queryKey: ['medication-stock-mappings', clinicId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clinic_settings')
+        .select('custom_preferences')
+        .eq('clinic_id', clinicId!)
+        .maybeSingle();
+
+      if (error) throw error;
+      const prefs = (data?.custom_preferences ?? {}) as Record<string, any>;
+      return (prefs.inventory?.medicationSupplyMappings ?? {}) as Record<string, { supplyId?: string; unitsPerDose?: number }>;
+    },
+    enabled: !!clinicId,
   });
 
   const filteredPatients = patients?.filter(patient =>
@@ -196,7 +262,71 @@ const CreatePrescriptionDialog = ({ open, onOpenChange, onSuccess, preselectedPa
 
       if (medicationsError) throw medicationsError;
 
+      // Stock usage registration based on explicit medication->supply mappings.
+      const stockWarnings: string[] = [];
+      for (const med of selectedMedications) {
+        if (!med.id) {
+          stockWarnings.push(`دواء يدوي بدون معرف: ${med.medication_name || 'غير مسمى'}`);
+          continue;
+        }
+
+        const mapping = medicationSupplyMappings[med.id];
+        if (!mapping?.supplyId) {
+          stockWarnings.push(`لا توجد مطابقة مخزون للدواء ${med.medication_name}`);
+          continue;
+        }
+
+        const dosesPerDay = parseFrequencyPerDay(med.frequency);
+        const durationDays = parseDurationDays(med.duration);
+        const unitsPerDose = Number(mapping.unitsPerDose || 1);
+        const deductionQty = Math.max(1, Math.ceil(unitsPerDose * dosesPerDay * durationDays));
+
+        const { data: supply } = await supabase
+          .from('medical_supplies')
+          .select('id, name, current_stock')
+          .eq('clinic_id', clinicId)
+          .eq('is_active', true)
+          .eq('id', mapping.supplyId)
+          .maybeSingle();
+
+        if (!supply) {
+          stockWarnings.push(`الصنف المرتبط غير موجود للدواء ${med.medication_name}`);
+          continue;
+        }
+
+        if ((supply.current_stock || 0) < deductionQty) {
+          stockWarnings.push(`المخزون غير كاف للصنف ${supply.name} (مطلوب ${deductionQty})`);
+          continue;
+        }
+
+        const { error: updateSupplyError } = await supabase
+          .from('medical_supplies')
+          .update({ current_stock: supply.current_stock - deductionQty })
+          .eq('id', supply.id);
+
+        if (updateSupplyError) {
+          stockWarnings.push(`تعذر تحديث مخزون الصنف ${supply.name}`);
+          continue;
+        }
+
+        await supabase
+          .from('stock_movements')
+          .insert({
+            clinic_id: clinicId,
+            supply_id: supply.id,
+            movement_type: 'out',
+            quantity: -deductionQty,
+            reference_id: prescription.id,
+            reference_type: 'usage',
+            notes: `صرف دواء عبر وصفة رقم ${prescription.id.slice(0, 8)} - ${med.medication_name} | ${unitsPerDose} وحدة/جرعة × ${dosesPerDay} يومياً × ${durationDays} يوم`,
+            created_by: clinicId,
+          });
+      }
+
       toast.success("تم إنشاء الوصفة الطبية بنجاح");
+      if (stockWarnings.length > 0) {
+        toast.warning(stockWarnings[0]);
+      }
       onSuccess();
       onOpenChange(false);
       resetForm();

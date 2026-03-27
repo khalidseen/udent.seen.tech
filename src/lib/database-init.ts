@@ -11,7 +11,7 @@ export async function initializeDatabaseSchema() {
     const { data, error } = await supabase.from('profiles').select('dashboard_link_validation_dismissed').limit(1);
     
     if (error && error.message.includes('does not exist')) {
-      console.warn('⚠️ العمود dashboard_link_validation_dismissed غير موجود في قاعدة البيانات');
+      // Column dashboard_link_validation_dismissed not in DB
       return false;
     } else if (!error) {
       return true;

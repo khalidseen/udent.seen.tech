@@ -7,6 +7,7 @@ import { SidebarProvider } from '@/contexts/SidebarContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { PermissionsProvider } from '@/contexts/PermissionsContext';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
+import { VisualEditorProvider } from '@/contexts/VisualEditorContext';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -21,7 +22,9 @@ export const AppProviders: React.FC<AppProvidersProps> = ({ children }) => (
             <ThemeProvider>
               <CurrencyProvider>
                 <PermissionsProvider>
-                  {children}
+                  <VisualEditorProvider>
+                    {children}
+                  </VisualEditorProvider>
                 </PermissionsProvider>
               </CurrencyProvider>
             </ThemeProvider>

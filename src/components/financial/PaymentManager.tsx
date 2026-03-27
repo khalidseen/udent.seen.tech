@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,20 +6,36 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { DollarSign, Plus, TrendingUp, TrendingDown, Search, Receipt, User, RotateCcw, Download } from "lucide-react";
+import { DollarSign, Plus, TrendingUp, TrendingDown, Search, Receipt, User, RotateCcw, Download, Shield, Tags } from "lucide-react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
 import { CreatePaymentDialog } from "./CreatePaymentDialog";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import { toast } from "sonner";
 
 export function PaymentManager() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [showCreatePayment, setShowCreatePayment] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [methodFilter, setMethodFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const preselectedPatientId = searchParams.get('patient') || undefined;
+  const preselectedInvoiceId = searchParams.get('invoice') || undefined;
+  const workflowSource = searchParams.get('from');
+
+  const clearWorkflowParams = () => {
+    const next = new URLSearchParams(searchParams);
+    ['openCreate', 'patient', 'invoice', 'from'].forEach((key) => next.delete(key));
+    setSearchParams(next);
+  };
+
+  useEffect(() => {
+    if (searchParams.get('openCreate') === 'true') {
+      setShowCreatePayment(true);
+    }
+  }, [searchParams]);
 
   const { data: payments, isLoading } = useQuery({
     queryKey: ['payments'],
@@ -78,7 +94,9 @@ export function PaymentManager() {
       p.invoice?.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesMethod = methodFilter === 'all' || p.payment_method === methodFilter;
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
-    return matchesSearch && matchesMethod && matchesStatus;
+    const matchesPatient = !preselectedPatientId || p.patient_id === preselectedPatientId;
+    const matchesInvoice = !preselectedInvoiceId || p.invoice_id === preselectedInvoiceId;
+    return matchesSearch && matchesMethod && matchesStatus && matchesPatient && matchesInvoice;
   });
 
   const getPaymentMethodText = (method: string) => {
@@ -151,11 +169,25 @@ export function PaymentManager() {
             <Button variant="outline" onClick={() => navigate('/invoice-management')}>
               <Receipt className="ml-2 h-4 w-4" /> الفواتير
             </Button>
+            <Button variant="outline" onClick={() => navigate(preselectedPatientId ? `/service-prices?patient=${preselectedPatientId}` : '/service-prices')}>
+              <Tags className="ml-2 h-4 w-4" /> الأسعار
+            </Button>
+            <Button variant="outline" onClick={() => navigate(preselectedPatientId ? `/insurance-management?tab=claims&patient=${preselectedPatientId}` : '/insurance-management?tab=claims')}>
+              <Shield className="ml-2 h-4 w-4" /> التأمينات
+            </Button>
             <Button onClick={() => setShowCreatePayment(true)}>
               <Plus className="ml-2 h-4 w-4" /> تسجيل دفعة
             </Button>
           </div>
         </div>
+
+        {(preselectedPatientId || preselectedInvoiceId) && (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            {preselectedPatientId && <span>يتم عرض الدفعات ضمن سياق مريض محدد. </span>}
+            {preselectedInvoiceId && <span>تم تضييق النتائج على دفعات فاتورة محددة. </span>}
+            {workflowSource === 'invoices' && <span>تم فتح الصفحة من شاشة الفواتير.</span>}
+          </div>
+        )}
 
         {/* Statistics */}
         <div className="grid gap-4 md:grid-cols-4">
@@ -231,7 +263,7 @@ export function PaymentManager() {
         {/* Payments List */}
         <div className="grid gap-3">
           {filteredPayments?.map((payment: any) => (
-            <Card key={payment.id} className="hover:shadow-md transition-shadow">
+            <Card key={payment.id} className={`hover:shadow-md transition-shadow ${preselectedInvoiceId && payment.invoice_id === preselectedInvoiceId ? 'border-primary/40 ring-1 ring-primary/20' : ''}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="space-y-1 flex-1 min-w-0">
@@ -255,6 +287,15 @@ export function PaymentManager() {
                     <div className={`text-2xl font-bold ${payment.status === 'refunded' ? 'text-orange-600' : 'text-success'}`}>
                       {payment.status === 'refunded' ? '-' : '+'}<CurrencyAmount amount={payment.amount} />
                     </div>
+                    {payment.invoice?.id && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => navigate(`/invoice-management?patient=${payment.patient_id}&invoice=${payment.invoice.id}`)}
+                      >
+                        <Receipt className="h-4 w-4 ml-1" /> عرض الفاتورة
+                      </Button>
+                    )}
                     {payment.status === 'completed' && (
                       <Button
                         variant="ghost"
@@ -289,7 +330,17 @@ export function PaymentManager() {
           </Card>
         )}
 
-        <CreatePaymentDialog open={showCreatePayment} onOpenChange={setShowCreatePayment} />
+        <CreatePaymentDialog
+          open={showCreatePayment}
+          onOpenChange={(open) => {
+            setShowCreatePayment(open);
+            if (!open && (searchParams.get('openCreate') === 'true' || preselectedPatientId || preselectedInvoiceId)) {
+              clearWorkflowParams();
+            }
+          }}
+          preselectedPatientId={preselectedPatientId}
+          preselectedInvoiceId={preselectedInvoiceId}
+        />
       </div>
     </PermissionGuard>
   );

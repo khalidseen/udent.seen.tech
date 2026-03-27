@@ -6,12 +6,14 @@ import { Badge } from "@/components/ui/badge";
 import { Pill, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 interface PatientPrescriptionsProps {
   patientId: string;
 }
 
 export function PatientPrescriptions({ patientId }: PatientPrescriptionsProps) {
+  const navigate = useNavigate();
   const { data: prescriptions, isLoading } = useQuery({
     queryKey: ['patient-prescriptions', patientId],
     queryFn: async () => {
@@ -34,8 +36,8 @@ export function PatientPrescriptions({ patientId }: PatientPrescriptionsProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">الوصفات الطبية</h3>
-        <Button size="sm" onClick={() => window.location.href = `/prescriptions?patient=${patientId}`}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button size="sm" onClick={() => navigate(`/prescriptions?patient=${patientId}`)}>
+          <Plus className="w-4 h-4 ml-2" />
           وصفة جديدة
         </Button>
       </div>

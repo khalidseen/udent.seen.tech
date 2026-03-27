@@ -9,10 +9,8 @@ export const ROUTES = {
   financialOverview: "/financial-overview",
   invoiceManagement: "/invoice-management",
   paymentManagement: "/payment-management",
-  treatmentPlans: "/treatment-plans",
   dentalTreatmentsManagement: "/dental-treatments-management",
-  advancedMedicalRecords: "/advanced-medical-records",
-  aiManagementDashboard: "/ai-management-dashboard",
+
   detailedReports: "/detailed-reports",
   advancedNotificationManagement: "/advanced-notification-management",
   advancedUserManagement: "/advanced-user-management",
@@ -20,6 +18,9 @@ export const ROUTES = {
   inventory: "/inventory",
   medications: "/medications",
   prescriptions: "/prescriptions",
+  profile: "/profile",
+  advancedMedicalRecords: "/medical-records",
+  aiManagementDashboard: "/ai-management",
 } as const;
 
 export const DASHBOARD_ROUTE_OPTIONS = [
@@ -27,11 +28,10 @@ export const DASHBOARD_ROUTE_OPTIONS = [
   { route: ROUTES.appointments, name: "المواعيد", iconName: "Calendar", color: "bg-green-500" },
   { route: ROUTES.newAppointment, name: "موعد جديد", iconName: "Calendar", color: "bg-green-600" },
   { route: ROUTES.publicBooking, name: "حجز عام", iconName: "LinkIcon", color: "bg-lime-600" },
-  { route: ROUTES.advancedMedicalRecords, name: "السجلات الطبية", iconName: "FileText", color: "bg-purple-500" },
+
   { route: ROUTES.invoiceManagement, name: "الفواتير", iconName: "DollarSign", color: "bg-yellow-500" },
   { route: ROUTES.inventory, name: "المخزون", iconName: "Package", color: "bg-orange-500" },
   { route: ROUTES.dentalTreatmentsManagement, name: "العلاجات", iconName: "Stethoscope", color: "bg-red-500" },
-  { route: ROUTES.aiManagementDashboard, name: "الذكاء الاصطناعي", iconName: "Brain", color: "bg-indigo-500" },
   { route: ROUTES.settings, name: "الإعدادات", iconName: "Settings", color: "bg-gray-500" },
   { route: ROUTES.detailedReports, name: "التقارير", iconName: "BarChart3", color: "bg-teal-500" },
   { route: ROUTES.advancedNotificationManagement, name: "الإشعارات", iconName: "Bell", color: "bg-pink-500" },

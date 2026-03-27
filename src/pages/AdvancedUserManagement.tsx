@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -181,12 +182,7 @@ const AdvancedUserManagement = () => {
     return (
       <PageContainer>
         <PageHeader title="إدارة المستخدمين" description="إدارة شاملة لجميع مستخدمي النظام" />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-            <p className="mt-2 text-muted-foreground">جاري التحميل...</p>
-          </div>
-        </div>
+        <PageSkeleton variant="table" />
       </PageContainer>
     );
   }

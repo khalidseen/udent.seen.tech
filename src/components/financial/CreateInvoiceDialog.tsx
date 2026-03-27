@@ -8,12 +8,14 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Shield } from "lucide-react";
 
 interface CreateInvoiceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   preselectedPatientId?: string;
+  preselectedTreatmentPlanId?: string;
+  preselectedServiceId?: string;
 }
 
 interface InvoiceItem {
@@ -23,20 +25,25 @@ interface InvoiceItem {
   unit_price: number;
 }
 
-export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }: CreateInvoiceDialogProps) {
+export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId, preselectedTreatmentPlanId, preselectedServiceId }: CreateInvoiceDialogProps) {
   const queryClient = useQueryClient();
   const [patientId, setPatientId] = useState(preselectedPatientId || "");
+  const [treatmentPlanId, setTreatmentPlanId] = useState(preselectedTreatmentPlanId || "");
   const [dueDate, setDueDate] = useState("");
   const [notes, setNotes] = useState("");
   const [discountPercentage, setDiscountPercentage] = useState(0);
   const [taxPercentage, setTaxPercentage] = useState(0);
+  const [insuranceCoveredAmount, setInsuranceCoveredAmount] = useState(0);
+  const [insurancePatientShare, setInsurancePatientShare] = useState(0);
+  const [insuranceManuallyEdited, setInsuranceManuallyEdited] = useState(false);
   const [items, setItems] = useState<InvoiceItem[]>([
     { service_name: "", description: "", quantity: 1, unit_price: 0 }
   ]);
 
   useEffect(() => {
     if (preselectedPatientId) setPatientId(preselectedPatientId);
-  }, [preselectedPatientId]);
+    if (preselectedTreatmentPlanId) setTreatmentPlanId(preselectedTreatmentPlanId);
+  }, [preselectedPatientId, preselectedTreatmentPlanId]);
 
   const { data: profile } = useQuery({
     queryKey: ['current-profile-for-invoice'],
@@ -79,10 +86,80 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
     enabled: open && !!profile,
   });
 
+  const { data: activeInsurance } = useQuery({
+    queryKey: ['active-patient-insurance', profile?.id, patientId],
+    queryFn: async () => {
+      if (!profile || !patientId) return null;
+      const { data, error } = await supabase
+        .from('patient_insurance')
+        .select('id, policy_number, coverage_percentage, insurance_companies(name, name_ar)')
+        .eq('clinic_id', profile.id)
+        .eq('patient_id', patientId)
+        .eq('is_active', true)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      if (error) throw error;
+      return data?.[0] || null;
+    },
+    enabled: open && !!profile && !!patientId,
+  });
+
+  const { data: patientLegacyInsurance } = useQuery({
+    queryKey: ['patient-legacy-insurance', patientId],
+    queryFn: async () => {
+      if (!patientId) return null;
+      const { data, error } = await supabase
+        .from('patients')
+        .select('insurance_info')
+        .eq('id', patientId)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.insurance_info || null;
+    },
+    enabled: open && !!patientId,
+  });
+
   const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
   const discountAmount = subtotal * (discountPercentage / 100);
   const taxAmount = (subtotal - discountAmount) * (taxPercentage / 100);
   const totalAmount = subtotal - discountAmount + taxAmount;
+  const coveragePercentage = Number(activeInsurance?.coverage_percentage || 0);
+  const recommendedCoveredAmount = Number((totalAmount * coveragePercentage / 100).toFixed(2));
+  const recommendedPatientShare = Number(Math.max(totalAmount - recommendedCoveredAmount, 0).toFixed(2));
+
+  useEffect(() => {
+    setInsuranceManuallyEdited(false);
+  }, [patientId, activeInsurance?.id]);
+
+  useEffect(() => {
+    if (!open) return;
+    if (activeInsurance && !insuranceManuallyEdited) {
+      setInsuranceCoveredAmount(recommendedCoveredAmount);
+      setInsurancePatientShare(recommendedPatientShare);
+      return;
+    }
+
+    if (!activeInsurance) {
+      setInsuranceCoveredAmount(0);
+      setInsurancePatientShare(Number(totalAmount.toFixed(2)));
+    }
+  }, [activeInsurance, insuranceManuallyEdited, open, recommendedCoveredAmount, recommendedPatientShare, totalAmount]);
+
+  useEffect(() => {
+    if (!open || !preselectedServiceId || !servicePrices?.length) return;
+    const service = servicePrices.find((item) => item.id === preselectedServiceId);
+    if (!service) return;
+
+    setItems((currentItems) => {
+      const hasService = currentItems.some((item) => item.service_name === service.service_name);
+      const hasEmptyOnly = currentItems.length === 1 && !currentItems[0].service_name && !currentItems[0].description && currentItems[0].unit_price === 0;
+      if (hasService) return currentItems;
+      if (hasEmptyOnly) {
+        return [{ service_name: service.service_name, description: "", quantity: 1, unit_price: Number(service.base_price) }];
+      }
+      return [...currentItems, { service_name: service.service_name, description: "", quantity: 1, unit_price: Number(service.base_price) }];
+    });
+  }, [open, preselectedServiceId, servicePrices]);
 
   const invalidateAllFinancialQueries = () => {
     queryClient.invalidateQueries({ queryKey: ['invoices'] });
@@ -95,12 +172,23 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
     queryClient.invalidateQueries({ queryKey: ['recent-invoices'] });
     queryClient.invalidateQueries({ queryKey: ['invoice-stats'] });
     queryClient.invalidateQueries({ queryKey: ['treatment-plans-financial'] });
+    queryClient.invalidateQueries({ queryKey: ['treatments-management'] });
   };
 
   const createInvoiceMutation = useMutation({
     mutationFn: async () => {
       if (!profile) throw new Error('Profile not found');
-      if (!patientId) throw new Error('Patient is required');
+      if (!patientId) throw new Error('يرجى اختيار مريض');
+      if (!dueDate) throw new Error('يرجى تحديد تاريخ الاستحقاق');
+
+      const validItems = items.filter(i => i.service_name.trim());
+      if (validItems.length === 0) throw new Error('يرجى إضافة خدمة واحدة على الأقل');
+      
+      const invalidItem = validItems.find(i => i.quantity <= 0 || i.unit_price < 0);
+      if (invalidItem) throw new Error('الكمية يجب أن تكون أكبر من 0 والسعر لا يمكن أن يكون سالباً');
+
+      if (discountPercentage < 0 || discountPercentage > 100) throw new Error('نسبة الخصم يجب أن تكون بين 0 و 100');
+      if (taxPercentage < 0 || taxPercentage > 100) throw new Error('نسبة الضريبة يجب أن تكون بين 0 و 100');
 
       // Clinical rule: prevent invoice creation before linking to a completed
       // clinical encounter (completed appointment or treatment record).
@@ -131,11 +219,20 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
         clinic_id_param: profile.id
       });
 
+      const insuranceSummary = activeInsurance
+        ? `تقدير التغطية وقت إنشاء الفاتورة: ${activeInsurance.insurance_companies?.name_ar || activeInsurance.insurance_companies?.name} (${coveragePercentage}%) | حصة التأمين ${insuranceCoveredAmount.toLocaleString()} | حصة المريض ${insurancePatientShare.toLocaleString()} | رقم البوليصة ${activeInsurance.policy_number}`
+        : patientLegacyInsurance
+          ? `معلومة التأمين المسجلة للمريض: ${patientLegacyInsurance}`
+          : '';
+
+      const normalizedNotes = [notes.trim(), insuranceSummary].filter(Boolean).join('\n');
+
       const { data: invoice, error } = await supabase
         .from('invoices')
         .insert({
           clinic_id: profile.id,
           patient_id: patientId,
+          treatment_plan_id: treatmentPlanId || null,
           invoice_number: invoiceNumber || `INV-${Date.now()}`,
           issue_date: new Date().toISOString(),
           due_date: dueDate,
@@ -148,7 +245,7 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
           balance_due: totalAmount,
           paid_amount: 0,
           status: 'pending',
-          notes,
+          notes: normalizedNotes || null,
         })
         .select()
         .single();
@@ -187,10 +284,14 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
 
   const resetForm = () => {
     setPatientId(preselectedPatientId || "");
+    setTreatmentPlanId(preselectedTreatmentPlanId || "");
     setDueDate("");
     setNotes("");
     setDiscountPercentage(0);
     setTaxPercentage(0);
+    setInsuranceCoveredAmount(0);
+    setInsurancePatientShare(0);
+    setInsuranceManuallyEdited(false);
     setItems([{ service_name: "", description: "", quantity: 1, unit_price: 0 }]);
   };
 
@@ -215,6 +316,20 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
     const updated = [...items];
     updated[index] = { ...updated[index], [field]: value };
     setItems(updated);
+  };
+
+  const handleCoveredAmountChange = (value: string) => {
+    const covered = Number(value || 0);
+    setInsuranceManuallyEdited(true);
+    setInsuranceCoveredAmount(covered);
+    setInsurancePatientShare(Number(Math.max(totalAmount - covered, 0).toFixed(2)));
+  };
+
+  const handlePatientShareChange = (value: string) => {
+    const share = Number(value || 0);
+    setInsuranceManuallyEdited(true);
+    setInsurancePatientShare(share);
+    setInsuranceCoveredAmount(Number(Math.max(totalAmount - share, 0).toFixed(2)));
   };
 
   return (
@@ -242,6 +357,44 @@ export function CreateInvoiceDialog({ open, onOpenChange, preselectedPatientId }
               <Input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
             </div>
           </div>
+
+          {treatmentPlanId && (
+            <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+              هذه الفاتورة مرتبطة بعلاج محدد.
+            </div>
+          )}
+
+          {activeInsurance ? (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 font-medium">
+                  <Shield className="h-4 w-4 text-primary" />
+                  {activeInsurance.insurance_companies?.name_ar || activeInsurance.insurance_companies?.name}
+                </div>
+                <span className="text-sm text-muted-foreground">تغطية {coveragePercentage}%</span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>حصة التأمين</Label>
+                  <Input type="number" min={0} value={insuranceCoveredAmount} onChange={e => handleCoveredAmountChange(e.target.value)} />
+                </div>
+                <div>
+                  <Label>حصة المريض</Label>
+                  <Input type="number" min={0} value={insurancePatientShare} onChange={e => handlePatientShareChange(e.target.value)} />
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-xs text-muted-foreground">
+                <span>رقم البوليصة: {activeInsurance.policy_number}</span>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setInsuranceManuallyEdited(false)}>
+                  إعادة الحساب التلقائي
+                </Button>
+              </div>
+            </div>
+          ) : patientLegacyInsurance ? (
+            <div className="rounded-md border border-warning/30 bg-warning/5 px-3 py-2 text-sm text-muted-foreground">
+              معلومات التأمين القديمة للمريض: {patientLegacyInsurance}
+            </div>
+          ) : null}
 
           {/* Quick Add from Service Prices */}
           {servicePrices && servicePrices.length > 0 && (

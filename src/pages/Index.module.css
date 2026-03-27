@@ -1,64 +1,52 @@
-.dashboardGrid {
-  display: grid;
-  gap: 1rem;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.dashboardGrid.dashboard-grid-1 {
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-}
-
-.dashboardGrid.dashboard-grid-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.dashboardGrid.dashboard-grid-3 {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.dashboardGrid.dashboard-grid-4 {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-.dashboardGrid.dashboard-grid-5 {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-}
-
-.dashboardGrid.dashboard-grid-6 {
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-}
-
 /* Stats grid */
 .statsGrid {
   display: grid;
   gap: 0.75rem;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .statsGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 @media (min-width: 768px) {
+  .statsGrid {
+    gap: 1rem;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
   .statsGrid {
     gap: 1rem;
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }
 
+/* Nav cards group grid — square tiles */
+.groupGrid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 640px) {
+  .groupGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .groupGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 1024px) {
-  .statsGrid {
-    gap: 1.25rem;
-  }
-}
-
-/* Responsive dashboard grid */
-@media (max-width: 768px) {
-  .dashboardGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .dashboardGrid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 0.625rem;
+  .groupGrid {
+    gap: 0.875rem;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 }

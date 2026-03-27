@@ -28,12 +28,10 @@ export const usePermissions = () => {
   const [user, setUser] = useState<any>(null);
   const { toast } = useToast();
 
-  // System admin check - مع تحسين الأداء
+  // System admin check - DB-driven via user_metadata
   const isSystemAdmin = useMemo(() => 
-    user?.email === 'eng.khalid.work@gmail.com' || 
-    user?.email === 'klidmorre@gmail.com' || 
     user?.user_metadata?.role === 'super_admin', 
-    [user?.email, user?.user_metadata?.role]
+    [user?.user_metadata?.role]
   );
 
   // Debounced fetch function to prevent excessive API calls
@@ -48,9 +46,7 @@ export const usePermissions = () => {
         setLoading(true);
         
         // System admin gets all permissions with caching
-        if (currentUser.email === 'eng.khalid.work@gmail.com' || 
-            currentUser.email === 'klidmorre@gmail.com' || 
-            currentUser.user_metadata?.role === 'super_admin') {
+        if (currentUser.user_metadata?.role === 'super_admin') {
           const cacheKey = 'admin_all_permissions';
           const cachedPermissions = legacyPermissionsCache.get(cacheKey);
           
@@ -85,7 +81,7 @@ export const usePermissions = () => {
             setLoading(false);
             return;
           } catch (e) {
-            console.warn('Admin permissions fetch failed, falling back to empty list', e);
+            // Admin permissions fetch failed, falling back to empty list
             setPermissions([]);
             setUserRoles([{ role_name: 'admin', role_name_ar: 'مدير النظام', is_primary: true }]);
             legacyPermissionsCache.set('admin_all_permissions', [], 5 * 60 * 1000);
@@ -121,7 +117,7 @@ export const usePermissions = () => {
           if (!permsResult.error) permissionsData = permsResult.data;
           if (!rolesResult.error) rolesData = rolesResult.data;
         } catch (rpcError) {
-          console.warn('RPC calls failed, using profile fallback:', rpcError);
+          // RPC calls failed, using profile fallback
         }
 
         // Fallback to profile-based permissions if RPC fails

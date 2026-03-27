@@ -65,5 +65,5 @@ export const initLayoutOptimization = () => {
   // This prevents forced reflows from getBoundingClientRect calls
   
   // Simple initialization - avoid modifying global event listeners
-  console.log('✅ Layout optimization initialized');
+  if (import.meta.env.DEV) console.log('✅ Layout optimization initialized');
 };

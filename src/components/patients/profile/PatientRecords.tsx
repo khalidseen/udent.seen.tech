@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { FileText, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { useNavigate } from "react-router-dom";
 
 interface PatientRecordsProps {
   patientId: string;
 }
 
 export function PatientRecords({ patientId }: PatientRecordsProps) {
+  const navigate = useNavigate();
   const { data: records, isLoading } = useQuery({
     queryKey: ['patient-records', patientId],
     queryFn: async () => {
@@ -33,8 +35,8 @@ export function PatientRecords({ patientId }: PatientRecordsProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">السجلات الطبية</h3>
-        <Button size="sm" onClick={() => window.location.href = `/advanced-medical-records?patient=${patientId}`}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button size="sm" onClick={() => navigate(`/dental-treatments-management?patient=${patientId}`)}>
+          <Plus className="w-4 h-4 ml-2" />
           سجل جديد
         </Button>
       </div>

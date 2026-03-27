@@ -5,6 +5,7 @@ import { globalCaches } from '@/lib/performance-optimizations';
 import { optimizedPatientQueries } from '@/lib/optimized-queries';
 import { useOptimizedQuery } from '@/hooks/useOptimizedQuery';
 
+
 export interface Patient {
   id: string;
   full_name: string;
@@ -55,10 +56,9 @@ export interface PatientsQueryParams {
 const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patient[]; total: number }> => {
   const { clinicId, search = '', status, limit = 50, offset = 0 } = params;
   
-  console.log('🔍 Fetching patients with params:', { clinicId, search, limit, offset });
+
   
   if (!clinicId) {
-    console.warn('⚠️ No clinic ID provided, trying to fetch all patients');
     // If no clinic_id, try to fetch patients without filter for testing
     try {
       const { data: allPatients, error, count } = await supabase
@@ -120,7 +120,7 @@ const fetchPatients = async (params: PatientsQueryParams): Promise<{ data: Patie
       throw error;
     }
 
-    console.log('✅ Successfully fetched patients:', { count: patientsData?.length, total: count });
+
 
     const enhancedPatients: Patient[] = (patientsData?.map(patient => ({
       ...patient,
@@ -181,7 +181,6 @@ export const useClinicId = () => {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log('⚠️ No authenticated user');
         return undefined;
       }
       
@@ -198,7 +197,6 @@ export const useClinicId = () => {
       
       // استخدام profiles.id كـ clinic_id (لأن foreign keys تشير إلى profiles.id)
       const clinicId = profiles?.id;
-      console.log('✅ Clinic ID (Profile ID):', clinicId);
       return clinicId;
     },
     staleTime: 5 * 60 * 1000,

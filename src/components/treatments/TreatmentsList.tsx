@@ -9,6 +9,7 @@ import { toast } from "@/hooks/use-toast";
 import { Activity, Search, Filter, Edit, Trash2, Calendar, User, Circle } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { formatToothSurface } from "@/utils/dentalChart";
 
 interface Treatment {
   id: string;
@@ -95,7 +96,7 @@ const TreatmentsList = ({ patientId, onEditTreatment, refreshTrigger }: Treatmen
     } catch (error) {
       toast({
         title: 'خطأ',
-        description: error.message,
+        description: error instanceof Error ? error.message : String(error),
         variant: 'destructive'
       });
     }
@@ -246,7 +247,7 @@ const TreatmentsList = ({ patientId, onEditTreatment, refreshTrigger }: Treatmen
                     <span className="font-medium">السن:</span>
                     <span>
                       {treatment.tooth_number}
-                      {treatment.tooth_surface && ` (${treatment.tooth_surface})`}
+                      {treatment.tooth_surface && ` (${formatToothSurface(treatment.tooth_surface)})`}
                     </span>
                   </div>
 

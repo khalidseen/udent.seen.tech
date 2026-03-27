@@ -37,15 +37,12 @@ class AIAnalysisService {
   
   async initializeModels() {
     try {
-      console.log('Initializing AI models for medical analysis...');
       // For now, we'll use a simulated analysis approach that provides realistic results
       // In a production environment, you would use specialized dental AI models
       this.imageClassifier = {
         initialized: true,
         analyze: (imageData: string) => this.performRealisticAnalysis(imageData)
       };
-      
-      console.log('AI models ready for medical analysis');
     } catch (error) {
       console.warn('Error initializing models, using fallback analysis:', error);
       this.imageClassifier = {
@@ -72,8 +69,6 @@ class AIAnalysisService {
     await this.initializeModels();
     
     try {
-      console.log('Starting X-ray analysis...');
-      
       // Convert image to canvas for analysis
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
@@ -86,8 +81,6 @@ class AIAnalysisService {
       
       // Analyze with the model for dental-specific features
       const results = await this.imageClassifier.analyze(processedImageData);
-      
-      console.log('Analysis results:', results);
       
       // Advanced dental analysis with AI-enhanced detection
       const analysis = this.processDentalAnalysisAdvanced(results, canvas, ctx);
@@ -128,8 +121,6 @@ class AIAnalysisService {
     await this.initializeModels();
     
     try {
-      console.log('Starting DSD analysis...');
-      
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d')!;
       canvas.width = imageElement.naturalWidth;
@@ -138,8 +129,6 @@ class AIAnalysisService {
       
       const imageData = canvas.toDataURL('image/jpeg', 0.8);
       const results = await this.imageClassifier.analyze(imageData);
-      
-      console.log('DSD Analysis results:', results);
       
       // Process results for DSD analysis
       const analysis = this.processDSDAnalysis(results);

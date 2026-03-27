@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,14 @@ interface CreateSupplyDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onSupplyCreated: () => void;
+  initialValues?: {
+    name?: string;
+    category?: string;
+    brand?: string;
+  };
 }
 
-export function CreateSupplyDialog({ isOpen, onClose, onSupplyCreated }: CreateSupplyDialogProps) {
+export function CreateSupplyDialog({ isOpen, onClose, onSupplyCreated, initialValues }: CreateSupplyDialogProps) {
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
   const [brand, setBrand] = useState("");
@@ -29,6 +34,13 @@ export function CreateSupplyDialog({ isOpen, onClose, onSupplyCreated }: CreateS
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setName(initialValues?.name || "");
+    setCategory(initialValues?.category || "");
+    setBrand(initialValues?.brand || "");
+  }, [initialValues?.brand, initialValues?.category, initialValues?.name, isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +86,7 @@ export function CreateSupplyDialog({ isOpen, onClose, onSupplyCreated }: CreateS
   };
 
   const resetForm = () => {
-    setName(""); setCategory(""); setBrand(""); setUnit("piece");
+    setName(initialValues?.name || ""); setCategory(initialValues?.category || ""); setBrand(initialValues?.brand || ""); setUnit("piece");
     setCurrentStock(0); setMinimumStock(10); setUnitCost(0);
     setSupplier(""); setSupplierContact(""); setExpiryDate("");
     setBatchNumber(""); setNotes("");

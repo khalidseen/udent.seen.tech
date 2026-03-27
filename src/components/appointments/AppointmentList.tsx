@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle, CalendarDays, List, ExternalLink } from "lucide-react";
+import { Calendar, Clock, User, Search, Plus, Phone, Filter, X, Edit, CheckCircle, CalendarDays, List, ExternalLink, Stethoscope, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
@@ -170,7 +170,7 @@ const AppointmentList = () => {
     } catch (error) {
       toast({
         title: t('common.error'),
-        description: error.message,
+        description: error instanceof Error ? error.message : String(error),
         variant: 'destructive'
       });
     }
@@ -365,6 +365,16 @@ const AppointmentList = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       {getStatusBadge(appointment.status)}
+                      {appointment.status === 'completed' && appointment.patients?.id && (
+                        <>
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/dental-treatments-management?patient=${appointment.patients!.id}`)}>
+                            <Stethoscope className="w-4 h-4 ml-1" /> علاج
+                          </Button>
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/prescriptions?patient=${appointment.patients!.id}`)}>
+                            <FileText className="w-4 h-4 ml-1" /> وصفة
+                          </Button>
+                        </>
+                      )}
                       {appointment.status === 'scheduled' && (
                         <Button size="sm" variant="outline" onClick={() => handleCompleteAppointment(appointment.id)}>
                           <CheckCircle className="w-4 h-4 ml-1" /> إتمام
@@ -420,6 +430,16 @@ const AppointmentList = () => {
                               {appointment.status === 'scheduled' && (
                                 <Button size="sm" variant="outline" onClick={() => handleCompleteAppointment(appointment.id)}>
                                   <CheckCircle className="w-3 h-3" />
+                                </Button>
+                              )}
+                              {appointment.status === 'completed' && appointment.patients?.id && (
+                                <Button size="sm" variant="outline" onClick={() => navigate(`/dental-treatments-management?patient=${appointment.patients.id}`)}>
+                                  <Stethoscope className="w-3 h-3" />
+                                </Button>
+                              )}
+                              {appointment.status === 'completed' && appointment.patients?.id && (
+                                <Button size="sm" variant="outline" onClick={() => navigate(`/prescriptions?patient=${appointment.patients.id}`)}>
+                                  <FileText className="w-3 h-3" />
                                 </Button>
                               )}
                               <Button size="sm" variant="ghost" onClick={() => { setEditingAppointment(appointment); setEditDialogOpen(true); }}>

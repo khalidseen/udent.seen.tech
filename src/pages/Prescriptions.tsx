@@ -1,16 +1,16 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Search, FileText, Eye, User, ExternalLink, Calendar } from "lucide-react";
+import { Plus, Search, FileText, Eye, User, ExternalLink, Calendar, Activity, Package, Pill, ArrowLeftRight } from "lucide-react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import CreatePrescriptionDialog from "@/components/prescriptions/CreatePrescriptionDialog";
 import ViewPrescriptionDialog from "@/components/prescriptions/ViewPrescriptionDialog";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface Prescription {
   id: string;
@@ -29,10 +29,19 @@ interface Prescription {
 
 const Prescriptions = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const preselectedPatientId = searchParams.get('patient') || undefined;
+  const workflowSource = searchParams.get('from');
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState<Prescription | null>(null);
   const [showViewDialog, setShowViewDialog] = useState(false);
+
+  useEffect(() => {
+    if (preselectedPatientId) {
+      setShowCreateDialog(true);
+    }
+  }, [preselectedPatientId]);
 
   const { data: profile } = useQuery({
     queryKey: ['current-profile'],
@@ -110,7 +119,28 @@ const Prescriptions = () => {
       <PageHeader
         title="الوصفات الطبية"
         description="إدارة الوصفات الطبية للمرضى"
+        action={
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate('/medications?from=prescriptions')}>
+              <Pill className="w-4 h-4 ml-1" /> الأدوية
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/inventory?category=medications&from=prescriptions')}>
+              <Package className="w-4 h-4 ml-1" /> المخزون
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/stock-movements?reference=usage&from=prescriptions')}>
+              <ArrowLeftRight className="w-4 h-4 ml-1" /> حركات الاستخدام
+            </Button>
+          </div>
+        }
       />
+
+      {(preselectedPatientId || workflowSource) && (
+        <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+          {preselectedPatientId && <span>تم فتح الصفحة ضمن سياق مريض محدد وسيتم فتح إنشاء وصفة مباشرة. </span>}
+          {workflowSource === 'medications' && <span>تم الوصول من شاشة الأدوية لمراجعة الوصفات المرتبطة. </span>}
+          {workflowSource === 'inventory' && <span>تم الوصول من المخزون لمتابعة الاستهلاك الدوائي.</span>}
+        </div>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6">
         <div className="relative flex-1">
@@ -233,6 +263,24 @@ const Prescriptions = () => {
                       <Calendar className="w-3 h-3" />
                       موعد
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/dental-treatments-management?patient=${prescription.patient_id}`)}
+                      className="flex items-center gap-1"
+                    >
+                      <Activity className="w-3 h-3" />
+                      علاجات
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => navigate(`/stock-movements?reference=usage&from=prescriptions`)}
+                      className="flex items-center gap-1"
+                    >
+                      <ArrowLeftRight className="w-3 h-3" />
+                      المخزون
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -245,6 +293,7 @@ const Prescriptions = () => {
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
         onSuccess={() => refetch()}
+        preselectedPatientId={preselectedPatientId}
       />
 
       <ViewPrescriptionDialog

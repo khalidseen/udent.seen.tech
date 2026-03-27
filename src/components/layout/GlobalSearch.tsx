@@ -51,7 +51,7 @@ const mockSearchData: SearchResult[] = [
   { id: '11', type: 'inventory', title: 'مواد التعقيم', subtitle: '10 عبوات', route: '/inventory', icon: Package },
   
   // Medical Records
-  { id: '12', type: 'record', title: 'تقرير طبي - أحمد', subtitle: 'فحص دوري', route: '/advanced-medical-records', icon: FileText },
+  { id: '12', type: 'record', title: 'تقرير طبي - أحمد', subtitle: 'فحص دوري', route: '/dental-treatments-management', icon: FileText },
   
   // Treatments
   { id: '13', type: 'treatment', title: 'تنظيف الأسنان', subtitle: 'علاج عام', route: '/dental-treatments-management', icon: Stethoscope },

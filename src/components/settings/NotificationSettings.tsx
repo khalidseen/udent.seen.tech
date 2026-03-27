@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Bell, 
-  Mail, 
-  MessageSquare, 
   Calendar, 
   Users, 
   AlertCircle,
@@ -17,47 +18,120 @@ import {
   DollarSign,
   Stethoscope,
   Volume2,
-  Save
+  Save,
+  Loader2
 } from "lucide-react";
 import { toast } from "sonner";
 
+const DEFAULT_NOTIFICATIONS: Record<string, Record<string, { system: boolean; email: boolean; sms: boolean }>> = {
+  appointments: {
+    newAppointment: { system: true, email: true, sms: false },
+    appointmentReminder: { system: true, email: true, sms: true },
+    appointmentCancelled: { system: true, email: true, sms: false },
+    appointmentCompleted: { system: true, email: false, sms: false },
+  },
+  patients: {
+    newPatient: { system: true, email: false, sms: false },
+    patientUpdated: { system: true, email: false, sms: false },
+    birthdayReminder: { system: true, email: true, sms: false },
+  },
+  medical: {
+    newRecord: { system: true, email: false, sms: false },
+    treatmentCompleted: { system: true, email: true, sms: false },
+    followUpReminder: { system: true, email: true, sms: true },
+  },
+  financial: {
+    paymentReceived: { system: true, email: true, sms: false },
+    paymentOverdue: { system: true, email: true, sms: true },
+    invoiceGenerated: { system: true, email: true, sms: false },
+  },
+  system: {
+    systemUpdate: { system: true, email: true, sms: false },
+    maintenanceScheduled: { system: true, email: true, sms: false },
+    backupCompleted: { system: true, email: false, sms: false },
+    securityAlert: { system: true, email: true, sms: true },
+  },
+};
+
+const DEFAULT_GENERAL = {
+  soundEnabled: true,
+  desktopNotifications: true,
+  reminderTime: "30",
+  workingHoursOnly: true,
+  maxNotificationsPerDay: 50,
+};
+
 export function NotificationSettings() {
-  const [notifications, setNotifications] = useState({
-    appointments: {
-      newAppointment: { system: true, email: true, sms: false },
-      appointmentReminder: { system: true, email: true, sms: true },
-      appointmentCancelled: { system: true, email: true, sms: false },
-      appointmentCompleted: { system: true, email: false, sms: false }
-    },
-    patients: {
-      newPatient: { system: true, email: false, sms: false },
-      patientUpdated: { system: true, email: false, sms: false },
-      birthdayReminder: { system: true, email: true, sms: false }
-    },
-    medical: {
-      newRecord: { system: true, email: false, sms: false },
-      treatmentCompleted: { system: true, email: true, sms: false },
-      followUpReminder: { system: true, email: true, sms: true }
-    },
-    financial: {
-      paymentReceived: { system: true, email: true, sms: false },
-      paymentOverdue: { system: true, email: true, sms: true },
-      invoiceGenerated: { system: true, email: true, sms: false }
-    },
-    system: {
-      systemUpdate: { system: true, email: true, sms: false },
-      maintenanceScheduled: { system: true, email: true, sms: false },
-      backupCompleted: { system: true, email: false, sms: false },
-      securityAlert: { system: true, email: true, sms: true }
+  const queryClient = useQueryClient();
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile-notification-settings'],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
     }
   });
+  const clinicId = profile?.id;
 
-  const [generalSettings, setGeneralSettings] = useState({
-    soundEnabled: true,
-    desktopNotifications: true,
-    reminderTime: "30", // minutes before appointment
-    workingHoursOnly: true,
-    maxNotificationsPerDay: 50
+  const { data: settingsData, isLoading } = useQuery({
+    queryKey: ['notification-settings-data', clinicId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clinic_settings')
+        .select('custom_preferences')
+        .eq('clinic_id', clinicId!)
+        .maybeSingle();
+      if (error) throw error;
+      return (data?.custom_preferences ?? {}) as Record<string, any>;
+    },
+    enabled: !!clinicId,
+  });
+
+  const [notifications, setNotifications] = useState(DEFAULT_NOTIFICATIONS);
+  const [generalSettings, setGeneralSettings] = useState(DEFAULT_GENERAL);
+
+  useEffect(() => {
+    if (!settingsData) return;
+    if (settingsData.notifications) {
+      // Deep merge: defaults first, then saved values on top
+      const merged = { ...DEFAULT_NOTIFICATIONS };
+      for (const cat of Object.keys(merged)) {
+        if (settingsData.notifications[cat]) {
+          merged[cat] = { ...merged[cat] };
+          for (const item of Object.keys(merged[cat])) {
+            if (settingsData.notifications[cat][item]) {
+              merged[cat][item] = { ...merged[cat][item], ...settingsData.notifications[cat][item] };
+            }
+          }
+        }
+      }
+      setNotifications(merged);
+    }
+    if (settingsData.notification_general) {
+      setGeneralSettings({ ...DEFAULT_GENERAL, ...settingsData.notification_general });
+    }
+  }, [settingsData]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const existingPrefs = settingsData || {};
+      const newPrefs = {
+        ...existingPrefs,
+        notifications,
+        notification_general: generalSettings,
+      };
+      const { error } = await supabase
+        .from('clinic_settings')
+        .upsert({ clinic_id: clinicId!, custom_preferences: newPrefs }, { onConflict: 'clinic_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notification-settings-data', clinicId] });
+      toast.success("تم حفظ إعدادات الإشعارات بنجاح");
+    },
+    onError: () => {
+      toast.error("حدث خطأ أثناء حفظ الإعدادات");
+    },
   });
 
   const notificationCategories = [
@@ -133,9 +207,21 @@ export function NotificationSettings() {
     }));
   };
 
-  const handleSave = () => {
-    toast.success("تم حفظ إعدادات الإشعارات بنجاح");
-  };
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map(i => (
+          <Card key={i}>
+            <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -323,8 +409,8 @@ export function NotificationSettings() {
 
       {/* زر الحفظ */}
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="flex items-center gap-2">
-          <Save className="h-4 w-4" />
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="flex items-center gap-2">
+          {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           حفظ الإعدادات
         </Button>
       </div>

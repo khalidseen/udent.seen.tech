@@ -133,12 +133,13 @@ const CalendarView = () => {
     return (
       <div
         className={cn(
-          "p-3 h-32 border-2 rounded-lg transition-all duration-200 cursor-pointer relative",
-          "bg-card border-border hover:border-primary/40 hover:shadow-md",
+          "p-3 h-32 border-2 rounded-lg transition-all duration-200 relative",
+          "bg-card border-border",
+          !isPast && "cursor-pointer hover:border-primary/40 hover:shadow-md",
           isToday && "border-primary bg-primary/5 shadow-lg ring-2 ring-primary/20",
           isPast && "opacity-50 cursor-not-allowed bg-muted border-muted"
         )}
-        onClick={() => handleDateClick(date)}
+        onClick={() => !isPast && handleDateClick(date)}
       >
         {/* رقم اليوم */}
         <div className={cn(

@@ -1,7 +1,8 @@
 import jsPDF from 'jspdf';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { ChartStatistics, DentalTreatmentRecord } from '@/hooks/useDentalChart';
+import type { ChartStatistics, DentalTreatmentRecord } from '@/types/dental-enhanced';
+import { parseToothClinicalData, sortToothRecords } from '@/utils/dentalChart';
 
 const CONDITION_LABELS: Record<string, string> = {
   sound: 'سليم', caries: 'تسوس', filled: 'محشو', crown: 'تاج',
@@ -103,12 +104,7 @@ export function exportDentalChartPDF(
   y += 6;
 
   // Table rows
-  const sortedRecords = Array.from(toothRecords.entries())
-    .filter(([num]) => num !== 'chart_note')
-    .sort(([a], [b]) => {
-      const aNum = parseInt(a); const bNum = parseInt(b);
-      return aNum - bNum;
-    });
+  const sortedRecords = sortToothRecords(Array.from(toothRecords.values())).map(record => [record.tooth_number, record] as const);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
@@ -145,8 +141,7 @@ export function exportDentalChartPDF(
   sortedRecords.forEach(([toothNum, record]) => {
     if (!record.tooth_surface) return;
     try {
-      const parsed = JSON.parse(record.tooth_surface);
-      if (!parsed.surfaces) return;
+      const parsed = parseToothClinicalData(record.tooth_surface);
       checkPage();
       
       doc.setFontSize(9);
@@ -154,7 +149,7 @@ export function exportDentalChartPDF(
       doc.text(`Tooth ${toothNum}:`, 20, y);
       doc.setFont('helvetica', 'normal');
       
-      const surfaceText = Object.entries(parsed.surfaces as Record<string, string>)
+      const surfaceText = Object.entries(parsed.surfaces)
         .filter(([, val]) => val !== 'sound')
         .map(([key, val]) => `${key}: ${CONDITION_LABELS[val as string] || val}`)
         .join(', ');

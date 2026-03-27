@@ -4,10 +4,10 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription
 } from "@/components/ui/sheet";
 import {
-  BarChart3, ClipboardList, CalendarPlus, FolderOpen, Stethoscope, FileText,
-  Receipt, DollarSign, Calculator, FileSpreadsheet, CreditCard, Shield,
-  Package, Pill, PackageCheck, Truck, FlaskConical, CalendarDays, MessageSquare,
-  UserCog, User, Brain, Settings, Bell, Mail, Plug, Box, LogOut, Crown, Briefcase, Building
+  BarChart3, ClipboardList, CalendarPlus, Stethoscope, FileText,
+  Receipt, DollarSign, FileSpreadsheet, CreditCard, Shield,
+  Package, Pill, PackageCheck, Truck, FlaskConical, CalendarDays,
+  UserCog, User, Settings, Bell, Plug, LogOut
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,6 @@ const menuSections = [
     items: [
       { title: "حجز جديد", url: "/appointments/new", icon: CalendarPlus },
       { title: "طلبات الحجز", url: "/appointment-requests", icon: ClipboardList },
-      { title: "السجلات الطبية", url: "/advanced-medical-records", icon: FolderOpen },
       { title: "العلاجات", url: "/dental-treatments-management", icon: Stethoscope },
       { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText },
     ],
@@ -33,9 +32,6 @@ const menuSections = [
     items: [
       { title: "الفواتير", url: "/invoice-management", icon: Receipt },
       { title: "المدفوعات", url: "/payment-management", icon: DollarSign },
-      { title: "خطط العلاج المالية", url: "/treatment-plans", icon: Calculator },
-      { title: "التقارير المالية", url: "/financial-reports", icon: FileSpreadsheet },
-      { title: "المعاملات المالية", url: "/financial-transactions", icon: DollarSign },
       { title: "أسعار الخدمات", url: "/service-prices", icon: CreditCard },
       { title: "التأمينات", url: "/insurance-management", icon: Shield },
     ],
@@ -54,7 +50,6 @@ const menuSections = [
     items: [
       { title: "المختبر السني", url: "/dental-lab", icon: FlaskConical },
       { title: "الجدولة الذكية", url: "/smart-scheduling", icon: CalendarDays },
-      { title: "مركز التواصل", url: "/communication-center", icon: MessageSquare },
     ],
   },
   {
@@ -69,9 +64,6 @@ const menuSections = [
     title: "التقارير",
     items: [
       { title: "التقارير التفصيلية", url: "/detailed-reports", icon: FileSpreadsheet },
-      { title: "الذكاء الاصطناعي", url: "/ai-management-dashboard", icon: Brain },
-      
-      { title: "التشخيص الذكي", url: "/smart-diagnosis-system", icon: Stethoscope },
     ],
   },
   {

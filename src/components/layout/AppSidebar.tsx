@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from "react";
-import { useLocation, NavLink } from "react-router-dom";
+import { useLocation, NavLink, useNavigate } from "react-router-dom";
 import { prefetchRoute } from "@/App";
 import "./sidebar.css";
 import { 
@@ -8,8 +8,8 @@ import {
   Package, Pill, FileText, Truck, PackageCheck,
   Settings, LogOut, TrendingUp, FileSpreadsheet,
   Shield, Crown, Building, Plug, ChevronLeft, ChevronRight,
-  Activity, Brain, Bell, Mail, FolderOpen, Box, Briefcase,
-  Wallet, CreditCard, Calculator, FlaskConical, CalendarDays, MessageSquare, Globe
+  Bell, Mail, Briefcase,
+  CreditCard, FlaskConical, CalendarDays
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,11 @@ export function AppSidebar() {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const { t, isRTL } = useLanguage();
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const { signOut, user } = useAuth();
   const { hasAnyPermission, getPrimaryRole, loading: permissionsLoading } = usePermissions();
-  const { sidebarIconSize } = useSettings();
+  const { sidebarIconSize, navFontSize } = useSettings();
   const [searchQuery, setSearchQuery] = useState("");
 
   const getIconSize = () => {
@@ -39,12 +40,25 @@ export function AppSidebar() {
     }
   };
 
+  const getNavTextSize = () => {
+    switch (navFontSize) {
+      case 'small': return 'text-xs';
+      case 'large': return 'text-base';
+      default: return 'text-sm';
+    }
+  };
+
+  const getGroupTitleSize = () => {
+    switch (navFontSize) {
+      case 'small': return 'text-[11px]';
+      case 'large': return 'text-sm';
+      default: return 'text-xs';
+    }
+  };
+
   const isActive = (path: string) => currentPath === path;
 
   const canAccessMenuItem = (item: MenuItem): boolean => {
-    // Super admin has full access
-    const superAdminEmails = ['eng.khalid.work@gmail.com', 'klidmorre@gmail.com'];
-    if (user?.email && superAdminEmails.includes(user.email.toLowerCase())) return true;
     if (userRole === 'super_admin' || userRole === 'owner' || userRole === 'admin') return true;
     if (!item.permissions || item.permissions.length === 0) return true;
     return hasAnyPermission(item.permissions);
@@ -68,9 +82,8 @@ export function AppSidebar() {
         { title: "المواعيد", url: "/appointments", icon: Calendar, permissions: ['appointments.view'] },
         { title: "حجز جديد", url: "/appointments/new", icon: CalendarPlus, permissions: ['appointments.create'] },
         { title: "طلبات الحجز", url: "/appointment-requests", icon: ClipboardList, permissions: ['appointments.view'] },
-        { title: "السجلات الطبية", url: "/advanced-medical-records", icon: FolderOpen, permissions: ['patients.view'] },
-        { title: "العلاجات", url: "/dental-treatments-management", icon: Stethoscope, permissions: ['treatments.view'] },
-        { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText, permissions: ['treatments.view'] },
+        { title: "العلاجات", url: "/dental-treatments-management", icon: Stethoscope, permissions: ['treatments.view', 'dental_treatments.view'] },
+        { title: "الوصفات الطبية", url: "/prescriptions", icon: FileText, permissions: ['treatments.view', 'dental_treatments.view'] },
       ]
     },
     {
@@ -79,9 +92,6 @@ export function AppSidebar() {
         { title: "نظرة مالية عامة", url: "/financial-overview", icon: TrendingUp, permissions: ['financial.view'] },
         { title: "الفواتير", url: "/invoice-management", icon: Receipt, permissions: ['financial.view'] },
         { title: "المدفوعات", url: "/payment-management", icon: DollarSign, permissions: ['financial.view'] },
-        { title: "خطط العلاج المالية", url: "/treatment-plans", icon: Calculator, permissions: ['financial.view'] },
-        { title: "التقارير المالية", url: "/financial-reports", icon: FileSpreadsheet, permissions: ['financial.view'] },
-        { title: "المعاملات المالية", url: "/financial-transactions", icon: Wallet, permissions: ['financial.view'] },
         { title: "أسعار الخدمات", url: "/service-prices", icon: CreditCard, permissions: ['financial.manage'] },
         { title: "التأمينات الصحية", url: "/insurance-management", icon: Shield, permissions: ['financial.view'] },
       ]
@@ -98,10 +108,8 @@ export function AppSidebar() {
     {
       groupTitle: "🔬 المختبر والجدولة",
       items: [
-        { title: "المختبر السني", url: "/dental-lab", icon: FlaskConical, permissions: ['treatments.view'] },
+        { title: "المختبر السني", url: "/dental-lab", icon: FlaskConical, permissions: ['treatments.view', 'dental_treatments.view'] },
         { title: "الجدولة الذكية", url: "/smart-scheduling", icon: CalendarDays, permissions: ['appointments.view'] },
-        { title: "مركز التواصل", url: "/communication-center", icon: MessageSquare, permissions: [] },
-        { title: "قنوات الاتصال", url: "/communication-channels", icon: Globe, permissions: [] },
       ]
     },
     {
@@ -116,13 +124,10 @@ export function AppSidebar() {
       groupTitle: "📊 التقارير والإحصائيات",
       items: [
         { title: "التقارير التفصيلية", url: "/detailed-reports", icon: FileSpreadsheet, permissions: ['reports.view'] },
-        { title: "قائمة الذكاء الاصطناعي", url: "/ai-management-dashboard", icon: Brain, permissions: ['reports.view'] },
-        
-        { title: "التشخيص الذكي", url: "/smart-diagnosis-system", icon: Stethoscope, permissions: ['reports.view'] },
       ]
     },
     // Super Admin Section
-    ...((userRole === 'super_admin' || user?.email?.toLowerCase() === 'eng.khalid.work@gmail.com' || user?.email?.toLowerCase() === 'klidmorre@gmail.com') ? [{
+    ...(userRole === 'super_admin' ? [{
       groupTitle: "👑 إدارة النظام الشامل",
       items: [
         { title: "لوحة تحكم مدير النظام", url: "/super-admin", icon: Crown, permissions: ['system.manage_all_clinics'] },
@@ -132,7 +137,7 @@ export function AppSidebar() {
       ]
     }] : []),
     // Owner Section
-    ...((userRole === 'owner' || user?.email?.toLowerCase() === 'eng.khalid.work@gmail.com' || user?.email?.toLowerCase() === 'klidmorre@gmail.com') ? [{
+    ...((userRole === 'owner' || userRole === 'super_admin') ? [{
       groupTitle: "👤 إدارة الاشتراك",
       items: [
         { title: "تفاصيل الاشتراك", url: "/subscription", icon: Crown, permissions: [] },
@@ -148,7 +153,6 @@ export function AppSidebar() {
         { title: "قوالب الإشعارات", url: "/custom-notification-templates", icon: Mail, permissions: ['settings.manage_notifications'] },
         { title: "الأمان والحماية", url: "/comprehensive-security-audit", icon: Shield, permissions: ['settings.security'] },
         { title: "الدمج مع الأنظمة", url: "/integrations", icon: Plug, permissions: ['settings.integrations'] },
-        { title: "النماذج ثلاثية الأبعاد", url: "/dental-3d-models-management", icon: Box, permissions: [] },
       ]
     },
   ];
@@ -181,7 +185,7 @@ export function AppSidebar() {
     const content = (
       <>
         <Icon className={iconSize} />
-        {!collapsed && <span className="truncate">{title}</span>}
+        {!collapsed && <span className={cn("truncate", getNavTextSize())}>{title}</span>}
       </>
     );
 
@@ -307,7 +311,8 @@ export function AppSidebar() {
             <div key={group.groupTitle} className="mb-6">
               {!isCollapsed && (
                 <h2 className={cn(
-                  "text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2",
+                  "font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-2",
+                  getGroupTitleSize(),
                   isRTL && "text-right"
                 )}>
                   {group.groupTitle}
@@ -339,8 +344,8 @@ export function AppSidebar() {
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full justify-start gap-2 h-10 text-sm" 
-              onClick={() => window.location.href = '/profile'}
+              className={cn("w-full justify-start gap-2 h-10", getNavTextSize())}
+              onClick={() => navigate('/profile')}
             >
               <User className="w-4 h-4" />
               الملف الشخصي
@@ -351,7 +356,8 @@ export function AppSidebar() {
             size={isCollapsed ? "icon" : "sm"} 
             className={cn(
               "w-full h-10",
-              !isCollapsed && "justify-start gap-2 text-sm"
+              !isCollapsed && "justify-start gap-2",
+              !isCollapsed && getNavTextSize()
             )} 
             onClick={signOut}
           >

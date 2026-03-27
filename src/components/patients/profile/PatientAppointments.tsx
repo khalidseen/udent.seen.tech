@@ -61,8 +61,8 @@ export function PatientAppointments({ patientId }: PatientAppointmentsProps) {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">المواعيد</h3>
-        <Button size="sm" onClick={() => navigate('/appointments')}>
-          <Plus className="w-4 h-4 mr-2" />
+        <Button size="sm" onClick={() => navigate(`/appointments/new?patient=${patientId}`)}>
+          <Plus className="w-4 h-4 ml-2" />
           حجز موعد جديد
         </Button>
       </div>

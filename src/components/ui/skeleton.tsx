@@ -79,11 +79,39 @@ const SkeletonForm = ({ fields = 3 }: { fields?: number }) => (
   </div>
 );
 
+const PageSkeleton = ({ variant = 'cards' }: { variant?: 'cards' | 'table' | 'list' | 'form' }) => (
+  <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-2">
+      <Skeleton className="h-8 w-64" />
+      <Skeleton className="h-4 w-96" />
+    </div>
+    <div className="grid gap-4 md:grid-cols-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="p-4 border rounded-lg space-y-2">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-8 w-24" />
+        </div>
+      ))}
+    </div>
+    {variant === 'cards' && (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <SkeletonCard key={i} />
+        ))}
+      </div>
+    )}
+    {variant === 'table' && <SkeletonTable />}
+    {variant === 'list' && <SkeletonList />}
+    {variant === 'form' && <SkeletonForm fields={5} />}
+  </div>
+);
+
 export { 
   Skeleton, 
   SkeletonText, 
   SkeletonCard, 
   SkeletonTable, 
   SkeletonList, 
-  SkeletonForm 
+  SkeletonForm,
+  PageSkeleton
 }

@@ -47,6 +47,11 @@ const AddTreatmentDialog = ({
     e.preventDefault();
     if (!user || !date) return;
 
+    if (!formData.diagnosis.trim() || !formData.treatment_plan.trim()) {
+      toast({ title: "خطأ", description: "يرجى إدخال التشخيص وخطة العلاج", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
       // Get user's clinic ID from profiles

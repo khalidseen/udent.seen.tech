@@ -93,7 +93,7 @@ export function PerformanceSettings() {
     });
   };
 
-  if (process.env.NODE_ENV !== "development") {
+  if (!import.meta.env.DEV) {
     return (
       <Card>
         <CardHeader>

@@ -255,7 +255,7 @@ export const cacheHelpers = {
       };
       localStorage.setItem(key, JSON.stringify(item));
     } catch (error) {
-      console.warn("Cache storage failed:", error);
+      // Cache storage failed
     }
   },
 
@@ -275,7 +275,7 @@ export const cacheHelpers = {
 
       return parsed.data;
     } catch (error) {
-      console.warn("Cache retrieval failed:", error);
+      // Cache retrieval failed
       return null;
     }
   },
@@ -291,7 +291,7 @@ export const cacheHelpers = {
         localStorage.clear();
       }
     } catch (error) {
-      console.warn("Cache clearing failed:", error);
+      // Cache clearing failed
     }
   }
 };

@@ -6,6 +6,8 @@ import { Calendar, Clock, Plus, CheckCircle, XCircle, AlertCircle } from 'lucide
 import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, isToday } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface PatientAppointmentCalendarProps {
   patientId: string;
@@ -29,6 +31,21 @@ export const PatientAppointmentCalendar: React.FC<PatientAppointmentCalendarProp
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const navigate = useNavigate();
+
+  const handleConfirmAppointment = async (appointmentId: string) => {
+    const { error } = await supabase
+      .from('appointments')
+      .update({ status: 'confirmed' })
+      .eq('id', appointmentId);
+
+    if (error) {
+      toast({ title: 'خطأ', description: 'فشل في تأكيد الموعد', variant: 'destructive' });
+    } else {
+      toast({ title: 'تم', description: 'تم تأكيد الموعد بنجاح' });
+      fetchAppointments();
+    }
+  };
 
   useEffect(() => {
     fetchAppointments();
@@ -296,11 +313,11 @@ export const PatientAppointmentCalendar: React.FC<PatientAppointmentCalendarProp
                         </div>
                         
                         <div className="flex gap-2">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" onClick={() => navigate(`/appointments?edit=${appointment.id}`)}>
                             تعديل
                           </Button>
                           {appointment.status === 'scheduled' && (
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" onClick={() => handleConfirmAppointment(appointment.id)}>
                               تأكيد
                             </Button>
                           )}

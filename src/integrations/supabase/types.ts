@@ -1252,11 +1252,13 @@ export type Database = {
           email: string | null
           experience_years: number | null
           full_name: string
+          hired_date: string | null
           id: string
           notes: string | null
           phone: string | null
           salary: number | null
           specialization: string | null
+          status: string | null
           updated_at: string
         }
         Insert: {
@@ -1267,11 +1269,13 @@ export type Database = {
           email?: string | null
           experience_years?: number | null
           full_name: string
+          hired_date?: string | null
           id?: string
           notes?: string | null
           phone?: string | null
           salary?: number | null
           specialization?: string | null
+          status?: string | null
           updated_at?: string
         }
         Update: {
@@ -1282,11 +1286,13 @@ export type Database = {
           email?: string | null
           experience_years?: number | null
           full_name?: string
+          hired_date?: string | null
           id?: string
           notes?: string | null
           phone?: string | null
           salary?: number | null
           specialization?: string | null
+          status?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -2991,28 +2997,49 @@ export type Database = {
       }
       secretaries: {
         Row: {
+          address: string | null
           clinic_id: string | null
           created_at: string
           email: string
           full_name: string
+          hired_date: string | null
           id: number
+          notes: string | null
           phone: string | null
+          salary: number | null
+          status: string | null
+          updated_at: string | null
+          working_hours: string | null
         }
         Insert: {
+          address?: string | null
           clinic_id?: string | null
           created_at?: string
           email: string
           full_name: string
+          hired_date?: string | null
           id?: number
+          notes?: string | null
           phone?: string | null
+          salary?: number | null
+          status?: string | null
+          updated_at?: string | null
+          working_hours?: string | null
         }
         Update: {
+          address?: string | null
           clinic_id?: string | null
           created_at?: string
           email?: string
           full_name?: string
+          hired_date?: string | null
           id?: number
+          notes?: string | null
           phone?: string | null
+          salary?: number | null
+          status?: string | null
+          updated_at?: string | null
+          working_hours?: string | null
         }
         Relationships: [
           {

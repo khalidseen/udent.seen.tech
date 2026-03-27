@@ -2,24 +2,10 @@ import type { Config } from "tailwindcss";
 
 export default {
 	darkMode: ["class"],
-	content: {
-		files: [
-			"./index.html",
-			"./src/**/*.{ts,tsx,js,jsx}",
-		],
-		// Extract class names more aggressively
-		extract: {
-			tsx: (content) => content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || []
-		},
-		options: {
-			// Enable aggressive CSS purging for production
-			safelist: [
-				// Preserve dynamic classes that might be generated
-				/^data-/,
-				/^aria-/,
-			],
-		}
-	},
+	content: [
+		"./index.html",
+		"./src/**/*.{ts,tsx,js,jsx}",
+	],
 	prefix: "",
 	theme: {
 		container: {

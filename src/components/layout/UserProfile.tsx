@@ -17,12 +17,14 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export function UserProfile() {
   const [isOpen, setIsOpen] = useState(false);
   const [profile, setProfile] = useState<any>(null);
   const { signOut } = useAuth();
   const { getPrimaryRole } = usePermissions();
+  const navigate = useNavigate();
 
   // Fetch user profile data
   React.useEffect(() => {
@@ -98,12 +100,12 @@ export function UserProfile() {
         
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem className="flex items-center gap-2">
+        <DropdownMenuItem className="flex items-center gap-2" onClick={() => navigate('/profile')}>
           <User className="w-4 h-4" />
           <span>الملف الشخصي</span>
         </DropdownMenuItem>
         
-        <DropdownMenuItem className="flex items-center gap-2">
+        <DropdownMenuItem className="flex items-center gap-2" onClick={() => navigate('/settings')}>
           <Settings className="w-4 h-4" />
           <span>الإعدادات</span>
         </DropdownMenuItem>

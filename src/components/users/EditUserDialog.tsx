@@ -47,6 +47,11 @@ export const EditUserDialog = ({ open, onOpenChange, user, onSuccess }: EditUser
     e.preventDefault();
     if (!user) return;
 
+    if (!formData.full_name.trim()) {
+      toast({ title: "خطأ", description: "يرجى إدخال اسم المستخدم", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase

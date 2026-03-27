@@ -62,7 +62,7 @@ export const optimizeImageUrl = (
 
     return urlObj.toString();
   } catch (error) {
-    console.warn('Failed to optimize image URL:', error);
+    // Failed to optimize image URL, return original
     return url;
   }
 };

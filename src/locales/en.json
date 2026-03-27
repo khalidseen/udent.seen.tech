@@ -25,7 +25,12 @@
     "clear": "Clear",
     "total": "Total",
     "new": "New",
-    "all": "All"
+    "all": "All",
+    "quickSearch": "Quick Search",
+    "cards": "Cards",
+    "table": "Table",
+    "advancedFilter": "Advanced Filter",
+    "searchPlaceholder": "Search..."
   },
   "navigation": {
     "dashboard": "Dashboard",
@@ -46,7 +51,8 @@
     "advanced3D": "Advanced 3D"
   },
   "actions": {
-    "addAppointment": "Add Appointment"
+    "addAppointment": "Add Appointment",
+    "addPatient": "Add Patient"
   },
   "header": {
     "search": "Search system...",
@@ -85,7 +91,8 @@
     "staffManagement": "Staff Management",
     "doctorAssistants": "Doctor Assistants",
     "secretaries": "Secretaries",
-    "systemName": "Dental Clinic"
+    "systemName": "Dental Clinic",
+    "systemManagement": "System Management"
   },
   "auth": {
     "email": "Email",
@@ -170,7 +177,10 @@
     "confirmDelete": "Are you sure you want to delete?",
     "operationSuccess": "Operation successful",
     "operationFailed": "Operation failed",
-    "offlineMode": "Offline mode"
+    "offlineMode": "Offline mode",
+    "managePatients": "Manage patient data",
+    "noResults": "No results found",
+    "noPatientsMatchFilter": "No patients match the filter criteria"
   },
   "patients": {
     "title": "Patients",
@@ -183,7 +193,8 @@
     "medicalHistory": "Medical History",
     "noPatients": "No Patients",
     "searchPatients": "Search Patients",
-    "filterPatients": "Filter Patients"
+    "filterPatients": "Filter Patients",
+    "searchPlaceholder": "Search patients..."
   },
   "doctors": {
     "title": "Doctors",

@@ -105,7 +105,7 @@ export function TreatmentPlansManager() {
   }
 
   return (
-    <PermissionGuard requiredPermissions={['financial.view', 'treatments.view', 'financial.manage']}>
+    <PermissionGuard requiredPermissions={['financial.view', 'financial.manage', 'treatments.view', 'dental_treatments.view']}>
       <div className="space-y-6">
         {/* Stats */}
         <div className="grid gap-4 md:grid-cols-5">

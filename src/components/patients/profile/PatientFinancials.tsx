@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DollarSign, Receipt, Plus, FileText, User } from "lucide-react";
+import { DollarSign, Receipt, Plus, FileText, CreditCard, Shield } from "lucide-react";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { CurrencyAmount } from "@/components/ui/currency-display";
@@ -80,7 +80,10 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">الفواتير</h3>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => navigate('/invoice-management')}>عرض الكل</Button>
+            <Button size="sm" variant="outline" onClick={() => navigate(`/invoice-management?patient=${patientId}`)}>عرض الكل</Button>
+            <Button size="sm" variant="outline" onClick={() => navigate(`/insurance-management?tab=claims&patient=${patientId}`)}>
+              <Shield className="w-4 h-4 ml-1" /> مطالبات التأمين
+            </Button>
             <Button size="sm" onClick={() => setShowCreateInvoice(true)}><Plus className="w-4 h-4 ml-1" />فاتورة جديدة</Button>
           </div>
         </div>
@@ -106,6 +109,14 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
                         {Number(invoice.balance_due) > 0 && <span className="text-destructive">متبقي: <CurrencyAmount amount={Number(invoice.balance_due)} /></span>}
                       </div>
                     </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/payment-management?patient=${patientId}&invoice=${invoice.id}`)}>
+                        <CreditCard className="w-4 h-4 ml-1" /> دفعات
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/insurance-management?tab=claims&patient=${patientId}&invoice=${invoice.id}&openClaim=true`)}>
+                        <Shield className="w-4 h-4 ml-1" /> مطالبة
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -119,7 +130,10 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
         <div className="flex justify-between items-center">
           <h3 className="text-lg font-semibold">المدفوعات</h3>
           <div className="flex gap-2">
-            <Button size="sm" variant="outline" onClick={() => navigate('/payment-management')}>عرض الكل</Button>
+            <Button size="sm" variant="outline" onClick={() => navigate(`/payment-management?patient=${patientId}`)}>عرض الكل</Button>
+            <Button size="sm" variant="outline" onClick={() => navigate(`/insurance-management?tab=patients&patient=${patientId}`)}>
+              <Shield className="w-4 h-4 ml-1" /> التأمين
+            </Button>
             <Button size="sm" onClick={() => setShowCreatePayment(true)}><Plus className="w-4 h-4 ml-1" />تسجيل دفعة</Button>
           </div>
         </div>
@@ -140,6 +154,11 @@ export function PatientFinancials({ patientId }: PatientFinancialsProps) {
                       </div>
                       <p className="text-sm text-muted-foreground">{format(new Date(payment.payment_date), 'PPP', { locale: ar })}</p>
                     </div>
+                    {payment.invoice_id && (
+                      <Button size="sm" variant="outline" onClick={() => navigate(`/invoice-management?patient=${patientId}&invoice=${payment.invoice_id}`)}>
+                        <Receipt className="w-4 h-4 ml-1" /> الفاتورة
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

@@ -15,6 +15,8 @@ export function InterfaceSettings() {
   const {
     fontWeight,
     setFontWeight,
+    navFontSize,
+    setNavFontSize,
     sidebarIconSize,
     setSidebarIconSize,
     collapsedIconSize,
@@ -46,7 +48,7 @@ export function InterfaceSettings() {
             {isAr ? 'اختر لغة واجهة النظام' : 'Choose the system interface language'}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-6">
           <div className="space-y-2">
             <Label>{isAr ? 'لغة الواجهة' : 'Interface Language'}</Label>
             <Select value={language} onValueChange={(val) => setLanguage(val as 'ar' | 'en')}>
@@ -68,6 +70,25 @@ export function InterfaceSettings() {
                 </SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label>{isAr ? 'حجم خط القائمة والمربعات' : 'Sidebar and Tiles Font Size'}</Label>
+            <Select value={navFontSize} onValueChange={(val) => setNavFontSize(val as 'small' | 'medium' | 'large')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="small">{isAr ? 'صغير' : 'Small'}</SelectItem>
+                <SelectItem value="medium">{isAr ? 'متوسط' : 'Medium'}</SelectItem>
+                <SelectItem value="large">{isAr ? 'كبير' : 'Large'}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground">
+              {isAr
+                ? 'يتم تطبيق نفس حجم الخط على عناصر القائمة الجانبية ومربعات لوحة التحكم.'
+                : 'Applies the same font size to sidebar items and dashboard tiles.'}
+            </p>
           </div>
         </CardContent>
       </Card>

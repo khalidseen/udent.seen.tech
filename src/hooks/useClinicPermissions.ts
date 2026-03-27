@@ -31,12 +31,6 @@ export const useClinicPermissions = () => {
 
   const fetchUserRole = async () => {
     try {
-      // إعطاء صلاحيات كاملة لمدير النظام
-      if (user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com') {
-        setUserRole('owner');
-        return;
-      }
-
       const { data, error } = await supabase.rpc('get_user_clinic_role');
       
       if (error) {
@@ -89,21 +83,13 @@ export const useClinicPermissions = () => {
   };
 
   const canManageRole = (targetRole: ClinicRole): boolean => {
-    // إعطاء صلاحيات كاملة لمدير النظام
-    if (user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com') {
-      return true;
-    }
-
+    if (userRole === 'owner' || userRole === 'super_admin') return true;
     const currentRoleInfo = roleHierarchy.find(role => role.role_name === userRole);
     return currentRoleInfo?.can_manage?.includes(targetRole) || false;
   };
 
   const hasClinicPermission = (permissionKey: string): boolean => {
-    // إعطاء صلاحيات كاملة لمدير النظام
-    if (user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com') {
-      return true;
-    }
-
+    if (userRole === 'owner' || userRole === 'super_admin') return true;
     const currentRoleInfo = roleHierarchy.find(role => role.role_name === userRole);
     if (!currentRoleInfo) return false;
     
@@ -112,11 +98,7 @@ export const useClinicPermissions = () => {
   };
 
   const getAvailableRoles = (): ClinicRoleInfo[] => {
-    // إعطاء جميع الأدوار لمدير النظام
-    if (user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com') {
-      return roleHierarchy;
-    }
-
+    if (userRole === 'owner' || userRole === 'super_admin') return roleHierarchy;
     const currentRoleInfo = roleHierarchy.find(role => role.role_name === userRole);
     if (!currentRoleInfo) return [];
 

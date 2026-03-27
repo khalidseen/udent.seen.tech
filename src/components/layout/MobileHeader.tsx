@@ -52,7 +52,7 @@ export const MobileHeader = memo<MobileHeaderProps>(({ onMenuClick }) => {
               <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate("/advanced-notification-management")}>
                 <Bell className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate("/settings")}>
+              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate("/profile")}>
                 <Avatar className="h-7 w-7">
                   <AvatarFallback className="text-xs bg-primary text-primary-foreground">{initials}</AvatarFallback>
                 </Avatar>

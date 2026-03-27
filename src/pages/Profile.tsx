@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { PageSkeleton } from '@/components/ui/skeleton';
 import { useParams } from 'react-router-dom';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { PageHeader } from '@/components/layout/PageHeader';
@@ -12,6 +13,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePermissions } from '@/hooks/usePermissions';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
   User, 
   Shield, 
@@ -23,7 +25,8 @@ import {
   Eye,
   ChevronRight,
   Save,
-  X
+  X,
+  Mail
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -51,12 +54,8 @@ export default function Profile() {
   const { user } = useAuth();
   const { hasPermission, userRoles } = usePermissions();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [userPermissions, setUserPermissions] = useState<any[]>([]);
-  const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>([]);
-  const [activityStats, setActivityStats] = useState({ totalEvents: 0, recentActions: 0, securityAlerts: 0 });
-  const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState('');
   const [changingPassword, setChangingPassword] = useState(false);
@@ -65,90 +64,87 @@ export default function Profile() {
 
   const isViewingOwnProfile = !userId || userId === user?.id;
   const canViewOtherProfiles = hasPermission('profiles.view_all');
+  const targetUserId = userId || user?.id;
 
-  useEffect(() => {
-    if (!isViewingOwnProfile && !canViewOtherProfiles) {
-      toast({
-        title: 'غير مصرح بالوصول',
-        description: 'ليس لديك صلاحية لعرض ملفات المستخدمين الآخرين',
-        variant: 'destructive',
-      });
-      return;
-    }
-    
-    fetchUserProfile();
-  }, [userId, user?.id]);
-
-  const fetchUserProfile = async () => {
-    try {
-      setLoading(true);
-      const targetUserId = userId || user?.id;
-
-      // جلب معلومات الملف الشخصي
-      const { data: profileData, error: profileError } = await supabase
+  const { data: profile, isLoading: profileLoading } = useQuery({
+    queryKey: ['user-profile-page', targetUserId],
+    queryFn: async () => {
+      const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('user_id', targetUserId)
+        .eq('user_id', targetUserId!)
         .single();
+      if (error) throw error;
+      return data as UserProfile;
+    },
+    enabled: !!targetUserId && (isViewingOwnProfile || canViewOtherProfiles),
+  });
 
-      if (profileError) throw profileError;
-      setProfile(profileData);
-      setEditName(profileData.full_name || '');
+  const { data: userPermissions = [] } = useQuery({
+    queryKey: ['user-permissions', targetUserId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .rpc('get_user_effective_permissions', { user_id_param: targetUserId! });
+      return data || [];
+    },
+    enabled: !!targetUserId && (isViewingOwnProfile || canViewOtherProfiles),
+  });
 
-      // جلب صلاحيات المستخدم الفعلية
-      const { data: effectivePermissions } = await supabase
-        .rpc('get_user_effective_permissions', { user_id_param: targetUserId });
-      setUserPermissions(effectivePermissions || []);
-
-      // جلب أحداث الأمان الحقيقية
-      const { data: events } = await supabase
+  const { data: securityEvents = [] } = useQuery({
+    queryKey: ['security-events', targetUserId],
+    queryFn: async () => {
+      const { data } = await supabase
         .from('security_events')
         .select('id, event_type, created_at, ip_address, details')
-        .eq('user_id', targetUserId)
+        .eq('user_id', targetUserId!)
         .order('created_at', { ascending: false })
         .limit(20);
-      setSecurityEvents(events || []);
+      return (data || []) as SecurityEvent[];
+    },
+    enabled: !!targetUserId && (isViewingOwnProfile || canViewOtherProfiles),
+  });
 
-      // حساب الإحصائيات الحقيقية
-      const now = new Date();
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const recentEvents = (events || []).filter(e => new Date(e.created_at) > weekAgo);
-      const securityAlerts = (events || []).filter(e => 
-        e.event_type?.includes('failed') || e.event_type?.includes('suspicious')
-      );
+  // Set editName when profile loads
+  React.useEffect(() => {
+    if (profile?.full_name) setEditName(profile.full_name);
+  }, [profile?.full_name]);
 
-      setActivityStats({
-        totalEvents: (events || []).length,
-        recentActions: recentEvents.length,
-        securityAlerts: securityAlerts.length,
-      });
+  // Compute activity stats
+  const activityStats = React.useMemo(() => {
+    const now = new Date();
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const recentEvents = securityEvents.filter(e => new Date(e.created_at) > weekAgo);
+    const securityAlerts = securityEvents.filter(e => 
+      e.event_type?.includes('failed') || e.event_type?.includes('suspicious')
+    );
+    return {
+      totalEvents: securityEvents.length,
+      recentActions: recentEvents.length,
+      securityAlerts: securityAlerts.length,
+    };
+  }, [securityEvents]);
 
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      toast({
-        title: 'خطأ في جلب البيانات',
-        description: 'حدث خطأ أثناء جلب بيانات الملف الشخصي',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSaveName = async () => {
-    if (!editName.trim() || !profile) return;
-    try {
+  const saveNameMutation = useMutation({
+    mutationFn: async (name: string) => {
       const { error } = await supabase
         .from('profiles')
-        .update({ full_name: editName.trim(), updated_at: new Date().toISOString() })
-        .eq('user_id', profile.user_id);
+        .update({ full_name: name, updated_at: new Date().toISOString() })
+        .eq('user_id', profile!.user_id);
       if (error) throw error;
-      setProfile({ ...profile, full_name: editName.trim() });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-profile-page', targetUserId] });
       setIsEditing(false);
       toast({ title: 'تم التحديث', description: 'تم تحديث الاسم بنجاح' });
-    } catch (error) {
+    },
+    onError: () => {
       toast({ title: 'خطأ', description: 'فشل في تحديث الاسم', variant: 'destructive' });
-    }
+    },
+  });
+
+  const handleSaveName = () => {
+    if (!editName.trim() || !profile) return;
+    saveNameMutation.mutate(editName.trim());
   };
 
   const handleChangePassword = async () => {
@@ -172,15 +168,26 @@ export default function Profile() {
     }
   };
 
-  if (loading) {
+  if (profileLoading) {
     return (
       <PageContainer>
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p>جاري تحميل الملف الشخصي...</p>
-          </div>
-        </div>
+        <PageSkeleton variant="form" />
+      </PageContainer>
+    );
+  }
+
+  if (!isViewingOwnProfile && !canViewOtherProfiles) {
+    return (
+      <PageContainer>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              غير مصرح بالوصول
+            </CardTitle>
+            <CardDescription>ليس لديك صلاحية لعرض ملفات المستخدمين الآخرين</CardDescription>
+          </CardHeader>
+        </Card>
       </PageContainer>
     );
   }
@@ -256,7 +263,9 @@ export default function Profile() {
                 {isEditing ? (
                   <div className="flex items-center gap-2">
                     <Input value={editName} onChange={e => setEditName(e.target.value)} className="max-w-xs" />
-                    <Button size="sm" onClick={handleSaveName}><Save className="w-4 h-4" /></Button>
+                    <Button size="sm" onClick={handleSaveName} disabled={saveNameMutation.isPending}>
+                      <Save className="w-4 h-4" />
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => { setIsEditing(false); setEditName(profile.full_name); }}>
                       <X className="w-4 h-4" />
                     </Button>
@@ -273,6 +282,9 @@ export default function Profile() {
                   </Badge>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
+                  {user?.email}
+                </p>
+                <p className="text-xs text-muted-foreground">
                   عضو منذ {format(new Date(profile.created_at), 'dd/MM/yyyy')}
                 </p>
               </div>
@@ -356,8 +368,19 @@ export default function Profile() {
                     <p className="text-sm">{profile.full_name}</p>
                   </div>
                   <div>
+                    <label className="text-sm font-medium text-muted-foreground">البريد الإلكتروني</label>
+                    <p className="text-sm flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                      {user?.email || '—'}
+                    </p>
+                  </div>
+                  <div>
                     <label className="text-sm font-medium text-muted-foreground">الدور</label>
                     <p className="text-sm">{userRoles.find(r => r.role_name === profile.role)?.role_name_ar || profile.role}</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">الحالة</label>
+                    <p className="text-sm">{profile.status === 'approved' ? 'نشط' : profile.status === 'pending' ? 'في الانتظار' : profile.status}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-muted-foreground">تاريخ الانضمام</label>

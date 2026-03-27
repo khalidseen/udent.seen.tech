@@ -187,6 +187,11 @@ const DayDetailModal = ({
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
                           <Clock className="w-4 h-4" />
                           {formatTime(appointment.appointment_date)}
+                          {appointment.duration && (
+                            <span>
+                              → {format(new Date(new Date(appointment.appointment_date).getTime() + appointment.duration * 60000), 'HH:mm')}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </CardHeader>
@@ -227,6 +232,14 @@ const DayDetailModal = ({
                         {/* Action Buttons */}
                         <Separator />
                         <div className="flex flex-wrap gap-2 pt-2">
+                          {appointment.patients?.id && (
+                            <Link to={`/patients/${appointment.patients.id}`}>
+                              <Button size="sm" variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
+                                <User className="w-4 h-4 ml-1" />
+                                ملف المريض
+                              </Button>
+                            </Link>
+                          )}
                           <Button 
                             size="sm" 
                             variant="outline"

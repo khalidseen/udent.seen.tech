@@ -1,6 +1,6 @@
 import { memo, useState, useCallback } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Home, Calendar, Users, DollarSign, Plus, UserPlus, CalendarPlus, X } from "lucide-react";
+import { Home, Calendar, Users, DollarSign, Plus, UserPlus, CalendarPlus, X, Receipt } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { prefetchRoute } from "@/App";
 import { triggerHaptic } from "@/lib/haptics";
@@ -14,6 +14,12 @@ const leftItems = [
 const rightItems = [
   { title: "المرضى", url: "/patients", icon: Users },
   { title: "المالية", url: "/financial-overview", icon: DollarSign },
+];
+
+const fabActions = [
+  { title: "موعد جديد", path: "/appointments/new", icon: CalendarPlus, variant: "bg-primary text-primary-foreground" },
+  { title: "مريض جديد", path: "/patients?new=true", icon: UserPlus, variant: "bg-accent text-accent-foreground" },
+  { title: "فاتورة جديدة", path: "/invoice-management?new=true", icon: Receipt, variant: "bg-emerald-600 text-white dark:bg-emerald-500" },
 ];
 
 export const MobileBottomNav = memo(() => {
@@ -74,28 +80,20 @@ export const MobileBottomNav = memo(() => {
       <AnimatePresence>
         {fabOpen && (
           <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 md:hidden">
-            <motion.button
-              initial={{ opacity: 0, y: 30, scale: 0.5 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.5 }}
-              transition={{ duration: 0.2, delay: 0.05 }}
-              onClick={() => handleAction('/appointments/new')}
-              className="flex items-center gap-2.5 bg-primary text-primary-foreground rounded-full px-5 py-3 shadow-lg"
-            >
-              <CalendarPlus className="h-5 w-5" />
-              <span className="text-sm font-medium">موعد جديد</span>
-            </motion.button>
-            <motion.button
-              initial={{ opacity: 0, y: 30, scale: 0.5 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.5 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => handleAction('/patients?new=true')}
-              className="flex items-center gap-2.5 bg-accent text-accent-foreground rounded-full px-5 py-3 shadow-lg"
-            >
-              <UserPlus className="h-5 w-5" />
-              <span className="text-sm font-medium">مريض جديد</span>
-            </motion.button>
+            {fabActions.map((action, i) => (
+              <motion.button
+                key={action.path}
+                initial={{ opacity: 0, y: 30, scale: 0.5 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.5 }}
+                transition={{ duration: 0.2, delay: i * 0.05 }}
+                onClick={() => handleAction(action.path)}
+                className={cn("flex items-center gap-2.5 rounded-full px-5 py-3 shadow-lg", action.variant)}
+              >
+                <action.icon className="h-5 w-5" />
+                <span className="text-sm font-medium">{action.title}</span>
+              </motion.button>
+            ))}
           </div>
         )}
       </AnimatePresence>

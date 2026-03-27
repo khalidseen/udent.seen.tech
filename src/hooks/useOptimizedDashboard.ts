@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 interface DashboardStats {
   active_patients: number;
   today_appointments: number;
+  today_completed: number;
+  today_cancelled: number;
   total_debt: number;
   low_stock_items: number;
   pending_invoices: number;

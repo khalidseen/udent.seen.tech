@@ -1,20 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { lazy, Suspense } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { DollarSign, TrendingUp, Receipt, CreditCard, PieChart, Activity, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { FinancialDashboard } from "@/components/financial/FinancialDashboard";
+import { DollarSign, TrendingUp, Receipt, CreditCard, PieChart, ArrowUpRight, ArrowDownRight, Shield, Tags } from "lucide-react";
 import { TreatmentPlansManager } from "@/components/financial/TreatmentPlansManager";
-import { FinancialReports } from "@/components/financial/FinancialReports";
 import { CurrencyAmount } from "@/components/ui/currency-display";
 import { useNavigate } from "react-router-dom";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
+
+const FinancialDashboard = lazy(() =>
+  import("@/components/financial/FinancialDashboard").then((module) => ({
+    default: module.FinancialDashboard,
+  }))
+);
+
+const FinancialReports = lazy(() =>
+  import("@/components/financial/FinancialReports").then((module) => ({
+    default: module.FinancialReports,
+  }))
+);
+
+const FinancialTransactions = lazy(() =>
+  import("@/components/financial/FinancialTransactions").then((module) => ({
+    default: module.FinancialTransactions,
+  }))
+);
 
 export default function FinancialOverview() {
   const navigate = useNavigate();
 
-  const { data: financialSummary, isLoading } = useQuery({
+  const { data: financialSummary, isLoading, isError } = useQuery({
     queryKey: ['financial-summary'],
     queryFn: async () => {
       const { data: profile } = await supabase.rpc('get_current_user_profile');
@@ -59,7 +77,11 @@ export default function FinancialOverview() {
   });
 
   if (isLoading) {
-    return <div className="flex items-center justify-center h-96"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>;
+    return <PageSkeleton variant="cards" />;
+  }
+
+  if (isError) {
+    return <div className="flex items-center justify-center h-96"><p className="text-destructive">حدث خطأ أثناء تحميل البيانات المالية. يرجى المحاولة مرة أخرى.</p></div>;
   }
 
   return (
@@ -77,8 +99,11 @@ export default function FinancialOverview() {
             <Button variant="outline" size="sm" onClick={() => navigate('/payment-management')}>
               <CreditCard className="ml-1 h-4 w-4" /> المدفوعات
             </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate('/financial-transactions')}>
-              <Activity className="ml-1 h-4 w-4" /> السجل
+            <Button variant="outline" size="sm" onClick={() => navigate('/service-prices')}>
+              <Tags className="ml-1 h-4 w-4" /> أسعار الخدمات
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/insurance-management?tab=claims')}>
+              <Shield className="ml-1 h-4 w-4" /> التأمينات
             </Button>
           </div>
         </div>
@@ -143,20 +168,30 @@ export default function FinancialOverview() {
 
         {/* Tabs */}
         <Tabs defaultValue="dashboard" className="space-y-4">
-          <TabsList className="grid grid-cols-3 w-full max-w-md">
+          <TabsList className="grid grid-cols-4 w-full max-w-lg">
             <TabsTrigger value="dashboard">لوحة التحكم</TabsTrigger>
             <TabsTrigger value="treatment-plans">خطط العلاج</TabsTrigger>
+            <TabsTrigger value="transactions">المعاملات</TabsTrigger>
             <TabsTrigger value="reports">التقارير</TabsTrigger>
           </TabsList>
 
           <TabsContent value="dashboard">
-            <FinancialDashboard />
+            <Suspense fallback={<PageSkeleton variant="cards" />}>
+              <FinancialDashboard />
+            </Suspense>
           </TabsContent>
           <TabsContent value="treatment-plans">
             <TreatmentPlansManager />
           </TabsContent>
+          <TabsContent value="transactions">
+            <Suspense fallback={<PageSkeleton variant="cards" />}>
+              <FinancialTransactions />
+            </Suspense>
+          </TabsContent>
           <TabsContent value="reports">
-            <FinancialReports />
+            <Suspense fallback={<PageSkeleton variant="cards" />}>
+              <FinancialReports />
+            </Suspense>
           </TabsContent>
         </Tabs>
       </div>

@@ -44,6 +44,12 @@ const PostAppointmentActions = ({ appointment, onActionsCompleted }: PostAppoint
 
   const handleTreatmentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!treatmentData.diagnosis.trim() || !treatmentData.treatment_plan.trim()) {
+      toast({ title: "خطأ", description: "يرجى إدخال التشخيص وخطة العلاج", variant: "destructive" });
+      return;
+    }
+
     setLoading(true);
 
     try {

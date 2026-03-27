@@ -139,6 +139,7 @@
   },
   "payments": {
     "title": "المدفوعات",
+    "description": "إدارة المدفوعات والتحصيلات المالية",
     "createPayment": "تسجيل دفعة جديدة",
     "editPayment": "تعديل دفعة",
     "deletePayment": "حذف دفعة",

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +29,8 @@ interface PatientFormData {
   marital_status: string;
   patient_status: string;
   national_id: string;
+  medical_condition: string;
+  insurance_info: string;
 }
 
 export default function EditPatient() {
@@ -49,7 +52,9 @@ export default function EditPatient() {
     occupation: "",
     marital_status: "",
     patient_status: "active",
-    national_id: ""
+    national_id: "",
+    medical_condition: "",
+    insurance_info: ""
   });
 
   // جلب بيانات المريض
@@ -85,7 +90,9 @@ export default function EditPatient() {
         occupation: patient.occupation || "",
         marital_status: patient.marital_status || "",
         patient_status: patient.patient_status || "active",
-        national_id: patient.national_id || ""
+        national_id: patient.national_id || "",
+        medical_condition: patient.medical_condition || "",
+        insurance_info: patient.insurance_info || ""
       });
     }
   }, [patient]);
@@ -139,9 +146,7 @@ export default function EditPatient() {
   if (isLoading) {
     return (
       <PageContainer>
-        <div className="flex items-center justify-center h-96">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        </div>
+        <PageSkeleton variant="form" />
       </PageContainer>
     );
   }
@@ -349,6 +354,28 @@ export default function EditPatient() {
             </div>
 
             {/* التاريخ الطبي */}
+            <div className="space-y-2">
+              <Label htmlFor="medical_condition">الحالة المرضية</Label>
+              <Textarea
+                id="medical_condition"
+                value={formData.medical_condition}
+                onChange={(e) => handleChange('medical_condition', e.target.value)}
+                placeholder="أدخل الحالة المرضية الحالية، الأمراض المزمنة..."
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="insurance_info">معلومات التأمين</Label>
+              <Textarea
+                id="insurance_info"
+                value={formData.insurance_info}
+                onChange={(e) => handleChange('insurance_info', e.target.value)}
+                placeholder="شركة التأمين، رقم البوليصة، التغطية..."
+                rows={3}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="medical_history">التاريخ الطبي</Label>
               <Textarea

@@ -42,10 +42,8 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
   const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [isSystemAdmin, setIsSystemAdmin] = useState(false);
   const { toast } = useToast();
-
-  // System admin check - cached for performance
-  const isSystemAdmin = user?.email === 'eng.khalid.work@gmail.com' || user?.email === 'klidmorre@gmail.com';
 
   const clearCache = () => {
     permissionsCache.clear();
@@ -59,7 +57,7 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
       
       // Check cache first
       const cachedUser = userCache.get('current_user');
-      if (cachedUser && !isSystemAdmin) {
+      if (cachedUser) {
         setUser(cachedUser);
       } else {
         const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -68,8 +66,35 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
           userCache.set('current_user', currentUser, 5 * 60 * 1000); // 5 minutes cache
         }
       }
+
+      // Determine system admin status from database roles (not hardcoded emails)
+      const currentUserId = cachedUser?.id || (await supabase.auth.getUser()).data.user?.id;
+      if (currentUserId) {
+        const cachedAdminStatus = userCache.get(`is_admin_${currentUserId}`);
+        if (cachedAdminStatus !== undefined && cachedAdminStatus !== null) {
+          setIsSystemAdmin(cachedAdminStatus);
+        } else {
+          const { data: roleData } = await supabase
+            .rpc('check_user_role', { _user_id: currentUserId, _role: 'super_admin' });
+          
+          // Fallback: check profiles table role field
+          let adminStatus = roleData === true;
+          if (!adminStatus) {
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('user_id', currentUserId)
+              .single();
+            adminStatus = profileData?.role === 'super_admin' || profileData?.role === 'admin';
+          }
+          
+          setIsSystemAdmin(adminStatus);
+          userCache.set(`is_admin_${currentUserId}`, adminStatus, 5 * 60 * 1000);
+        }
+      }
     } catch (error) {
       console.error('Error fetching user:', error);
+      setIsSystemAdmin(false);
     }
   };
 
@@ -133,11 +158,11 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
           setPermissions(formattedPermissions);
           permissionsCache.set(cacheKey, formattedPermissions, 3 * 60 * 1000); // 3 minutes cache
         } else if (permissionsError?.code === '500' || permissionsError?.message?.includes('500')) {
-          console.warn('Server error (500) for permissions, using fallback');
+          // Server error (500) for permissions, using fallback
           throw new Error('Server error - using fallback');
         }
       } catch (permError) {
-        console.warn('RPC permissions failed, using fallback:', permError);
+        // RPC permissions failed, using fallback
         // Enhanced fallback to basic profile-based permissions
         try {
           const { data: profileData, error: profileError } = await supabase
@@ -190,11 +215,11 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
           setUserRoles(rolesData);
           rolesCache.set(rolesCacheKey, rolesData, 3 * 60 * 1000);
         } else if (rolesError?.code === '500' || rolesError?.message?.includes('500')) {
-          console.warn('Server error (500) for roles, using fallback');
+          // Server error (500) for roles, using fallback
           throw new Error('Server error - using fallback');
         }
       } catch (roleError) {
-        console.warn('RPC roles failed, using fallback:', roleError);
+        // RPC roles failed, using fallback
         // Enhanced fallback to profile role
         try {
           const { data: profileData, error: profileError } = await supabase
@@ -252,7 +277,7 @@ export const PermissionsProvider = ({ children }: { children: React.ReactNode })
       setUserRoles(fallbackRoles);
       
       // Only show toast for unexpected errors (not 500 errors)
-      if (!error.message?.includes('500') && !error.message?.includes('fallback')) {
+      if (!(error instanceof Error) || (!error.message?.includes('500') && !error.message?.includes('fallback'))) {
         toast({
           title: 'خطأ في جلب الصلاحيات',
           description: 'سيتم استخدام الصلاحيات الافتراضية',

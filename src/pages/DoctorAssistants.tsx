@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit, Trash2, UserCheck, Users, Phone, Mail, Stethoscope } from "lucide-react";
+import { Plus, Edit, Trash2, UserCheck, Users, Stethoscope } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
@@ -25,6 +25,9 @@ interface DoctorAssistant {
   experience_years: number | null;
   salary: number | null;
   notes: string | null;
+  doctor_id: string | null;
+  status: string | null;
+  hired_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +45,9 @@ const DoctorAssistants = () => {
     experience_years: "",
     salary: "",
     notes: "",
-    doctor_id: ""
+    doctor_id: "",
+    status: "active",
+    hired_date: new Date().toISOString().split('T')[0]
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -103,7 +108,9 @@ const DoctorAssistants = () => {
       experience_years: "",
       salary: "",
       notes: "",
-      doctor_id: ""
+      doctor_id: "",
+      status: "active",
+      hired_date: new Date().toISOString().split('T')[0]
     });
     setIsDialogOpen(true);
   };
@@ -119,7 +126,9 @@ const DoctorAssistants = () => {
       experience_years: assistant.experience_years?.toString() || "",
       salary: assistant.salary?.toString() || "",
       notes: assistant.notes || "",
-      doctor_id: (assistant as any).doctor_id || ""
+      doctor_id: assistant.doctor_id || "",
+      status: assistant.status || "active",
+      hired_date: assistant.hired_date || ""
     });
     setIsDialogOpen(true);
   };
@@ -163,17 +172,18 @@ const DoctorAssistants = () => {
 
     setIsSubmitting(true);
 
+    if (!clinicId) {
+      toast({
+        title: "خطأ",
+        description: "لم يتم العثور على ملف المستخدم",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
-      // Get current user profile for clinic_id
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .single();
-
-      if (!profile) throw new Error('لم يتم العثور على ملف المستخدم');
-
-      const assistantData: any = {
-        clinic_id: profile.id,
+      const assistantData = {
+        clinic_id: clinicId,
         full_name: formData.full_name,
         email: formData.email || null,
         phone: formData.phone || null,
@@ -182,7 +192,9 @@ const DoctorAssistants = () => {
         experience_years: formData.experience_years ? parseInt(formData.experience_years) : null,
         salary: formData.salary ? parseFloat(formData.salary) : null,
         notes: formData.notes || null,
-        doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null
+        doctor_id: formData.doctor_id && formData.doctor_id !== 'none' ? formData.doctor_id : null,
+        status: formData.status || 'active',
+        hired_date: formData.hired_date || null
       };
 
       if (editingAssistant) {
@@ -236,7 +248,7 @@ const DoctorAssistants = () => {
         }
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">إجمالي المساعدين</CardTitle>
@@ -249,11 +261,23 @@ const DoctorAssistants = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">لديهم تخصص</CardTitle>
+            <CardTitle className="text-sm font-medium">نشطين</CardTitle>
             <UserCheck className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">
+            <div className="text-2xl font-bold text-green-600">
+              {assistants?.filter(a => !a.status || a.status === 'active').length || 0}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">لديهم تخصص</CardTitle>
+            <Stethoscope className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
               {assistants?.filter(a => a.specialization).length || 0}
             </div>
           </CardContent>
@@ -267,7 +291,7 @@ const DoctorAssistants = () => {
           <CardContent>
             <div className="text-2xl font-bold text-info">
               {assistants?.length ? 
-                Math.round(assistants.filter(a => a.experience_years).reduce((sum, a) => sum + (a.experience_years || 0), 0) / assistants.filter(a => a.experience_years).length) || 0
+                Math.round(assistants.filter(a => a.experience_years).reduce((sum, a) => sum + (a.experience_years || 0), 0) / (assistants.filter(a => a.experience_years).length || 1))
                 : 0} سنة
             </div>
           </CardContent>
@@ -309,11 +333,11 @@ const DoctorAssistants = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>الاسم الكامل</TableHead>
-                   <TableHead>الطبيب المسؤول</TableHead>
-                   <TableHead>التخصص</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead>الطبيب المسؤول</TableHead>
+                  <TableHead>التخصص</TableHead>
                   <TableHead>الخبرة</TableHead>
                   <TableHead>الهاتف</TableHead>
-                  <TableHead>الإيميل</TableHead>
                   <TableHead>الإجراءات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -323,7 +347,17 @@ const DoctorAssistants = () => {
                     <TableCell className="font-medium">{assistant.full_name}</TableCell>
                     <TableCell>
                       {(() => {
-                        const doc = activeDoctors?.find(d => d.id === (assistant as any).doctor_id);
+                        switch (assistant.status) {
+                          case 'active': return <Badge className="bg-green-100 text-green-800">نشط</Badge>;
+                          case 'inactive': return <Badge variant="secondary">غير نشط</Badge>;
+                          case 'suspended': return <Badge variant="destructive">معلق</Badge>;
+                          default: return <Badge className="bg-green-100 text-green-800">نشط</Badge>;
+                        }
+                      })()}
+                    </TableCell>
+                    <TableCell>
+                      {(() => {
+                        const doc = activeDoctors?.find(d => d.id === assistant.doctor_id);
                         return doc ? <Badge variant="outline">د. {doc.full_name}</Badge> : <span className="text-muted-foreground">-</span>;
                       })()}
                     </TableCell>
@@ -336,7 +370,6 @@ const DoctorAssistants = () => {
                       {assistant.experience_years ? `${assistant.experience_years} سنة` : '-'}
                     </TableCell>
                     <TableCell>{assistant.phone || '-'}</TableCell>
-                    <TableCell>{assistant.email || '-'}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Button
@@ -364,7 +397,7 @@ const DoctorAssistants = () => {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {editingAssistant ? "تعديل المساعد" : "إضافة مساعد جديد"}
@@ -397,6 +430,17 @@ const DoctorAssistants = () => {
               <div>
                 <Label htmlFor="specialization">التخصص</Label>
                 <Input id="specialization" value={formData.specialization} onChange={(e) => setFormData({ ...formData, specialization: e.target.value })} placeholder="أدخل التخصص" />
+              </div>
+              <div>
+                <Label>الحالة</Label>
+                <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">نشط</SelectItem>
+                    <SelectItem value="inactive">غير نشط</SelectItem>
+                    <SelectItem value="suspended">معلق</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -434,7 +478,7 @@ const DoctorAssistants = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               <div>
                 <Label htmlFor="experience_years">سنوات الخبرة</Label>
                 <Input
@@ -443,7 +487,7 @@ const DoctorAssistants = () => {
                   min="0"
                   value={formData.experience_years}
                   onChange={(e) => setFormData({ ...formData, experience_years: e.target.value })}
-                  placeholder="أدخل سنوات الخبرة"
+                  placeholder="سنوات الخبرة"
                 />
               </div>
 
@@ -456,7 +500,17 @@ const DoctorAssistants = () => {
                   step="0.01"
                   value={formData.salary}
                   onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
-                  placeholder="أدخل الراتب"
+                  placeholder="الراتب"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="hired_date">تاريخ التعيين</Label>
+                <Input
+                  id="hired_date"
+                  type="date"
+                  value={formData.hired_date}
+                  onChange={(e) => setFormData({ ...formData, hired_date: e.target.value })}
                 />
               </div>
             </div>

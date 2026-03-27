@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -7,74 +9,129 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Shield, 
   Database, 
-  Clock, 
   HardDrive, 
-  Network, 
   Key,
-  Bell,
-  Mail,
   RefreshCw,
-  Download,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Loader2,
+  Info
 } from "lucide-react";
 import { toast } from "sonner";
 
+const DEFAULT_SYSTEM_SETTINGS = {
+  sessionTimeout: 30,
+  autoSaveInterval: 5,
+  maxFileSize: 10,
+  enableAuditLog: true,
+  enableAutoBackup: true,
+  backupFrequency: "daily",
+  maxLoginAttempts: 3,
+  passwordPolicy: {
+    minLength: 8,
+    requireUppercase: true,
+    requireLowercase: true,
+    requireNumbers: true,
+    requireSymbols: true,
+    maxAge: 90,
+  },
+  maintenanceMode: false,
+  debugMode: false,
+};
+
 export function SystemSettings() {
-  const [systemSettings, setSystemSettings] = useState({
-    sessionTimeout: 30,
-    autoSaveInterval: 5,
-    maxFileSize: 10,
-    enableAuditLog: true,
-    enableAutoBackup: true,
-    backupFrequency: "daily",
-    enableNotifications: true,
-    enableEmailAlerts: true,
-    enableSMSAlerts: false,
-    maxLoginAttempts: 3,
-    passwordPolicy: {
-      minLength: 8,
-      requireUppercase: true,
-      requireLowercase: true,
-      requireNumbers: true,
-      requireSymbols: true,
-      maxAge: 90
+  const queryClient = useQueryClient();
+
+  const { data: profile } = useQuery({
+    queryKey: ['profile-system-settings'],
+    queryFn: async () => {
+      const { data } = await supabase.rpc('get_current_user_profile');
+      return data;
+    }
+  });
+  const clinicId = profile?.id;
+
+  const { data: settingsData, isLoading } = useQuery({
+    queryKey: ['system-settings-data', clinicId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('clinic_settings')
+        .select('custom_preferences')
+        .eq('clinic_id', clinicId!)
+        .maybeSingle();
+      if (error) throw error;
+      return (data?.custom_preferences ?? {}) as Record<string, any>;
     },
-    maintenanceMode: false,
-    debugMode: false
+    enabled: !!clinicId,
   });
 
-  const [backupStatus, setBackupStatus] = useState({
-    lastBackup: "2024-08-30 15:30:00",
-    backupSize: "150 MB",
-    status: "success"
+  const [systemSettings, setSystemSettings] = useState(DEFAULT_SYSTEM_SETTINGS);
+
+  useEffect(() => {
+    if (!settingsData?.system) return;
+    setSystemSettings(prev => ({
+      ...prev,
+      ...settingsData.system,
+      passwordPolicy: {
+        ...prev.passwordPolicy,
+        ...(settingsData.system.passwordPolicy || {}),
+      },
+    }));
+  }, [settingsData]);
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const existingPrefs = settingsData || {};
+      const newPrefs = {
+        ...existingPrefs,
+        system: systemSettings,
+      };
+      const { error } = await supabase
+        .from('clinic_settings')
+        .upsert({ clinic_id: clinicId!, custom_preferences: newPrefs }, { onConflict: 'clinic_id' });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['system-settings-data', clinicId] });
+      queryClient.invalidateQueries({ queryKey: ['maintenance-mode'] });
+      toast.success("تم حفظ إعدادات النظام بنجاح");
+    },
+    onError: () => {
+      toast.error("حدث خطأ أثناء حفظ الإعدادات");
+    },
   });
-
-
-
-  const handleSave = () => {
-    toast.success("تم حفظ إعدادات النظام بنجاح");
-  };
-
-  const handleBackupNow = () => {
-    toast.info("جاري إنشاء نسخة احتياطية...");
-    // محاكاة عملية النسخ الاحتياطي
-    setTimeout(() => {
-      setBackupStatus({
-        lastBackup: new Date().toLocaleString('ar-SA'),
-        backupSize: "152 MB",
-        status: "success"
-      });
-      toast.success("تم إنشاء النسخة الاحتياطية بنجاح");
-    }, 3000);
-  };
 
   const handleClearCache = () => {
-    toast.success("تم مسح ذاكرة التخزين المؤقت");
+    queryClient.clear();
+    const keysToKeep = ['supabase.auth.token'];
+    const allKeys = Object.keys(localStorage);
+    for (const key of allKeys) {
+      if (!keysToKeep.some(k => key.includes(k))) {
+        localStorage.removeItem(key);
+      }
+    }
+    toast.success("تم مسح ذاكرة التخزين المؤقت بنجاح");
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map(i => (
+          <Card key={i}>
+            <CardHeader><Skeleton className="h-6 w-48" /></CardHeader>
+            <CardContent className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -243,104 +300,17 @@ export function SystemSettings() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-4 rounded-lg flex items-start gap-3">
+            <Info className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
             <div className="space-y-1">
-              <Label>تفعيل النسخ الاحتياطي التلقائي</Label>
-              <p className="text-sm text-muted-foreground">إنشاء نسخ احتياطية بشكل تلقائي</p>
-            </div>
-            <Switch
-              checked={systemSettings.enableAutoBackup}
-              onCheckedChange={(checked) => setSystemSettings(prev => ({ ...prev, enableAutoBackup: checked }))}
-            />
-          </div>
-
-          {systemSettings.enableAutoBackup && (
-            <div className="space-y-2">
-              <Label>تكرار النسخ الاحتياطي</Label>
-              <Select 
-                value={systemSettings.backupFrequency} 
-                onValueChange={(value) => setSystemSettings(prev => ({ ...prev, backupFrequency: value }))}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="hourly">كل ساعة</SelectItem>
-                  <SelectItem value="daily">يومياً</SelectItem>
-                  <SelectItem value="weekly">أسبوعياً</SelectItem>
-                  <SelectItem value="monthly">شهرياً</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <div className="bg-muted p-4 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium">حالة آخر نسخة احتياطية</h4>
-              <Badge variant={backupStatus.status === "success" ? "default" : "destructive"}>
-                {backupStatus.status === "success" ? "نجحت" : "فشلت"}
-              </Badge>
-            </div>
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>التاريخ: {backupStatus.lastBackup}</p>
-              <p>الحجم: {backupStatus.backupSize}</p>
-            </div>
-            <div className="flex gap-2 mt-3">
-              <Button size="sm" onClick={handleBackupNow}>
-                <Download className="h-4 w-4 ml-2" />
-                إنشاء نسخة احتياطية الآن
-              </Button>
+              <h4 className="font-medium text-blue-800 dark:text-blue-300">النسخ الاحتياطي التلقائي</h4>
+              <p className="text-sm text-blue-700 dark:text-blue-400">
+                يتم إدارة النسخ الاحتياطي تلقائياً بواسطة Supabase. يتم إنشاء نسخ احتياطية يومية مع إمكانية الاسترجاع إلى أي نقطة زمنية خلال آخر 7 أيام.
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      {/* إعدادات الإشعارات */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            إعدادات الإشعارات
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>الإشعارات العامة</Label>
-                <p className="text-sm text-muted-foreground">إشعارات النظام</p>
-              </div>
-              <Switch
-                checked={systemSettings.enableNotifications}
-                onCheckedChange={(checked) => setSystemSettings(prev => ({ ...prev, enableNotifications: checked }))}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>تنبيهات البريد الإلكتروني</Label>
-                <p className="text-sm text-muted-foreground">إرسال عبر الإيميل</p>
-              </div>
-              <Switch
-                checked={systemSettings.enableEmailAlerts}
-                onCheckedChange={(checked) => setSystemSettings(prev => ({ ...prev, enableEmailAlerts: checked }))}
-              />
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label>تنبيهات الرسائل النصية</Label>
-                <p className="text-sm text-muted-foreground">إرسال عبر SMS</p>
-              </div>
-              <Switch
-                checked={systemSettings.enableSMSAlerts}
-                onCheckedChange={(checked) => setSystemSettings(prev => ({ ...prev, enableSMSAlerts: checked }))}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
 
 
       {/* إعدادات الأداء */}
@@ -416,8 +386,8 @@ export function SystemSettings() {
 
       {/* زر الحفظ */}
       <div className="flex justify-end">
-        <Button onClick={handleSave} className="flex items-center gap-2">
-          <RefreshCw className="h-4 w-4" />
+        <Button onClick={() => saveMutation.mutate()} disabled={saveMutation.isPending} className="flex items-center gap-2">
+          {saveMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
           حفظ الإعدادات
         </Button>
       </div>

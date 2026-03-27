@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, Phone, Mail, Stethoscope, Calendar, FileText, Users, Clock, Award, CreditCard, MapPin, User } from "lucide-react";
@@ -116,7 +117,7 @@ const DoctorProfile = () => {
   };
 
   if (isLoading) {
-    return <PageContainer><div className="text-center py-12">جاري التحميل...</div></PageContainer>;
+    return <PageContainer><PageSkeleton variant="form" /></PageContainer>;
   }
 
   if (!doctor) {
@@ -126,11 +127,21 @@ const DoctorProfile = () => {
   return (
     <PageContainer>
       {/* Header */}
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center justify-between mb-6">
         <Button variant="ghost" size="sm" onClick={() => navigate('/doctors')}>
           <ArrowRight className="w-4 h-4 ml-1" />
           العودة للأطباء
         </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => navigate(`/appointments?doctor=${doctorId}`)}>
+            <Calendar className="w-4 h-4 ml-1" />
+            المواعيد
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => navigate(`/dental-treatments-management?doctor=${doctorId}`)}>
+            <Stethoscope className="w-4 h-4 ml-1" />
+            العلاجات
+          </Button>
+        </div>
       </div>
 
       {/* Doctor Info Card */}

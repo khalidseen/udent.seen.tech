@@ -48,7 +48,7 @@ export const PermissionGate = memo(({
               });
               return result.data === true;
             } catch (error) {
-              console.warn(`Failed to check feature ${feature}:`, error);
+              // Feature check failed
               return false; // Default to false on error
             }
           })

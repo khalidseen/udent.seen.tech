@@ -77,6 +77,16 @@ export default function AddDoctorDialog({ open, onOpenChange, onSuccess, editing
       return;
     }
 
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      toast({ title: "خطأ", description: "البريد الإلكتروني غير صالح", variant: "destructive" });
+      return;
+    }
+
+    if (formData.phone && !/^[\d\s+()-]{7,20}$/.test(formData.phone)) {
+      toast({ title: "خطأ", description: "رقم الهاتف غير صالح", variant: "destructive" });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const { data: user } = await supabase.auth.getUser();

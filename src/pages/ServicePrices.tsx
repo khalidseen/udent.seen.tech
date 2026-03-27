@@ -17,6 +17,7 @@ import { Plus, Edit, Trash2, DollarSign, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import { CurrencyAmount } from "@/components/ui/currency-display";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 interface ServicePrice {
   id: string;
@@ -31,6 +32,8 @@ interface ServicePrice {
 }
 
 export default function ServicePrices() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<ServicePrice | null>(null);
   const [formData, setFormData] = useState({
@@ -43,6 +46,7 @@ export default function ServicePrices() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const preselectedPatientId = searchParams.get('patient') || undefined;
 
   const { data: services, isLoading, refetch } = useQuery({
     queryKey: ['service-prices'],
@@ -194,6 +198,12 @@ export default function ServicePrices() {
           description="إدارة أسعار الخدمات والعلاجات"
           action={
             <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => navigate(preselectedPatientId ? `/invoice-management?patient=${preselectedPatientId}&openCreate=true&from=service-prices` : '/invoice-management?openCreate=true&from=service-prices')}>
+                <Plus className="w-4 h-4 ml-1" /> إنشاء فاتورة
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate(preselectedPatientId ? `/insurance-management?tab=patients&patient=${preselectedPatientId}` : '/insurance-management?tab=patients')}>
+                <DollarSign className="w-4 h-4 ml-1" /> التأمينات
+              </Button>
               <Button variant="outline" size="sm" onClick={exportCSV}>
                 <Download className="w-4 h-4 ml-1" /> تصدير
               </Button>
@@ -203,6 +213,12 @@ export default function ServicePrices() {
             </div>
           }
         />
+
+        {preselectedPatientId && (
+          <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            تم فتح الأسعار ضمن سياق مريض محدد، لذلك أي إنشاء فاتورة من هذه الصفحة سيستخدم هذا المريض مباشرة.
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <Card>
@@ -262,6 +278,13 @@ export default function ServicePrices() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => navigate(preselectedPatientId ? `/invoice-management?patient=${preselectedPatientId}&service=${service.id}&openCreate=true&from=service-prices` : `/invoice-management?service=${service.id}&openCreate=true&from=service-prices`)}
+                              >
+                                <Plus className="w-4 h-4 ml-1" /> إنشاء فاتورة
+                              </Button>
                               <Button variant="outline" size="sm" onClick={() => handleEdit(service)}><Edit className="w-4 h-4" /></Button>
                               <Button variant="outline" size="sm" onClick={() => handleDelete(service.id)}><Trash2 className="w-4 h-4" /></Button>
                             </div>

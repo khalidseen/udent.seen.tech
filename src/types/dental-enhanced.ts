@@ -24,6 +24,66 @@ export enum ConditionType {
   HAS_NOTES = 'has_notes'             // له ملاحظات
 }
 
+export type ToothRecordStatus = 'planned' | 'in_progress' | 'completed' | 'cancelled';
+
+export type RootConditionValue = 'healthy' | 'infected' | 'treated' | 'fractured' | 'resorbed';
+
+export type ToothSurfaceKey = 'mesial' | 'distal' | 'buccal' | 'lingual' | 'occlusal';
+
+export interface ToothSurfaceState {
+  mesial: ConditionType;
+  distal: ConditionType;
+  buccal: ConditionType;
+  lingual: ConditionType;
+  occlusal: ConditionType;
+}
+
+export interface ToothClinicalData {
+  surfaces: ToothSurfaceState;
+  icdCode: string;
+  mobility: MobilityLevel;
+  probingDepths: number[];
+  bleeding: boolean;
+  recession: number[];
+  plaqueIndex: number;
+  rootCount: number;
+  endoTreatment: boolean;
+  endoDate: string;
+  endoMaterial: string;
+  rootConditions: RootConditionValue[];
+  followUpDate: string;
+  estimatedCost: string;
+}
+
+export interface DentalTreatmentRecord {
+  id?: string;
+  patient_id: string;
+  clinic_id?: string;
+  tooth_number: string;
+  numbering_system: ToothNumberingSystem | string;
+  diagnosis: ConditionType | string;
+  treatment_plan: string;
+  status: ToothRecordStatus | string;
+  tooth_surface?: string | null;
+  notes?: string | null;
+  treatment_date: string;
+  created_at?: string;
+  updated_at?: string;
+  assigned_doctor_id?: string | null;
+  prescribed_medications?: unknown;
+}
+
+export interface ChartStatistics {
+  totalTeeth: number;
+  recordedTeeth: number;
+  healthyTeeth: number;
+  decayedTeeth: number;
+  filledTeeth: number;
+  missingTeeth: number;
+  urgentCases: number;
+  rootCanalTeeth: number;
+}
+
 // 🦷 أسطح السن التشريحية
 export interface ToothSurfaces {
   mesial: ConditionType;      // وجه إنسي
@@ -177,5 +237,20 @@ export const CONDITION_DESCRIPTIONS_AR = {
   periodontal_disease: 'مرض في اللثة والأنسجة المحيطة',
   has_notes: 'يوجد ملاحظات خاصة لهذا السن'
 } as const;
+
+export const TOOTH_RECORD_STATUS_LABELS_AR: Record<ToothRecordStatus, string> = {
+  planned: 'مخطط',
+  in_progress: 'قيد العلاج',
+  completed: 'مكتمل',
+  cancelled: 'ملغي',
+};
+
+export const ROOT_CONDITION_LABELS_AR: Record<RootConditionValue, string> = {
+  healthy: 'سليم',
+  infected: 'ملتهب',
+  treated: 'معالج',
+  fractured: 'مكسور',
+  resorbed: 'ممتص',
+};
 
 // ملف الأنواع مكتمل ✅

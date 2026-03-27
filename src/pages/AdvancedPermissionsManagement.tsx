@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -92,8 +93,7 @@ const AdvancedPermissionsManagement = () => {
       if (rolesRes.data && rolesRes.data.length > 0) {
         setSelectedRole(rolesRes.data[0].id);
       }
-    } catch (error) {
-      console.error('Error fetching permissions data:', error);
+    } catch {
       toast({ title: 'خطأ', description: 'فشل في تحميل بيانات الصلاحيات', variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -124,8 +124,7 @@ const AdvancedPermissionsManagement = () => {
         setRolePermissions(prev => [...prev, { role_id: roleId, permission_id: permissionId }]);
       }
       toast({ title: 'تم بنجاح', description: 'تم تحديث الصلاحية' });
-    } catch (error) {
-      console.error('Error toggling permission:', error);
+    } catch {
       toast({ title: 'خطأ', description: 'فشل في تحديث الصلاحية', variant: 'destructive' });
     } finally {
       setSaving(false);
@@ -156,9 +155,7 @@ const AdvancedPermissionsManagement = () => {
     return (
       <PageContainer>
         <PageHeader title="الأدوار والصلاحيات" description="إدارة أدوار المستخدمين وصلاحياتهم" />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto" />
-        </div>
+        <PageSkeleton variant="table" />
       </PageContainer>
     );
   }

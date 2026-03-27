@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,22 +6,40 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { FileText, Plus, Eye, CreditCard, Search, User, XCircle, AlertTriangle, Download } from "lucide-react";
+import { FileText, Plus, Eye, CreditCard, Search, User, XCircle, AlertTriangle, Download, Shield, Tags } from "lucide-react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
 import { CreateInvoiceDialog } from "./CreateInvoiceDialog";
 import { CreatePaymentDialog } from "./CreatePaymentDialog";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PermissionGuard } from "@/components/auth/PermissionGuard";
 import { toast } from "sonner";
 
 export function InvoiceManager() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
   const [showCreateInvoice, setShowCreateInvoice] = useState(false);
   const [showCreatePayment, setShowCreatePayment] = useState(false);
   const [selectedInvoiceForPayment, setSelectedInvoiceForPayment] = useState<{ patientId: string; invoiceId: string } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const preselectedPatientId = searchParams.get('patient') || undefined;
+  const preselectedTreatmentPlanId = searchParams.get('treatment') || undefined;
+  const preselectedInvoiceId = searchParams.get('invoice') || undefined;
+  const preselectedServiceId = searchParams.get('service') || undefined;
+  const workflowSource = searchParams.get('from');
+
+  const clearWorkflowParams = () => {
+    const next = new URLSearchParams(searchParams);
+    ['openCreate', 'patient', 'treatment', 'invoice', 'service', 'from'].forEach((key) => next.delete(key));
+    setSearchParams(next);
+  };
+
+  useEffect(() => {
+    if (searchParams.get('openCreate') === 'true' || preselectedPatientId || preselectedTreatmentPlanId) {
+      setShowCreateInvoice(true);
+    }
+  }, [preselectedPatientId, preselectedTreatmentPlanId, searchParams]);
 
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices'],
@@ -31,22 +49,15 @@ export function InvoiceManager() {
 
       const { data, error } = await supabase
         .from('invoices')
-        .select('*')
+        .select('*, patients(id, full_name, phone)')
         .eq('clinic_id', profile.id)
         .order('issue_date', { ascending: false });
       if (error) throw error;
 
-      const patientIds = [...new Set(data?.map(i => i.patient_id) || [])];
-      const { data: patients } = await supabase
-        .from('patients')
-        .select('id, full_name, phone')
-        .in('id', patientIds.length > 0 ? patientIds : ['none']);
-      const patientMap = new Map(patients?.map(p => [p.id, p]) || []);
-
       const now = new Date();
       return data?.map(inv => ({
         ...inv,
-        patient: patientMap.get(inv.patient_id),
+        patient: inv.patients,
         isOverdue: inv.status !== 'paid' && inv.status !== 'cancelled' && new Date(inv.due_date) < now,
       })) || [];
     },
@@ -69,14 +80,16 @@ export function InvoiceManager() {
     onError: (e) => toast.error('فشل في إلغاء الفاتورة: ' + e.message),
   });
 
-  const filteredInvoices = invoices?.filter(inv => {
+  const filteredInvoices = useMemo(() => (invoices || []).filter(inv => {
     const matchesSearch = !searchTerm ||
       inv.invoice_number.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inv.patient?.full_name?.toLowerCase().includes(searchTerm.toLowerCase());
     let matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
+    if (preselectedPatientId) matchesStatus = matchesStatus && inv.patient_id === preselectedPatientId;
+    if (preselectedInvoiceId) matchesStatus = matchesStatus && inv.id === preselectedInvoiceId;
     if (statusFilter === 'overdue') matchesStatus = inv.isOverdue;
     return matchesSearch && matchesStatus;
-  });
+  }), [invoices, preselectedInvoiceId, preselectedPatientId, searchTerm, statusFilter]);
 
   const getStatusColor = (status: string, isOverdue: boolean) => {
     if (isOverdue) return 'bg-destructive/10 text-destructive border-destructive/20';
@@ -142,11 +155,27 @@ export function InvoiceManager() {
             <Button variant="outline" onClick={() => navigate('/payment-management')}>
               <CreditCard className="ml-2 h-4 w-4" /> المدفوعات
             </Button>
+            <Button variant="outline" onClick={() => navigate(preselectedPatientId ? `/service-prices?patient=${preselectedPatientId}` : '/service-prices')}>
+              <Tags className="ml-2 h-4 w-4" /> الأسعار
+            </Button>
+            <Button variant="outline" onClick={() => navigate(preselectedPatientId ? `/insurance-management?tab=claims&patient=${preselectedPatientId}` : '/insurance-management?tab=claims')}>
+              <Shield className="ml-2 h-4 w-4" /> التأمينات
+            </Button>
             <Button onClick={() => setShowCreateInvoice(true)}>
               <Plus className="ml-2 h-4 w-4" /> فاتورة جديدة
             </Button>
           </div>
         </div>
+
+        {(preselectedPatientId || preselectedInvoiceId || preselectedTreatmentPlanId || preselectedServiceId) && (
+          <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            {preselectedPatientId && <span>يتم عرض الفواتير ضمن سياق مريض محدد. </span>}
+            {preselectedInvoiceId && <span>تم تمييز الفاتورة المطلوبة لتسهيل المتابعة. </span>}
+            {preselectedTreatmentPlanId && <span>إنشاء الفاتورة مرتبط بعلاج محدد. </span>}
+            {preselectedServiceId && <span>سيتم تحميل خدمة مختارة مسبقاً داخل فاتورة جديدة. </span>}
+            {workflowSource === 'service-prices' && <span>تم فتح هذه الصفحة من شاشة أسعار الخدمات.</span>}
+          </div>
+        )}
 
         {/* Statistics */}
         <div className="grid gap-4 md:grid-cols-5">
@@ -218,7 +247,7 @@ export function InvoiceManager() {
         {/* Invoices List */}
         <div className="grid gap-3">
           {filteredInvoices?.map((invoice: any) => (
-            <Card key={invoice.id} className={`hover:shadow-md transition-shadow ${invoice.isOverdue ? 'border-destructive/30' : ''}`}>
+            <Card key={invoice.id} className={`hover:shadow-md transition-shadow ${invoice.isOverdue ? 'border-destructive/30' : ''} ${preselectedInvoiceId === invoice.id ? 'border-primary/40 ring-1 ring-primary/20' : ''}`}>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="space-y-1 flex-1 min-w-0">
@@ -250,12 +279,26 @@ export function InvoiceManager() {
 
                   <div className="flex flex-col gap-1 shrink-0">
                     <Button variant="outline" size="sm" onClick={() => navigate(`/patients/${invoice.patient_id}?tab=financials`)}>
-                      <Eye className="h-4 w-4" />
+                      <Eye className="h-4 w-4 ml-1" /> الملف المالي
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/payment-management?patient=${invoice.patient_id}&invoice=${invoice.id}`)}
+                    >
+                      <CreditCard className="h-4 w-4 ml-1" /> الدفعات
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/insurance-management?tab=claims&patient=${invoice.patient_id}&invoice=${invoice.id}&openClaim=true&from=invoices`)}
+                    >
+                      <Shield className="h-4 w-4 ml-1" /> مطالبة تأمين
                     </Button>
                     {invoice.status !== 'paid' && invoice.status !== 'cancelled' && (
                       <>
                         <Button size="sm" onClick={() => handlePayInvoice(invoice)}>
-                          <CreditCard className="h-4 w-4" />
+                          <CreditCard className="h-4 w-4 ml-1" /> تسجيل دفعة
                         </Button>
                         <Button
                           variant="ghost"
@@ -291,7 +334,18 @@ export function InvoiceManager() {
           </Card>
         )}
 
-        <CreateInvoiceDialog open={showCreateInvoice} onOpenChange={setShowCreateInvoice} />
+        <CreateInvoiceDialog
+          open={showCreateInvoice}
+          onOpenChange={(open) => {
+            setShowCreateInvoice(open);
+            if (!open && (searchParams.get('openCreate') === 'true' || preselectedPatientId || preselectedTreatmentPlanId || preselectedInvoiceId || preselectedServiceId)) {
+              clearWorkflowParams();
+            }
+          }}
+          preselectedPatientId={preselectedPatientId}
+          preselectedTreatmentPlanId={preselectedTreatmentPlanId}
+          preselectedServiceId={preselectedServiceId}
+        />
         <CreatePaymentDialog
           open={showCreatePayment}
           onOpenChange={(open) => { setShowCreatePayment(open); if (!open) setSelectedInvoiceForPayment(null); }}

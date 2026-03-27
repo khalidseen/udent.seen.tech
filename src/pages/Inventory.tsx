@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { PageToolbar } from "@/components/layout/PageToolbar";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,7 @@ import { CreateSupplyDialog } from "@/components/inventory/CreateSupplyDialog";
 import { CreatePurchaseOrderDialog } from "@/components/inventory/CreatePurchaseOrderDialog";
 import { StockMovementDialog } from "@/components/inventory/StockMovementDialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Package, AlertTriangle, Truck, BarChart3, Edit, Trash2, PackageX, DollarSign } from "lucide-react";
+import { Plus, Package, AlertTriangle, Truck, BarChart3, Trash2, PackageX, DollarSign, ArrowLeftRight, ShoppingCart, Pill } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { AdvancedInventoryReports } from "@/components/inventory/AdvancedInventoryReports";
@@ -45,6 +46,8 @@ const CATEGORY_LABELS: Record<string, string> = {
 };
 
 export default function Inventory() {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [stockFilter, setStockFilter] = useState("all");
@@ -52,8 +55,36 @@ export default function Inventory() {
   const [isCreateOrderOpen, setIsCreateOrderOpen] = useState(false);
   const [selectedSupply, setSelectedSupply] = useState<Supply | null>(null);
   const [isStockMovementOpen, setIsStockMovementOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("inventory");
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const workflowSource = searchParams.get('from');
+  const preselectedSupplyId = searchParams.get('supply') || undefined;
+  const prefillName = searchParams.get('name') || undefined;
+  const prefillCategory = searchParams.get('category') || undefined;
+  const prefillBrand = searchParams.get('brand') || undefined;
+
+  useEffect(() => {
+    const requestedTab = searchParams.get('tab');
+    if (requestedTab && ['inventory', 'reports'].includes(requestedTab)) {
+      setActiveTab(requestedTab);
+    }
+    if (searchParams.get('search')) {
+      setSearchTerm(searchParams.get('search') || '');
+    }
+    if (searchParams.get('category')) {
+      setCategoryFilter(searchParams.get('category') || 'all');
+    }
+    if (searchParams.get('stock')) {
+      setStockFilter(searchParams.get('stock') || 'all');
+    }
+    if (searchParams.get('openCreate') === 'true') {
+      setIsCreateSupplyOpen(true);
+    }
+    if (searchParams.get('openOrder') === 'true') {
+      setIsCreateOrderOpen(true);
+    }
+  }, [searchParams]);
 
   const { data: profile } = useQuery({
     queryKey: ['current-profile'],
@@ -81,7 +112,7 @@ export default function Inventory() {
     enabled: !!clinicId
   });
 
-  const stats = React.useMemo(() => {
+  const stats = useMemo(() => {
     if (!supplies.length) return { totalItems: 0, lowStockItems: 0, totalValue: 0, outOfStockItems: 0, expiringItems: 0 };
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
@@ -104,8 +135,21 @@ export default function Inventory() {
       (stockFilter === "low" && supply.current_stock <= supply.minimum_stock && supply.current_stock > 0) ||
       (stockFilter === "out" && supply.current_stock === 0) ||
       (stockFilter === "good" && supply.current_stock > supply.minimum_stock);
-    return matchesSearch && matchesCategory && matchesStock;
+    const matchesSupply = !preselectedSupplyId || supply.id === preselectedSupplyId;
+    return matchesSearch && matchesCategory && matchesStock && matchesSupply;
   });
+
+  const updateWorkflowParams = (updates: Record<string, string | null>) => {
+    const next = new URLSearchParams(searchParams);
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value === null || value === '') {
+        next.delete(key);
+      } else {
+        next.set(key, value);
+      }
+    });
+    setSearchParams(next);
+  };
 
   const getStockStatus = (supply: Supply) => {
     if (supply.current_stock === 0) return { status: "out", color: "destructive" as const, text: "نفدت" };
@@ -216,6 +260,18 @@ export default function Inventory() {
           activeFiltersCount={activeFiltersCount}
           actions={
             <div className="flex gap-2">
+              <Button onClick={() => navigate('/medications?from=inventory')} variant="outline" size="sm">
+                <Pill className="w-4 h-4 ml-2" />
+                الأدوية
+              </Button>
+              <Button onClick={() => navigate('/stock-movements')} variant="outline" size="sm">
+                <ArrowLeftRight className="w-4 h-4 ml-2" />
+                حركة المخزون
+              </Button>
+              <Button onClick={() => navigate('/purchase-orders')} variant="outline" size="sm">
+                <ShoppingCart className="w-4 h-4 ml-2" />
+                أوامر الشراء
+              </Button>
               <Button onClick={() => setIsCreateOrderOpen(true)} variant="outline">
                 <Truck className="w-4 h-4 ml-2" />
                 أمر شراء
@@ -228,7 +284,20 @@ export default function Inventory() {
           }
         />
 
-        <Tabs defaultValue="inventory" className="space-y-6">
+        {(preselectedSupplyId || prefillName || workflowSource) && (
+          <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            {preselectedSupplyId && <span>تم تضييق العرض على صنف محدد لتتبع حالته وتوريده. </span>}
+            {prefillName && <span>سيتم تجهيز نموذج مستلزم جديد ببيانات مسبقة. </span>}
+            {workflowSource === 'medications' && <span>تم الوصول من شاشة الأدوية لربط الدواء بالمخزون. </span>}
+            {workflowSource === 'purchase-orders' && <span>تم الوصول من شاشة أوامر الشراء لمراجعة أثر التوريد. </span>}
+            {workflowSource === 'stock-movements' && <span>تم الوصول من شاشة حركة المخزون لمراجعة الصنف. </span>}
+          </div>
+        )}
+
+        <Tabs value={activeTab} onValueChange={(value) => {
+          setActiveTab(value);
+          updateWorkflowParams({ tab: value });
+        }} className="space-y-6">
           <TabsList>
             <TabsTrigger value="inventory">المخزون</TabsTrigger>
             <TabsTrigger value="reports">
@@ -386,7 +455,13 @@ export default function Inventory() {
                               <TableCell>
                                 <div className="flex gap-1">
                                   <Button variant="outline" size="sm" onClick={() => handleStockMovement(supply)}>
-                                    حركة
+                                    حركة سريعة
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => navigate(`/stock-movements?supply=${supply.id}&from=inventory`)}>
+                                    كل الحركات
+                                  </Button>
+                                  <Button variant="outline" size="sm" onClick={() => navigate(`/purchase-orders?supply=${supply.id}&openCreate=true&from=inventory`)}>
+                                    طلب شراء
                                   </Button>
                                   <Button variant="outline" size="sm" onClick={() => handleDeleteSupply(supply.id, supply.name)} className="text-destructive hover:text-destructive">
                                     <Trash2 className="w-3 h-3" />
@@ -405,14 +480,22 @@ export default function Inventory() {
 
             <CreateSupplyDialog
               isOpen={isCreateSupplyOpen}
-              onClose={() => setIsCreateSupplyOpen(false)}
+              onClose={() => {
+                setIsCreateSupplyOpen(false);
+                updateWorkflowParams({ openCreate: null, name: null, category: null, brand: null, from: null });
+              }}
               onSupplyCreated={handleSupplyCreated}
+              initialValues={{ name: prefillName, category: prefillCategory, brand: prefillBrand }}
             />
 
             <CreatePurchaseOrderDialog
               isOpen={isCreateOrderOpen}
-              onClose={() => setIsCreateOrderOpen(false)}
+              onClose={() => {
+                setIsCreateOrderOpen(false);
+                updateWorkflowParams({ openOrder: null, supply: null, from: null });
+              }}
               onOrderCreated={handleOrderCreated}
+              preselectedSupplyId={preselectedSupplyId}
             />
 
             {selectedSupply && (

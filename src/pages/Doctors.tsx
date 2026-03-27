@@ -41,7 +41,7 @@ const Doctors = () => {
 
   const clinicId = profile?.id;
 
-  const { data: doctors, isLoading, refetch } = useQuery({
+  const { data: doctors, isLoading, isError, refetch } = useQuery({
     queryKey: ['doctors', clinicId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -190,6 +190,13 @@ const Doctors = () => {
 
       {isLoading ? (
         <Card><CardContent className="py-8"><div className="text-center">جاري التحميل...</div></CardContent></Card>
+      ) : isError ? (
+        <Card><CardContent className="py-12 text-center">
+          <User className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <h3 className="text-lg font-medium mb-2">حدث خطأ في تحميل الأطباء</h3>
+          <p className="text-muted-foreground mb-4">تعذر جلب بيانات الأطباء. تحقق من الاتصال وحاول مرة أخرى.</p>
+          <Button onClick={() => refetch()}>إعادة المحاولة</Button>
+        </CardContent></Card>
       ) : filteredDoctors?.length === 0 ? (
         <Card className="text-center py-12">
           <CardContent>

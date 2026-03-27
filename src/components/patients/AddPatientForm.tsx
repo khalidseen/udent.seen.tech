@@ -48,7 +48,7 @@ const AddPatientForm = () => {
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
       
-      console.log('Current user:', user);
+      // Get current user for form submission
       
       if (!user) {
         throw new Error('يجب تسجيل الدخول أولاً');

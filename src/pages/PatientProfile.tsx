@@ -1,3 +1,4 @@
+import { lazy, Profiler, Suspense, useCallback } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,19 +6,70 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Calendar, DollarSign, FileText, Image, Pill, Activity, Edit, Smile } from "lucide-react";
+import { ArrowLeft, Calendar, DollarSign, FileText, Image, Pill, Activity, Edit, Smile, Shield } from "lucide-react";
 import { CurrencyAmount } from "@/components/ui/currency-display";
-import { PatientAppointments } from "@/components/patients/profile/PatientAppointments";
-import { AppointmentReminderScheduler } from "@/components/appointments/AppointmentReminderScheduler";
-import { PatientTreatments } from "@/components/patients/profile/PatientTreatments";
-import { PatientFinancials } from "@/components/patients/profile/PatientFinancials";
-import { PatientImages } from "@/components/patients/profile/PatientImages";
-import { PatientPrescriptions } from "@/components/patients/profile/PatientPrescriptions";
-import { PatientRecords } from "@/components/patients/profile/PatientRecords";
-import { PatientNotes } from "@/components/patients/profile/PatientNotes";
-import { PatientWorkflowTracker } from "@/components/workflow/PatientWorkflowTracker";
-import { PatientImageGallery } from "@/components/medical-records/PatientImageGallery";
-import { AnatomicalDentalChart } from "@/components/dental/AnatomicalDentalChart";
+import { PageSkeleton } from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
+
+const PatientAppointments = lazy(() =>
+  import("@/components/patients/profile/PatientAppointments").then((module) => ({
+    default: module.PatientAppointments,
+  }))
+);
+
+const AppointmentReminderScheduler = lazy(() =>
+  import("@/components/appointments/AppointmentReminderScheduler").then((module) => ({
+    default: module.AppointmentReminderScheduler,
+  }))
+);
+
+const PatientTreatments = lazy(() =>
+  import("@/components/patients/profile/PatientTreatments").then((module) => ({
+    default: module.PatientTreatments,
+  }))
+);
+
+const PatientFinancials = lazy(() =>
+  import("@/components/patients/profile/PatientFinancials").then((module) => ({
+    default: module.PatientFinancials,
+  }))
+);
+
+const PatientPrescriptions = lazy(() =>
+  import("@/components/patients/profile/PatientPrescriptions").then((module) => ({
+    default: module.PatientPrescriptions,
+  }))
+);
+
+const PatientRecords = lazy(() =>
+  import("@/components/patients/profile/PatientRecords").then((module) => ({
+    default: module.PatientRecords,
+  }))
+);
+
+const PatientNotes = lazy(() =>
+  import("@/components/patients/profile/PatientNotes").then((module) => ({
+    default: module.PatientNotes,
+  }))
+);
+
+const PatientWorkflowTracker = lazy(() =>
+  import("@/components/workflow/PatientWorkflowTracker").then((module) => ({
+    default: module.PatientWorkflowTracker,
+  }))
+);
+
+const PatientImageGallery = lazy(() =>
+  import("@/components/medical-records/PatientImageGallery").then((module) => ({
+    default: module.PatientImageGallery,
+  }))
+);
+
+const AnatomicalDentalChart = lazy(() =>
+  import("@/components/dental/AnatomicalDentalChart").then((module) => ({
+    default: module.AnatomicalDentalChart,
+  }))
+);
 
 export default function PatientProfile() {
   const { patientId } = useParams<{ patientId: string }>();
@@ -25,7 +77,17 @@ export default function PatientProfile() {
   const [searchParams] = useSearchParams();
   const initialTab = searchParams.get('tab') || 'workflow';
 
-  const { data: patient, isLoading } = useQuery({
+  const onPatientProfileRender = useCallback((
+    id: string,
+    phase: 'mount' | 'update',
+    actualDuration: number
+  ) => {
+    if (import.meta.env.DEV && actualDuration > 12) {
+      logger.debug(`[perf] ${id} ${phase}: ${actualDuration.toFixed(2)}ms`);
+    }
+  }, []);
+
+  const { data: patient, isLoading, isError } = useQuery({
     queryKey: ['patient', patientId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -71,9 +133,18 @@ export default function PatientProfile() {
   });
 
   if (isLoading) {
+    return <PageSkeleton variant="form" />;
+  }
+
+  if (isError) {
     return (
-      <div className="flex items-center justify-center h-96">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="pt-6 text-center space-y-3">
+            <p className="text-destructive">حدث خطأ في تحميل بيانات المريض</p>
+            <Button variant="outline" onClick={() => navigate(-1)}>الرجوع</Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -91,7 +162,8 @@ export default function PatientProfile() {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <Profiler id="PatientProfile" onRender={onPatientProfileRender}>
+      <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -110,8 +182,32 @@ export default function PatientProfile() {
           </div>
         </div>
         <Button onClick={() => navigate(`/patients/edit/${patientId}`)}>
-          <Edit className="w-4 h-4 mr-2" />
+          <Edit className="w-4 h-4 ml-2" />
           تعديل البيانات
+        </Button>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="flex flex-wrap gap-2">
+        <Button variant="outline" size="sm" onClick={() => navigate(`/appointments/new?patient=${patientId}`)}>
+          <Calendar className="w-4 h-4 ml-1" />
+          حجز موعد
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate(`/dental-treatments-management?patient=${patientId}`)}>
+          <Activity className="w-4 h-4 ml-1" />
+          إضافة علاج
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate(`/invoice-management?patient=${patientId}&openCreate=true`)}>
+          <DollarSign className="w-4 h-4 ml-1" />
+          إنشاء فاتورة
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate(`/insurance-management?tab=patients&patient=${patientId}&openCreate=true`)}>
+          <Shield className="w-4 h-4 ml-1" />
+          التأمين
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => navigate(`/prescriptions?patient=${patientId}`)}>
+          <Pill className="w-4 h-4 ml-1" />
+          وصفة طبية
         </Button>
       </div>
 
@@ -163,7 +259,7 @@ export default function PatientProfile() {
 
       {/* Tabs */}
       <Tabs defaultValue={initialTab} className="space-y-4">
-        <TabsList className="grid grid-cols-9 w-full">
+        <TabsList className="flex flex-wrap h-auto gap-1 w-full">
           <TabsTrigger value="workflow">
             <Activity className="h-4 w-4 ml-2" />
             المسار
@@ -203,7 +299,9 @@ export default function PatientProfile() {
         </TabsList>
 
         <TabsContent value="workflow">
-          <PatientWorkflowTracker patientId={patientId!} />
+          <Suspense fallback={<PageSkeleton variant="cards" />}>
+            <PatientWorkflowTracker patientId={patientId!} />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="dental-chart">
@@ -212,47 +310,62 @@ export default function PatientProfile() {
               <CardTitle>المخطط السني ثنائي الأبعاد</CardTitle>
             </CardHeader>
             <CardContent>
-              <AnatomicalDentalChart 
-                patientId={patientId!}
-                onToothSelect={(toothNumber) => {
-                  console.log('Selected tooth:', toothNumber);
-                }}
-              />
+              <Suspense fallback={<PageSkeleton variant="cards" />}>
+                <AnatomicalDentalChart
+                  patientId={patientId!}
+                  onToothSelect={() => {}}
+                />
+              </Suspense>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="appointments" className="space-y-4">
-          <PatientAppointments patientId={patientId!} />
-          {patient?.clinic_id && (
-            <AppointmentReminderScheduler patientId={patientId!} clinicId={patient.clinic_id} />
-          )}
+          <Suspense fallback={<PageSkeleton variant="cards" />}>
+            <PatientAppointments patientId={patientId!} />
+            {patient?.clinic_id && (
+              <AppointmentReminderScheduler patientId={patientId!} clinicId={patient.clinic_id} />
+            )}
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="treatments">
-          <PatientTreatments patientId={patientId!} />
+          <Suspense fallback={<PageSkeleton variant="cards" />}>
+            <PatientTreatments patientId={patientId!} />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="financials">
-          <PatientFinancials patientId={patientId!} />
+          <Suspense fallback={<PageSkeleton variant="cards" />}>
+            <PatientFinancials patientId={patientId!} />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="images">
-          <PatientImageGallery patientId={patientId!} />
+          <Suspense fallback={<PageSkeleton variant="cards" />}>
+            <PatientImageGallery patientId={patientId!} />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="prescriptions">
-          <PatientPrescriptions patientId={patientId!} />
+          <Suspense fallback={<PageSkeleton variant="cards" />}>
+            <PatientPrescriptions patientId={patientId!} />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="records">
-          <PatientRecords patientId={patientId!} />
+          <Suspense fallback={<PageSkeleton variant="cards" />}>
+            <PatientRecords patientId={patientId!} />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="notes">
-          <PatientNotes patientId={patientId!} />
+          <Suspense fallback={<PageSkeleton variant="cards" />}>
+            <PatientNotes patientId={patientId!} />
+          </Suspense>
         </TabsContent>
       </Tabs>
-    </div>
+      </div>
+    </Profiler>
   );
 }

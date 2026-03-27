@@ -31,6 +31,7 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
   const [patientType, setPatientType] = useState<'existing' | 'new'>('existing');
   const [loading, setLoading] = useState(false);
   const [conflictWarning, setConflictWarning] = useState<string | null>(null);
+  const [conflictOverride, setConflictOverride] = useState(false);
   const [clinicId, setClinicId] = useState<string | null>(null);
   
   const [activeDoctors, setActiveDoctors] = useState<{id: string; full_name: string; specialization: string | null}[]>([]);
@@ -59,6 +60,7 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
       const updated = { ...formData, [field]: value };
       if (updated.appointment_date && updated.appointment_time) {
         checkConflicts(updated.appointment_date, updated.appointment_time, parseInt(updated.duration));
+        setConflictOverride(false);
       }
     }
   };
@@ -82,6 +84,7 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
     setNewPatientData({ full_name: '', phone: '', email: '' });
     setPatientType('existing');
     setConflictWarning(null);
+    setConflictOverride(false);
   };
 
   // Fetch clinic_id once
@@ -196,6 +199,12 @@ const AddAppointmentPopup = ({ open, onOpenChange, onAppointmentAdded, preselect
     const appointmentDT = new Date(`${formData.appointment_date}T${formData.appointment_time}:00`);
     if (appointmentDT < new Date()) {
       toast({ title: 'خطأ', description: 'لا يمكن حجز موعد في الماضي', variant: 'destructive' });
+      return;
+    }
+
+    if (conflictWarning && !conflictOverride) {
+      toast({ title: 'تعارض مواعيد', description: 'يوجد تعارض مع موعد آخر. اضغط مرة أخرى للتأكيد.', variant: 'destructive' });
+      setConflictOverride(true);
       return;
     }
 

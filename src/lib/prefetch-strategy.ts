@@ -90,7 +90,7 @@ class PrefetchManager {
   private predictNextRoutes(currentRoute: string): string[] {
     const predictions: Record<string, string[]> = {
       "/": ["/patients", "/appointments", "/financial-overview"],
-      "/patients": ["/appointments/new", "/financial-transactions"],
+      "/patients": ["/appointments/new", "/dental-treatments-management"],
       "/appointments": ["/patients", "/appointments/new"],
       "/financial-overview": ["/invoice-management", "/payment-management"],
     };

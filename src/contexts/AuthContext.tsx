@@ -3,6 +3,7 @@ import { User, Session, AuthError } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { generateDeviceHash } from '@/lib/deviceFingerprint';
+import { setUser as setMonitoringUser, clearUser as clearMonitoringUser } from '@/services/monitoring';
 
 interface AuthContextType {
   user: User | null;
@@ -41,6 +42,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (mounted && !needsOtp) {
           setSession(currentSession);
           setUser(currentSession?.user ?? null);
+          // Sync monitoring user context
+          if (currentSession?.user) {
+            setMonitoringUser({ id: currentSession.user.id, email: currentSession.user.email });
+          } else {
+            clearMonitoringUser();
+          }
           if (!initFlag) {
             setLoading(false);
             setInitialized(true);
@@ -252,6 +259,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setNeedsOtp(false);
       setPendingSession(null);
       setOtpMaskedPhone(null);
+      clearMonitoringUser();
       toast({ title: 'تم تسجيل الخروج', description: 'نراك قريباً!' });
       return { success: true };
     } catch (error) {

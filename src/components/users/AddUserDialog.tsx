@@ -131,7 +131,6 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
     try {
       setLoading(true);
       setSuccessMessage('');
-      console.log('Submitting user creation form...');
 
       // استخدام Edge Function لإنشاء المستخدم
       const { data, error } = await supabase.functions.invoke('create-user', {
@@ -148,19 +147,15 @@ export function AddUserDialog({ open, onOpenChange, onSuccess }: AddUserDialogPr
       console.log('Edge function response:', { data, error });
 
       if (error) {
-        console.error('Edge function error:', error);
         throw new Error(error.message || 'خطأ في استدعاء الدالة');
       }
 
       // التحقق من نجاح العملية
       if (!data?.success) {
         const errorMsg = data?.error || 'فشل في إنشاء المستخدم';
-        console.error('Creation failed:', errorMsg);
         throw new Error(errorMsg);
       }
 
-      console.log('User created successfully:', data.user);
-      
       setSuccessMessage(`تم إنشاء المستخدم بنجاح! الاسم: ${formData.fullName}, الدور: ${roles.find(r => r.role_name === selectedRole)?.role_name_ar}`);
 
       toast({

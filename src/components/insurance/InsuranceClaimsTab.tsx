@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,13 +22,30 @@ const statusMap: Record<string, { label: string; color: string; icon: any }> = {
   paid: { label: 'مدفوعة', color: 'bg-emerald-100 text-emerald-800', icon: DollarSign },
 };
 
-const InsuranceClaimsTab = () => {
+interface InsuranceClaimsTabProps {
+  preselectedPatientId?: string;
+  preselectedInvoiceId?: string;
+  autoOpenCreate?: boolean;
+}
+
+const InsuranceClaimsTab = ({ preselectedPatientId, preselectedInvoiceId, autoOpenCreate = false }: InsuranceClaimsTabProps) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     patient_insurance_id: '', claim_number: '', treatment_description: '',
     total_amount: '', covered_amount: '', patient_share: '', notes: ''
   });
+
+  const buildClaimNumber = (invoiceNumber?: string | null) => {
+    const suffix = invoiceNumber?.replace(/[^A-Za-z0-9]/g, '').slice(-8) || Date.now().toString().slice(-8);
+    return `CLM-${suffix}`;
+  };
+
+  useEffect(() => {
+    if (autoOpenCreate) {
+      setOpen(true);
+    }
+  }, [autoOpenCreate]);
 
   const { data: clinicId } = useQuery({
     queryKey: ['current-clinic-id'],
@@ -43,7 +60,7 @@ const InsuranceClaimsTab = () => {
     queryFn: async () => {
       if (!clinicId) return [];
       const { data } = await supabase.from('insurance_claims')
-        .select('*, patient_insurance(policy_number, coverage_percentage, insurance_companies(name, name_ar), patients(full_name))')
+        .select('*, invoices(invoice_number), patient_insurance(policy_number, coverage_percentage, insurance_companies(name, name_ar), patients(full_name))')
         .eq('clinic_id', clinicId).order('created_at', { ascending: false });
       return data || [];
     },
@@ -62,15 +79,73 @@ const InsuranceClaimsTab = () => {
     enabled: !!clinicId,
   });
 
+  const { data: linkedInvoice } = useQuery({
+    queryKey: ['insurance-claim-invoice', clinicId, preselectedInvoiceId],
+    queryFn: async () => {
+      if (!clinicId || !preselectedInvoiceId) return null;
+      const { data, error } = await supabase
+        .from('invoices')
+        .select('id, invoice_number, patient_id, total_amount, notes, issue_date')
+        .eq('clinic_id', clinicId)
+        .eq('id', preselectedInvoiceId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!clinicId && !!preselectedInvoiceId,
+  });
+
+  const availablePatientInsurances = useMemo(() => {
+    if (!preselectedPatientId && !linkedInvoice?.patient_id) {
+      return patientInsurances || [];
+    }
+    const patientId = preselectedPatientId || linkedInvoice?.patient_id;
+    return (patientInsurances || []).filter((item: any) => item.patient_id === patientId);
+  }, [linkedInvoice?.patient_id, patientInsurances, preselectedPatientId]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const fallbackInsurance = availablePatientInsurances[0] as any;
+    const nextInvoiceNumber = linkedInvoice?.invoice_number;
+    const nextTotal = linkedInvoice ? String(Number(linkedInvoice.total_amount || 0)) : form.total_amount;
+
+    setForm((current) => {
+      const nextInsuranceId = current.patient_insurance_id || fallbackInsurance?.id || '';
+      const coveragePct = Number(
+        availablePatientInsurances.find((item: any) => item.id === nextInsuranceId)?.coverage_percentage ||
+        fallbackInsurance?.coverage_percentage ||
+        0
+      );
+      const totalValue = Number(nextTotal || 0);
+      const coveredAmount = Math.round(totalValue * coveragePct / 100);
+      const patientShare = Math.max(totalValue - coveredAmount, 0);
+
+      return {
+        ...current,
+        patient_insurance_id: nextInsuranceId,
+        claim_number: current.claim_number || buildClaimNumber(nextInvoiceNumber),
+        total_amount: nextTotal,
+        covered_amount: current.covered_amount || String(coveredAmount),
+        patient_share: current.patient_share || String(patientShare),
+        treatment_description: current.treatment_description || (nextInvoiceNumber ? `مطالبة مرتبطة بالفاتورة ${nextInvoiceNumber}` : ''),
+        notes: current.notes || (nextInvoiceNumber ? `تم إنشاء المطالبة من الفاتورة ${nextInvoiceNumber}` : ''),
+      };
+    });
+  }, [availablePatientInsurances, form.total_amount, linkedInvoice, open]);
+
   const saveMutation = useMutation({
     mutationFn: async (f: typeof form) => {
       const pi = patientInsurances?.find(p => p.id === f.patient_insurance_id) as any;
       if (!pi) throw new Error('لم يتم العثور على التأمين');
       const { error } = await supabase.from('insurance_claims').insert({
         clinic_id: clinicId!,
+        invoice_id: preselectedInvoiceId || linkedInvoice?.id || null,
         patient_id: pi.patient_id,
         patient_insurance_id: f.patient_insurance_id,
         claim_number: f.claim_number,
+        claim_date: new Date().toISOString(),
+        service_date: linkedInvoice?.issue_date || null,
         treatment_description: f.treatment_description || null,
         total_amount: parseFloat(f.total_amount) || 0,
         covered_amount: parseFloat(f.covered_amount) || 0,
@@ -160,7 +235,7 @@ const InsuranceClaimsTab = () => {
                 <Select value={form.patient_insurance_id} onValueChange={onInsuranceChange}>
                   <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
                   <SelectContent>
-                    {patientInsurances?.map((pi: any) => (
+                    {availablePatientInsurances?.map((pi: any) => (
                       <SelectItem key={pi.id} value={pi.id}>
                         {pi.patients?.full_name} - {pi.insurance_companies?.name_ar || pi.insurance_companies?.name} ({pi.coverage_percentage}%)
                       </SelectItem>
@@ -168,6 +243,11 @@ const InsuranceClaimsTab = () => {
                   </SelectContent>
                 </Select>
               </div>
+              {linkedInvoice && (
+                <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+                  سيتم إنشاء المطالبة من الفاتورة {linkedInvoice.invoice_number} بقيمة {Number(linkedInvoice.total_amount || 0).toLocaleString()}.
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div><Label>رقم المطالبة *</Label><Input value={form.claim_number} onChange={e => setForm({...form, claim_number: e.target.value})} placeholder="CLM-001" /></div>
                 <div><Label>المبلغ الإجمالي *</Label><Input type="number" value={form.total_amount} onChange={e => onTotalChange(e.target.value)} /></div>
@@ -177,6 +257,7 @@ const InsuranceClaimsTab = () => {
                 <div><Label>حصة المريض</Label><Input type="number" value={form.patient_share} readOnly className="bg-muted" /></div>
               </div>
               <div><Label>وصف العلاج</Label><Textarea value={form.treatment_description} onChange={e => setForm({...form, treatment_description: e.target.value})} /></div>
+              <div><Label>ملاحظات</Label><Textarea value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} /></div>
               <Button className="w-full" disabled={!form.patient_insurance_id || !form.claim_number || !form.total_amount || saveMutation.isPending} onClick={() => saveMutation.mutate(form)}>
                 {saveMutation.isPending ? 'جارٍ الحفظ...' : 'إنشاء المطالبة'}
               </Button>
@@ -209,6 +290,9 @@ const InsuranceClaimsTab = () => {
                         <p className="text-sm text-muted-foreground">
                           {claim.patient_insurance?.insurance_companies?.name_ar || claim.patient_insurance?.insurance_companies?.name} • {claim.claim_number}
                         </p>
+                        {claim.invoices?.invoice_number && (
+                          <p className="text-xs text-muted-foreground">الفاتورة المرتبطة: {claim.invoices.invoice_number}</p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-4">

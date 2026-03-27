@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, TrendingUp, TrendingDown, Package, Calendar, Filter } from "lucide-react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Search, TrendingUp, TrendingDown, Package, Calendar, ArrowRight, ShoppingCart, Pill } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +16,9 @@ import { ar } from "date-fns/locale";
 
 interface StockMovement {
   id: string;
+  supply_id: string;
   movement_type: string;
+  reference_id?: string;
   reference_type?: string;
   quantity: number;
   notes?: string;
@@ -27,8 +30,22 @@ interface StockMovement {
 }
 
 const StockMovements = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [referenceFilter, setReferenceFilter] = useState("all");
+  const preselectedSupplyId = searchParams.get('supply') || undefined;
+  const workflowSource = searchParams.get('from');
+
+  useEffect(() => {
+    if (searchParams.get('type')) {
+      setTypeFilter(searchParams.get('type') || 'all');
+    }
+    if (searchParams.get('reference')) {
+      setReferenceFilter(searchParams.get('reference') || 'all');
+    }
+  }, [searchParams]);
 
   const { data: profile } = useQuery({
     queryKey: ['current-profile'],
@@ -59,7 +76,9 @@ const StockMovements = () => {
     const matchesSearch = movement.medical_supplies?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       movement.notes?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = typeFilter === "all" || movement.movement_type === typeFilter;
-    return matchesSearch && matchesType;
+    const matchesReference = referenceFilter === 'all' || movement.reference_type === referenceFilter;
+    const matchesSupply = !preselectedSupplyId || movement.supply_id === preselectedSupplyId;
+    return matchesSearch && matchesType && matchesReference && matchesSupply;
   });
 
   const stats = {
@@ -88,7 +107,32 @@ const StockMovements = () => {
   return (
     <PermissionGuard requiredPermissions={['inventory.view']}>
       <PageContainer>
-        <PageHeader title="حركة المخزون" description="متابعة حركات الإدخال والإخراج للمواد الطبية" />
+        <div className="flex items-center justify-between mb-4">
+          <PageHeader title="حركة المخزون" description="متابعة حركات الإدخال والإخراج للمواد الطبية" />
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => navigate(preselectedSupplyId ? `/inventory?supply=${preselectedSupplyId}&from=stock-movements` : '/inventory?from=stock-movements')}>
+              <ArrowRight className="w-4 h-4 ml-1" />
+              العودة للمخزون
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/purchase-orders?from=stock-movements')}>
+              <ShoppingCart className="w-4 h-4 ml-1" />
+              أوامر الشراء
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => navigate('/medications?from=stock-movements')}>
+              <Pill className="w-4 h-4 ml-1" />
+              الأدوية
+            </Button>
+          </div>
+        </div>
+
+        {(preselectedSupplyId || workflowSource || referenceFilter !== 'all') && (
+          <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground">
+            {preselectedSupplyId && <span>الحركات معروضة لصنف محدد فقط. </span>}
+            {referenceFilter !== 'all' && <span>تم تضييق العرض حسب نوع المرجع. </span>}
+            {workflowSource === 'inventory' && <span>تم فتح الصفحة من شاشة المخزون لتتبع حركة الصنف. </span>}
+            {workflowSource === 'purchase-orders' && <span>تم فتح الصفحة من أوامر الشراء لمراجعة أثر الاستلام على المخزون. </span>}
+          </div>
+        )}
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -134,6 +178,18 @@ const StockMovements = () => {
               <SelectItem value="all">جميع الأنواع</SelectItem>
               <SelectItem value="in">إدخال</SelectItem>
               <SelectItem value="out">إخراج</SelectItem>
+              <SelectItem value="adjustment">تعديل</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={referenceFilter} onValueChange={setReferenceFilter}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="نوع المرجع" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">كل المراجع</SelectItem>
+              <SelectItem value="purchase">شراء</SelectItem>
+              <SelectItem value="usage">استخدام</SelectItem>
+              <SelectItem value="waste">تالف</SelectItem>
               <SelectItem value="adjustment">تعديل</SelectItem>
             </SelectContent>
           </Select>
@@ -202,6 +258,16 @@ const StockMovements = () => {
                         {movement.quantity > 0 ? '+' : ''}{movement.quantity}
                       </div>
                       <div className="text-xs text-muted-foreground">{movement.medical_supplies?.unit}</div>
+                      <div className="mt-2 flex flex-col gap-1">
+                        <Button variant="outline" size="sm" onClick={() => navigate(`/inventory?supply=${movement.supply_id}&from=stock-movements`)}>
+                          الصنف
+                        </Button>
+                        {movement.reference_type === 'purchase' && (
+                          <Button variant="outline" size="sm" onClick={() => navigate('/purchase-orders?status=delivered&from=stock-movements')}>
+                            أمر الشراء
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>

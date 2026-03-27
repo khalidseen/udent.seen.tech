@@ -1,19 +1,15 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import * as Sentry from '@sentry/react'
 import { setupGlobalErrorHandling } from './lib/error-handler'
+import { initializeMonitoring } from './services/monitoring'
+import { initializeDatabaseSchema } from './lib/database-init'
 
 // Setup error handling immediately
 setupGlobalErrorHandling();
 
-if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    tracesSampleRate: 0.1,
-    environment: import.meta.env.MODE,
-  });
-}
+// Initialize Sentry monitoring (no-ops gracefully when DSN is absent)
+initializeMonitoring();
 
 const root = createRoot(document.getElementById("root")!);
 root.render(<App />);
@@ -28,9 +24,7 @@ window.addEventListener('load', () => {
   
   // Database schema init (delay for auth)
   setTimeout(() => {
-    import('./lib/database-init').then(m => 
-      m.initializeDatabaseSchema().catch(() => {})
-    );
+    initializeDatabaseSchema().catch(() => {});
   }, 2000);
 }, { once: true });
 

@@ -63,8 +63,6 @@ export function CreateClinicDialog({ open, onOpenChange, onSuccess }: CreateClin
         throw new Error(error.message || 'فشل في إنشاء العيادة');
       }
 
-      console.log('Created clinic successfully:', data);
-
       toast({
         title: "تم الإنشاء بنجاح",
         description: `تم إنشاء عيادة "${formData.name}" وإضافتك كمالك لها`,

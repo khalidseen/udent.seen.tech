@@ -323,7 +323,7 @@ export function EnhancedImageViewer({ image, isOpen, onClose }: EnhancedImageVie
                   imageElement={loadedImageElement}
                   imageType={image.image_type as any}
                   onAnalysisComplete={(result) => {
-                    console.log('AI Analysis completed:', result);
+                    // AI Analysis complete
                   }}
                 />
               </div>

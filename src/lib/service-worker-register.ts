@@ -5,13 +5,11 @@
 
 export const registerServiceWorker = async () => {
   // Only register in production
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('⚙️ Service Worker: Development mode - skipping registration');
+  if (!import.meta.env.PROD) {
     return;
   }
 
   if (!('serviceWorker' in navigator)) {
-    console.warn('⚠️ Service Worker not supported in this browser');
     return;
   }
 
@@ -20,7 +18,7 @@ export const registerServiceWorker = async () => {
       scope: '/',
     });
 
-    console.log('✅ Service Worker registered:', registration.scope);
+    // Service Worker registered
 
     // Check for updates periodically
     setInterval(() => {
@@ -34,8 +32,7 @@ export const registerServiceWorker = async () => {
 
       newWorker.addEventListener('statechange', () => {
         if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-          // New service worker available
-          console.log('🔄 New Service Worker available - refresh to update');
+          // New service worker available - prompt user
           
           // Optionally notify user
           if (confirm('يتوفر تحديث جديد. هل تريد تحديث الصفحة؟')) {
@@ -56,7 +53,7 @@ export const unregisterServiceWorker = async () => {
     for (const registration of registrations) {
       await registration.unregister();
     }
-    console.log('🗑️ All service workers unregistered');
+    // Service workers unregistered
   }
 };
 
@@ -72,7 +69,7 @@ export const clearAllCaches = async () => {
     await Promise.all(
       cacheNames.map((cacheName) => caches.delete(cacheName))
     );
-    console.log('🗑️ All caches cleared');
+    // All caches cleared
   }
 };
 

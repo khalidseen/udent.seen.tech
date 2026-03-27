@@ -1,13 +1,13 @@
-import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, User, ArrowLeft } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Calendar, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { ar } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useQuery } from "@tanstack/react-query";
 
 interface TodayAppointment {
   id: string;
@@ -22,50 +22,44 @@ interface TodayAppointment {
   } | null;
 }
 
+async function fetchTodayAppointments(userId: string): Promise<TodayAppointment[]> {
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!profile) return [];
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const { data, error } = await supabase
+    .from('appointments')
+    .select(`
+      id, appointment_date, duration, status, treatment_type,
+      patients (id, full_name, phone)
+    `)
+    .eq('clinic_id', profile.id)
+    .gte('appointment_date', `${today}T00:00:00`)
+    .lt('appointment_date', `${today}T23:59:59`)
+    .order('appointment_date', { ascending: true })
+    .limit(6);
+
+  if (error) throw error;
+  return data || [];
+}
+
 export function TodayAppointmentsWidget() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [appointments, setAppointments] = useState<TodayAppointment[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchTodayAppointments = async () => {
-      try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        if (!profile) return;
-
-        const today = new Date().toISOString().split('T')[0];
-
-        const { data, error } = await supabase
-          .from('appointments')
-          .select(`
-            id, appointment_date, duration, status, treatment_type,
-            patients (id, full_name, phone)
-          `)
-          .eq('clinic_id', profile.id)
-          .gte('appointment_date', `${today}T00:00:00`)
-          .lt('appointment_date', `${today}T23:59:59`)
-          .order('appointment_date', { ascending: true })
-          .limit(6);
-
-        if (error) throw error;
-        setAppointments(data || []);
-      } catch (err) {
-        console.error('Error fetching today appointments:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTodayAppointments();
-  }, [user]);
+  const { data: appointments = [], isLoading: loading } = useQuery({
+    queryKey: ['today-appointments', user?.id],
+    queryFn: () => fetchTodayAppointments(user!.id),
+    enabled: !!user,
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -93,8 +87,23 @@ export function TodayAppointmentsWidget() {
   if (loading) {
     return (
       <Card>
-        <CardContent className="py-6 text-center text-muted-foreground text-sm">
-          جاري تحميل مواعيد اليوم...
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-primary" />
+            مواعيد اليوم
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="flex items-center gap-3 p-2.5 rounded-lg border border-border/30">
+              <Skeleton className="h-8 w-12 rounded-md" />
+              <div className="flex-1 space-y-1.5">
+                <Skeleton className="h-3.5 w-28" />
+                <Skeleton className="h-3 w-20" />
+              </div>
+              <Skeleton className="h-5 w-14 rounded-full" />
+            </div>
+          ))}
         </CardContent>
       </Card>
     );

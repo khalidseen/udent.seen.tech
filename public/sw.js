@@ -1,5 +1,5 @@
 // Service Worker for Caching and Offline Support
-const CACHE_VERSION = 'v1.0.0';
+const CACHE_VERSION = 'v1.1.0';
 const CACHE_NAME = `udent-cache-${CACHE_VERSION}`;
 
 // Assets to cache immediately
@@ -89,13 +89,13 @@ self.addEventListener('fetch', (event) => {
     strategy = CACHE_STRATEGIES.CACHE_FIRST;
   }
 
-  // API calls - Network first
+  // API calls - Network only (avoid serving stale data)
   if (
     url.pathname.includes('/rest/v1/') ||
     url.pathname.includes('/auth/v1/') ||
     url.pathname.includes('/storage/v1/')
   ) {
-    strategy = CACHE_STRATEGIES.NETWORK_FIRST;
+    strategy = CACHE_STRATEGIES.NETWORK_ONLY;
   }
 
   // Authentication - Network only

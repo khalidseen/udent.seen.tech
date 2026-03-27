@@ -15,12 +15,12 @@ export const availableRoutes: RouteValidation[] = [
   { route: ROUTES.appointments, exists: true, description: "المواعيد", component: "Appointments" },
   { route: ROUTES.newAppointment, exists: true, description: "حجز موعد جديد", component: "NewAppointment" },
   { route: ROUTES.publicBooking, exists: true, description: "الحجز العام", component: "PublicBooking" },
-  { route: ROUTES.advancedMedicalRecords, exists: true, description: "السجلات الطبية", component: "AdvancedMedicalRecords" },
+
   { route: ROUTES.dentalTreatmentsManagement, exists: true, description: "العلاجات السنية", component: "DentalTreatmentsManagement" },
   { route: ROUTES.invoiceManagement, exists: true, description: "الفواتير", component: "InvoiceManagement" },
   { route: ROUTES.inventory, exists: true, description: "المخزون", component: "Inventory" },
   { route: ROUTES.doctors, exists: true, description: "إدارة الأطباء", component: "Doctors" },
-  { route: ROUTES.aiManagementDashboard, exists: true, description: "التحليل الذكي", component: "AIManagementDashboard" },
+
   { route: ROUTES.medications, exists: true, description: "الأدوية", component: "Medications" },
   { route: ROUTES.prescriptions, exists: true, description: "الوصفات الطبية", component: "Prescriptions" },
   { route: ROUTES.detailedReports, exists: true, description: "التقارير", component: "DetailedReports" },
@@ -30,20 +30,18 @@ export const availableRoutes: RouteValidation[] = [
   { route: ROUTES.auth, exists: true, description: "تسجيل الدخول", component: "Auth" },
   { route: ROUTES.financialOverview, exists: true, description: "ملخص مالي", component: "FinancialOverview" },
   { route: ROUTES.paymentManagement, exists: true, description: "المدفوعات", component: "PaymentManagement" },
-  { route: ROUTES.treatmentPlans, exists: true, description: "خطط العلاج", component: "TreatmentPlans" },
-  { route: "/financial-reports", exists: true, description: "التقارير المالية", component: "FinancialReports" },
-  { route: "/financial-transactions", exists: true, description: "المعاملات المالية", component: "PatientFinancialTransactions" },
+
+
   { route: "/purchase-orders", exists: true, description: "أوامر الشراء", component: "PurchaseOrders" },
   { route: "/stock-movements", exists: true, description: "حركة المخزون", component: "StockMovements" },
   { route: "/doctor-assistants", exists: true, description: "المساعدون", component: "DoctorAssistants" },
   { route: "/secretaries", exists: true, description: "السكرتارية", component: "Secretaries" },
   { route: "/appointment-requests", exists: true, description: "طلبات المواعيد", component: "AppointmentRequests" },
-  { route: "/smart-diagnosis-system", exists: true, description: "التشخيص الذكي", component: "SmartDiagnosis" },
-  { route: "/ai-management-dashboard", exists: true, description: "إدارة الذكاء الاصطناعي", component: "AIManagementDashboard" },
+
   { route: "/advanced-permissions-management", exists: true, description: "الصلاحيات", component: "AdvancedPermissionsManagement" },
   { route: "/comprehensive-security-audit", exists: true, description: "الأمان", component: "ComprehensiveSecurityAudit" },
   { route: "/integrations", exists: true, description: "الدمج", component: "Integrations" },
-  { route: "/dental-3d-models-management", exists: true, description: "النماذج ثلاثية الأبعاد", component: "Dental3DModelsManagement" },
+
   { route: "/custom-notification-templates", exists: true, description: "قوالب الإشعارات", component: "CustomNotificationTemplates" },
   { route: "/profile", exists: true, description: "الملف الشخصي", component: "Profile" },
   { route: "/super-admin", exists: true, description: "مدير النظام", component: "SuperAdmin" },
@@ -53,7 +51,7 @@ export const availableRoutes: RouteValidation[] = [
   { route: "/service-prices", exists: true, description: "أسعار الخدمات", component: "ServicePrices" },
   { route: "/dental-lab", exists: true, description: "مختبر الأسنان", component: "DentalLabManagement" },
   { route: "/smart-scheduling", exists: true, description: "الجدولة الذكية", component: "SmartScheduling" },
-  { route: "/communication-center", exists: true, description: "مركز الاتصالات", component: "CommunicationCenter" },
+
   { route: "/insurance-management", exists: true, description: "إدارة التأمين", component: "InsuranceManagement" },
 ];
 

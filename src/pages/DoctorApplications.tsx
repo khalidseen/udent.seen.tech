@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { PageSkeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -303,9 +304,7 @@ export default function DoctorApplications() {
           title="طلبات انضمام الأطباء" 
           description="إدارة طلبات انضمام الأطباء الجدد للنظام"
         />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-muted-foreground">جاري التحميل...</div>
-        </div>
+        <PageSkeleton variant="cards" />
       </PageContainer>
     );
   }

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,10 @@ interface CreatePurchaseOrderDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onOrderCreated: () => void;
+  preselectedSupplyId?: string;
 }
 
-export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: CreatePurchaseOrderDialogProps) {
+export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated, preselectedSupplyId }: CreatePurchaseOrderDialogProps) {
   const [supplier, setSupplier] = useState("");
   const [supplierContact, setSupplierContact] = useState("");
   const [expectedDelivery, setExpectedDelivery] = useState("");
@@ -59,6 +60,27 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
     },
     enabled: !!profile?.id
   });
+
+  useEffect(() => {
+    if (!isOpen || !preselectedSupplyId || !supplies?.length) return;
+    const supply = supplies.find((item) => item.id === preselectedSupplyId);
+    if (!supply) return;
+    setItems((current) => {
+      const existing = current.find((item) => item.supply_id === preselectedSupplyId);
+      if (existing) return current;
+      return [
+        ...current,
+        {
+          id: `${Date.now()}-${preselectedSupplyId}`,
+          supply_id: supply.id,
+          supply_name: supply.name,
+          quantity: 1,
+          unit_cost: Number(supply.unit_cost),
+          line_total: Number(supply.unit_cost),
+        },
+      ];
+    });
+  }, [isOpen, preselectedSupplyId, supplies]);
 
   const addItem = () => {
     setItems([...items, {
@@ -164,6 +186,11 @@ export function CreatePurchaseOrderDialog({ isOpen, onClose, onOrderCreated }: C
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {preselectedSupplyId && (
+            <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+              سيتم تجهيز أمر الشراء بصنف محدد مسبقاً لتسريع عملية التوريد.
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label>المورد *</Label>
